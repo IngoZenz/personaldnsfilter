@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+  <string name="app_name">DNSfilter</string>
+  <string name="listenPortLabel">Port:</string>
+  <string name="startBtnLabel">Ponovo pokreni</string>
+  <string name="stopBtnLabel">Zatvori</string>
+  <string name="filterReloadBtnLabel">Ponovo učitaj filter</string>
+  <string name="EnableConfigCheckBox">Napredne postavke</string>
+  <string name="keepAwakeCheckBox">Spriječi da uređaj prijeđe u stanje mirovanja</string>
+  <string name="EnableAutoStart">Automatsko pokretanje</string>
+  <string name="EnableAdfilter">Omogući blokiranje oglasa</string>
+  <string name="dnsLabel">DNS:</string>
+</resources>
