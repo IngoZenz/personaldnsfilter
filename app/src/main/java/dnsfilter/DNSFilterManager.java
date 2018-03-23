@@ -64,7 +64,6 @@ public class DNSFilterManager implements LoggerInterface
 
 	private static BlockedHosts hostFilter = null;
 	private static Hashtable hostsFilterOverRule = null;
-	
 	private boolean serverStopped = false;
 	private boolean reloading_filter = false;
 
@@ -83,7 +82,6 @@ public class DNSFilterManager implements LoggerInterface
 			} finally {
 				reloading_filter = false;
 			}
-			
 		}
 	}
 	
@@ -121,10 +119,8 @@ public class DNSFilterManager implements LoggerInterface
 					} catch (InterruptedException e) {
 						// nothing to do!
 					}
-
 					if (serverStopped)
 						break;
-
 					try {
 						reloading_filter=true;
 						Logger.getLogger().logLine("DNS Filter: Reloading hosts filter ...");						
@@ -153,17 +149,13 @@ public class DNSFilterManager implements LoggerInterface
 							nextReload = System.currentTimeMillis() + waitTime;				
 							retry = 0;
 						}
-						
 					} finally {
 						reloading_filter=false;
 					}
-
 				}
 				Logger.getLogger().logLine("DNS Filter: AutoFilterUpdater stopped!");
-
 			}
 		}
-
 	}
 
 	public DNSFilterManager() {
@@ -179,7 +171,6 @@ public class DNSFilterManager implements LoggerInterface
 			Logger.getLogger().logLine("Filter Reload currently running!");
 			return;
 		}
-			
 		if (filterReloadURL != null) {
 			synchronized (this) {
 				nextReload = 0;
@@ -228,7 +219,6 @@ public class DNSFilterManager implements LoggerInterface
 					}
 				}
 			}
-			
 			Logger.getLogger().logLine("Updating filter completed!");
 	
 			out.flush();
@@ -240,7 +230,6 @@ public class DNSFilterManager implements LoggerInterface
 		} finally {
 			ExecutionEnvironment.getEnvironment().releaseWakeLock();			
 		}
-
 	}
 	
 	private String[] parseHosts(String line) {
@@ -255,8 +244,7 @@ public class DNSFilterManager implements LoggerInterface
 			String ip = "127.0.0.1";
 			String host = tokens.nextToken().trim();
 			return new String[]{ip,host};
-		}			
-		
+		}
 	}
 	
 	private void rebuildIndex() throws IOException {
@@ -300,10 +288,8 @@ public class DNSFilterManager implements LoggerInterface
 				}
 			}
 		}
-
 		fin.close();
-		
-		
+
 		try {
 			if (hostFilter != null)
 				hostFilter.lock(1); // Exclusive Lock ==> No reader allowed during update of hostfilter
@@ -326,8 +312,6 @@ public class DNSFilterManager implements LoggerInterface
 		} finally {
 			hostFilter.unLock(1); //Update done! Release exclusive lock so readers are welcome!
 		}
-		
-
 		validIndex = true;
 		Logger.getLogger().logLine("Processing new filter file completed!");
 	}
@@ -503,7 +487,6 @@ public class DNSFilterManager implements LoggerInterface
 	@Override
 	public void logException(Exception e) {
 		e.printStackTrace(System.out);
-
 	}
 
 	@Override
@@ -516,5 +499,4 @@ public class DNSFilterManager implements LoggerInterface
 		// TODO Auto-generated method stub
 		
 	}
-
 }

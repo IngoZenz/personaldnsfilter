@@ -22,7 +22,6 @@
 
 package ip;
 
-
 public class CheckSum {
 	
 	public static int chkSum(byte[] buf, int off, int cnt) {
@@ -34,7 +33,7 @@ public class CheckSum {
 			if (i+1 < cnt)
 				val = val+ (buf[off+i+1] & 0xFF);
 			
-			sum = sum + val;			
+			sum = sum + val;
 		}
 	
 		while ((sum >> 16) != 0) 
