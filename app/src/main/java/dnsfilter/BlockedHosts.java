@@ -51,7 +51,6 @@ public class BlockedHosts implements Set{
 		public void objectToBytes(Object object, byte[] data, int offs) {
 			Utils.writeLongToByteArray((Long)object,  data,  offs);		
 		}
-
 	}
 	
 	private static ObjectPackagingManager PACK_MGR = new MyPackagingManager();
