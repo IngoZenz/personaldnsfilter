@@ -66,7 +66,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 public class DNSProxyActivity extends Activity implements OnClickListener, LoggerInterface {
-
 	
 	protected static boolean BOOT_START = false;
 	
@@ -91,11 +90,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	public static File WORKPATH=null;	
 	
 	private static WifiLock wifiLock;
-	private static WakeLock wakeLock;	
-	
+	private static WakeLock wakeLock;
 	
 	private static Intent SERVICE = null;
-	
 
 	private class MyUIThreadLogger implements Runnable {;
 
@@ -114,7 +111,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				logStr = logStr.substring(logSize-10000);
 				logSize = logStr.length();
 				logOutView.setText(logStr);
-				
 			}
 			scrollView.fullScroll(ScrollView.FOCUS_DOWN);
 			setTitle("personalDNSfilter (Connections:"+DNSFilterService.openConnectionsCount()+")");
@@ -213,7 +209,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}
 		myLogger = Logger.getLogger();
 		
-
 		if (appStart) {
 			if (BOOT_START) {
 				Logger.getLogger().logLine("Running on SDK"+Build.VERSION.SDK_INT);
@@ -238,11 +233,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				logLine("Initializing ...");			
 				appStart = false; // now started
 				
-				handleStart(); //start 
-				
+				handleStart(); //start
 			}
 		}
-
 	}
 	
 
@@ -261,7 +254,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			in.close();
 			
 			//check versions, in case different merge existing configuration with defaults
-			
 			File versionFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/PersonalDNSFilter/VERSION.TXT");
 			String vStr="";
 			if (versionFile.exists()) {
@@ -275,13 +267,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				createDefaultConfiguration();
 				config = mergeAndPersistConfig(config);
 			}
-			
 			return config;
 		} catch (Exception e ){
 			Logger.getLogger().logException(e);
 			return null;
 		}
-				
 	}	
 	
 	private Properties mergeAndPersistConfig(Properties currentConfig) throws IOException {
@@ -300,7 +290,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		defCfgReader.close();
 		
 		//take over custom properties (such as filter overrules) which are not in def config
-		
 		Properties defProps = new Properties();		
 		defProps.load(this.getAssets().open("dnsfilter.conf"));
 		boolean first = true;
@@ -312,8 +301,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				ln = currentKeys[i]+" = "+currentConfig.getProperty(currentKeys[i],"");
 				mergedout.write((ln+"\r\n").getBytes());
 			}
-		}	
-		
+		}
 		mergedout.flush();
 		mergedout.close();
 		Logger.getLogger().logLine("Merged configuration 'dnsfilter.conf' after update to version "+DNSFilterManager.VERSION+"!");
@@ -327,7 +315,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	private void createDefaultConfiguration() {
 		try {
-			
 			File f = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/PersonalDNSFilter");
 			f.mkdir();		
 			
@@ -355,14 +342,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			
 			fout.flush();
 			fout.close();
-			
 					
 			Logger.getLogger().logLine("Default configuration created successfully!");	
 		} catch (IOException e) {
 			Logger.getLogger().logLine("FAILED creating default Configuration!");	
 			Logger.getLogger().logException(e);			
 		}
-		
 	}
 
 
@@ -410,7 +395,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				if (prop.equals("reloadIntervalDays")) //new propertry added since first release
 					out.write(  (prop+" = "+advancedConfigProps.getProperty(prop,"")+"\r\n").getBytes());
 			}
-			
 			reader.close();
 			out.flush();
 			out.close();
@@ -425,20 +409,14 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}
 	}
 
-	
-
-
 	private boolean advCfgValid() {
-		
-		
 		try {					
 			Properties advancedConfigProps = new Properties();
 			advancedConfigProps.load(new ByteArrayInputStream(advancedConfigField.getText().toString().getBytes()));
 			
 			//check filterAutoUpdateURL
-			
 			String urls = advancedConfigProps.getProperty("filterAutoUpdateURL");
-			
+
 			if (urls == null)
 				throw new Exception("'filterAutoUpdateURL' property not defined!");
 			
@@ -451,17 +429,15 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 					new URL(urlStr);
 				}
 			}
-			
+
 			//check reloadIntervalDays
-			
 			try {
 				Integer.parseInt(advancedConfigProps.getProperty("reloadIntervalDays"));
 			} catch (Exception e0){
 				throw new Exception("'reloadIntervalDays' property not defined correctly!");
 			}
-			
 			return true;
-			
+
 		} catch (Exception e) {
 			Logger.getLogger().logLine("Exception while validating advanced settings:"+e.getMessage());
 			Logger.getLogger().logLine("Advanced settings are invalid - will be reverted!");
@@ -474,7 +450,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		File propsFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/PersonalDNSFilter/dnsfilter.conf");	
 		InputStream in = new FileInputStream(propsFile);
 		restoreAdvancedConfig(in);
-		
 	}
 
 
@@ -482,7 +457,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		AssetManager assetManager=this.getAssets();
 		InputStream defIn = assetManager.open("dnsfilter.conf");
 		restoreAdvancedConfig(defIn);
-		
 	}
 	
 	private void restoreAdvancedConfig(InputStream in) throws IOException {
@@ -497,7 +471,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	@Override
 	public void onClick(View destination) {
 		persistConfig();
-		
+
 		if (destination == startBtn)
 			handleStart();
 		if (destination == stopBtn)
@@ -515,7 +489,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				advancedConfigField.setVisibility(View.GONE);	
 				keepAwakeCheck.setVisibility(View.GONE);
 			}
-			
 		}		
 		if (destination == keepAwakeCheck) {
 			if (keepAwakeCheck.isChecked()) {
@@ -533,10 +506,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 					Logger.getLogger().logLine("Released WIFI lock and partial wake lock!");
 				}
 			}
-			
 		}
 	}
-
 
 	private void handlefilterReload() {
 		if (DNSFilterService.DNSFILTER != null)
@@ -569,7 +540,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		if (SERVICE!=null) {
 			stopService(SERVICE);		
 		}
-		
 		SERVICE = null;
 		
 		WORKPATH = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/PersonalDNSFilter");		
@@ -605,7 +575,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	    else if (requestCode == 0 && resultCode != Activity.RESULT_OK) {
 	    	Logger.getLogger().logLine("VPN Dialog not accepted!\r\nPress Restart to display Dialog again!");
 	    }
-	    
 	}
 
 	@Override
@@ -631,5 +600,4 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		// TODO Auto-generated method stub
 		
 	}
-	
 }

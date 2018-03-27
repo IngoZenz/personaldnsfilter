@@ -143,7 +143,6 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 									Logger.getLogger().logLine("Received ICMP IPV6 Paket Type:" + (data[48]&0xff));
 							}
 						}
-						
 						if (parsedIP.checkCheckSum() != 0)
 							throw new IOException("IP Header Checksum Error!");					
 						
@@ -179,9 +178,7 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 			Logger.getLogger().logLine("VPN Runner Thread terminated!" );
 		} 
 	}
-	
 
-	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		INSTANCE = this;
@@ -190,14 +187,13 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 		
 		if (DNSFILTER != null) {
 			Logger.getLogger().logLine("DNS Filter already running!");
-			
 		} else {			
 			try {
 				DNSFilterManager.WORKDIR = DNSProxyActivity.WORKPATH.getAbsolutePath() + "/";
 				DNSFILTER = new DNSFilterManager();
 				DNSFILTER.init();	
 				detectDNSServers();
-				
+
 				//start DNS Proxy Mode if configured 
 				if (Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("dnsProxyOnAndroid", "false"))) {
 					DNSFILTERPROXY = new DNSFilterProxy();
@@ -273,7 +269,6 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
 		}
-
 		return START_STICKY;
 	}
 
@@ -291,7 +286,6 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 				Logger.getLogger().logLine("Cannot stop - pending operation!");
 				return false;
 			}
-			
 			ParcelFileDescriptor runningVPN = vpnInterface;
 			if (runningVPN  != null) {
 				vpnInterface=null;
@@ -299,20 +293,17 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 				out.close();
 				runningVPN.close();			
 			}
-			
 			//stop eventually running proxy mode
 			if (DNSFILTERPROXY != null) {
 				DNSFILTERPROXY.stop();
 				DNSFILTERPROXY=null;
 				Logger.getLogger().logLine("DNSFilterProxy Mode stopped!");
 			}
-			
 			if (DNSFILTER != null)	{		
 				DNSFILTER.stop();
 				DNSFILTER = null;
 				Logger.getLogger().logLine("DNSFilter stopped!");
-			}				
-			
+			}
 			Thread.sleep(200);
 			return true;
 		} catch (Exception e) {
@@ -351,6 +342,4 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 		if (wl != null)
 			wl.release();		
 	}
-
-
 }

@@ -129,12 +129,11 @@ public class DNSResolver implements Runnable {
 			synchronized (CNT_SYNC) {
 				THR_COUNT++;
 			}
-			
 			if (datagramPacketMode)
 				processDatagramPackageMode();
 			else
 				processIPPackageMode();
-			
+
 		} catch (IOException e) {
 			Logger.getLogger().logLine(e.getMessage());
 		} catch (Exception e) {

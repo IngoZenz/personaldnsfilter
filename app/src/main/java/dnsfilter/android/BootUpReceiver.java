@@ -42,9 +42,7 @@ public class BootUpReceiver extends BroadcastReceiver{
 	        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 	        context.startActivity(i);  
     	}
-            
     }
-	
     
     public Properties getConfig() {
     	
@@ -60,5 +58,4 @@ public class BootUpReceiver extends BroadcastReceiver{
 			return null;
 		}
     }
-
 }

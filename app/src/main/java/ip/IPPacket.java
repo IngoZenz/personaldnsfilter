@@ -129,7 +129,7 @@ public class IPPacket {
 			ipHeader.put(2, hdrPacket[2]);
 		} else if (version == 6) {
 			int[] hdrPacket = new int[2];
-			hdrPacket[0]= version <<28; // Version = 6, Trafficclass = 0 (defaut), Flow Label = 0 (default);
+			hdrPacket[0]= version <<28; // Version = 6, Trafficclass = 0 (default), Flow Label = 0 (default);
 			hdrPacket[1] = ((len-40)<<16)+ (prot <<8) + TTL;
 			ipHeader.position(0);
 			ipHeader.put(hdrPacket);

@@ -83,7 +83,6 @@ public class DNSFilterProxy implements Runnable {
 			}
 		}		
 		Logger.getLogger().logLine("DNSFilterProxy stopped!");
-		
 	}
 	
 	
@@ -93,5 +92,4 @@ public class DNSFilterProxy implements Runnable {
 				return;
 		receiver.close();
 	}
-
 }

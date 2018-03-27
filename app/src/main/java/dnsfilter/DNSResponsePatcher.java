@@ -171,6 +171,5 @@ public class DNSResponsePatcher {
 		}
 		return result;
 	}
-	
 }
 

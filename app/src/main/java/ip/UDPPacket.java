@@ -31,7 +31,6 @@ public class UDPPacket extends IPPacket {
 	
 	private IntBuffer udpHeader;
 	
-	
 	public UDPPacket(byte[] packet, int offs, int len)  {
 		super(packet,offs,len);
 		this.udpHeader = ByteBuffer.wrap(packet,offs+ipHdrlen, 8).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
