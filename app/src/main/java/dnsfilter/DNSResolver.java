@@ -76,23 +76,24 @@ public class DNSResolver implements Runnable {
 		
 		int hdrLen = udpRequestPacket.getHeaderLength();			
 		byte[] packetData = udpRequestPacket.getData();
-		int offs = udpRequestPacket.getIPPacketOffset()+hdrLen;
+		int ipOffs = udpRequestPacket.getIPPacketOffset();
+		int offs = ipOffs+hdrLen;
 		int len = udpRequestPacket.getIPPacketLength()- hdrLen;		
 								
 		// build request datagram packet from UDP request packet
 		DatagramPacket request = new DatagramPacket(packetData, offs, len);	
 		
 		// we can reuse the request data array
-		DatagramPacket response = new DatagramPacket(packetData, hdrLen, packetData.length-hdrLen);
+		DatagramPacket response = new DatagramPacket(packetData, offs, len);
 
 		//forward request to DNS and receive response
 		DNSCommunicator.getInstance().requestDNS(dnsSocket, request, response);
 
 		// patch the response by applying filter			
-		byte[] buf = DNSResponsePatcher.patchResponse(clientID, response.getData(), hdrLen);
+		byte[] buf = DNSResponsePatcher.patchResponse(clientID, response.getData(), offs);
 		
 		//create  UDP Header and update source and destination IP and port			
-		UDPPacket udp = UDPPacket.createUDPPacket(buf, 0, hdrLen + response.getLength(), version);
+		UDPPacket udp = UDPPacket.createUDPPacket(buf, ipOffs, hdrLen + response.getLength(), version);
 
 		//for the response source and destination have to be switched
 		udp.updateHeader(ttl, 17, destIP, sourceIP);
