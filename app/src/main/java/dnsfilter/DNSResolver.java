@@ -84,7 +84,7 @@ public class DNSResolver implements Runnable {
 		DatagramPacket request = new DatagramPacket(packetData, offs, len);	
 		
 		// we can reuse the request data array
-		DatagramPacket response = new DatagramPacket(packetData, offs, len);
+		DatagramPacket response = new DatagramPacket(packetData, offs, packetData.length-offs);
 
 		//forward request to DNS and receive response
 		DNSCommunicator.getInstance().requestDNS(dnsSocket, request, response);
@@ -104,7 +104,7 @@ public class DNSResolver implements Runnable {
 			responseOut.write(udp.getData(), udp.getIPPacketOffset(), udp.getIPPacketLength());
 			responseOut.flush();	
 		}		
-	}
+	} 
 	
 	private void processDatagramPackageMode()throws Exception {
 		SocketAddress sourceAdr = dataGramRequest.getSocketAddress();
@@ -122,7 +122,7 @@ public class DNSResolver implements Runnable {
 		//finally return the response to the request source
 		response.setSocketAddress(sourceAdr);
 		replySocket.send(response);		
-	}
+	}	
 		
 	@Override
 	public void run() {
