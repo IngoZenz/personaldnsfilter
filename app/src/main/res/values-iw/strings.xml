@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+  <string name="app_name">DNSfilter</string>
+  <string name="listenPortLabel">יציאה:</string>
+  <string name="startBtnLabel">הפעל מחדש</string>
+  <string name="stopBtnLabel">סגירה</string>
+  <string name="filterReloadBtnLabel">מסנן טען מחדש</string>
+  <string name="EnableConfigCheckBox">הגדרות מתקדמות</string>
+  <string name="keepAwakeCheckBox">מנע הירדמות המכשיר</string>
+  <string name="EnableAutoStart">אתחול אוטומטי</string>
+  <string name="EnableAdfilter">לאפשר חסימת מודעות</string>
+  <string name="dnsLabel">DNS:</string>
+</resources>
