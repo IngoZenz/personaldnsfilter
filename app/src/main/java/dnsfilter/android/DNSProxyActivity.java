@@ -76,10 +76,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private static int logSize = 0;
 	private static EditText dnsField;
 	private  static CheckBox advancedConfigCheck;
+	private  static CheckBox editFilterLoadCheck;
+	private  static CheckBox editAdditionalHostsCheck;
 	private static CheckBox keepAwakeCheck;
 	private static CheckBox enableAutoStartCheck;	
 	private static CheckBox enableAdFilterCheck;
-	protected static EditText advancedConfigField;
+	private static EditText advancedConfigField;
+	private static EditText additionalHostsField;
 	private static LoggerInterface myLogger;
 	
 	private ScrollView scrollView = null;
@@ -182,21 +185,31 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		advancedConfigCheck = (CheckBox) findViewById(R.id.advancedConfigCheck);
 		advancedConfigCheck.setChecked(checked);
 		advancedConfigCheck.setOnClickListener(this);
+		
+		checked = editFilterLoadCheck != null && editFilterLoadCheck.isChecked();
+		editFilterLoadCheck = (CheckBox) findViewById(R.id.editFilterLoad);
+		editFilterLoadCheck.setChecked(checked);
+		editFilterLoadCheck.setOnClickListener(this);
+		
+		checked = editAdditionalHostsCheck != null && editAdditionalHostsCheck.isChecked();
+		editAdditionalHostsCheck = (CheckBox) findViewById(R.id.editAdditionalHosts);
+		editAdditionalHostsCheck.setChecked(checked);
+		editAdditionalHostsCheck.setOnClickListener(this);		
 
 		if (advancedConfigField != null)
 			uiText = advancedConfigField.getText().toString();
 
 		advancedConfigField = (EditText) findViewById(R.id.advancedConfigField);
-		advancedConfigField.setText(uiText);		
+		advancedConfigField.setText(uiText);	
+		
+		if (additionalHostsField != null)
+			uiText = additionalHostsField.getText().toString();
 
-		if (checked) {
-			advancedConfigField.setVisibility(View.VISIBLE);
-			keepAwakeCheck.setVisibility(View.VISIBLE);
-		}
-		else {
-			advancedConfigField.setVisibility(View.GONE);	
-			keepAwakeCheck.setVisibility(View.GONE);
-		}
+		additionalHostsField = (EditText) findViewById(R.id.additionalHostsField);
+		additionalHostsField.setText(uiText);	
+		
+		handleAdvancedConfig();
+
 
 		if (myLogger!= null)
 			myLogger.closeLogger();
@@ -479,16 +492,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		if (destination == reloadFilterBtn)
 			handlefilterReload();
 		
-		if (destination == advancedConfigCheck) {
-
-			if (advancedConfigCheck.isChecked()) {
-				advancedConfigField.setVisibility(View.VISIBLE);
-				keepAwakeCheck.setVisibility(View.VISIBLE);
-				
-			} else {
-				advancedConfigField.setVisibility(View.GONE);	
-				keepAwakeCheck.setVisibility(View.GONE);
-			}
+		if (destination == advancedConfigCheck || destination ==editAdditionalHostsCheck || destination == editFilterLoadCheck ) {
+			handleAdvancedConfig();
 		}		
 		if (destination == keepAwakeCheck) {
 			if (keepAwakeCheck.isChecked()) {
@@ -508,6 +513,33 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			}
 		}
 	}
+
+	private void handleAdvancedConfig() {
+		if (advancedConfigCheck.isChecked()) {			
+			keepAwakeCheck.setVisibility(View.VISIBLE);
+			editAdditionalHostsCheck.setVisibility(View.VISIBLE);
+			editFilterLoadCheck.setVisibility(View.VISIBLE);
+			
+			if (editFilterLoadCheck.isChecked())
+				advancedConfigField.setVisibility(View.VISIBLE);
+			else
+				advancedConfigField.setVisibility(View.GONE);
+			
+			if (editAdditionalHostsCheck.isChecked())
+				additionalHostsField.setVisibility(View.VISIBLE);
+			else
+				additionalHostsField.setVisibility(View.GONE); 
+		}
+		else {
+			advancedConfigField.setVisibility(View.GONE);	
+			keepAwakeCheck.setVisibility(View.GONE);
+			editAdditionalHostsCheck.setVisibility(View.GONE);
+			editFilterLoadCheck.setVisibility(View.GONE);
+			advancedConfigField.setVisibility(View.GONE);
+			additionalHostsField.setVisibility(View.GONE);
+		}
+	}
+
 
 	private void handlefilterReload() {
 		if (DNSFilterService.DNSFILTER != null)

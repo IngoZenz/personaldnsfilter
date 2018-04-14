@@ -32,7 +32,11 @@
             android:textColor="#424242" android:button="@drawable/custom_checkbox"
             android:padding="10dp"
             android:layout_marginTop="0dp"></CheckBox>
-
+        <CheckBox android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/editFilterLoad" android:checked="false" android:text="@string/editFilterLoadCheckBox"
+            android:layout_marginLeft="15dp"
+            android:textColor="#424242" android:button="@drawable/custom_checkbox"
+            android:padding="10dp"
+            android:layout_marginTop="0dp"></CheckBox>
         <ScrollView android:layout_width="match_parent" android:id="@+id/scrollView1" android:layout_height="wrap_content"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
@@ -40,7 +44,20 @@
             <EditText android:layout_width="match_parent" android:layout_marginLeft="10dp" android:layout_marginRight="10dp" android:padding="10dp" android:id="@+id/advancedConfigField" android:visibility="gone" android:inputType="textMultiLine" android:layout_height="wrap_content"
                 android:textColor="#424242" android:button="@drawable/custom_checkbox"
                 android:textSize="14dp"></EditText>
-        </ScrollView>
+        </ScrollView>        
+        <CheckBox android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/editAdditionalHosts" android:checked="false" android:text="@string/editAdditionalHostsCheckBox"
+            android:layout_marginLeft="15dp"
+            android:textColor="#424242" android:button="@drawable/custom_checkbox"
+            android:padding="10dp"
+            android:layout_marginTop="0dp"></CheckBox>
+        <ScrollView android:layout_width="match_parent" android:id="@+id/scrollView2" android:layout_height="wrap_content"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:layout_marginTop="0dp">
+            <EditText android:layout_width="match_parent" android:layout_marginLeft="10dp" android:layout_marginRight="10dp" android:padding="10dp" android:id="@+id/additionalHostsField" android:visibility="gone" android:inputType="textMultiLine" android:layout_height="wrap_content"
+                android:textColor="#424242" android:button="@drawable/custom_checkbox"
+                android:textSize="14dp"></EditText>
+        </ScrollView>        
 
         <CheckBox android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/keepAwakeCheck" android:checked="false" android:text="@string/keepAwakeCheckBox"
             android:layout_marginLeft="15dp"

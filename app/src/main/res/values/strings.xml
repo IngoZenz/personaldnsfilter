@@ -7,6 +7,8 @@
   <string name="stopBtnLabel">Close</string>
   <string name="filterReloadBtnLabel">Reload filter</string>
   <string name="EnableConfigCheckBox">Advanced settings</string>
+  <string name="editFilterLoadCheckBox">Configure Filter URLs</string>
+  <string name="editAdditionalHostsCheckBox">Configure Additional Hosts</string>
   <string name="keepAwakeCheckBox">Prevent device sleep</string>
   <string name="EnableAutoStart">Autostart</string>
   <string name="EnableAdfilter">Enable ad-blocking</string>
