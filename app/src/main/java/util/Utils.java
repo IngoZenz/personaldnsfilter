@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -193,6 +194,20 @@ public class Utils {
 			}
 			dir.delete();
 		} 
+	}
+		
+	public static void copyFully(InputStream in, OutputStream out, boolean close) throws IOException {
+		byte [] buf = new byte[1024];
+		int r = 0;
+		
+		while ((r = in.read(buf)) != -1)
+			out.write(buf,0,r);
+		
+		out.flush();
+		if (close) {
+			out.close();
+			in.close();	
+		}
 	}
 
 }

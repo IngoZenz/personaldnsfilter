@@ -57,6 +57,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -65,7 +67,7 @@ import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-public class DNSProxyActivity extends Activity implements OnClickListener, LoggerInterface {
+public class DNSProxyActivity extends Activity implements OnClickListener, LoggerInterface, TextWatcher {
 	
 	protected static boolean BOOT_START = false;
 	
@@ -83,6 +85,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private static CheckBox enableAdFilterCheck;
 	private static EditText advancedConfigField;
 	private static EditText additionalHostsField;
+	private static boolean additionalHostsChanged=false;
 	private static LoggerInterface myLogger;
 	
 	private ScrollView scrollView = null;
@@ -90,7 +93,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private static boolean appStart = true;
 	
 	public static String DNSNAME=null;		
-	public static File WORKPATH=null;	
+	public static File WORKPATH=null;
+	
+	private static String ADDITIONAL_HOSTS_TO_LONG ="additionalHosts.txt too long to edit here!\nSize Limit: 512 KB!\nUse other editor!";
 	
 	private static WifiLock wifiLock;
 	private static WakeLock wakeLock;
@@ -204,9 +209,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		
 		if (additionalHostsField != null)
 			uiText = additionalHostsField.getText().toString();
-
+		
 		additionalHostsField = (EditText) findViewById(R.id.additionalHostsField);
 		additionalHostsField.setText(uiText);	
+		additionalHostsField.addTextChangedListener(this);
 		
 		handleAdvancedConfig();
 
@@ -266,6 +272,17 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			config.load(in);
 			in.close();
 			
+			// check for additionalHosts.txt
+			File f = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/PersonalDNSFilter/additionalHosts.txt");
+			if (!f.exists()) {
+				f.createNewFile();
+				FileOutputStream fout = new FileOutputStream(f);
+				
+				AssetManager assetManager=this.getAssets();
+				InputStream defIn = assetManager.open("additionalHosts.txt");
+				Utils.copyFully(defIn, fout, true);
+			}
+			
 			//check versions, in case different merge existing configuration with defaults
 			File versionFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/PersonalDNSFilter/VERSION.TXT");
 			String vStr="";
@@ -278,7 +295,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				//Version Change ==> merge config with new default config
 				Logger.getLogger().logLine("Updated version! Previous version:"+vStr+", current version:"+DNSFilterManager.VERSION);
 				createDefaultConfiguration();
-				config = mergeAndPersistConfig(config);
+				config = mergeAndPersistConfig(config);				
 			}
 			return config;
 		} catch (Exception e ){
@@ -321,7 +338,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		InputStream in = new FileInputStream(mergedConfig);
 		Properties config= new Properties(); 
 		config.load(in);
-		in.close();
+		in.close();		
+		
 		return config;				
 	}
 
@@ -331,22 +349,25 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			File f = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/PersonalDNSFilter");
 			f.mkdir();		
 			
+			//dnsfilter.conf
 			f = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/PersonalDNSFilter/dnsfilter.conf");
 			f.createNewFile();
 			FileOutputStream fout = new FileOutputStream(f);
 			
 			AssetManager assetManager=this.getAssets();
 			InputStream defIn = assetManager.open("dnsfilter.conf");
-			byte[] buf = new byte[1024];
-			int r = 0;
+			Utils.copyFully(defIn, fout, true);
+						
+			//additionalHosts.txt
+			f = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/PersonalDNSFilter/additionalHosts.txt");
+			f.createNewFile();
+			fout = new FileOutputStream(f);
 			
-			while ((r = defIn.read(buf)) != -1)
-				fout.write(buf,0,r);
-			
-			fout.flush();
-			fout.close();
-			defIn.close();			
-			
+			assetManager=this.getAssets();
+			defIn = assetManager.open("additionalHosts.txt");
+			Utils.copyFully(defIn, fout, true);
+						
+			//VERSION.TXT
 			f = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/PersonalDNSFilter/VERSION.TXT");
 			f.createNewFile();
 			fout = new FileOutputStream(f);
@@ -366,6 +387,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	private void persistConfig() {
 		try {
+			
+			persistAdditionalHosts();
+			
 			boolean filterAds = enableAdFilterCheck.isChecked();
 			
 			File propsFile = new File (Environment.getExternalStorageDirectory().getAbsolutePath()+"/PersonalDNSFilter/dnsfilter.conf");
@@ -421,6 +445,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			Logger.getLogger().logException(e);
 		}
 	}
+
+
+
 
 	private boolean advCfgValid() {
 		try {					
@@ -525,8 +552,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			else
 				advancedConfigField.setVisibility(View.GONE);
 			
-			if (editAdditionalHostsCheck.isChecked())
+			if (editAdditionalHostsCheck.isChecked()) {
+				loadAdditionalHosts();
 				additionalHostsField.setVisibility(View.VISIBLE);
+			}
 			else
 				additionalHostsField.setVisibility(View.GONE); 
 		}
@@ -536,10 +565,47 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			editAdditionalHostsCheck.setVisibility(View.GONE);
 			editFilterLoadCheck.setVisibility(View.GONE);
 			advancedConfigField.setVisibility(View.GONE);
-			additionalHostsField.setVisibility(View.GONE);
+			additionalHostsField.setVisibility(View.GONE);			
 		}
 	}
 
+
+	private void loadAdditionalHosts() {
+		try {
+			File f = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/PersonalDNSFilter/additionalHosts.txt");
+			
+			if (f.length() > 524288) {
+				additionalHostsField.setText(ADDITIONAL_HOSTS_TO_LONG);
+				additionalHostsField.setEnabled(false);
+				return;
+			}
+			InputStream in = new FileInputStream(f);
+			additionalHostsField.setText(new String(Utils.readFully(in, 1024)));
+			additionalHostsChanged = false;
+		} catch (IOException eio) {
+			Logger.getLogger().logLine("Can not load /PersonalDNSFilter/additionalHosts.txt!\n"+eio.toString() );
+		}		
+	}
+	
+	private void persistAdditionalHosts() {
+		String addHostsTxt = additionalHostsField.getText().toString();
+		if (!addHostsTxt.equals("") && !addHostsTxt.equals(ADDITIONAL_HOSTS_TO_LONG)) {
+			if (additionalHostsChanged)
+				try {
+					File f = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/additionalHosts.txt");
+					FileOutputStream fout = new FileOutputStream(f);
+					fout.write(addHostsTxt.getBytes());
+					fout.flush();
+					fout.close();					
+				} catch (IOException eio) {
+					Logger.getLogger().logLine("Cannot persistAdditionalHosts!\n" + eio.toString());
+				}			
+			editAdditionalHostsCheck.setChecked(false);
+			additionalHostsField.setText("");
+			additionalHostsField.setVisibility(View.GONE);
+			additionalHostsChanged = false;
+		}
+	}
 
 	private void handlefilterReload() {
 		if (DNSFilterService.DNSFILTER != null)
@@ -629,6 +695,26 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	@Override
 	public void closeLogger() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void afterTextChanged(Editable s) {
+		additionalHostsChanged=true;		
+	}
+
+
+	@Override
+	public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void onTextChanged(CharSequence s, int start, int before, int count) {
 		// TODO Auto-generated method stub
 		
 	}

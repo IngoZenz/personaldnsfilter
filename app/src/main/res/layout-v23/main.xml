@@ -33,7 +33,7 @@
             android:padding="10dp"
             android:layout_marginTop="0dp"></CheckBox>
         <CheckBox android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/editFilterLoad" android:checked="false" android:text="@string/editFilterLoadCheckBox"
-            android:layout_marginLeft="15dp"
+            android:layout_marginLeft="25dp"
             android:textColor="#424242" android:button="@drawable/custom_checkbox"
             android:padding="10dp"
             android:layout_marginTop="0dp"></CheckBox>
@@ -46,7 +46,7 @@
                 android:textSize="14dp"></EditText>
         </ScrollView>        
         <CheckBox android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/editAdditionalHosts" android:checked="false" android:text="@string/editAdditionalHostsCheckBox"
-            android:layout_marginLeft="15dp"
+            android:layout_marginLeft="25dp"
             android:textColor="#424242" android:button="@drawable/custom_checkbox"
             android:padding="10dp"
             android:layout_marginTop="0dp"></CheckBox>   
@@ -60,7 +60,7 @@
         </ScrollView>        
 
         <CheckBox android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/keepAwakeCheck" android:checked="false" android:text="@string/keepAwakeCheckBox"
-            android:layout_marginLeft="15dp"
+            android:layout_marginLeft="25dp"
             android:textColor="#424242" android:button="@drawable/custom_checkbox"
             android:padding="10dp"
             android:layout_marginTop="0dp"></CheckBox>

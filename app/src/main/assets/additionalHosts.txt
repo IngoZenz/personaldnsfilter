@@ -1,0 +1,4 @@
+# You can add your own hosts in addition to those automatically downloaded.
+# Format: 1 host name per line.
+# This will filter the host with the name as well as all sub domains
+
