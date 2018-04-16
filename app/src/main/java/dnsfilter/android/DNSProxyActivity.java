@@ -556,8 +556,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				loadAdditionalHosts();
 				additionalHostsField.setVisibility(View.VISIBLE);
 			}
-			else
-				additionalHostsField.setVisibility(View.GONE); 
+			else {
+				additionalHostsField.setText("");
+				additionalHostsField.setVisibility(View.GONE);
+				additionalHostsChanged = false;
+			}
 		}
 		else {
 			advancedConfigField.setVisibility(View.GONE);	
@@ -565,7 +568,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			editAdditionalHostsCheck.setVisibility(View.GONE);
 			editFilterLoadCheck.setVisibility(View.GONE);
 			advancedConfigField.setVisibility(View.GONE);
-			additionalHostsField.setVisibility(View.GONE);			
+			editAdditionalHostsCheck.setChecked(false);
+			additionalHostsField.setText("");
+			additionalHostsField.setVisibility(View.GONE);
+			additionalHostsChanged = false;
 		}
 	}
 
@@ -599,11 +605,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 					fout.close();					
 				} catch (IOException eio) {
 					Logger.getLogger().logLine("Cannot persistAdditionalHosts!\n" + eio.toString());
-				}			
-			editAdditionalHostsCheck.setChecked(false);
-			additionalHostsField.setText("");
-			additionalHostsField.setVisibility(View.GONE);
-			additionalHostsChanged = false;
+				}
 		}
 	}
 
