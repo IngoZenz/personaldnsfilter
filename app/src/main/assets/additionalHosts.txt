@@ -1,4 +1,9 @@
-# You can add your own hosts in addition to those automatically downloaded.
-# Format: 1 host name per line.
-# This will filter the host with the name as well as all sub domains
+# Add your own additional hosts here!
+# Format: 1 host name per line (sample below).
+# host name and all sub domains will be blocked.
+
+sample4711.justasample.com
+sample4712.justasample.com
+
+
 
