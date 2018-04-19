@@ -246,9 +246,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				dnsField.setText(config.getProperty("DNS"));	
 				enableAdFilterCheck.setChecked(config.getProperty("filterHostsFile")!=null);
 				enableAutoStartCheck.setChecked(Boolean.parseBoolean(config.getProperty("AUTOSTART","false")));
-				advancedConfigField.setText(  "# clear field to restore defaults!\n\nfilterAutoUpdateURL = "+config.getProperty("filterAutoUpdateURL", "")+"\n"
-											+ "reloadIntervalDays = "+config.getProperty("reloadIntervalDays", "4")+"\n");
-				
+
+				//set advanced formatted config field text
+
+				advancedConfigField.setText(getFormattedAdvCfgText(config));
+
 				logLine("Initializing ...");			
 				appStart = false; // now started
 				
@@ -256,7 +258,22 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			}
 		}
 	}
-	
+
+	private String getFormattedAdvCfgText(Properties config) {
+		String advCfg = "# clear field to restore defaults!\n\nfilterAutoUpdateURL = \n";
+		String filterReloadURL = config.getProperty("filterAutoUpdateURL", "");
+		StringTokenizer urlTokens = new StringTokenizer(filterReloadURL,";");
+		int urlCnt = urlTokens.countTokens();
+		for (int i = 0; i < urlCnt; i++) {
+			String url = urlTokens.nextToken().trim();
+			advCfg = advCfg+"  "+url;
+			if (i < urlCnt)
+				advCfg = advCfg+";\n";
+		}
+		advCfg = advCfg+ "\nreloadIntervalDays = "+config.getProperty("reloadIntervalDays", "4")+"\n";
+		return advCfg;
+	}
+
 
 	private Properties getConfig() {
 			
@@ -395,15 +412,18 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			File propsFile = new File (Environment.getExternalStorageDirectory().getAbsolutePath()+"/PersonalDNSFilter/dnsfilter.conf");
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			String ln;
-						
-			if ((advancedConfigField.getText().toString().trim().equals("")))
-					restoreAdvancedConfigDefault();
-			else 
-				if (!advCfgValid())
-					revertAdvancedConfig();
+
+			Properties advancedConfigProps = getAdvancedProps();
+			if ((advancedConfigField.getText().toString().trim().equals(""))) {
+				restoreAdvancedConfigDefault();
+				advancedConfigProps = getAdvancedProps();
+			}
+			else if (!advCfgValid(advancedConfigProps)) {
+				revertAdvancedConfig();
+				advancedConfigProps = getAdvancedProps();
+			}
 			
-			Properties advancedConfigProps = new Properties();
-			advancedConfigProps.load(new ByteArrayInputStream(advancedConfigField.getText().toString().getBytes()));
+
 			BufferedReader reader = new BufferedReader( new InputStreamReader(new FileInputStream(propsFile)));
 			while ((ln = reader.readLine())!= null) {
 								
@@ -449,11 +469,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 
 
-	private boolean advCfgValid() {
-		try {					
-			Properties advancedConfigProps = new Properties();
-			advancedConfigProps.load(new ByteArrayInputStream(advancedConfigField.getText().toString().getBytes()));
-			
+	private boolean advCfgValid(Properties advancedConfigProps) {
+		try {
 			//check filterAutoUpdateURL
 			String urls = advancedConfigProps.getProperty("filterAutoUpdateURL");
 
@@ -485,6 +502,28 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}
 	}
 
+	private Properties getAdvancedProps()  {
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader((new ByteArrayInputStream(advancedConfigField.getText().toString().getBytes()))));
+			String ln;
+			String result = "";
+			while ((ln = reader.readLine()) != null) {
+				ln = ln.trim();
+				if (ln.endsWith("=") || ln.endsWith(";"))
+					result = result + ln;
+				else
+					result = result + ln + "\r\n";
+			}
+			//Logger.getLogger().logLine(result);
+			Properties resultProps = new Properties();
+			resultProps.load(new ByteArrayInputStream(result.getBytes()));
+			return resultProps;
+		} catch (IOException eio){
+			Logger.getLogger().logLine("Can nor parse advanced config!\n"+eio.toString());
+			return null;
+		}
+	}
+
 
 	private void revertAdvancedConfig() throws IOException {
 		File propsFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/PersonalDNSFilter/dnsfilter.conf");	
@@ -503,8 +542,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		Properties defProps = new Properties();
 		defProps.load(in);
 		in.close();
-		advancedConfigField.setText(  "# clear field to restore defaults!\n\nfilterAutoUpdateURL = "+defProps.getProperty("filterAutoUpdateURL", "")+"\n"
-				+ "reloadIntervalDays = "+defProps.getProperty("reloadIntervalDays", "4")+"\n");
+
+		advancedConfigField.setText(getFormattedAdvCfgText(defProps));
 	}
 
 
