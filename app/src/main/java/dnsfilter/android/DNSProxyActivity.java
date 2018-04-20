@@ -514,9 +514,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			while ((ln = reader.readLine()) != null) {
 				ln = ln.trim();
 				if (ln.endsWith("=") || ln.endsWith(";"))
-					result = result + ln;
+					result = result +" "+ ln;
 				else
-					result = result + ln + "\r\n";
+					result = result +" "+ ln + "\r\n";
 			}
 			//Logger.getLogger().logLine(result);
 			Properties resultProps = new Properties();
