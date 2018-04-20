@@ -267,9 +267,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		for (int i = 0; i < urlCnt; i++) {
 			String url = urlTokens.nextToken().trim();
 			advCfg = advCfg+"  "+url;
-			if (i < urlCnt)
+			if (i+1 < urlCnt)
 				advCfg = advCfg+";\n";
+			else
+				advCfg = advCfg+"\n";
 		}
+		//Logger.getLogger().logLine(advCfg);
+
 		advCfg = advCfg+ "\nreloadIntervalDays = "+config.getProperty("reloadIntervalDays", "4")+"\n";
 		return advCfg;
 	}
@@ -551,7 +555,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	public void onClick(View destination) {
 		persistConfig();
 
-		if (destination == startBtn)
+		if (destination == startBtn || destination == enableAdFilterCheck)
 			handleStart();
 		if (destination == stopBtn)
 			handleStop();
