@@ -381,12 +381,14 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 						
 			//additionalHosts.txt
 			f = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/PersonalDNSFilter/additionalHosts.txt");
-			f.createNewFile();
-			fout = new FileOutputStream(f);
-			
-			assetManager=this.getAssets();
-			defIn = assetManager.open("additionalHosts.txt");
-			Utils.copyFully(defIn, fout, true);
+			if (!f.exists()) {
+				f.createNewFile();
+				fout = new FileOutputStream(f);
+				
+				assetManager=this.getAssets();
+				defIn = assetManager.open("additionalHosts.txt");
+				Utils.copyFully(defIn, fout, true);
+			}
 						
 			//VERSION.TXT
 			f = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/PersonalDNSFilter/VERSION.TXT");
