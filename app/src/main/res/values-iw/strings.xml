@@ -7,6 +7,8 @@
   <string name="stopBtnLabel">סגירה</string>
   <string name="filterReloadBtnLabel">מסנן טען מחדש</string>
   <string name="EnableConfigCheckBox">הגדרות מתקדמות</string>
+  <string name="editFilterLoadCheckBox">Configure filter update</string>
+  <string name="editAdditionalHostsCheckBox">Configure additional hosts</string>
   <string name="keepAwakeCheckBox">מנע הירדמות המכשיר</string>
   <string name="EnableAutoStart">אתחול אוטומטי</string>
   <string name="EnableAdfilter">לאפשר חסימת מודעות</string>

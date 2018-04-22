@@ -7,6 +7,8 @@
   <string name="stopBtnLabel">बंद करें</string>
   <string name="filterReloadBtnLabel">फ़िल्टर पुनः शुरु करें</string>
   <string name="EnableConfigCheckBox">एडव्हान्स सेटिंग्ज</string>
+  <string name="editFilterLoadCheckBox">फ़िल्टर अद्यतन कॉंफ़िगर करें</string>
+  <string name="editAdditionalHostsCheckBox">अतिरिक्त होस्ट्स कॉंफ़िगर करें</string>
   <string name="keepAwakeCheckBox">डिवाइस स्लीप ना होने दे</string>
   <string name="EnableAutoStart">बन्द होने पर स्वत: आरंभ करे</string>
   <string name="EnableAdfilter">विज्ञापन-ब्लॉकिंग चलू करें</string>
