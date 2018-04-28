@@ -1,112 +1,257 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="match_parent"
-    android:weightSum="1"
+    android:background="#EFEFF0"
     android:focusable="true"
-	android:focusableInTouchMode="true"
-    android:background="#EFEFF0">
+    android:focusableInTouchMode="true"
+    android:orientation="vertical"
+    android:weightSum="1" >
 
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/linearLayout1">
-        <TextView android:layout_width="wrap_content" android:id="@+id/textView1" android:layout_height="wrap_content" android:text="@string/dnsLabel"
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="10dp"
-            android:textColor="#424242"></TextView>
-        <EditText android:layout_width="wrap_content"  android:padding="10dp" android:layout_height="wrap_content" android:inputType="text" android:layout_weight="0" android:id="@+id/dnsField"
+            android:text="@string/dnsLabel"
+            android:textColor="#424242" >
+        </TextView>
+
+        <EditText
+            android:id="@+id/dnsField"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="7dp"
             android:layout_marginTop="10dp"
+            android:layout_weight="0"
+            android:inputType="text"
             android:maxLength="64"
-            android:layout_marginLeft="7dp">
+            android:padding="10dp" >
         </EditText>
 
-        <LinearLayout android:id="@+id/linearLayout3" android:layout_width="wrap_content" android:layout_height="match_parent" android:orientation="vertical"
-            android:layout_weight="0.08">
-
+        <LinearLayout
+            android:id="@+id/linearLayout3"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0.08"
+            android:orientation="vertical" >
         </LinearLayout>
     </LinearLayout>
-   
-    <LinearLayout android:id="@+id/linearLayout4" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content">
 
-        <CheckBox android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/advancedConfigCheck" android:checked="false" android:text="@string/EnableConfigCheckBox"
+    <LinearLayout
+        android:id="@+id/linearLayout4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <CheckBox
+            android:id="@+id/advancedConfigCheck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginLeft="15dp"
-            android:textColor="#424242" android:button="@drawable/custom_checkbox"
+            android:layout_marginTop="0dp"
+            android:button="@drawable/custom_checkbox"
+            android:checked="false"
             android:paddingLeft="32dp"
-            android:layout_marginTop="0dp"></CheckBox>
-        <CheckBox android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/editFilterLoad" android:checked="false" android:text="@string/editFilterLoadCheckBox"
-            android:layout_marginLeft="25dp"
-            android:textColor="#424242" android:button="@drawable/custom_checkbox"
-            android:paddingLeft="32dp"
-            android:layout_marginTop="0dp"></CheckBox>
-        <HorizontalScrollView android:layout_width="match_parent" android:id="@+id/scrollView1" android:layout_height="wrap_content"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:layout_marginTop="0dp">
-            <EditText android:layout_width="match_parent" android:padding="10dp" android:id="@+id/advancedConfigField" android:visibility="gone" android:inputType="textMultiLine" android:layout_height="wrap_content"
-                android:textColor="#424242" android:button="@drawable/custom_checkbox"
-                android:textSize="14dp"></EditText>
-        </HorizontalScrollView>
-                
-        <CheckBox android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/editAdditionalHosts" android:checked="false" android:text="@string/editAdditionalHostsCheckBox"
-            android:layout_marginLeft="25dp"
-            android:textColor="#424242" android:button="@drawable/custom_checkbox"
-            android:paddingLeft="32dp"
-            android:layout_marginTop="0dp"></CheckBox>
+            android:text="@string/EnableConfigCheckBox"
+            android:textColor="#424242" >
+        </CheckBox>
 
-        <ScrollView android:layout_width="match_parent" android:id="@+id/scrollView2" android:layout_height="wrap_content"
+        <CheckBox
+            android:id="@+id/editFilterLoad"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="25dp"
+            android:layout_marginTop="0dp"
+            android:button="@drawable/custom_checkbox"
+            android:checked="false"
+            android:paddingLeft="32dp"
+            android:text="@string/editFilterLoadCheckBox"
+            android:textColor="#424242" >
+        </CheckBox>
+
+        <ScrollView
+            android:id="@+id/scrollView1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="0dp"
             android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:layout_marginTop="0dp">
-            <EditText android:layout_width="match_parent" android:padding="10dp" android:id="@+id/additionalHostsField" android:visibility="gone" android:inputType="textMultiLine" android:layout_height="wrap_content"
-                android:textColor="#424242" android:button="@drawable/custom_checkbox"
-                android:textSize="14dp"></EditText>
+            android:paddingRight="10dp" >
+
+            <HorizontalScrollView
+                android:id="@+id/scrollView3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp" >
+
+                <EditText
+                    android:id="@+id/advancedConfigField"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:button="@drawable/custom_checkbox"
+                    android:inputType="textMultiLine"
+                    android:padding="10dp"
+                    android:textColor="#424242"
+                    android:textSize="14dp"
+                    android:visibility="gone" >
+                </EditText>
+            </HorizontalScrollView>
         </ScrollView>
 
-        <CheckBox android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/keepAwakeCheck" android:checked="false" android:text="@string/keepAwakeCheckBox"
+        <CheckBox
+            android:id="@+id/editAdditionalHosts"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginLeft="25dp"
-            android:textColor="#424242" android:button="@drawable/custom_checkbox"
+            android:layout_marginTop="0dp"
+            android:button="@drawable/custom_checkbox"
+            android:checked="false"
             android:paddingLeft="32dp"
-            android:layout_marginTop="0dp"></CheckBox>
+            android:text="@string/editAdditionalHostsCheckBox"
+            android:textColor="#424242" >
+        </CheckBox>
 
-        <CheckBox android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/enableAddFilter" android:checked="true" android:text="@string/EnableAdfilter"
-            android:layout_marginLeft="15dp"
+        <ScrollView
+            android:id="@+id/scrollView4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="0dp"
-            android:textColor="#424242" android:button="@drawable/custom_checkbox"
-            android:paddingLeft="32dp"></CheckBox>
-        <CheckBox android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/enableAutoStart" android:checked="true" android:text="@string/EnableAutoStart"
-            android:layout_marginLeft="15dp"
-            android:textColor="#424242" android:button="@drawable/custom_checkbox"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp" >
+
+            <HorizontalScrollView
+                android:id="@+id/scrollView2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp" >
+
+                <EditText
+                    android:id="@+id/additionalHostsField"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:button="@drawable/custom_checkbox"
+                    android:inputType="textMultiLine"
+                    android:padding="10dp"
+                    android:textColor="#424242"
+                    android:textSize="14dp"
+                    android:visibility="gone" >
+                </EditText>
+            </HorizontalScrollView>
+        </ScrollView>
+
+        <CheckBox
+            android:id="@+id/keepAwakeCheck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="25dp"
+            android:layout_marginTop="0dp"
+            android:button="@drawable/custom_checkbox"
+            android:checked="false"
             android:paddingLeft="32dp"
-            android:layout_marginTop="0dp"></CheckBox>
-    </LinearLayout>
-    
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/linearLayout2"
-        android:weightSum="1">
-        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/filterReloadBtnLabel" android:id="@+id/filterReloadBtn"
+            android:text="@string/keepAwakeCheckBox"
+            android:textColor="#424242" >
+        </CheckBox>
+
+        <CheckBox
+            android:id="@+id/enableAddFilter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginLeft="15dp"
             android:layout_marginTop="0dp"
-            android:textColor="#212121" android:background="@drawable/custom_button"
-            android:padding="10dp"
-            android:textSize="14dp"></Button>
-        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/startBtnLabel" android:id="@+id/startBtn"
+            android:button="@drawable/custom_checkbox"
+            android:checked="true"
+            android:paddingLeft="32dp"
+            android:text="@string/EnableAdfilter"
+            android:textColor="#424242" >
+        </CheckBox>
+
+        <CheckBox
+            android:id="@+id/enableAutoStart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
             android:layout_marginTop="0dp"
-            android:textColor="#212121" android:background="@drawable/custom_button"
-            android:layout_marginLeft="5dp"
-            android:textSize="14dp"
-            android:padding="10dp"></Button>
-        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/stopBtnLabel" android:id="@+id/stopBtn"
-            android:layout_marginTop="0dp"
-            android:textColor="#212121" android:background="@drawable/custom_button"
-            android:padding="10dp"
-            android:layout_marginLeft="5dp"
-            android:textSize="14dp"></Button>
+            android:button="@drawable/custom_checkbox"
+            android:checked="true"
+            android:paddingLeft="32dp"
+            android:text="@string/EnableAutoStart"
+            android:textColor="#424242" >
+        </CheckBox>
     </LinearLayout>
 
-    <ScrollView android:layout_height="match_parent" android:id="@+id/ScrollView01" android:layout_width="fill_parent"
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:weightSum="1" >
+
+        <Button
+            android:id="@+id/filterReloadBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="0dp"
+            android:background="@drawable/custom_button"
+            android:padding="10dp"
+            android:text="@string/filterReloadBtnLabel"
+            android:textColor="#212121"
+            android:textSize="14dp" >
+        </Button>
+
+        <Button
+            android:id="@+id/startBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="0dp"
+            android:background="@drawable/custom_button"
+            android:padding="10dp"
+            android:text="@string/startBtnLabel"
+            android:textColor="#212121"
+            android:textSize="14dp" >
+        </Button>
+
+        <Button
+            android:id="@+id/stopBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="0dp"
+            android:background="@drawable/custom_button"
+            android:padding="10dp"
+            android:text="@string/stopBtnLabel"
+            android:textColor="#212121"
+            android:textSize="14dp" >
+        </Button>
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/ScrollView01"
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="15dp"
         android:background="#E0E0E0"
-        android:padding="7dp"
-        android:layout_margin="15dp">
-        <TextView android:id="@+id/logOutput" android:fadeScrollbars="true" android:text="" android:scrollbarAlwaysDrawVerticalTrack="true" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:textColor="#616161"></TextView>
-    </ScrollView> 
+        android:padding="7dp" >
+
+        <TextView
+            android:id="@+id/logOutput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fadeScrollbars="true"
+            android:scrollbarAlwaysDrawVerticalTrack="true"
+            android:text=""
+            android:textColor="#616161" >
+        </TextView>
+    </ScrollView>
 
 </LinearLayout>
