@@ -249,6 +249,7 @@
             android:layout_height="wrap_content"
             android:fadeScrollbars="true"
             android:scrollbarAlwaysDrawVerticalTrack="true"
+            android:textIsSelectable="true"
             android:text=""
             android:textColor="#616161" >
         </TextView>
