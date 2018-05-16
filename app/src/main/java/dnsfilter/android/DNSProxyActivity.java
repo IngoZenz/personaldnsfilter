@@ -164,6 +164,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		logOutView = (EditText) findViewById(R.id.logOutput);
 		logOutView.setText(uiText);
 		//logOutView.setMaxLines(1000);
+		logOutView.setKeyListener(null);
 
 		uiText = "";
 
