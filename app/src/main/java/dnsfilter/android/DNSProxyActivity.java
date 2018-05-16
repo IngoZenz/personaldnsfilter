@@ -59,6 +59,7 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -74,7 +75,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private Button startBtn;
 	private Button stopBtn;	
 	private Button reloadFilterBtn;
-	private static TextView logOutView;
+	private static EditText logOutView;
 	private static int logSize = 0;
 	private static EditText dnsField;
 	private  static CheckBox advancedConfigCheck;
@@ -120,6 +121,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				logSize = logStr.length();
 				logOutView.setText(logStr);
 			}
+			logOutView.setSelection(logSize);
 			scrollView.fullScroll(ScrollView.FOCUS_DOWN);
 			setTitle("personalDNSfilter (Connections:"+DNSFilterService.openConnectionsCount()+")");
 			dnsField.setText(DNSCommunicator.getInstance().getLastDNSAddress());
@@ -159,8 +161,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		if (logOutView != null)
 			uiText = logOutView.getText().toString();
-		logOutView = (TextView) findViewById(R.id.logOutput);
+		logOutView = (EditText) findViewById(R.id.logOutput);
 		logOutView.setText(uiText);
+		logOutView.setMaxLines(1000);
+
 		uiText = "";
 
 		scrollView = (ScrollView) findViewById(R.id.ScrollView01);

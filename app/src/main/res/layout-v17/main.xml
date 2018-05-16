@@ -247,15 +247,19 @@
         android:background="#E0E0E0"
         android:padding="7dp" >
 
-        <TextView
+        <EditText
             android:id="@+id/logOutput"
+            android:background="#E0E0E0"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fadeScrollbars="true"
             android:scrollbarAlwaysDrawVerticalTrack="true"
+            android:scrollbars="vertical"
             android:text=""
+            android:textIsSelectable="true"
+            android:textSize="14dp"
             android:textColor="#616161" >
-        </TextView>
+        </EditText>
     </ScrollView>
 
 </LinearLayout>
