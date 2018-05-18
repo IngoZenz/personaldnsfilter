@@ -59,7 +59,6 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -163,7 +162,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			uiText = logOutView.getText().toString();
 		logOutView = (EditText) findViewById(R.id.logOutput);
 		logOutView.setText(uiText);
-		//logOutView.setMaxLines(1000);
 		logOutView.setKeyListener(null);
 
 		uiText = "";
