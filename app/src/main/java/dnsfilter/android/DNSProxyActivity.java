@@ -102,6 +102,18 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	
 	private static Intent SERVICE = null;
 
+
+	private class AsyncStop implements Runnable {
+		@Override
+		public synchronized void run() {
+			try {
+				wait(1000);
+			} catch (Exception e) {
+				Logger.getLogger().logException(e);
+			}
+			System.exit(0);
+		}
+	}
 	private class MyUIThreadLogger implements Runnable {;
 
 		private String m_logStr;
@@ -127,22 +139,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}
 	}	
 	
-	private void threadDump() {
-		Map<Thread, StackTraceElement[]> dump = Thread.getAllStackTraces();
-		Iterator<Thread> threadIt = dump.keySet().iterator();
-		while (threadIt.hasNext()) {
-			Thread t = threadIt.next();
-			StackTraceElement[] stack = dump.get(t);
-			Logger.getLogger().logLine(t.toString());
-			Logger.getLogger().logLine("********************************************************************");
-			
-			for (int i = 0; i < stack.length; i++) {
-				Logger.getLogger().logLine(stack[i].toString());
-			}
-		}
-	}
-	
-	
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -664,11 +661,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	}
 
 
-	private void handleStop() {	
-		if (dnsField.getText().toString().equals("9999999999")) {
-			threadDump();
-			return;
-		}
+	private synchronized void handleStop() {
+
 		if (!DNSFilterService.stop())
 			return;
 		
@@ -676,8 +670,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			stopService(SERVICE);
 		SERVICE = null;
 		appStart = true;
-		//finish();	
-		System.exit(0);
+		this.finish();
+
+		new Thread(new AsyncStop()).start();
 	}
 
 	private void handleStart() {			
