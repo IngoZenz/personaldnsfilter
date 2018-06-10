@@ -123,16 +123,16 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}
 
 		@Override
-		public void run() {
+		public synchronized void run() {
 			logSize = logSize + m_logStr.length();
 			logOutView.append(m_logStr);
 			if (logSize >=20000) {
 				String logStr = logOutView.getText().toString();
 				logStr = logStr.substring(logSize-10000);
 				logSize = logStr.length();
-				logOutView.setText(logStr);
-			}
-			logOutView.setSelection(logSize);
+				logOutView.setText(logStr);				
+			}			
+			logOutView.setSelection(logSize);			
 			scrollView.fullScroll(ScrollView.FOCUS_DOWN);
 			setTitle("personalDNSfilter (Connections:"+DNSFilterService.openConnectionsCount()+")");
 			dnsField.setText(DNSCommunicator.getInstance().getLastDNSAddress());
@@ -669,7 +669,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		if (SERVICE != null) 
 			stopService(SERVICE);
 		SERVICE = null;
-		appStart = true;
+		
 		this.finish();
 
 		new Thread(new AsyncStop()).start();
