@@ -132,7 +132,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				logSize = logStr.length();
 				logOutView.setText(logStr);				
 			}			
-			logOutView.setSelection(logSize);			
+			//logOutView.setSelection(logSize);
+			logOutView.setSelection(logOutView.getText().length());
 			scrollView.fullScroll(ScrollView.FOCUS_DOWN);
 			setTitle("personalDNSfilter (Connections:"+DNSFilterService.openConnectionsCount()+")");
 			dnsField.setText(DNSCommunicator.getInstance().getLastDNSAddress());
