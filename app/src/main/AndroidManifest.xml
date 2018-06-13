@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="dnsfilter.android"
     android:versionCode="15018"
-    android:versionName="1.50.18-dev" >
+    android:versionName="1.50.18" >
 
     <uses-sdk android:minSdkVersion="14" />
 

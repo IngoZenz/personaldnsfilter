@@ -48,7 +48,7 @@ import util.LoggerInterface;
 
 public class DNSFilterManager implements LoggerInterface
 {
-	public static final String VERSION = "1.50.18-dev";
+	public static final String VERSION = "1.50.18";
 	static public boolean debug;
 	static public String WORKDIR = "";	
 	private static String filterReloadURL;
