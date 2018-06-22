@@ -349,8 +349,12 @@ public class DNSFilterManager implements LoggerInterface
 				nextReload = 0; // reload asap
 	
 			File indexFile = new File(WORKDIR + filterhostfile+".idx");
-			if (indexFile.exists() && validIndex && BlockedHosts.checkIndexVersion(indexFile.getAbsolutePath()) && !needRedloadAdditionalHosts) {
+			if (indexFile.exists() && validIndex && BlockedHosts.checkIndexVersion(indexFile.getAbsolutePath())) {
 				hostFilter = BlockedHosts.loadPersistedIndex(indexFile.getAbsolutePath(), false, okCacheSize, filterListCacheSize, hostsFilterOverRule);
+				if (needRedloadAdditionalHosts && filterfile.exists()) {
+					// additionalHosts where modified - reload async and keep current index until reload completed in order to prevent start without any filter!
+					new Thread(new AsyncIndexBuilder()).start();
+				}
 			} else if (filterfile.exists()) {
 				if (!async)
 					rebuildIndex();	

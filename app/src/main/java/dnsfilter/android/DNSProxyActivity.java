@@ -35,12 +35,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
 import dnsfilter.DNSCommunicator;
 import dnsfilter.DNSFilterManager;
+
 import util.AsyncBulkLogger;
 import util.Logger;
 import util.LoggerInterface;
@@ -58,6 +58,9 @@ import android.os.Environment;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.text.Editable;
+import android.text.Html;
+import android.text.Spannable;
+import android.text.Spanned;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -65,7 +68,8 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ScrollView;
-import android.widget.TextView;
+
+
 
 public class DNSProxyActivity extends Activity implements OnClickListener, LoggerInterface, TextWatcher {
 	
@@ -103,17 +107,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private static Intent SERVICE = null;
 
 
-	private class AsyncStop implements Runnable {
-		@Override
-		public synchronized void run() {
-			try {
-				wait(1000);
-			} catch (Exception e) {
-				Logger.getLogger().logException(e);
-			}
-			System.exit(0);
-		}
-	}
 	private class MyUIThreadLogger implements Runnable {;
 
 		private String m_logStr;
@@ -124,27 +117,59 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		@Override
 		public synchronized void run() {
+
+			if (m_logStr.startsWith("FILTERED")) {
+				m_logStr = "<font color='#D03D06'>" + m_logStr.substring(9,m_logStr.length()-1) + "</font><br>";
+				logOutView.append(fromHtml(m_logStr));
+
+			} else if (m_logStr.startsWith("ALLOWED")) {
+				m_logStr = "<font color='#23751C'>" + m_logStr.substring(8,m_logStr.length()-1) + "</font><br>";
+				logOutView.append(fromHtml(m_logStr));
+			} else {
+				logOutView.append(m_logStr);
+			}
+
 			logSize = logSize + m_logStr.length();
-			logOutView.append(m_logStr);
+
 			if (logSize >=20000) {
-				String logStr = logOutView.getText().toString();
+				String logStr = toHtml(logOutView.getEditableText());
 				logStr = logStr.substring(logSize-10000);
+				int newLine= logStr.indexOf("<br>");
+				if (newLine != -1)
+					logStr = logStr.substring(newLine+4);
 				logSize = logStr.length();
-				logOutView.setText(logStr);				
-			}			
-			//logOutView.setSelection(logSize);
-			logOutView.setSelection(logOutView.getText().length());
-			scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+				logOutView.setText(fromHtml(logStr));
+			}
+			//if (!logOutView.hasSelection()) { //do not disturb in case a select and copy is active
+				logOutView.setSelection(logOutView.getText().length());
+				scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+			//}
 			setTitle("personalDNSfilter (Connections:"+DNSFilterService.openConnectionsCount()+")");
 			dnsField.setText(DNSCommunicator.getInstance().getLastDNSAddress());
 		}
 	}	
-	
+
+	private String toHtml(Spanned txt){
+		if (Build.VERSION.SDK_INT>=24)
+			return Html.toHtml(txt,0);
+		else return Html.toHtml(txt);
+	}
+
+	private Spanned fromHtml(String txt) {
+		if (Build.VERSION.SDK_INT>=24)
+			return Html.fromHtml(txt,0);
+		else
+			return Html.fromHtml(txt);
+	}
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		if (getIntent().getBooleanExtra("SHOULD_FINISH", false)) {
+			finish();
+			System.exit(0);
+		}
 		setContentView(R.layout.main);
 		setTitle("PersonalDNSFilter (Connections:"+DNSFilterService.openConnectionsCount()+")");
 		startBtn = (Button) findViewById(R.id.startBtn);
@@ -157,9 +182,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		String uiText = "";
 
 		if (logOutView != null)
-			uiText = logOutView.getText().toString();
+			uiText = toHtml(logOutView.getEditableText());
 		logOutView = (EditText) findViewById(R.id.logOutput);
-		logOutView.setText(uiText);
+		logOutView.setText(fromHtml(uiText));
 		logOutView.setKeyListener(null);
 
 		uiText = "";
@@ -217,31 +242,24 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		
 		handleAdvancedConfig();
 
-
 		if (myLogger!= null)
 			myLogger.closeLogger();
-		
-		try {
+		/*try {
 			Logger.setLogger(new AsyncBulkLogger(this));
 		} catch (IOException e) {
 			Logger.setLogger(this);
 			Logger.getLogger().logException(e);
-		}
+		}*/
+		Logger.setLogger(this);
 		myLogger = Logger.getLogger();
-		
+
 		if (appStart) {
 			if (BOOT_START) {
 				Logger.getLogger().logLine("Running on SDK"+Build.VERSION.SDK_INT);
-				if (Build.VERSION.SDK_INT>=20) {
-					//send to back
-					Intent i = new Intent();
-					i.setAction(Intent.ACTION_MAIN);
-					i.addCategory(Intent.CATEGORY_HOME);
-					this.startActivity(i);
-				}
+				if (Build.VERSION.SDK_INT>=20) //on older Android we have to keep the app in forgrounnd due to teh VPN Accespt dialog popping up after each reboot.
+					finish();
 				BOOT_START = false;
 			}
-			logOutView.setText("");
 			Properties config = getConfig();
 			if (config != null) {
 				dnsField.setText(config.getProperty("DNS"));	
@@ -249,7 +267,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				enableAutoStartCheck.setChecked(Boolean.parseBoolean(config.getProperty("AUTOSTART","false")));
 
 				//set advanced formatted config field text
-
 				advancedConfigField.setText(getFormattedAdvCfgText(config));
 
 				logLine("Initializing ...");			
@@ -257,6 +274,15 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				
 				handleStart(); //start
 			}
+		}
+	}
+
+	@Override
+	public void onWindowFocusChanged (boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+		if (hasFocus) {
+			logOutView.setSelection(logOutView.getText().length());
+			scrollView.fullScroll(ScrollView.FOCUS_DOWN);
 		}
 	}
 
@@ -663,17 +689,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 
 	private synchronized void handleStop() {
-
-		if (!DNSFilterService.stop())
-			return;
-		
-		if (SERVICE != null) 
+		if (SERVICE != null)
 			stopService(SERVICE);
-		SERVICE = null;
-		
-		this.finish();
-
-		new Thread(new AsyncStop()).start();
+		Intent intent = new Intent(this, DNSProxyActivity.class);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+		intent.putExtra("SHOULD_FINISH", true);
+		startActivity(intent);
 	}
 
 	private void handleStart() {			
