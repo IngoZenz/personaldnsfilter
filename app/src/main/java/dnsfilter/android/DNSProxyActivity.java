@@ -68,7 +68,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ScrollView;
-
+import android.widget.TextView;
 
 
 public class DNSProxyActivity extends Activity implements OnClickListener, LoggerInterface, TextWatcher {
@@ -89,6 +89,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private static CheckBox enableAdFilterCheck;
 	private static EditText advancedConfigField;
 	private static EditText additionalHostsField;
+	private static TextView scrollLockField;
+	private static String SCROLL_PAUSE = "II  ";
+	private static String SCROLL_CONTINUE = ">>  ";
+	private static boolean scroll_locked = false;
+
 	private static boolean additionalHostsChanged=false;
 	private static LoggerInterface myLogger;
 	
@@ -118,32 +123,34 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		@Override
 		public synchronized void run() {
 
-			if (m_logStr.startsWith("FILTERED")) {
-				m_logStr = "<font color='#D03D06'>" + m_logStr.substring(9,m_logStr.length()-1) + "</font><br>";
-				logOutView.append(fromHtml(m_logStr));
+			if (!scroll_locked) {
+				if (m_logStr.startsWith("FILTERED")) {
+					m_logStr = "<font color='#D03D06'>" + m_logStr.substring(9, m_logStr.length() - 1) + "</font><br>";
+					logOutView.append(fromHtml(m_logStr));
 
-			} else if (m_logStr.startsWith("ALLOWED")) {
-				m_logStr = "<font color='#23751C'>" + m_logStr.substring(8,m_logStr.length()-1) + "</font><br>";
-				logOutView.append(fromHtml(m_logStr));
-			} else {
-				logOutView.append(m_logStr);
+				} else if (m_logStr.startsWith("ALLOWED")) {
+					m_logStr = "<font color='#23751C'>" + m_logStr.substring(8, m_logStr.length() - 1) + "</font><br>";
+					logOutView.append(fromHtml(m_logStr));
+				} else {
+					logOutView.append(m_logStr);
+				}
+
+				logSize = logSize + m_logStr.length();
+
+				if (logSize >= 20000) {
+					String logStr = toHtml(logOutView.getEditableText());
+					logStr = logStr.substring(logSize - 10000);
+					int newLine = logStr.indexOf("<br>");
+					if (newLine != -1)
+						logStr = logStr.substring(newLine + 4);
+					logSize = logStr.length();
+					logOutView.setText(fromHtml(logStr));
+				}
+				if (!scroll_locked) { //do not disturb in case a select and copy is active
+					logOutView.setSelection(logOutView.getText().length());
+					scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+				}
 			}
-
-			logSize = logSize + m_logStr.length();
-
-			if (logSize >=20000) {
-				String logStr = toHtml(logOutView.getEditableText());
-				logStr = logStr.substring(logSize-10000);
-				int newLine= logStr.indexOf("<br>");
-				if (newLine != -1)
-					logStr = logStr.substring(newLine+4);
-				logSize = logStr.length();
-				logOutView.setText(fromHtml(logStr));
-			}
-			//if (!logOutView.hasSelection()) { //do not disturb in case a select and copy is active
-				logOutView.setSelection(logOutView.getText().length());
-				scrollView.fullScroll(ScrollView.FOCUS_DOWN);
-			//}
 			setTitle("personalDNSfilter (Connections:"+DNSFilterService.openConnectionsCount()+")");
 			dnsField.setText(DNSCommunicator.getInstance().getLastDNSAddress());
 		}
@@ -178,8 +185,16 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		stopBtn.setOnClickListener(this);
 		reloadFilterBtn = (Button) findViewById(R.id.filterReloadBtn);
 		reloadFilterBtn.setOnClickListener(this);
-		
+
 		String uiText = "";
+
+		scrollLockField = (TextView)findViewById(R.id.scrolllock);
+		if (scroll_locked)
+			scrollLockField.setText(SCROLL_CONTINUE);
+		else
+			scrollLockField.setText(SCROLL_PAUSE);
+
+		scrollLockField.setOnClickListener(this);
 
 		if (logOutView != null)
 			uiText = toHtml(logOutView.getEditableText());
@@ -280,7 +295,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	@Override
 	public void onWindowFocusChanged (boolean hasFocus) {
 		super.onWindowFocusChanged(hasFocus);
-		if (hasFocus) {
+		if (hasFocus && !scroll_locked) {
 			logOutView.setSelection(logOutView.getText().length());
 			scrollView.fullScroll(ScrollView.FOCUS_DOWN);
 		}
@@ -582,6 +597,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	@Override
 	public void onClick(View destination) {
+
+		if (destination == scrollLockField) {
+			handleScrollLock();
+			return;
+		}
+
 		persistConfig();
 
 		if (destination == startBtn || destination == enableAdFilterCheck)
@@ -610,6 +631,18 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 					Logger.getLogger().logLine("Released WIFI lock and partial wake lock!");
 				}
 			}
+		}
+	}
+
+	private void handleScrollLock() {
+		if (scroll_locked) {
+			scroll_locked=false;
+			scrollLockField.setText(SCROLL_PAUSE);
+			logOutView.setSelection(logOutView.getText().length());
+			scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+		} else {
+			scroll_locked=true;
+			scrollLockField.setText(SCROLL_CONTINUE);
 		}
 	}
 

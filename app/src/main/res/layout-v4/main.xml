@@ -234,12 +234,25 @@
             android:textSize="14dp" >
         </Button>
     </LinearLayout>
-
+    <TextView
+        android:id="@+id/scrolllock"
+        android:layout_width="match_parent"
+        android:layout_height="14dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginLeft="14dp"
+        android:layout_marginRight="14dp"
+        android:layout_marginBottom="0dp"
+        android:background="#EFEFF0"
+        android:gravity="right"
+        android:text="II" />
     <ScrollView
         android:id="@+id/ScrollView01"
         android:layout_width="fill_parent"
         android:layout_height="match_parent"
-        android:layout_margin="15dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginBottom="15dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
         android:background="#E0E0E0"
         android:padding="7dp" >
 
