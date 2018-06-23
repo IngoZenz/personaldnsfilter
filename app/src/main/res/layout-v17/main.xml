@@ -242,14 +242,15 @@
     <TextView
         android:id="@+id/scrolllock"
         android:layout_width="match_parent"
-        android:layout_height="14dp"
-        android:layout_marginTop="1dp"
-        android:layout_marginLeft="14dp"
-        android:layout_marginRight="14dp"
+        android:layout_height="15dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="0dp"
         android:layout_marginBottom="0dp"
         android:background="#EFEFF0"
         android:gravity="right"
-        android:text="II" />
+        android:textStyle="bold"
+        android:textColor="#000000" />
 
     <ScrollView
         android:id="@+id/ScrollView01"

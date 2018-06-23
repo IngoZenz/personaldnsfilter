@@ -145,11 +145,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 						logStr = logStr.substring(newLine + 4);
 					logSize = logStr.length();
 					logOutView.setText(fromHtml(logStr));
-				}
-				if (!scroll_locked) { //do not disturb in case a select and copy is active
-					logOutView.setSelection(logOutView.getText().length());
-					scrollView.fullScroll(ScrollView.FOCUS_DOWN);
-				}
+				}				
+				logOutView.setSelection(logOutView.getText().length());
+				scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+				
 			}
 			setTitle("personalDNSfilter (Connections:"+DNSFilterService.openConnectionsCount()+")");
 			dnsField.setText(DNSCommunicator.getInstance().getLastDNSAddress());
@@ -159,7 +158,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private String toHtml(Spanned txt){
 		if (Build.VERSION.SDK_INT>=24)
 			return Html.toHtml(txt,0);
-		else return Html.toHtml(txt);
+		else 
+			return Html.toHtml(txt);
 	}
 
 	private Spanned fromHtml(String txt) {
