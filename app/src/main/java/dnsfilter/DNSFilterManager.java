@@ -232,7 +232,7 @@ public class DNSFilterManager implements LoggerInterface
 	}
 	
 	private String[] parseHosts(String line) {
-		if (line.startsWith("#")|| line.equals(""))
+		if (line.startsWith("#")|| line.trim().equals(""))
 			return null;
 		StringTokenizer tokens = new StringTokenizer(line);
 		if (tokens.countTokens() >=2) {
