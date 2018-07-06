@@ -193,6 +193,25 @@
         </CheckBox>
     </LinearLayout>
 
+    <ScrollView
+        android:id="@+id/scrollView5"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:layout_marginBottom="15dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:background="#E0E0E0">
+        <dnsfilter.android.AppSelectorView
+            android:id="@+id/appSelector"
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0.08"
+            android:orientation="vertical" >
+        </dnsfilter.android.AppSelectorView>
+    </ScrollView>
+    
     <LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
