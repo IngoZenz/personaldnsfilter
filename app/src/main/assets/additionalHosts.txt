@@ -5,5 +5,10 @@
 sample4711.justasample.com
 sample4712.justasample.com
 
+# In order to white list a specific host, add a
+# "!" prefix in front of the host name.
+
+!whitelistsample.justasample.com
+
 
 

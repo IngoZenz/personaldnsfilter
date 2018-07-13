@@ -84,6 +84,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private  static CheckBox advancedConfigCheck;
 	private  static CheckBox editFilterLoadCheck;
 	private  static CheckBox editAdditionalHostsCheck;
+	private static CheckBox appWhiteListCheck;
+	private static ScrollView appWhiteListScroll;
+	private static AppSelectorView appSelector;
 	private static CheckBox keepAwakeCheck;
 	private static CheckBox enableAutoStartCheck;	
 	private static CheckBox enableAdFilterCheck;
@@ -221,7 +224,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		enableAutoStartCheck = (CheckBox) findViewById(R.id.enableAutoStart);
 		enableAutoStartCheck.setChecked(checked);
 		enableAutoStartCheck.setOnClickListener(this);
-		
+
+		checked = appWhiteListCheck != null && appWhiteListCheck.isChecked();
+		appWhiteListCheck = (CheckBox) findViewById(R.id.appWhitelist);
+		appWhiteListCheck.setChecked(checked);
+		appWhiteListCheck.setOnClickListener(this);
+
 		checked = keepAwakeCheck != null && keepAwakeCheck.isChecked();
 		keepAwakeCheck = (CheckBox) findViewById(R.id.keepAwakeCheck);
 		keepAwakeCheck.setChecked(checked);
@@ -240,7 +248,16 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		checked = editAdditionalHostsCheck != null && editAdditionalHostsCheck.isChecked();
 		editAdditionalHostsCheck = (CheckBox) findViewById(R.id.editAdditionalHosts);
 		editAdditionalHostsCheck.setChecked(checked);
-		editAdditionalHostsCheck.setOnClickListener(this);		
+		editAdditionalHostsCheck.setOnClickListener(this);
+
+		appWhiteListScroll = (ScrollView) findViewById(R.id.appWhiteListScroll);
+		String whitelistedApps = "";
+		if (appSelector != null){
+			appSelector.clear();
+			whitelistedApps = appSelector.getSelectedAppPackages();
+		}
+		appSelector = findViewById(R.id.appSelector);
+		appSelector.setSelectedApps(whitelistedApps);
 
 		if (advancedConfigField != null)
 			uiText = advancedConfigField.getText().toString();
@@ -277,12 +294,15 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			}
 			Properties config = getConfig();
 			if (config != null) {
-				dnsField.setText(config.getProperty("DNS"));	
+
 				enableAdFilterCheck.setChecked(config.getProperty("filterHostsFile")!=null);
 				enableAutoStartCheck.setChecked(Boolean.parseBoolean(config.getProperty("AUTOSTART","false")));
 
 				//set advanced formatted config field text
 				advancedConfigField.setText(getFormattedAdvCfgText(config));
+
+				//set whitelisted Apps into UI
+				appSelector.setSelectedApps(config.getProperty("androidAppWhiteList",""));
 
 				logLine("Initializing ...");			
 				appStart = false; // now started
@@ -483,7 +503,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				
 				if (ln.trim().startsWith("AUTOSTART"))
 					ln = "AUTOSTART = "+  enableAutoStartCheck.isChecked();
-				
+
+				if (ln.trim().startsWith("androidAppWhiteList"))
+					ln = "androidAppWhiteList = "+  appSelector.getSelectedAppPackages();
+
 				if (ln.trim().startsWith("#!!!filterHostsFile") && filterAds)
 					ln = ln.replace("#!!!filterHostsFile", "filterHostsFile");
 				
@@ -612,7 +635,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		if (destination == reloadFilterBtn)
 			handlefilterReload();
 		
-		if (destination == advancedConfigCheck || destination ==editAdditionalHostsCheck || destination == editFilterLoadCheck ) {
+		if (destination == advancedConfigCheck || destination ==editAdditionalHostsCheck || destination == editFilterLoadCheck || destination == appWhiteListCheck ) {
 			handleAdvancedConfig();
 		}		
 		if (destination == keepAwakeCheck) {
@@ -647,11 +670,22 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	}
 
 	private void handleAdvancedConfig() {
-		if (advancedConfigCheck.isChecked()) {			
+		if (advancedConfigCheck.isChecked()) {
+			//App Whitelisting only supported on SDK >= 21
+			if  (Build.VERSION.SDK_INT >= 21)
+				appWhiteListCheck.setVisibility(View.VISIBLE);
 			keepAwakeCheck.setVisibility(View.VISIBLE);
 			editAdditionalHostsCheck.setVisibility(View.VISIBLE);
 			editFilterLoadCheck.setVisibility(View.VISIBLE);
-			
+
+			if (appWhiteListCheck.isChecked()) {
+				appWhiteListScroll.setVisibility(View.VISIBLE);
+				appSelector.loadAppList();
+			} else {
+				appSelector.clear();
+				appWhiteListScroll.setVisibility(View.GONE);
+			}
+
 			if (editFilterLoadCheck.isChecked())
 				advancedConfigField.setVisibility(View.VISIBLE);
 			else
@@ -668,6 +702,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			}
 		}
 		else {
+			appWhiteListCheck.setVisibility(View.GONE);
+			appWhiteListScroll.setVisibility(View.GONE);
+			appSelector.clear();
 			advancedConfigField.setVisibility(View.GONE);	
 			keepAwakeCheck.setVisibility(View.GONE);
 			editAdditionalHostsCheck.setVisibility(View.GONE);

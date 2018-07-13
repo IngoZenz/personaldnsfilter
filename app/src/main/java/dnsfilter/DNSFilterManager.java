@@ -48,7 +48,7 @@ import util.LoggerInterface;
 
 public class DNSFilterManager implements LoggerInterface
 {
-	public static final String VERSION = "1.50.19";
+	public static final String VERSION = "1.50.20";
 	static public boolean debug;
 	static public String WORKDIR = "";	
 	private static String filterReloadURL;
@@ -232,7 +232,7 @@ public class DNSFilterManager implements LoggerInterface
 	}
 	
 	private String[] parseHosts(String line) {
-		if (line.startsWith("#")|| line.trim().equals(""))
+		if (line.startsWith("#") || line.startsWith("!")|| line.trim().equals(""))
 			return null;
 		StringTokenizer tokens = new StringTokenizer(line);
 		if (tokens.countTokens() >=2) {
@@ -467,6 +467,19 @@ public class DNSFilterManager implements LoggerInterface
 							hostsFilterOverRule = new Hashtable();
 						hostsFilterOverRule.put(key.substring(7), new Boolean(Boolean.parseBoolean(((String) entry.getValue()).trim())));
 					}
+				}
+
+				//load whitelisted hosts from additionalHosts.txt
+
+				File additionalHosts = new File(WORKDIR + "additionalHosts.txt");
+				if (additionalHosts.exists()) {
+					BufferedReader addHostIn = new BufferedReader(new InputStreamReader(new FileInputStream(additionalHosts)));
+					String entry = null;
+					while ((entry = addHostIn.readLine()) != null) {
+						if (entry.startsWith("!"))
+							hostsFilterOverRule.put(entry.substring(1).trim(), new Boolean(false));
+					}
+					addHostIn.close();
 				}
 
 				// trigger regular filter update when configured

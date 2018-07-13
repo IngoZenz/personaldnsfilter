@@ -39,10 +39,13 @@ import java.util.Vector;
 import util.ExecutionEnvironment;
 import util.ExecutionEnvironmentInterface;
 import util.Logger;
+
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
@@ -240,14 +243,25 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 			if (Build.VERSION.SDK_INT >= 21)
 				builder.addDisallowedApplication("dnsfilter.android");
 
+			//apply app whitelist
+			StringTokenizer appWhiteList  = new StringTokenizer(DNSFILTER.getConfig().getProperty("androidAppWhiteList", ""), ",");
+			cnt = appWhiteList.countTokens();
+			if (cnt !=0 && Build.VERSION.SDK_INT < 21) {
+				cnt = 0;
+				Logger.getLogger().logLine("WARNING!: Application whitelisting not supported for Android version below 5.01!\n Setting ignored!");
+			}
+			for (int i = 0; i < cnt; i++) {
+				excludeApp(appWhiteList.nextToken().trim(), builder);
+			}
+
 			// Android 7/8 has an issue with VPN in combination with some google apps - bypass the filter
 			if (Build.VERSION.SDK_INT>=24 && Build.VERSION.SDK_INT <= 27) { // Android 7/8
 				Logger.getLogger().logLine("Running on SDK"+Build.VERSION.SDK_INT);
-				builder.addDisallowedApplication("com.android.vending"); //white list play store	
-				builder.addDisallowedApplication("com.google.android.apps.docs"); //white list google drive
-				builder.addDisallowedApplication("com.google.android.apps.photos"); //white list google photos
-				builder.addDisallowedApplication("com.google.android.gm"); //white list gmail	
-				builder.addDisallowedApplication("com.google.android.apps.translate"); //white list google translate	
+				excludeApp("com.android.vending", builder); //white list play store
+				excludeApp("com.google.android.apps.docs", builder); //white list google drive
+				excludeApp("com.google.android.apps.photos", builder); //white list google photos
+				excludeApp("com.google.android.gm", builder); //white list gmail
+				excludeApp("com.google.android.apps.translate", builder); //white list google translate
 			}
 			
 			if (Build.VERSION.SDK_INT>=21) {
@@ -272,7 +286,16 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 		return START_STICKY;
 	}
 
-	
+	@SuppressLint("NewApi")
+	private void excludeApp(String app, Builder builder) {
+		try {
+			builder.addDisallowedApplication(app);
+		} catch (PackageManager.NameNotFoundException e) {
+			Logger.getLogger().logLine("Error during app whitelisting:"+e.getMessage());
+		}
+	}
+
+
 	@Override
 	public void onDestroy() {
 		Logger.getLogger().logLine("destroyed");		
