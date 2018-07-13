@@ -181,7 +181,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			System.exit(0);
 		}
 		setContentView(R.layout.main);
-		setTitle("PersonalDNSFilter (Connections:"+DNSFilterService.openConnectionsCount()+")");
+		setTitle("personalDNSfilter V"+DNSFilterManager.VERSION+" (Connections:"+DNSFilterService.openConnectionsCount()+")");
 		startBtn = (Button) findViewById(R.id.startBtn);
 		startBtn.setOnClickListener(this);
 		stopBtn = (Button) findViewById(R.id.stopBtn);
