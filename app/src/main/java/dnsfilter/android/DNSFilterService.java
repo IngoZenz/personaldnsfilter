@@ -134,7 +134,7 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 						IPPacket parsedIP = new IPPacket(data, 0, length);
 						if (parsedIP.getVersion() == 6) {
 							Logger.getLogger().logLine("!!!IPV6 Packet!!! Protocol:"+parsedIP.getProt());
-							Logger.getLogger().logLine("SourceAddress:"+IPPacket.int2ip(parsedIP.getSourceIP()));
+							/*Logger.getLogger().logLine("SourceAddress:"+IPPacket.int2ip(parsedIP.getSourceIP()));
 							Logger.getLogger().logLine("DestAddress:"+IPPacket.int2ip(parsedIP.getDestIP()));
 							Logger.getLogger().logLine("TTL:"+parsedIP.getTTL());	
 							Logger.getLogger().logLine("Length:"+parsedIP.getLength());	
@@ -144,7 +144,7 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 								Logger.getLogger().logLine("Hdr Ext Len:"+(data[41]&0xff));
 								if ((data[40]&0xff) == 58) // ICMP
 									Logger.getLogger().logLine("Received ICMP IPV6 Paket Type:" + (data[48]&0xff));
-							}
+							}*/
 						}
 						if (parsedIP.checkCheckSum() != 0)
 							throw new IOException("IP Header Checksum Error!");					

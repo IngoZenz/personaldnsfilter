@@ -153,7 +153,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				scrollView.fullScroll(ScrollView.FOCUS_DOWN);
 				
 			}
-			setTitle("personalDNSfilter (Connections:"+DNSFilterService.openConnectionsCount()+")");
+			setTitle("personalDNSfilter V"+DNSFilterManager.VERSION+" (Connections:"+DNSFilterService.openConnectionsCount()+")");
 			dnsField.setText(DNSCommunicator.getInstance().getLastDNSAddress());
 		}
 	}	
