@@ -48,7 +48,7 @@ import util.LoggerInterface;
 
 public class DNSFilterManager implements LoggerInterface
 {
-	public static final String VERSION = "1.50.20";
+	public static final String VERSION = "1.50.21";
 	static public boolean debug;
 	static public String WORKDIR = "";	
 	private static String filterReloadURL;
@@ -476,8 +476,11 @@ public class DNSFilterManager implements LoggerInterface
 					BufferedReader addHostIn = new BufferedReader(new InputStreamReader(new FileInputStream(additionalHosts)));
 					String entry = null;
 					while ((entry = addHostIn.readLine()) != null) {
-						if (entry.startsWith("!"))
+						if (entry.startsWith("!")) {
+							if (hostsFilterOverRule == null)
+								hostsFilterOverRule = new Hashtable();
 							hostsFilterOverRule.put(entry.substring(1).trim(), new Boolean(false));
+						}
 					}
 					addHostIn.close();
 				}
