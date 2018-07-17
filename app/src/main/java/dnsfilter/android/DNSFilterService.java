@@ -75,17 +75,19 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 	private static WakeLock wakeLock = null;
 
 	
-	public static void detectDNSServers() {		
-		
-		Logger.getLogger().logLine("Detecting DNS Servers...");
+	public static void detectDNSServers() {
 		
 		DNSFilterManager dnsFilterMgr = DNSFILTER;
 
 		if (dnsFilterMgr == null)
 			return;
 
-		boolean detect = Boolean.parseBoolean(dnsFilterMgr.getConfig().getProperty("detectDNS", "true"));		
+		boolean detect = Boolean.parseBoolean(dnsFilterMgr.getConfig().getProperty("detectDNS", "true"));
 
+		if (!detect && !DNSCommunicator.getInstance().getLastDNSAddress().equals(""))
+			return;  //only static DNS server config already loaded
+
+		Logger.getLogger().logLine("Detecting DNS Servers...");
 		Vector<InetAddress> dnsAdrs = new Vector<InetAddress>();
 
 		if (detect) {
