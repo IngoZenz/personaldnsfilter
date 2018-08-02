@@ -7,7 +7,7 @@ android {
     defaultConfig {
         applicationId "dnsfilter.android"
         minSdkVersion 14
-        targetSdkVersion 14
+        targetSdkVersion 17
     }
 
     buildTypes {
