@@ -13,4 +13,7 @@
   <string name="EnableAutoStart">Tự khởi động</string>
   <string name="EnableAdfilter">Cho phép chặn quảng cáo</string>
   <string name="dnsLabel">DNS:</string>
+    <string name="manualDNSCheck">Vô hiệu hoá DNS Server Discovery - Máy chủ DNS thủ công bên dưới:</string>
+    <string name="dnsCfgConfigDialogTitle">Cấu hình máy chủ DNS</string>
+    <string name="appWhitelistCheckBox">Danh sách trắng ứng dụng</string>
 </resources>

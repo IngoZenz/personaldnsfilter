@@ -9,9 +9,11 @@
   <string name="EnableConfigCheckBox">Advanced settings</string>
   <string name="editFilterLoadCheckBox">Configure filter update</string>
   <string name="editAdditionalHostsCheckBox">Configure additional hosts</string>
-  <string name="appWhitelistCheckBox" translatable="false">App Whitelist</string>
+  <string name="appWhitelistCheckBox">App Whitelist</string>
   <string name="keepAwakeCheckBox">Prevent device sleep</string>
   <string name="EnableAutoStart">Autostart</string>
   <string name="EnableAdfilter">Enable ad-blocking</string>
   <string name="dnsLabel">DNS:</string>
+  <string name="manualDNSCheck">Disable DNS Server Discovery - Manual DNS Servers below:</string>
+  <string name="dnsCfgConfigDialogTitle">DNS Server Configuration</string>
 </resources>

@@ -13,4 +13,7 @@
   <string name="EnableAutoStart">Outoloop</string>
   <string name="EnableAdfilter">Ontsper ad-blokkeer</string>
   <string name="dnsLabel">DNS:</string>
+    <string name="manualDNSCheck">DNS-bediener opsporing gedeaktiveer - handleiding DNS bedieners hieronder:</string>
+    <string name="dnsCfgConfigDialogTitle">DNS-bediener konfigurasie</string>
+    <string name="appWhitelistCheckBox">App Witlys</string>
 </resources>

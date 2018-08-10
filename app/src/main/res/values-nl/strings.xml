@@ -13,4 +13,7 @@
   <string name="EnableAutoStart">Autostart</string>
   <string name="EnableAdfilter">Advertentieblokkering inschakelen</string>
   <string name="dnsLabel">DNS:</string>
+    <string name="manualDNSCheck">Schakel DNS-serverdetectie uit - Handmatige DNS-servers hieronder:</string>
+    <string name="dnsCfgConfigDialogTitle">DNS-serverconfiguratie</string>
+    <string name="appWhitelistCheckBox">App-witte lijst</string>
 </resources>

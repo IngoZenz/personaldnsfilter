@@ -13,4 +13,7 @@
   <string name="EnableAutoStart">Automatsko pokretanje</string>
   <string name="EnableAdfilter">Omogući blokiranje oglasa</string>
   <string name="dnsLabel">DNS:</string>
+    <string name="manualDNSCheck">Onemogućite otkrivanje DNS poslužitelja - Manual DNS poslužitelji u nastavku:</string>
+    <string name="dnsCfgConfigDialogTitle">Konfiguracija DNS poslužitelja</string>
+    <string name="appWhitelistCheckBox">Popis dopuštenih aplikacija</string>
 </resources>

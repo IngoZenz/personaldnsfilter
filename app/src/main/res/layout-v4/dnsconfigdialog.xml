@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="match_parent"
+    android:background="#EFEFF0"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:orientation="vertical"
+    android:weightSum="1" >
+
+        <CheckBox
+            android:id="@+id/manualDNSCheck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginTop="0dp"
+            android:button="@drawable/custom_checkbox"
+            android:checked="false"
+            android:paddingLeft="32dp"
+            android:text="@string/manualDNSCheck"
+            android:textColor="#424242" >
+        </CheckBox>
+        <EditText
+            android:id="@+id/manualDNS"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textMultiLine"
+            android:textColor="#424242"
+            android:textSize="14dp"
+            android:padding="10dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginBottom="25dp">
+        </EditText>
+
+</LinearLayout>
+

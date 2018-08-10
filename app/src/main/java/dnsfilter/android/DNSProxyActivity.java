@@ -41,12 +41,12 @@ import java.util.StringTokenizer;
 import dnsfilter.DNSCommunicator;
 import dnsfilter.DNSFilterManager;
 
-import util.AsyncBulkLogger;
 import util.Logger;
 import util.LoggerInterface;
 import util.Utils;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.net.VpnService;
@@ -59,9 +59,10 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.text.Editable;
 import android.text.Html;
-import android.text.Spannable;
 import android.text.Spanned;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -69,9 +70,10 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.app.Dialog;
 
 
-public class DNSProxyActivity extends Activity implements OnClickListener, LoggerInterface, TextWatcher {
+public class DNSProxyActivity extends Activity implements OnClickListener, LoggerInterface, TextWatcher, DialogInterface.OnKeyListener {
 	
 	protected static boolean BOOT_START = false;
 	
@@ -80,7 +82,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private Button reloadFilterBtn;
 	private static EditText logOutView;
 	private static int logSize = 0;
-	private static EditText dnsField;
+	private static TextView dnsField;
 	private  static CheckBox advancedConfigCheck;
 	private  static CheckBox editFilterLoadCheck;
 	private  static CheckBox editAdditionalHostsCheck;
@@ -93,6 +95,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private static EditText advancedConfigField;
 	private static EditText additionalHostsField;
 	private static TextView scrollLockField;
+	private static Dialog advDNSConfigDia;
+	private static CheckBox manualDNSCheck;
+	private static TextView manualDNSView;
+	private static boolean advDNSConfigDia_open = false;
 	private static String SCROLL_PAUSE = "II  ";
 	private static String SCROLL_CONTINUE = ">>  ";
 	private static boolean scroll_locked = false;
@@ -113,6 +119,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private static WakeLock wakeLock;
 	
 	private static Intent SERVICE = null;
+
 
 
 	private class MyUIThreadLogger implements Runnable {;
@@ -182,6 +189,27 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}
 		setContentView(R.layout.main);
 		setTitle("personalDNSfilter V"+DNSFilterManager.VERSION+" (Connections:"+DNSFilterService.openConnectionsCount()+")");
+
+
+
+        String uiText = "";
+
+        advDNSConfigDia = new Dialog(DNSProxyActivity.this,R.style.Theme_dialog_TitleBar);
+        advDNSConfigDia.setContentView(R.layout.dnsconfigdialog);
+        advDNSConfigDia.setTitle(getResources().getString(R.string.dnsCfgConfigDialogTitle));
+        advDNSConfigDia.setOnKeyListener(this);
+
+        boolean checked = manualDNSCheck!=null && manualDNSCheck.isChecked();
+
+        manualDNSCheck = (CheckBox)advDNSConfigDia.findViewById(R.id.manualDNSCheck);
+        manualDNSCheck.setChecked(checked);
+
+        if (manualDNSView != null)
+            uiText = manualDNSView.getText().toString();
+
+        manualDNSView = (TextView)advDNSConfigDia.findViewById(R.id.manualDNS);
+        manualDNSView.setText(uiText);
+
 		startBtn = (Button) findViewById(R.id.startBtn);
 		startBtn.setOnClickListener(this);
 		stopBtn = (Button) findViewById(R.id.stopBtn);
@@ -189,7 +217,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		reloadFilterBtn = (Button) findViewById(R.id.filterReloadBtn);
 		reloadFilterBtn.setOnClickListener(this);
 
-		String uiText = "";
+        uiText = "";
 
 		scrollLockField = (TextView)findViewById(R.id.scrolllock);
 		if (scroll_locked)
@@ -211,11 +239,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		if (dnsField != null)
 			uiText = dnsField.getText().toString();
-		dnsField = (EditText) findViewById(R.id.dnsField);
+		dnsField = (TextView) findViewById(R.id.dnsField);
 		dnsField.setText(uiText);
-		dnsField.setEnabled(false);
+		dnsField.setEnabled(true);
+		dnsField.setOnClickListener(this);
 		
-		boolean checked = enableAdFilterCheck != null && enableAdFilterCheck.isChecked();		
+		checked = enableAdFilterCheck != null && enableAdFilterCheck.isChecked();
 		enableAdFilterCheck = (CheckBox) findViewById(R.id.enableAddFilter);
 		enableAdFilterCheck.setChecked(checked);
 		enableAdFilterCheck.setOnClickListener(this);
@@ -292,8 +321,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 					finish();
 				BOOT_START = false;
 			}
+
 			Properties config = getConfig();
 			if (config != null) {
+
+				manualDNSCheck.setChecked(!Boolean.parseBoolean(config.getProperty("detectDNS", "true")));
+				manualDNSView.setText(config.getProperty("fallbackDNS").replace(";","\n").replace(" ",""));
 
 				enableAdFilterCheck.setChecked(config.getProperty("filterHostsFile")!=null);
 				enableAutoStartCheck.setChecked(Boolean.parseBoolean(config.getProperty("AUTOSTART","false")));
@@ -319,6 +352,18 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			logOutView.setSelection(logOutView.getText().length());
 			scrollView.fullScroll(ScrollView.FOCUS_DOWN);
 		}
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		if (advDNSConfigDia_open)
+			advDNSConfigDia.dismiss();
+	}
+
+	@Override
+	protected void onRestoreInstanceState(Bundle outState) {
+		if (advDNSConfigDia_open)
+			advDNSConfigDia.show();
 	}
 
 	private String getFormattedAdvCfgText(Properties config) {
@@ -494,7 +539,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 			BufferedReader reader = new BufferedReader( new InputStreamReader(new FileInputStream(propsFile)));
 			while ((ln = reader.readLine())!= null) {
-								
+
+				if (ln.trim().startsWith("detectDNS"))
+					ln = "detectDNS = "+  !manualDNSCheck.isChecked();
+
+				if (ln.trim().startsWith("fallbackDNS"))
+					ln = "fallbackDNS = "+  manualDNSView.getText().toString().trim().replace("\n","; ");
+
 				if (ln.trim().startsWith("filterAutoUpdateURL"))
 					ln = "filterAutoUpdateURL = "+advancedConfigProps.remove("filterAutoUpdateURL");				
 				
@@ -617,9 +668,23 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		advancedConfigField.setText(getFormattedAdvCfgText(defProps));
 	}
 
+	@Override
+	public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_HOME) {
+			dialog.dismiss();
+			advDNSConfigDia_open=false;
+			persistConfig();
+		}
+		return false;
+	}
 
 	@Override
 	public void onClick(View destination) {
+
+		if (destination == dnsField) {
+			handleDNSConfigDialog();
+			return;
+		}
 
 		if (destination == scrollLockField) {
 			handleScrollLock();
@@ -655,6 +720,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				}
 			}
 		}
+	}
+
+	private void handleDNSConfigDialog() {
+		advDNSConfigDia.show();
+		advDNSConfigDia_open=true;
 	}
 
 	private void handleScrollLock() {

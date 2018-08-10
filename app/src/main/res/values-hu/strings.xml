@@ -13,4 +13,7 @@
   <string name="EnableAutoStart">Automatikus indítás</string>
   <string name="EnableAdfilter">Hirdetés blokkolás bekapcsolása</string>
   <string name="dnsLabel">DNS:</string>
+    <string name="manualDNSCheck">A DNS kiszolgálói felfedezés letiltása - Kézi DNS-kiszolgálók alább:</string>
+    <string name="dnsCfgConfigDialogTitle">DNS kiszolgáló konfiguráció</string>
+    <string name="appWhitelistCheckBox">App listája</string>
 </resources>

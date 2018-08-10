@@ -17,23 +17,24 @@
             android:id="@+id/textView1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
+            android:layout_marginLeft="15dp"
             android:layout_marginTop="10dp"
             android:text="@string/dnsLabel"
             android:textColor="#424242" >
         </TextView>
 
-        <EditText
+        <TextView
             android:id="@+id/dnsField"
+            android:background="#E0E0E0"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="7dp"
             android:layout_marginTop="10dp"
             android:layout_weight="0"
-            android:inputType="text"
+            android:textColor="#424242"
             android:maxLength="64"
             android:padding="10dp" >
-        </EditText>
+        </TextView>
 
         <LinearLayout
             android:id="@+id/linearLayout3"
@@ -96,7 +97,6 @@
                     android:id="@+id/advancedConfigField"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:button="@drawable/custom_checkbox"
                     android:inputType="textMultiLine"
                     android:padding="10dp"
                     android:textColor="#424242"
@@ -139,7 +139,6 @@
                     android:id="@+id/additionalHostsField"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:button="@drawable/custom_checkbox"
                     android:inputType="textMultiLine"
                     android:padding="10dp"
                     android:textColor="#424242"

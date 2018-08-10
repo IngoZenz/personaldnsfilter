@@ -5,4 +5,8 @@
     <item name="android:windowTitleStyle">@style/windowTitleStyle</item>
     <item name="android:windowTitleSize">50dip</item>
   </style>
+  <style name="Theme.dialog.TitleBar" parent="@android:style/Theme.Dialog">
+    <item name="android:windowTitleStyle">@style/windowTitleStyle</item>
+    <item name="android:windowTitleSize">50dip</item>
+  </style>
 </resources>

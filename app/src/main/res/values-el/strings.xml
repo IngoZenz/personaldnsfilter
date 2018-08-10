@@ -13,4 +13,7 @@
   <string name="EnableAutoStart">Αυτόματη εκκίνηση</string>
   <string name="EnableAdfilter">Ενεργοποίηση αποκλεισμού διαφημίσεων</string>
   <string name="dnsLabel">DNS:</string>
+    <string name="manualDNSCheck">Απενεργοποιήστε την ανίχνευση διακομιστή DNS - χειροκίνητους διακομιστές DNS παρακάτω:</string>
+    <string name="dnsCfgConfigDialogTitle">Διαμόρφωση διακομιστή DNS</string>
+    <string name="appWhitelistCheckBox">Λευκή λίστα εφαρμογών</string>
 </resources>

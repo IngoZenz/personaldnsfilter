@@ -13,4 +13,7 @@
   <string name="EnableAutoStart">Démarrage auto</string>
   <string name="EnableAdfilter">Activer le blocage des pubs</string>
   <string name="dnsLabel">DNS :</string>
+    <string name="manualDNSCheck">Désactiver la découverte du serveur DNS - Serveurs DNS manuels ci-dessous:</string>
+    <string name="dnsCfgConfigDialogTitle">Configuration du serveur DNS</string>
+    <string name="appWhitelistCheckBox">Liste blanche d\'applications</string>
 </resources>

@@ -13,4 +13,7 @@
   <string name="EnableAutoStart">Аутоматско покретање</string>
   <string name="EnableAdfilter">Омогући блокирање огласа</string>
   <string name="dnsLabel">ДНС:</string>
+    <string name="manualDNSCheck">Онемогући откривање ДНС сервера - ручни ДНС сервери доле:</string>
+    <string name="dnsCfgConfigDialogTitle">Конфигурација ДНС сервера</string>
+    <string name="appWhitelistCheckBox">Бела листа апликација</string>
 </resources>

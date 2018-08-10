@@ -13,4 +13,7 @@
   <string name="EnableAutoStart">Autom. käynnistys</string>
   <string name="EnableAdfilter">Ota mainostenesto käyttöön</string>
   <string name="dnsLabel">DNS:</string>
+    <string name="manualDNSCheck">Poista käytöstä DNS Server Discovery - Manuaaliset DNS-palvelimet alla:</string>
+    <string name="dnsCfgConfigDialogTitle">DNS-palvelimen määritys</string>
+    <string name="appWhitelistCheckBox">Sovelluslistavalitsin</string>
 </resources>

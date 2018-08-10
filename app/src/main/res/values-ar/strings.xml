@@ -13,4 +13,7 @@
   <string name="EnableAutoStart">التشغيل التلقائي</string>
   <string name="EnableAdfilter">تفعيل حظر الإعلانات</string>
   <string name="dnsLabel">نظام أسماء النطاقات (DNS):</string>
+  <string name="manualDNSCheck">تعطيل اكتشاف خادم DNS - ملقمات DNS اليدوية أدناه:</string>
+  <string name="dnsCfgConfigDialogTitle">تكوين خادم DNS</string>
+  <string name="appWhitelistCheckBox">القائمة البيضاء التطبيق</string>
 </resources>

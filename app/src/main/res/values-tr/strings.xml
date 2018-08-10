@@ -13,4 +13,7 @@
   <string name="EnableAutoStart">Otomatik başlatma</string>
   <string name="EnableAdfilter">Reklam engellemeyi etkinleştir</string>
   <string name="dnsLabel">DNS:</string>
+    <string name="manualDNSCheck">Aşağıdaki DNS Sunucusu Discovery - Manuel DNS Sunucularını devre dışı bırakın:</string>
+    <string name="dnsCfgConfigDialogTitle">DNS Sunucusu Yapılandırması</string>
+    <string name="appWhitelistCheckBox">Uygulama Beyaz Listesi</string>
 </resources>

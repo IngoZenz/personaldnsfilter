@@ -66,6 +66,8 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 	public static DNSFilterManager DNSFILTER = null;
 	public static DNSFilterProxy DNSFILTERPROXY = null;
 	private static DNSFilterService INSTANCE=null;
+
+	private static boolean JUST_STARTED = false;
 			
 	private ParcelFileDescriptor vpnInterface;
 	FileInputStream in = null;
@@ -84,8 +86,10 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 
 		boolean detect = Boolean.parseBoolean(dnsFilterMgr.getConfig().getProperty("detectDNS", "true"));
 
-		if (!detect && !DNSCommunicator.getInstance().getLastDNSAddress().equals(""))
+		if (!detect && !JUST_STARTED)
 			return;  //only static DNS server config already loaded
+
+		JUST_STARTED = false;
 
 		Logger.getLogger().logLine("Detecting DNS Servers...");
 		Vector<InetAddress> dnsAdrs = new Vector<InetAddress>();
@@ -115,8 +119,8 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 				Logger.getLogger().logLine("DNS:" + value);
 				try {
 					dnsAdrs.add(InetAddress.getByName(value));
-				} catch (UnknownHostException e) {
-					Logger.getLogger().logException(e);
+				} catch (Exception e) {
+					Logger.getLogger().logLine("Invalid fallbackDNS entry: '"+value+"'\n"+e.toString());
 				}				
 			}
 		}			
@@ -196,7 +200,8 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 			try {
 				DNSFilterManager.WORKDIR = DNSProxyActivity.WORKPATH.getAbsolutePath() + "/";
 				DNSFILTER = new DNSFilterManager();
-				DNSFILTER.init();	
+				DNSFILTER.init();
+				JUST_STARTED=true; //used in detectDNSServers to ensure eventually changed static DNS Servers config is taken
 				detectDNSServers();
 
 				//start DNS Proxy Mode if configured 
@@ -271,7 +276,7 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 				Logger.getLogger().logLine("Using Blocking Mode!");
 				blocking  = true;
 			}
-			
+
 			vpnInterface = builder.setConfigureIntent(pendingIntent).establish();
 			
 			if (vpnInterface != null) {

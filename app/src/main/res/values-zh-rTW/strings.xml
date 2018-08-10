@@ -13,4 +13,7 @@
   <string name="EnableAutoStart">自動啟動</string>
   <string name="EnableAdfilter">啟用廣告攔截</string>
   <string name="dnsLabel">網域名稱系統：</string>
+    <string name="manualDNSCheck">禁用DNS服務器發現 - 下面的手動DNS服務器：</string>
+    <string name="dnsCfgConfigDialogTitle">DNS服務器配置</string>
+    <string name="appWhitelistCheckBox">App白名單</string>
 </resources>

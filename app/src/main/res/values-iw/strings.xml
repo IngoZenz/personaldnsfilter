@@ -13,4 +13,7 @@
   <string name="EnableAutoStart">אתחול אוטומטי</string>
   <string name="EnableAdfilter">לאפשר חסימת מודעות</string>
   <string name="dnsLabel">DNS:</string>
+    <string name="manualDNSCheck">השבת גילוי DNS Server - שרתי DNS ידניים להלן:</string>
+    <string name="dnsCfgConfigDialogTitle">תצורת שרת DNS</string>
+    <string name="appWhitelistCheckBox">רשימת ההיתרים של אפליקציות</string>
 </resources>

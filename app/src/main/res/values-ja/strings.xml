@@ -13,4 +13,7 @@
   <string name="EnableAutoStart">自動起動</string>
   <string name="EnableAdfilter">広告ブロックの適用</string>
   <string name="dnsLabel">DNS:</string>
+    <string name="manualDNSCheck">DNSサーバーディスカバリーを無効にする - 以下の手動DNSサーバー：</string>
+    <string name="dnsCfgConfigDialogTitle">DNSサーバーの設定</string>
+    <string name="appWhitelistCheckBox">アプリケーションホワイトリスト</string>
 </resources>

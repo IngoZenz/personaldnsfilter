@@ -13,4 +13,7 @@
   <string name="EnableAutoStart">Autoinici</string>
   <string name="EnableAdfilter">Permetre blocatge d\'anunci</string>
   <string name="dnsLabel">DNS:</string>
+    <string name="manualDNSCheck">Desactiveu el descobriment del servidor DNS: servidors DNS manuals a continuació:</string>
+    <string name="dnsCfgConfigDialogTitle">Configuració del servidor DNS</string>
+    <string name="appWhitelistCheckBox">Llista blanca d\'aplicacions</string>
 </resources>

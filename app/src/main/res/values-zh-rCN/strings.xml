@@ -13,4 +13,7 @@
   <string name="EnableAutoStart">自动启动</string>
   <string name="EnableAdfilter">启用广告拦截</string>
   <string name="dnsLabel">域名服务器(DNS)：</string>
+    <string name="manualDNSCheck">禁用DNS服务器发现 - 下面的手动DNS服务器：</string>
+    <string name="dnsCfgConfigDialogTitle">DNS服务器配置</string>
+    <string name="appWhitelistCheckBox">App白名单</string>
 </resources>

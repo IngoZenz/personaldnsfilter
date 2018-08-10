@@ -13,4 +13,7 @@
   <string name="EnableAutoStart">Start automatyczny</string>
   <string name="EnableAdfilter">Zezwól na blokowanie reklam</string>
   <string name="dnsLabel">DNS:</string>
+    <string name="manualDNSCheck">Wyłącz wykrywanie serwera DNS - ręczne serwery DNS poniżej:</string>
+    <string name="dnsCfgConfigDialogTitle">Konfiguracja serwera DNS</string>
+    <string name="appWhitelistCheckBox">Biała lista aplikacji</string>
 </resources>

@@ -13,4 +13,7 @@
   <string name="EnableAutoStart">Automatické spuštění</string>
   <string name="EnableAdfilter">Povolit blokování reklam</string>
   <string name="dnsLabel">DNS:</string>
+  <string name="dnsCfgConfigDialogTitle">Konfigurace serveru DNS</string>
+  <string name="appWhitelistCheckBox">Aplikace Whitelist</string>
+  <string name="manualDNSCheck">Zakažte DNS Server Discovery - Ruční DNS servery níže:</string>
 </resources>

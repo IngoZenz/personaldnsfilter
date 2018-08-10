@@ -13,4 +13,7 @@
   <string name="EnableAutoStart">Automatisk start</string>
   <string name="EnableAdfilter">Aktiver annonceblokering</string>
   <string name="dnsLabel">DNS:</string>
+    <string name="manualDNSCheck">Deaktiver DNS Server Discovery - Manuelle DNS-servere nedenfor:</string>
+    <string name="dnsCfgConfigDialogTitle">DNS-server konfiguration</string>
+    <string name="appWhitelistCheckBox">App Hvidliste</string>
 </resources>
