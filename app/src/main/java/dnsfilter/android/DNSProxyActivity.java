@@ -192,23 +192,23 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 
 
-        String uiText = "";
+		String uiText = "";
 
-        advDNSConfigDia = new Dialog(DNSProxyActivity.this,R.style.Theme_dialog_TitleBar);
-        advDNSConfigDia.setContentView(R.layout.dnsconfigdialog);
-        advDNSConfigDia.setTitle(getResources().getString(R.string.dnsCfgConfigDialogTitle));
-        advDNSConfigDia.setOnKeyListener(this);
+		advDNSConfigDia = new Dialog(DNSProxyActivity.this,R.style.Theme_dialog_TitleBar);
+		advDNSConfigDia.setContentView(R.layout.dnsconfigdialog);
+		advDNSConfigDia.setTitle(getResources().getString(R.string.dnsCfgConfigDialogTitle));
+		advDNSConfigDia.setOnKeyListener(this);
 
-        boolean checked = manualDNSCheck!=null && manualDNSCheck.isChecked();
+		boolean checked = manualDNSCheck!=null && manualDNSCheck.isChecked();
 
-        manualDNSCheck = (CheckBox)advDNSConfigDia.findViewById(R.id.manualDNSCheck);
-        manualDNSCheck.setChecked(checked);
+		manualDNSCheck = (CheckBox)advDNSConfigDia.findViewById(R.id.manualDNSCheck);
+		manualDNSCheck.setChecked(checked);
 
-        if (manualDNSView != null)
-            uiText = manualDNSView.getText().toString();
+		if (manualDNSView != null)
+			uiText = manualDNSView.getText().toString();
 
-        manualDNSView = (TextView)advDNSConfigDia.findViewById(R.id.manualDNS);
-        manualDNSView.setText(uiText);
+		manualDNSView = (TextView)advDNSConfigDia.findViewById(R.id.manualDNS);
+		manualDNSView.setText(uiText);
 
 		startBtn = (Button) findViewById(R.id.startBtn);
 		startBtn.setOnClickListener(this);
@@ -217,7 +217,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		reloadFilterBtn = (Button) findViewById(R.id.filterReloadBtn);
 		reloadFilterBtn.setOnClickListener(this);
 
-        uiText = "";
+		uiText = "";
 
 		scrollLockField = (TextView)findViewById(R.id.scrolllock);
 		if (scroll_locked)
