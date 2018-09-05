@@ -26,7 +26,9 @@ import ip.IPPacket;
 import ip.UDPPacket;
 
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.FileOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.DatagramSocket;
@@ -55,6 +57,7 @@ import dnsfilter.DNSCommunicator;
 import dnsfilter.DNSFilterManager;
 import dnsfilter.DNSFilterProxy;
 import dnsfilter.DNSResolver;
+import util.Utils;
 
 public class DNSFilterService extends VpnService implements Runnable, ExecutionEnvironmentInterface {
 
@@ -68,6 +71,7 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 	private static DNSFilterService INSTANCE=null;
 
 	private static boolean JUST_STARTED = false;
+	private static boolean DNS_PROXY_PORT_IS_REDIRECTED = false;
 			
 	private ParcelFileDescriptor vpnInterface;
 	FileInputStream in = null;
@@ -206,7 +210,8 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 
 				//start DNS Proxy Mode if configured 
 				if (Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("dnsProxyOnAndroid", "false"))) {
-					DNSFILTERPROXY = new DNSFilterProxy();
+					setUpPortRedir();
+					DNSFILTERPROXY = new DNSFilterProxy(5300);
 					new Thread(DNSFILTERPROXY).start();
 				}
 			} catch (Exception e) {
@@ -291,6 +296,29 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 			Logger.getLogger().logException(e);
 		}
 		return START_STICKY;
+	}
+
+	private void setUpPortRedir() {
+		if (DNS_PROXY_PORT_IS_REDIRECTED)
+			return;
+		try {
+			Process su = Runtime.getRuntime().exec("su");
+			DataOutputStream outputStream = new DataOutputStream(su.getOutputStream());
+
+			outputStream.writeBytes("iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-port 5300\n");
+			outputStream.flush();
+
+			outputStream.writeBytes("exit\n");
+			outputStream.flush();
+			InputStream stdout = su.getInputStream();
+			Logger.getLogger().logLine("\n"+new String(Utils.readFully(stdout,1024)));
+			su.waitFor();
+			Logger.getLogger().logLine("SUCCESS! EXECUTED SU, iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-port 5300!");
+			DNS_PROXY_PORT_IS_REDIRECTED =true;
+		} catch (Exception e) {
+			Logger.getLogger().logLine("Exception during setting Port redirection:"+e.toString());
+
+		}
 	}
 
 	@SuppressLint("NewApi")

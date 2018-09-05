@@ -36,6 +36,11 @@ public class DNSFilterProxy implements Runnable {
 	
 	DatagramSocket receiver;
 	boolean stopped = false;
+	int port = 53;
+
+	public DNSFilterProxy(int port) {
+		this.port = port;
+	}
 
 	private static void initDNS(DNSFilterManager dnsFilterMgr) {
 
@@ -59,18 +64,18 @@ public class DNSFilterProxy implements Runnable {
 		DNSFilterManager filtermgr = new DNSFilterManager();
 		filtermgr.init();
 		initDNS(filtermgr);	
-		new DNSFilterProxy().run();	
+		new DNSFilterProxy(53).run();
 	}
 
 	@Override
 	public void run() {
 		try {
-			receiver = new DatagramSocket (53);	
+			receiver = new DatagramSocket (port);
 		} catch (IOException eio) {
-			Logger.getLogger().logLine("Exception:Cannot open DNS port 53! "+eio.getMessage());
+			Logger.getLogger().logLine("Exception:Cannot open DNS port "+port+"!"+eio.getMessage());
 			return;
 		}
-		Logger.getLogger().logLine("DNSFilterProxy running!");
+		Logger.getLogger().logLine("DNSFilterProxy running om port "+port+"!");
 		while (!stopped) {
 			try {
 				byte[] data = new byte[1024];
