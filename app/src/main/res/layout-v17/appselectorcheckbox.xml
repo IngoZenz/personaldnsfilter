@@ -9,7 +9,6 @@
             android:button="@drawable/custom_checkbox"
             android:checked="false"            
             android:padding="10dp"
-            android:text="@string/EnableConfigCheckBox"
             android:textColor="#424242" >
         </CheckBox>
 
