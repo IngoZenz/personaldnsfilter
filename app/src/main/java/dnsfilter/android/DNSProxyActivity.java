@@ -315,6 +315,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		myLogger = Logger.getLogger();
 
 		if (appStart) {
+			logLine("Initializing ...");
 			if (BOOT_START) {
 				Logger.getLogger().logLine("Running on SDK"+Build.VERSION.SDK_INT);
 				if (Build.VERSION.SDK_INT>=20) //on older Android we have to keep the app in forgrounnd due to teh VPN Accespt dialog popping up after each reboot.
@@ -331,13 +332,16 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				enableAdFilterCheck.setChecked(config.getProperty("filterHostsFile")!=null);
 				enableAutoStartCheck.setChecked(Boolean.parseBoolean(config.getProperty("AUTOSTART","false")));
 
+				keepAwakeCheck.setChecked(Boolean.parseBoolean(config.getProperty("androidKeepAwake","false")));
+				if (keepAwakeCheck.isChecked())
+					requestWakeLock();
+
 				//set advanced formatted config field text
 				advancedConfigField.setText(getFormattedAdvCfgText(config));
 
 				//set whitelisted Apps into UI
 				appSelector.setSelectedApps(config.getProperty("androidAppWhiteList",""));
 
-				logLine("Initializing ...");			
 				appStart = false; // now started
 				
 				handleStart(); //start
@@ -558,6 +562,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				if (ln.trim().startsWith("androidAppWhiteList"))
 					ln = "androidAppWhiteList = "+  appSelector.getSelectedAppPackages();
 
+				if (ln.trim().startsWith("androidKeepAwake"))
+					ln = "androidKeepAwake = "+ keepAwakeCheck.isChecked();
+
 				if (ln.trim().startsWith("#!!!filterHostsFile") && filterAds)
 					ln = ln.replace("#!!!filterHostsFile", "filterHostsFile");
 				
@@ -678,6 +685,25 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		return false;
 	}
 
+	private void requestWakeLock() {
+		wifiLock = ((WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL, "personalHttpProxy");
+		wifiLock.acquire();
+		wakeLock = ((PowerManager) getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "personalHttpProxy");
+		wakeLock.acquire();
+		Logger.getLogger().logLine("Aquired WIFI lock and partial wake lock!");
+	}
+
+	private void releaseWakeLock() {
+		if (wifiLock != null  && wakeLock != null){
+			wifiLock.release();
+			wakeLock.release();
+			wifiLock = null;
+			wakeLock = null;
+			Logger.getLogger().logLine("Released WIFI lock and partial wake lock!");
+		}
+	}
+
+
 	@Override
 	public void onClick(View destination) {
 
@@ -705,19 +731,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}		
 		if (destination == keepAwakeCheck) {
 			if (keepAwakeCheck.isChecked()) {
-				wifiLock = ((WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL, "personalHttpProxy");
-				wifiLock.acquire();
-				wakeLock = ((PowerManager) getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "personalHttpProxy");
-				wakeLock.acquire();	
-				Logger.getLogger().logLine("Aquired WIFI lock and partial wake lock!");
+				requestWakeLock();
 			} else {
-				if (wifiLock != null  && wakeLock != null){
-					wifiLock.release();
-					wakeLock.release();
-					wifiLock = null;
-					wakeLock = null;
-					Logger.getLogger().logLine("Released WIFI lock and partial wake lock!");
-				}
+				releaseWakeLock();
 			}
 		}
 	}
