@@ -75,7 +75,7 @@ public class DNSFilterProxy implements Runnable {
 			Logger.getLogger().logLine("Exception:Cannot open DNS port "+port+"!"+eio.getMessage());
 			return;
 		}
-		Logger.getLogger().logLine("DNSFilterProxy running om port "+port+"!");
+		Logger.getLogger().logLine("DNSFilterProxy running on port "+port+"!");
 		while (!stopped) {
 			try {
 				byte[] data = new byte[1024];
