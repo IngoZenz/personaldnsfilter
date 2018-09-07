@@ -772,33 +772,34 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				appWhiteListScroll.setVisibility(View.GONE);
 			}
 
-			if (editFilterLoadCheck.isChecked())
-				advancedConfigField.setVisibility(View.VISIBLE);
-			else
-				advancedConfigField.setVisibility(View.GONE);
+			if (editFilterLoadCheck.isChecked()) {
+				findViewById(R.id.advCfgScroll).setVisibility(View.VISIBLE);
+			}
+			else {
+				findViewById(R.id.advCfgScroll).setVisibility(View.GONE);
+			}
 			
 			if (editAdditionalHostsCheck.isChecked()) {
 				loadAdditionalHosts();
-				additionalHostsField.setVisibility(View.VISIBLE);
+				findViewById(R.id.addHostsScroll).setVisibility(View.VISIBLE);
 			}
 			else {
 				additionalHostsField.setText("");
-				additionalHostsField.setVisibility(View.GONE);
 				additionalHostsChanged = false;
+				findViewById(R.id.addHostsScroll).setVisibility(View.GONE);
 			}
 		}
 		else {
+			findViewById(R.id.advCfgScroll).setVisibility(View.GONE);
+			findViewById(R.id.addHostsScroll).setVisibility(View.GONE);
 			appWhiteListCheck.setVisibility(View.GONE);
 			appWhiteListScroll.setVisibility(View.GONE);
 			appSelector.clear();
-			advancedConfigField.setVisibility(View.GONE);	
 			keepAwakeCheck.setVisibility(View.GONE);
 			editAdditionalHostsCheck.setVisibility(View.GONE);
 			editFilterLoadCheck.setVisibility(View.GONE);
-			advancedConfigField.setVisibility(View.GONE);
 			editAdditionalHostsCheck.setChecked(false);
 			additionalHostsField.setText("");
-			additionalHostsField.setVisibility(View.GONE);
 			additionalHostsChanged = false;
 		}
 	}

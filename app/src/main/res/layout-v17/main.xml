@@ -78,32 +78,27 @@
         </CheckBox>
 
         <ScrollView
-            android:id="@+id/scrollView1"
+            android:id="@+id/advCfgScroll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="0dp"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp" >
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="15dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp" >
 
             <HorizontalScrollView
                 android:id="@+id/scrollView3"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="0dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp" >
+                android:layout_height="wrap_content" >
 
                 <EditText
                     android:id="@+id/advancedConfigField"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
                     android:inputType="textMultiLine"
                     android:padding="10dp"
                     android:textColor="#424242"
-                    android:textSize="14dp"
-                    android:visibility="gone" >
+                    android:textSize="14dp">
                 </EditText>
             </HorizontalScrollView>
         </ScrollView>
@@ -122,32 +117,28 @@
         </CheckBox>
 
         <ScrollView
-            android:id="@+id/scrollView4"
+            android:id="@+id/addHostsScroll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="0dp"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp" >
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="15dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp" >
 
             <HorizontalScrollView
                 android:id="@+id/scrollView2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp" >
+                android:layout_marginTop="0dp" >
 
                 <EditText
                     android:id="@+id/additionalHostsField"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
                     android:inputType="textMultiLine"
                     android:padding="10dp"
                     android:textColor="#424242"
-                    android:textSize="14dp"
-                    android:visibility="gone" >
+                    android:textSize="14dp" >
                 </EditText>
             </HorizontalScrollView>
         </ScrollView>
@@ -179,8 +170,7 @@
                 android:id="@+id/appSelector"
                 android:layout_marginLeft="10dp"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="0.08"
+                android:layout_height="wrap_content"
                 android:orientation="vertical">
             </dnsfilter.android.AppSelectorView>
         </ScrollView>
