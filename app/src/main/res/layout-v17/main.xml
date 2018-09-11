@@ -8,12 +8,12 @@
     android:orientation="vertical"
     android:weightSum="1" >
 
-    <LinearLayout
+	<LinearLayout
         android:id="@+id/linearLayout1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
-        <TextView
+		<TextView
             android:id="@+id/textView1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -21,9 +21,9 @@
             android:layout_marginTop="15dp"
             android:text="@string/dnsLabel"
             android:textColor="#424242" >
-        </TextView>
+		</TextView>
 
-        <TextView
+		<TextView
             android:id="@+id/dnsField"
             android:background="#E0E0E0"
             android:layout_width="wrap_content"
@@ -34,24 +34,25 @@
             android:textColor="#424242"
             android:maxLength="64"
             android:padding="10dp" >
-        </TextView>
+		</TextView>
 
-        <LinearLayout
+		<LinearLayout
             android:id="@+id/linearLayout3"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="0.08"
             android:orientation="vertical" >
-        </LinearLayout>
-    </LinearLayout>
+		</LinearLayout>
+	</LinearLayout>
 
-    <LinearLayout
+
+	<LinearLayout
         android:id="@+id/linearLayout4"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical" >
 
-        <CheckBox
+		<CheckBox
             android:id="@+id/advancedConfigCheck"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -62,9 +63,9 @@
             android:padding="10dp"
             android:text="@string/EnableConfigCheckBox"
             android:textColor="#424242" >
-        </CheckBox>
+		</CheckBox>
 
-        <CheckBox
+		<CheckBox
             android:id="@+id/editFilterLoad"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -75,35 +76,108 @@
             android:padding="10dp"
             android:text="@string/editFilterLoadCheckBox"
             android:textColor="#424242" >
-        </CheckBox>
+		</CheckBox>
 
-        <ScrollView
-            android:id="@+id/advCfgScroll"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
-            android:layout_marginBottom="15dp"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp" >
+		<LinearLayout
+			android:id="@+id/filtercfgview"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="vertical"
+			android:layout_marginTop="3dp"
+			android:layout_marginBottom="15dp"
+			android:paddingBottom="15dp"
+			android:layout_marginLeft="15dp"
+			android:layout_marginRight="15dp"
+			android:background="#E0E0E0">
 
-            <HorizontalScrollView
-                android:id="@+id/scrollView3"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content" >
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_marginLeft="10dp"
+					android:layout_marginTop="15dp"
+					android:paddingRight="7dp"
+					android:text="Days to Reload Filter:"
+					android:textColor="#424242" >
+				</TextView>
 
-                <EditText
-                    android:id="@+id/advancedConfigField"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:inputType="textMultiLine"
-                    android:padding="10dp"
-                    android:textColor="#424242"
-                    android:textSize="14dp">
-                </EditText>
-            </HorizontalScrollView>
-        </ScrollView>
+				<EditText
+					android:id="@+id/filterloadinterval"
+					android:layout_width="42dp"
+					android:layout_height="wrap_content"
+					android:layout_marginTop="15dp"
+					android:textColor="#424242"
+					android:textSize="14dp"
+					android:text="14"
+					android:inputType="number"
+					android:background="#E0E0E0">
+				</EditText>
+			</LinearLayout>
+			<ScrollView
+				android:layout_width="fill_parent"
+				android:layout_height="match_parent"
+				android:layout_marginLeft="10dp">
+				<TableLayout
+					android:id="@+id/filtercfgtable"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_gravity="center">
 
-        <CheckBox
+					<TableRow
+						android:paddingTop="10dp"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:layout_weight="1">
+						<TextView
+							android:layout_weight=".1"
+							android:layout_width="0dp"
+							android:layout_height="wrap_content"
+							android:text="Active"
+							android:textColor="#424242"
+							android:textSize="14dp"
+							android:textStyle="bold"
+							android:paddingLeft="0dp">
+						</TextView>
+						<TextView
+							android:layout_weight=".3"
+							android:layout_width="0dp"
+							android:layout_height="wrap_content"
+							android:text="ID"
+							android:textColor="#424242"
+							android:textSize="14dp"
+							android:textStyle="bold"
+							android:paddingLeft="10dp">
+						</TextView>
+						<TextView
+							android:layout_weight=".5"
+							android:layout_width="0dp"
+							android:layout_height="wrap_content"
+							android:text="URL"
+							android:textColor="#424242"
+							android:textSize="14dp"
+							android:textStyle="bold"
+							android:paddingLeft="10dp">
+						</TextView>
+
+						<TextView
+							android:layout_weight=".1"
+							android:layout_width="0dp"
+							android:layout_height="wrap_content"
+							android:text="+/-"
+							android:textColor="#424242"
+							android:textSize="14dp"
+							android:textStyle="bold"
+							android:paddingLeft="10dp">
+						</TextView>
+					</TableRow>
+
+				</TableLayout>
+			</ScrollView>
+		</LinearLayout>
+
+		<CheckBox
             android:id="@+id/editAdditionalHosts"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -114,9 +188,9 @@
             android:padding="10dp"
             android:text="@string/editAdditionalHostsCheckBox"
             android:textColor="#424242" >
-        </CheckBox>
+		</CheckBox>
 
-        <ScrollView
+		<ScrollView
             android:id="@+id/addHostsScroll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -125,13 +199,13 @@
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp" >
 
-            <HorizontalScrollView
+			<HorizontalScrollView
                 android:id="@+id/scrollView2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="0dp" >
 
-                <EditText
+				<EditText
                     android:id="@+id/additionalHostsField"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -139,11 +213,11 @@
                     android:padding="10dp"
                     android:textColor="#424242"
                     android:textSize="14dp" >
-                </EditText>
-            </HorizontalScrollView>
-        </ScrollView>
+				</EditText>
+			</HorizontalScrollView>
+		</ScrollView>
 
-        <CheckBox
+		<CheckBox
             android:id="@+id/appWhitelist"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -154,9 +228,9 @@
             android:padding="10dp"
             android:text="@string/appWhitelistCheckBox"
             android:textColor="#424242" >
-        </CheckBox>
+		</CheckBox>
 
-        <ScrollView
+		<ScrollView
             android:id="@+id/appWhiteListScroll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -166,16 +240,16 @@
             android:layout_marginRight="15dp"
             android:background="#E0E0E0"
             android:visibility="gone">
-            <dnsfilter.android.AppSelectorView
+			<dnsfilter.android.AppSelectorView
                 android:id="@+id/appSelector"
                 android:layout_marginLeft="10dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
-            </dnsfilter.android.AppSelectorView>
-        </ScrollView>
+			</dnsfilter.android.AppSelectorView>
+		</ScrollView>
 
-        <CheckBox
+		<CheckBox
             android:id="@+id/keepAwakeCheck"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -186,9 +260,9 @@
             android:padding="10dp"
             android:text="@string/keepAwakeCheckBox"
             android:textColor="#424242" >
-        </CheckBox>
+		</CheckBox>
 
-        <CheckBox
+		<CheckBox
             android:id="@+id/enableAddFilter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -199,9 +273,9 @@
             android:padding="10dp"
             android:text="@string/EnableAdfilter"
             android:textColor="#424242" >
-        </CheckBox>
+		</CheckBox>
 
-        <CheckBox
+		<CheckBox
             android:id="@+id/enableAutoStart"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -212,16 +286,17 @@
             android:padding="10dp"
             android:text="@string/EnableAutoStart"
             android:textColor="#424242" >
-        </CheckBox>
-    </LinearLayout>
-    
-    <LinearLayout
+		</CheckBox>
+	</LinearLayout>
+
+
+	<LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:weightSum="1" >
 
-        <Button
+		<Button
             android:id="@+id/filterReloadBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -232,9 +307,9 @@
             android:text="@string/filterReloadBtnLabel"
             android:textColor="#212121"
             android:textSize="14dp" >
-        </Button>
+		</Button>
 
-        <Button
+		<Button
             android:id="@+id/startBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -245,9 +320,9 @@
             android:text="@string/startBtnLabel"
             android:textColor="#212121"
             android:textSize="14dp" >
-        </Button>
+		</Button>
 
-        <Button
+		<Button
             android:id="@+id/stopBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -258,10 +333,10 @@
             android:text="@string/stopBtnLabel"
             android:textColor="#212121"
             android:textSize="14dp" >
-        </Button>
-    </LinearLayout>
+		</Button>
+	</LinearLayout>
 
-    <TextView
+	<TextView
         android:id="@+id/scrolllock"
         android:layout_width="match_parent"
         android:layout_height="15dp"
@@ -274,7 +349,7 @@
         android:textStyle="bold"
         android:textColor="#000000" />
 
-    <ScrollView
+	<ScrollView
         android:id="@+id/ScrollView01"
         android:layout_width="fill_parent"
         android:layout_height="match_parent"
@@ -285,7 +360,7 @@
         android:background="#E0E0E0"
         android:padding="7dp" >
 
-        <EditText
+		<EditText
             android:id="@+id/logOutput"
             android:background="#E0E0E0"
             android:layout_width="match_parent"
@@ -297,7 +372,7 @@
             android:textIsSelectable="true"
             android:textSize="14dp"
             android:textColor="#616161" >
-        </EditText>
-    </ScrollView>
+		</EditText>
+	</ScrollView>
 
 </LinearLayout>

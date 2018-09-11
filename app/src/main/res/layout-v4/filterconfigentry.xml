@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+    <TableRow
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:paddingTop="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <CheckBox
+            android:layout_weight=".1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="0dp"
+            android:button="@drawable/custom_checkbox" >
+        </CheckBox>
+
+       <HorizontalScrollView
+
+        android:layout_weight=".3"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"  >
+
+         <EditText
+                android:layout_weight="1"
+                android:background="#E0E0E0"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:paddingLeft="0dp"
+                android:textColor="#424242"
+			    android:textSize="14dp">
+         </EditText>
+         </HorizontalScrollView>
+		
+	     <HorizontalScrollView
+
+            android:layout_weight=".5"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingLeft="10dp"  >
+			
+            <EditText            
+                android:background="#E0E0E0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"  
+                android:layout_weight="1"
+				android:paddingLeft="0dp"
+                android:textColor="#424242"
+			    android:textSize="14dp">				>
+            </EditText>			
+			
+        </HorizontalScrollView>
+
+		 <TextView
+            android:layout_weight=".1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingLeft="10dp"
+            android:text="-"
+            android:textColor="#424242"
+            android:textSize="14dp">
+        </TextView>
+		
+    </TableRow>
+
