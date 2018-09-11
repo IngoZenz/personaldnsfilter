@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Properties;
@@ -95,6 +96,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private static CheckBox enableAdFilterCheck;
 	private static EditText filterReloadIntervalView;
 	private static FilterConfig filterCfg;
+	private static FilterConfig.FilterConfigEntry[] filterEntries;
 	private static EditText additionalHostsField;
 	private static TextView scrollLockField;
 	private static Dialog advDNSConfigDia;
@@ -121,7 +123,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private static WakeLock wakeLock;
 	
 	private static Intent SERVICE = null;
-
 
 
 	private class MyUIThreadLogger implements Runnable {;
@@ -192,20 +193,15 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		setContentView(R.layout.main);
 		setTitle("personalDNSfilter V"+DNSFilterManager.VERSION+" (Connections:"+DNSFilterService.openConnectionsCount()+")");
 
-		FilterConfig.FilterConfigEntry[] filterEntries = new FilterConfig.FilterConfigEntry[0];
-		if (filterCfg!=null) {
-			filterEntries = filterCfg.getFilterEntries();
-			filterCfg.clear();
-		}
 		filterCfg = new FilterConfig((TableLayout) findViewById(R.id.filtercfgtable));
-		filterCfg.load(filterEntries);
+		if (filterEntries != null)
+			filterCfg.setEntries(filterEntries);
 
 		String uiText = "";
 		if (filterReloadIntervalView != null)
 			uiText = filterReloadIntervalView.getText().toString();
 		filterReloadIntervalView = (EditText) findViewById(R.id.filterloadinterval);
 		filterReloadIntervalView.setText(uiText);
-		filterReloadIntervalView.setEnabled(true);
 
 		uiText = "";
 
@@ -337,6 +333,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 				manualDNSCheck.setChecked(!Boolean.parseBoolean(config.getProperty("detectDNS", "true")));
 				manualDNSView.setText(config.getProperty("fallbackDNS").replace(";","\n").replace(" ",""));
+
+				filterEntries = buildFilterEntries(config);
+				filterCfg.setEntries(filterEntries);
+
 				filterReloadIntervalView.setText(config.getProperty("reloadIntervalDays","7"));
 
 				enableAdFilterCheck.setChecked(config.getProperty("filterHostsFile")!=null);
@@ -354,6 +354,42 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				handleStart(); //start
 			}
 		}
+	}
+
+	private FilterConfig.FilterConfigEntry[] buildFilterEntries(Properties config) {
+		String urls = config.getProperty("filterAutoUpdateURL","");
+		String url_IDs = config.getProperty("filterAutoUpdateURL_IDs","");
+		String url_switchs = config.getProperty("filterAutoUpdateURL_switchs","");
+
+		StringTokenizer urlTokens = new StringTokenizer(urls, ";");
+		StringTokenizer urlIDTokens = new StringTokenizer(url_IDs, ";");
+		StringTokenizer urlSwitchTokens = new StringTokenizer(url_switchs, ";");
+
+		int count = urlTokens.countTokens();
+		FilterConfig.FilterConfigEntry[] result = new FilterConfig.FilterConfigEntry[count];
+
+		for (int i = 0; i < count; i++) {
+			String urlStr = urlTokens.nextToken().trim();
+			String url_id = "";
+			if (urlIDTokens.hasMoreTokens())
+				url_id=urlIDTokens.nextToken();
+			else {
+				URL url = null;
+				try {
+					url = new URL(urlStr);
+					url_id = url.getHost();
+				} catch (MalformedURLException e) {
+					Logger.getLogger().logException(e);
+					url_id = "-";
+				}
+			}
+			boolean active = true;
+			if (urlSwitchTokens.hasMoreTokens())
+				active = Boolean.parseBoolean(urlSwitchTokens.nextToken().trim());
+
+			result[i] = new FilterConfig.FilterConfigEntry(active, url_id, urlStr);
+		}
+		return result;
 	}
 
 	@Override
@@ -507,12 +543,26 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	}
 
 
+	public String[] getFilterCfgStrings(FilterConfig.FilterConfigEntry[] filterEntries) {
+		String[] result = new String[3];
+		String dim="";
+		for (int i = 0 ; i < filterEntries.length; i++ ) {
+			result[0] = result[0]+dim+filterEntries[i].active;
+			result[1] = result[1]+dim+filterEntries[i].id;
+			result[2] = result[2]+dim+filterEntries[i].url;
+			dim="; ";
+		}
+		return result;
+	}
+
 	private void persistConfig() {
 		try {
 			
 			persistAdditionalHosts();
 			
 			boolean filterAds = enableAdFilterCheck.isChecked();
+
+			String[] filterCfgStrings = getFilterCfgStrings(filterEntries);
 			
 			File propsFile = new File (Environment.getExternalStorageDirectory().getAbsolutePath()+"/PersonalDNSFilter/dnsfilter.conf");
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -528,7 +578,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 					ln = "fallbackDNS = "+  manualDNSView.getText().toString().trim().replace("\n","; ");
 
 				if (ln.trim().startsWith("filterAutoUpdateURL"))
-					//ln = "filterAutoUpdateURL = "+advancedConfigProps.remove("filterAutoUpdateURL");
+					ln = "filterAutoUpdateURL = "+filterCfgStrings[2];
+
+				if (ln.trim().startsWith("filterAutoUpdateURL_IDs"))
+					ln = "filterAutoUpdateURL_IDs = "+filterCfgStrings[1];
+
+				if (ln.trim().startsWith("filterAutoUpdateURL_switchs"))
+					ln = "filterAutoUpdateURL_switchs = "+filterCfgStrings[0];
 				
 				if (ln.trim().startsWith("reloadIntervalDays"))
 					ln = "reloadIntervalDays = "+filterReloadIntervalView.getText();
@@ -700,10 +756,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			}
 
 			if (editFilterLoadCheck.isChecked()) {
+				filterCfg.load();
 				findViewById(R.id.filtercfgview).setVisibility(View.VISIBLE);
 			}
 			else {
 				findViewById(R.id.filtercfgview).setVisibility(View.GONE);
+				filterEntries = filterCfg.getFilterEntries();
+				filterCfg.clear();
 			}
 			
 			if (editAdditionalHostsCheck.isChecked()) {
@@ -718,6 +777,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}
 		else {
 			findViewById(R.id.filtercfgview).setVisibility(View.GONE);
+			filterEntries = filterCfg.getFilterEntries();
+			filterCfg.clear();
 			findViewById(R.id.addHostsScroll).setVisibility(View.GONE);
 			appWhiteListCheck.setVisibility(View.GONE);
 			appWhiteListScroll.setVisibility(View.GONE);

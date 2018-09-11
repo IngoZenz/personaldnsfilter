@@ -13,9 +13,11 @@ import android.widget.TextView;
 public class FilterConfig {
 
     TableLayout configTable;
+    FilterConfigEntry[] filterEntries;
+    boolean loaded = false;
 
 
-    public class FilterConfigEntry {
+    public static class FilterConfigEntry {
         boolean active;
         String id;
         String url;
@@ -56,15 +58,27 @@ public class FilterConfig {
         ((TextView) cells[3]).setText("X");
     }
 
-    public void load(FilterConfigEntry[] entries) {
-        for (int i = 0; i < entries.length; i++)
-            addItem(entries[i]);
+
+
+    public void setEntries(FilterConfigEntry[] entries) {
+        this.filterEntries = entries;
+    }
+
+    public void load() {
+        for (int i = 0; i < filterEntries.length; i++)
+            addItem(filterEntries[i]);
+
+        loaded = true;
     }
 
     public FilterConfigEntry[] getFilterEntries() {
-        return new FilterConfigEntry[0];
+        if (!loaded)
+            return filterEntries;
+
+
     }
 
     public void clear() {
+        loaded = false;
     }
 }
