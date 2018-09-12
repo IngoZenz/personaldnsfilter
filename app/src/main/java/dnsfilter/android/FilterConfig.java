@@ -8,14 +8,22 @@ import android.widget.TableRow;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.view.View.OnClickListener;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 
-public class FilterConfig {
+public class FilterConfig implements OnClickListener {
+
+    static String NEW_ITEM= "<new>";
+    static String INVALID_URL= "<invalid URL!>";
+    static String ADD_ITEM= "+";
+    static String DEL_ITEM= "-";
 
     TableLayout configTable;
     FilterConfigEntry[] filterEntries;
     boolean loaded = false;
-
 
     public static class FilterConfigEntry {
         boolean active;
@@ -31,9 +39,6 @@ public class FilterConfig {
 
     public FilterConfig(TableLayout table) {
         configTable=table;
-        addItem(new FilterConfigEntry(true,"adaway", "https://adaway.org/hosts.txt"));
-        addItem(new FilterConfigEntry(false,"montanamenagerie", "http://www.montanamenagerie.org/hostsfile/hosts.txt"));
-        addItem(new FilterConfigEntry(false,"pgl.yoyo.org", "http://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext"));
     }
 
     private View[] getContentCells(TableRow row) {
@@ -48,16 +53,16 @@ public class FilterConfig {
         return result;
     }
 
-    private void addItem(FilterConfigEntry entry) {
+    private void addItem(FilterConfigEntry entry, String lastColumnValue) {
         TableRow row = (TableRow) LayoutInflater.from(configTable.getContext()).inflate(R.layout.filterconfigentry, null);
         configTable.addView(row);
         View[] cells = getContentCells(row);
         ((CheckBox) cells[0]).setChecked(entry.active);
         ((EditText) cells[1]).setText(entry.id);
         ((EditText) cells[2]).setText(entry.url);
-        ((TextView) cells[3]).setText("X");
+        ((TextView) cells[3]).setText(lastColumnValue);
+        cells[3].setOnClickListener(this);
     }
-
 
 
     public void setEntries(FilterConfigEntry[] entries) {
@@ -66,19 +71,69 @@ public class FilterConfig {
 
     public void load() {
         for (int i = 0; i < filterEntries.length; i++)
-            addItem(filterEntries[i]);
+            addItem(filterEntries[i],DEL_ITEM);
+        addEmptyEndItem();
 
         loaded = true;
+    }
+
+    private void addEmptyEndItem() {
+        addItem(new FilterConfigEntry(false,NEW_ITEM,NEW_ITEM),ADD_ITEM);
     }
 
     public FilterConfigEntry[] getFilterEntries() {
         if (!loaded)
             return filterEntries;
 
-
+        int count = configTable.getChildCount()-2;
+        FilterConfigEntry[] result = new FilterConfigEntry[count];
+        for (int i = 1; i < count; i++) {
+            View[] rowContent = getContentCells((TableRow) configTable.getChildAt(i));
+            if (!handleRowChange(rowContent))
+                return filterEntries;
+            else {
+                result[i] = new FilterConfigEntry( ((CheckBox)rowContent[0]).isChecked(),((EditText)rowContent[1]).getText().toString().trim(),((EditText)rowContent[2]).getText().toString().trim());
+            }
+        }
+        return result;
     }
 
     public void clear() {
+        filterEntries = getFilterEntries();
+        int count = configTable.getChildCount()-1;
+        for (int i = 1; i < count; i++)
+            configTable.removeViewAt(i);
+
         loaded = false;
+    }
+
+    @Override
+    public void onClick(View v) {
+        if ( ((TextView)v).getText().toString().equals(DEL_ITEM)) {
+            v.setOnClickListener(null);
+            configTable.removeView((View) v.getParent());
+        } else {
+            newItem((TableRow) v.getParent());
+        }
+    }
+
+    private void newItem(TableRow row) {
+        View[] cells = getContentCells(row);
+        if (handleRowChange(cells)) {
+            ((TextView)cells[3]).setText(DEL_ITEM);
+            addEmptyEndItem();
+        }
+    }
+
+    private boolean handleRowChange(View[] cells) {
+        try {
+            URL url = new URL( ((EditText)cells[2]).getText().toString());
+            if (((EditText)cells[1]).getText().toString().equals(NEW_ITEM))
+                ((EditText)cells[1]).setText(url.getHost());
+            return true;
+        } catch (MalformedURLException e) {
+            ((EditText)cells[2]).setText(INVALID_URL);
+            return false;
+        }
     }
 }

@@ -23,7 +23,6 @@
 package dnsfilter.android;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,7 +34,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -63,7 +61,6 @@ import android.text.Html;
 import android.text.Spanned;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -372,7 +369,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			String urlStr = urlTokens.nextToken().trim();
 			String url_id = "";
 			if (urlIDTokens.hasMoreTokens())
-				url_id=urlIDTokens.nextToken();
+				url_id=urlIDTokens.nextToken().trim();
 			else {
 				URL url = null;
 				try {
@@ -468,7 +465,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		String ln="";
 		while ( (ln = defCfgReader.readLine()) != null) {
 			for (int i = 0; i < currentKeys.length; i++) 
-				if (ln.startsWith(currentKeys[i])) 
+				if (ln.startsWith(currentKeys[i]+" ="))
 					ln = currentKeys[i]+" = "+currentConfig.getProperty(currentKeys[i],"");
 			
 			mergedout.write((ln+"\r\n").getBytes());
@@ -544,7 +541,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 
 	public String[] getFilterCfgStrings(FilterConfig.FilterConfigEntry[] filterEntries) {
-		String[] result = new String[3];
+		String[] result = {"","",""};
 		String dim="";
 		for (int i = 0 ; i < filterEntries.length; i++ ) {
 			result[0] = result[0]+dim+filterEntries[i].active;
@@ -574,34 +571,34 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				if (ln.trim().startsWith("detectDNS"))
 					ln = "detectDNS = "+  !manualDNSCheck.isChecked();
 
-				if (ln.trim().startsWith("fallbackDNS"))
+				else if (ln.trim().startsWith("fallbackDNS"))
 					ln = "fallbackDNS = "+  manualDNSView.getText().toString().trim().replace("\n","; ");
 
-				if (ln.trim().startsWith("filterAutoUpdateURL"))
-					ln = "filterAutoUpdateURL = "+filterCfgStrings[2];
-
-				if (ln.trim().startsWith("filterAutoUpdateURL_IDs"))
+				else if (ln.trim().startsWith("filterAutoUpdateURL_IDs"))
 					ln = "filterAutoUpdateURL_IDs = "+filterCfgStrings[1];
 
-				if (ln.trim().startsWith("filterAutoUpdateURL_switchs"))
+				else if (ln.trim().startsWith("filterAutoUpdateURL_switchs"))
 					ln = "filterAutoUpdateURL_switchs = "+filterCfgStrings[0];
-				
-				if (ln.trim().startsWith("reloadIntervalDays"))
+
+				else if (ln.trim().startsWith("filterAutoUpdateURL"))
+					ln = "filterAutoUpdateURL = "+filterCfgStrings[2];
+
+				else if (ln.trim().startsWith("reloadIntervalDays"))
 					ln = "reloadIntervalDays = "+filterReloadIntervalView.getText();
-				
-				if (ln.trim().startsWith("AUTOSTART"))
+
+				else if (ln.trim().startsWith("AUTOSTART"))
 					ln = "AUTOSTART = "+  enableAutoStartCheck.isChecked();
 
-				if (ln.trim().startsWith("androidAppWhiteList"))
+				else if (ln.trim().startsWith("androidAppWhiteList"))
 					ln = "androidAppWhiteList = "+  appSelector.getSelectedAppPackages();
 
-				if (ln.trim().startsWith("androidKeepAwake"))
+				else if (ln.trim().startsWith("androidKeepAwake"))
 					ln = "androidKeepAwake = "+ keepAwakeCheck.isChecked();
 
-				if (ln.trim().startsWith("#!!!filterHostsFile") && filterAds)
+				else if (ln.trim().startsWith("#!!!filterHostsFile") && filterAds)
 					ln = ln.replace("#!!!filterHostsFile", "filterHostsFile");
-				
-				if (ln.trim().startsWith("filterHostsFile") && !filterAds)
+
+				else if (ln.trim().startsWith("filterHostsFile") && !filterAds)
 					ln = ln.replace("filterHostsFile", "#!!!filterHostsFile");
 				
 				out.write((ln+"\r\n").getBytes());

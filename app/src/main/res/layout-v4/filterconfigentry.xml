@@ -23,43 +23,47 @@
         android:paddingLeft="10dp"  >
 
          <EditText
-                android:layout_weight="1"
-                android:background="#E0E0E0"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:paddingLeft="0dp"
-                android:textColor="#424242"
-			    android:textSize="14dp">
+             android:layout_weight="1"
+             android:background="#E0E0E0"
+             android:layout_width="0dp"
+             android:layout_height="wrap_content"
+             android:paddingLeft="0dp"
+             android:textColor="#424242"
+			 android:textSize="14dp">
          </EditText>
          </HorizontalScrollView>
 		
 	     <HorizontalScrollView
 
-            android:layout_weight=".5"
+            android:layout_weight=".6"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:paddingLeft="10dp"  >
 			
-            <EditText            
+            <EditText
                 android:background="#E0E0E0"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"  
                 android:layout_weight="1"
 				android:paddingLeft="0dp"
                 android:textColor="#424242"
-			    android:textSize="14dp">				>
+			    android:textSize="14dp">
             </EditText>			
 			
         </HorizontalScrollView>
 
 		 <TextView
-            android:layout_weight=".1"
-            android:layout_width="0dp"
+            android:layout_weight="0"
+            android:layout_width="28dp"
             android:layout_height="wrap_content"
-            android:paddingLeft="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:text="-"
             android:textColor="#424242"
-            android:textSize="14dp">
+            android:textSize="14dp"
+            android:gravity="center"
+            android:background="#955F5F5F"
+            android:textStyle="bold">
         </TextView>
 		
     </TableRow>
