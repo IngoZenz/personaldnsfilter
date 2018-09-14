@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-        <CheckBox
+        <dnsfilter.android.PaddedCheckBox
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -8,8 +8,6 @@
             android:layout_marginTop="0dp"
             android:button="@drawable/custom_checkbox"
             android:checked="false"
-            android:paddingLeft="32dp"
-            android:text="@string/EnableConfigCheckBox"
             android:textColor="#424242" >
-        </CheckBox>
+        </dnsfilter.android.PaddedCheckBox>
 

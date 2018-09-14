@@ -48,7 +48,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <CheckBox
+        <dnsfilter.android.PaddedCheckBox
             android:id="@+id/advancedConfigCheck"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -56,11 +56,10 @@
             android:layout_marginTop="0dp"
             android:button="@drawable/custom_checkbox"
             android:checked="false"
-            android:paddingLeft="32dp"
             android:text="@string/EnableConfigCheckBox"
             android:textColor="#424242" />
 
-        <CheckBox
+        <dnsfilter.android.PaddedCheckBox
             android:id="@+id/editFilterLoad"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -68,7 +67,6 @@
             android:layout_marginTop="0dp"
             android:button="@drawable/custom_checkbox"
             android:checked="false"
-            android:paddingLeft="32dp"
             android:text="@string/editFilterLoadCheckBox"
             android:textColor="#424242" />
 
@@ -173,7 +171,7 @@
             </ScrollView>
         </LinearLayout>
 
-        <CheckBox
+        <dnsfilter.android.PaddedCheckBox
             android:id="@+id/editAdditionalHosts"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -181,7 +179,6 @@
             android:layout_marginTop="0dp"
             android:button="@drawable/custom_checkbox"
             android:checked="false"
-            android:paddingLeft="32dp"
             android:text="@string/editAdditionalHostsCheckBox"
             android:textColor="#424242" />
 
@@ -211,7 +208,7 @@
             </HorizontalScrollView>
         </ScrollView>
 
-        <CheckBox
+        <dnsfilter.android.PaddedCheckBox
             android:id="@+id/appWhitelist"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -219,7 +216,6 @@
             android:layout_marginTop="0dp"
             android:button="@drawable/custom_checkbox"
             android:checked="false"
-            android:paddingLeft="32dp"
             android:text="@string/appWhitelistCheckBox"
             android:textColor="#424242" />
 
@@ -242,7 +238,7 @@
                 android:orientation="vertical" />
         </ScrollView>
 
-        <CheckBox
+        <dnsfilter.android.PaddedCheckBox
             android:id="@+id/keepAwakeCheck"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -250,11 +246,10 @@
             android:layout_marginTop="0dp"
             android:button="@drawable/custom_checkbox"
             android:checked="false"
-            android:paddingLeft="32dp"
             android:text="@string/keepAwakeCheckBox"
             android:textColor="#424242" />
 
-        <CheckBox
+        <dnsfilter.android.PaddedCheckBox
             android:id="@+id/enableAddFilter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -262,11 +257,10 @@
             android:layout_marginTop="0dp"
             android:button="@drawable/custom_checkbox"
             android:checked="true"
-            android:paddingLeft="32dp"
             android:text="@string/EnableAdfilter"
             android:textColor="#424242" />
 
-        <CheckBox
+        <dnsfilter.android.PaddedCheckBox
             android:id="@+id/enableAutoStart"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -274,7 +268,6 @@
             android:layout_marginTop="0dp"
             android:button="@drawable/custom_checkbox"
             android:checked="true"
-            android:paddingLeft="32dp"
             android:text="@string/EnableAutoStart"
             android:textColor="#424242" />
     </LinearLayout>
