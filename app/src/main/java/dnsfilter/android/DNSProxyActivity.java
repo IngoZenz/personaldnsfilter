@@ -93,7 +93,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private static CheckBox enableAdFilterCheck;
 	private static EditText filterReloadIntervalView;
 	private static FilterConfig filterCfg;
-	private static FilterConfig.FilterConfigEntry[] filterEntries;
 	private static EditText additionalHostsField;
 	private static TextView scrollLockField;
 	private static Dialog advDNSConfigDia;
@@ -190,9 +189,14 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		setContentView(R.layout.main);
 		setTitle("personalDNSfilter V"+DNSFilterManager.VERSION+" (Connections:"+DNSFilterService.openConnectionsCount()+")");
 
+
+		FilterConfig.FilterConfigEntry[] cfgEntries = null;
+		if (filterCfg != null)
+			cfgEntries= filterCfg.getFilterEntries();
+
 		filterCfg = new FilterConfig((TableLayout) findViewById(R.id.filtercfgtable));
-		if (filterEntries != null)
-			filterCfg.setEntries(filterEntries);
+		if (cfgEntries!= null)
+			filterCfg.setEntries(cfgEntries);
 
 		String uiText = "";
 		if (filterReloadIntervalView != null)
@@ -331,7 +335,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				manualDNSCheck.setChecked(!Boolean.parseBoolean(config.getProperty("detectDNS", "true")));
 				manualDNSView.setText(config.getProperty("fallbackDNS").replace(";","\n").replace(" ",""));
 
-				filterEntries = buildFilterEntries(config);
+				FilterConfig.FilterConfigEntry[]  filterEntries = buildFilterEntries(config);
 				filterCfg.setEntries(filterEntries);
 
 				filterReloadIntervalView.setText(config.getProperty("reloadIntervalDays","7"));
@@ -559,7 +563,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			
 			boolean filterAds = enableAdFilterCheck.isChecked();
 
-			String[] filterCfgStrings = getFilterCfgStrings(filterEntries);
+			if (filterReloadIntervalView.getText().toString().equals(""))
+				filterReloadIntervalView.setText("7");
+
+			String[] filterCfgStrings = getFilterCfgStrings(filterCfg.getFilterEntries());
 			
 			File propsFile = new File (Environment.getExternalStorageDirectory().getAbsolutePath()+"/PersonalDNSFilter/dnsfilter.conf");
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -758,7 +765,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			}
 			else {
 				findViewById(R.id.filtercfgview).setVisibility(View.GONE);
-				filterEntries = filterCfg.getFilterEntries();
 				filterCfg.clear();
 			}
 			
@@ -774,7 +780,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}
 		else {
 			findViewById(R.id.filtercfgview).setVisibility(View.GONE);
-			filterEntries = filterCfg.getFilterEntries();
 			filterCfg.clear();
 			findViewById(R.id.addHostsScroll).setVisibility(View.GONE);
 			appWhiteListCheck.setVisibility(View.GONE);

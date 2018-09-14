@@ -62,7 +62,7 @@
             android:textColor="#424242"
             android:textSize="14dp"
             android:gravity="center"
-            android:background="#955F5F5F"
+            android:background="#CCCCCC"
             android:textStyle="bold">
         </TextView>
 		

@@ -70,6 +70,8 @@ public class FilterConfig implements OnClickListener {
     }
 
     public void load() {
+        if (loaded) return;
+
         for (int i = 0; i < filterEntries.length; i++)
             addItem(filterEntries[i],DEL_ITEM);
         addEmptyEndItem();
@@ -87,8 +89,8 @@ public class FilterConfig implements OnClickListener {
 
         int count = configTable.getChildCount()-2;
         FilterConfigEntry[] result = new FilterConfigEntry[count];
-        for (int i = 1; i < count; i++) {
-            View[] rowContent = getContentCells((TableRow) configTable.getChildAt(i));
+        for (int i = 0; i < count; i++) {
+            View[] rowContent = getContentCells((TableRow) configTable.getChildAt(i+1));
             if (!handleRowChange(rowContent))
                 return filterEntries;
             else {
@@ -101,7 +103,7 @@ public class FilterConfig implements OnClickListener {
     public void clear() {
         filterEntries = getFilterEntries();
         int count = configTable.getChildCount()-1;
-        for (int i = 1; i < count; i++)
+        for (int i = count; i > 0; i--)
             configTable.removeViewAt(i);
 
         loaded = false;
@@ -128,7 +130,8 @@ public class FilterConfig implements OnClickListener {
     private boolean handleRowChange(View[] cells) {
         try {
             URL url = new URL( ((EditText)cells[2]).getText().toString());
-            if (((EditText)cells[1]).getText().toString().equals(NEW_ITEM))
+            String shortTxt = ((EditText)cells[1]).getText().toString().trim();
+            if (shortTxt.equals(NEW_ITEM)|| shortTxt.equals(""))
                 ((EditText)cells[1]).setText(url.getHost());
             return true;
         } catch (MalformedURLException e) {

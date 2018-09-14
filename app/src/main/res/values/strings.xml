@@ -16,4 +16,8 @@
   <string name="dnsLabel">DNS:</string>
   <string name="manualDNSCheck">Disable DNS Server Discovery - Manual DNS Servers below:</string>
   <string name="dnsCfgConfigDialogTitle">DNS Server Configuration</string>
+  <string name="filterUpdateDays">"Filter update interval in days:</string>
+  <string name="active">Active</string>
+  <string name="shortText">Short Text</string>
+  <string name="URL">http://...</string>
 </resources>

@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Date;
@@ -415,6 +416,33 @@ public class DNSFilterManager implements LoggerInterface
 
 	}
 
+	private String getFilterReloadURL(Properties config) {
+		String urls = config.getProperty("filterAutoUpdateURL","");
+		String url_switchs = config.getProperty("filterAutoUpdateURL_switchs","");
+
+		StringTokenizer urlTokens = new StringTokenizer(urls, ";");
+		StringTokenizer urlSwitchTokens = new StringTokenizer(url_switchs, ";");
+
+		int count = urlTokens.countTokens();
+
+		String result = "";
+		String seperator="";
+
+		for (int i = 0; i < count; i++) {
+			String urlStr = urlTokens.nextToken().trim();
+			boolean active = true;
+			if (urlSwitchTokens.hasMoreTokens())
+				active = Boolean.parseBoolean(urlSwitchTokens.nextToken().trim());
+
+			if (active) {
+				result = result +seperator+urlStr;
+				seperator="; ";
+			}
+		}
+		return result;
+	}
+
+
 	public void init() throws Exception {
 		initStatics();
 		boolean filterEnabled = false;
@@ -486,7 +514,7 @@ public class DNSFilterManager implements LoggerInterface
 				}
 
 				// trigger regular filter update when configured
-				filterReloadURL = config.getProperty("filterAutoUpdateURL");
+				filterReloadURL = getFilterReloadURL(config);
 				filterReloadIntervalDays = Integer.parseInt(config.getProperty("reloadIntervalDays", "4"));
 				String previousReloadURL = config.getProperty("previousAutoUpdateURL");
 
