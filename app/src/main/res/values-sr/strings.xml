@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">Онемогући откривање ДНС сервера - ручни ДНС сервери доле:</string>
     <string name="dnsCfgConfigDialogTitle">Конфигурација ДНС сервера</string>
     <string name="appWhitelistCheckBox">Бела листа апликација</string>
+    <string name="filterUpdateDays">Интервал ажурирања филтера у данима:</string>
+    <string name="active">активан</string>
+    <string name="shortText">кратки текст</string>
 </resources>

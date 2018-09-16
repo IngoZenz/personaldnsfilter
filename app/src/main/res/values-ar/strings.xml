@@ -16,4 +16,7 @@
   <string name="manualDNSCheck">تعطيل اكتشاف خادم DNS - ملقمات DNS اليدوية أدناه:</string>
   <string name="dnsCfgConfigDialogTitle">تكوين خادم DNS</string>
   <string name="appWhitelistCheckBox">القائمة البيضاء التطبيق</string>
+    <string name="filterUpdateDays">تصفية الفاصل الزمني للتحديث في أيام</string>
+    <string name="active">نشيط</string>
+    <string name="shortText">نص قصير</string>
 </resources>

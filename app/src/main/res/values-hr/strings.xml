@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">Onemogućite otkrivanje DNS poslužitelja - Manual DNS poslužitelji u nastavku:</string>
     <string name="dnsCfgConfigDialogTitle">Konfiguracija DNS poslužitelja</string>
     <string name="appWhitelistCheckBox">Popis dopuštenih aplikacija</string>
+    <string name="filterUpdateDays">Interval ažuriranja filtra u danima:</string>
+    <string name="active">Aktivan</string>
+    <string name="shortText">kratki tekst</string>
 </resources>

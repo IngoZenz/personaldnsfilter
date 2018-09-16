@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">DNSサーバーディスカバリーを無効にする - 以下の手動DNSサーバー：</string>
     <string name="dnsCfgConfigDialogTitle">DNSサーバーの設定</string>
     <string name="appWhitelistCheckBox">アプリケーションホワイトリスト</string>
+    <string name="filterUpdateDays">フィルタアップデート間隔（日）：</string>
+    <string name="active">アクティブ</string>
+  <string name="shortText">短いテキスト</string>
 </resources>

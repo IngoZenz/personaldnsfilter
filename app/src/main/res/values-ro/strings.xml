@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">Dezactivați DNS Server Discovery - Servere DNS rulate de mai jos:</string>
     <string name="dnsCfgConfigDialogTitle">Configurarea serverului DNS</string>
     <string name="appWhitelistCheckBox">Aplicația albă</string>
+    <string name="filterUpdateDays">Interval de actualizare filtru în zile:</string>
+    <string name="active">Activ</string>
+    <string name="shortText">text scurt</string>
 </resources>

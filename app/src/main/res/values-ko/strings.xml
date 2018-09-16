@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">아래의 DNS 서버 검색 비활성화 - 수동 DNS 서버 :</string>
     <string name="dnsCfgConfigDialogTitle">DNS 서버 구성</string>
     <string name="appWhitelistCheckBox">앱 허용 목록</string>
+    <string name="filterUpdateDays">필터 업데이트 간격 (일) :</string>
+    <string name="active">유효한</string>
+  <string name="shortText">짧은 텍스트</string>
 </resources>

@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">DNS-bediener opsporing gedeaktiveer - handleiding DNS bedieners hieronder:</string>
     <string name="dnsCfgConfigDialogTitle">DNS-bediener konfigurasie</string>
     <string name="appWhitelistCheckBox">App Witlys</string>
+    <string name="filterUpdateDays">Filter update interval in dae:</string>
+    <string name="active">Aktiewe</string>
+    <string name="shortText">kort teks</string>
 </resources>

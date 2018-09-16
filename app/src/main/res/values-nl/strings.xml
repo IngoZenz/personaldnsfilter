@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">Schakel DNS-serverdetectie uit - Handmatige DNS-servers hieronder:</string>
     <string name="dnsCfgConfigDialogTitle">DNS-serverconfiguratie</string>
     <string name="appWhitelistCheckBox">App-witte lijst</string>
+    <string name="filterUpdateDays">Update-interval filter in dagen:</string>
+    <string name="active">Actief</string>
+    <string name="shortText">"korte tekst "</string>
 </resources>

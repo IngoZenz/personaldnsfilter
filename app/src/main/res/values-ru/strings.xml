@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">Отключить открытие DNS-сервера - ручные DNS-серверы ниже:</string>
     <string name="dnsCfgConfigDialogTitle">Настройка DNS-сервера</string>
     <string name="appWhitelistCheckBox">Список приложений</string>
+    <string name="filterUpdateDays">Интервал обновления фильтра в днях:</string>
+    <string name="active">активный</string>
+    <string name="shortText">короткий текст</string>
 </resources>

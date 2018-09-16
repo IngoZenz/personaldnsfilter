@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">禁用DNS服務器發現 - 下面的手動DNS服務器：</string>
     <string name="dnsCfgConfigDialogTitle">DNS服務器配置</string>
     <string name="appWhitelistCheckBox">App白名單</string>
+    <string name="filterUpdateDays">过滤更新间隔天数</string>
+    <string name="active">活性</string>
+    <string name="shortText">简短的文字</string>
 </resources>

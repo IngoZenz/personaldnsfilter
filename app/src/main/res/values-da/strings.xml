@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">Deaktiver DNS Server Discovery - Manuelle DNS-servere nedenfor:</string>
     <string name="dnsCfgConfigDialogTitle">DNS-server konfiguration</string>
     <string name="appWhitelistCheckBox">App Hvidliste</string>
+    <string name="filterUpdateDays">Filter opdateringsinterval i dage:</string>
+    <string name="active">Aktiv</string>
+    <string name="shortText">kort tekst</string>
 </resources>

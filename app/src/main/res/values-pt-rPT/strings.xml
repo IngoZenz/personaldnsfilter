@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">do servidor DNS desativada - servidores DNS manuais abaixo:</string>
     <string name="dnsCfgConfigDialogTitle">Configuração do servidor DNS</string>
     <string name="appWhitelistCheckBox">App Whitelist</string>
+    <string name="filterUpdateDays">Filtrar intervalo de atualização em dias:</string>
+    <string name="active">Ativo</string>
+  <string name="shortText">pequeno texto</string>
 </resources>

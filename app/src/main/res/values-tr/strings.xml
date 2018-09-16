@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">Aşağıdaki DNS Sunucusu Discovery - Manuel DNS Sunucularını devre dışı bırakın:</string>
     <string name="dnsCfgConfigDialogTitle">DNS Sunucusu Yapılandırması</string>
     <string name="appWhitelistCheckBox">Uygulama Beyaz Listesi</string>
+    <string name="filterUpdateDays">Güncelleme aralığını gün cinsinden filtrele:</string>
+    <string name="active">Aktif</string>
+    <string name="shortText">kısa metin</string>
 </resources>

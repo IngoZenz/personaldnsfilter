@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">Wyłącz wykrywanie serwera DNS - ręczne serwery DNS poniżej:</string>
     <string name="dnsCfgConfigDialogTitle">Konfiguracja serwera DNS</string>
     <string name="appWhitelistCheckBox">Biała lista aplikacji</string>
+    <string name="filterUpdateDays">Filtruj interwał aktualizacji w dniach:</string>
+    <string name="active">Aktywny</string>
+  <string name="shortText">krótki tekst</string>
 </resources>

@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">Απενεργοποιήστε την ανίχνευση διακομιστή DNS - χειροκίνητους διακομιστές DNS παρακάτω:</string>
     <string name="dnsCfgConfigDialogTitle">Διαμόρφωση διακομιστή DNS</string>
     <string name="appWhitelistCheckBox">Λευκή λίστα εφαρμογών</string>
+    <string name="filterUpdateDays">Διάρκεια ενημέρωσης φίλτρου σε ημέρες:</string>
+    <string name="active">ενεργός</string>
+    <string name="shortText">σύντομο κείμενο</string>
 </resources>

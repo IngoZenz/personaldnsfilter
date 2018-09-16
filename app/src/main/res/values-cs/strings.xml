@@ -16,4 +16,7 @@
   <string name="dnsCfgConfigDialogTitle">Konfigurace serveru DNS</string>
   <string name="appWhitelistCheckBox">Aplikace Whitelist</string>
   <string name="manualDNSCheck">Zakažte DNS Server Discovery - Ruční DNS servery níže:</string>
+    <string name="filterUpdateDays">Interval aktualizace filtru v dnech:</string>
+    <string name="active">Aktivní</string>
+    <string name="shortText">krátký text</string>
 </resources>

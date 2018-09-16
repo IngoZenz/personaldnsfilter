@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">DNS-Server-Erkennung deaktivieren - Manuelle DNS-Server unten:</string>
     <string name="dnsCfgConfigDialogTitle">DNS-Serverkonfiguration</string>
     <string name="appWhitelistCheckBox">App-Whitelist</string>
+    <string name="filterUpdateDays">Filter Update Intervall in Tagen:</string>
+    <string name="active">Aktiv</string>
+    <string name="shortText">Kurztext</string>
 </resources>

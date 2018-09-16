@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">Deshabilitar la detección del servidor DNS - Servidores DNS manuales a continuación:</string>
     <string name="dnsCfgConfigDialogTitle">Configuración del Servidor DNS</string>
     <string name="appWhitelistCheckBox">Lista blanca de aplicaciones</string>
+    <string name="filterUpdateDays">Intervalo de actualización del filtro en días:</string>
+    <string name="active">Activo</string>
+    <string name="shortText">Texto corto</string>
 </resources>

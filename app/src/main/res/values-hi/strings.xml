@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">DNS सर्वर डिस्कवरी अक्षम करें - नीचे मैन्युअल DNS सर्वर:</string>
     <string name="dnsCfgConfigDialogTitle">DNS सर्वर कॉन्फ़िगरेशन</string>
     <string name="appWhitelistCheckBox">ऐप व्हाइटलिस्ट</string>
+    <string name="filterUpdateDays">दिनों में फ़िल्टर अपडेट अंतराल:</string>
+    <string name="active">सक्रिय</string>
+  <string name="shortText">"छोटा लेख "</string>
 </resources>

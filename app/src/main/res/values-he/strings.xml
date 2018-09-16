@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">השבת גילוי DNS Server - שרתי DNS ידניים להלן:</string>
     <string name="dnsCfgConfigDialogTitle">תצורת שרת DNS</string>
     <string name="appWhitelistCheckBox">רשימת ההיתרים של אפליקציות</string>
+    <string name="filterUpdateDays">סנן את מרווח הזמן לעדכון בימים:</string>
+    <string name="active">פָּעִיל</string>
+  <string name="shortText">טקסט קצר</string>
 </resources>

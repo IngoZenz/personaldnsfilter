@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">Disabilita rilevazione server DNS - Server DNS manuali di seguito:</string>
     <string name="dnsCfgConfigDialogTitle">Configurazione del server DNS</string>
     <string name="appWhitelistCheckBox">Whitelist di app</string>
+    <string name="filterUpdateDays">Filtra intervallo di aggiornamento in giorni:</string>
+    <string name="active">Attivo</string>
+  <string name="shortText">testo breve</string>
 </resources>

@@ -16,4 +16,7 @@
     <string name="manualDNSCheck">Désactiver la découverte du serveur DNS - Serveurs DNS manuels ci-dessous:</string>
     <string name="dnsCfgConfigDialogTitle">Configuration du serveur DNS</string>
     <string name="appWhitelistCheckBox">Liste blanche d\'applications</string>
+    <string name="filterUpdateDays">Intervalle de mise à jour du filtre en jours:</string>
+    <string name="active">Actif</string>
+    <string name="shortText">texte court</string>
 </resources>
