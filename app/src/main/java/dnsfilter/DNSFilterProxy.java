@@ -33,7 +33,7 @@ import java.util.Vector;
 import util.Logger;
 
 public class DNSFilterProxy implements Runnable {
-	
+
 	DatagramSocket receiver;
 	boolean stopped = false;
 	int port = 53;
@@ -59,42 +59,42 @@ public class DNSFilterProxy implements Runnable {
 		}
 		DNSCommunicator.getInstance().setDNSServers(dnsAdrs.toArray(new InetAddress[dnsAdrs.size()]));
 	}
-	
+
 	public static void main(String[] args) throws Exception {
 		DNSFilterManager filtermgr = new DNSFilterManager();
 		filtermgr.init();
-		initDNS(filtermgr);	
+		initDNS(filtermgr);
 		new DNSFilterProxy(53).run();
 	}
 
 	@Override
 	public void run() {
 		try {
-			receiver = new DatagramSocket (port);
+			receiver = new DatagramSocket(port);
 		} catch (IOException eio) {
-			Logger.getLogger().logLine("Exception:Cannot open DNS port "+port+"!"+eio.getMessage());
+			Logger.getLogger().logLine("Exception:Cannot open DNS port " + port + "!" + eio.getMessage());
 			return;
 		}
-		Logger.getLogger().logLine("DNSFilterProxy running on port "+port+"!");
+		Logger.getLogger().logLine("DNSFilterProxy running on port " + port + "!");
 		while (!stopped) {
 			try {
 				byte[] data = new byte[1024];
-				DatagramPacket request = new DatagramPacket(data,0, 1024);
+				DatagramPacket request = new DatagramPacket(data, 0, 1024);
 				receiver.receive(request);
-				new Thread(new DNSResolver(new DatagramSocket(), request, receiver)).start();				
+				new Thread(new DNSResolver(new DatagramSocket(), request, receiver)).start();
 			} catch (IOException e) {
 				if (!stopped)
-					Logger.getLogger().logLine("Exception:"+e.getMessage());
+					Logger.getLogger().logLine("Exception:" + e.getMessage());
 			}
-		}		
+		}
 		Logger.getLogger().logLine("DNSFilterProxy stopped!");
 	}
-	
-	
+
+
 	public synchronized void stop() {
 		stopped = true;
 		if (receiver == null)
-				return;
+			return;
 		receiver.close();
 	}
 }

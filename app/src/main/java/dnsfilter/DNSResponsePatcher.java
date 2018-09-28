@@ -33,12 +33,13 @@ import util.Logger;
 import util.LoggerInterface;
 
 public class DNSResponsePatcher {
-	
+
 	private static Set FILTER = null;
 	private static LoggerInterface TRAFFIC_LOG = null;
-	
+
 	private static byte[] ipv4_localhost;
 	private static byte[] ipv6_localhost;
+
 	static {
 		try {
 			ipv4_localhost = InetAddress.getByName("127.0.0.1").getAddress();
@@ -46,18 +47,18 @@ public class DNSResponsePatcher {
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
 		}
-	}	
-	
-	
+	}
+
+
 	public static void init(Set filter, LoggerInterface trafficLogger) {
 		FILTER = filter;
-		TRAFFIC_LOG = trafficLogger;		
+		TRAFFIC_LOG = trafficLogger;
 	}
-	
+
 	public static byte[] patchResponse(String client, byte[] response, int offs) throws IOException {
 
-		ByteBuffer buf = ByteBuffer.wrap(response,offs,response.length-offs);
-		String queryHost="";
+		ByteBuffer buf = ByteBuffer.wrap(response, offs, response.length - offs);
+		String queryHost = "";
 
 		buf.getShort(); // ID
 		buf.getShort(); // Flags
@@ -67,32 +68,32 @@ public class DNSResponsePatcher {
 		buf.getShort(); // additional
 
 		boolean filter = false;
-		
+
 		for (int i = 0; i < questCount; i++) {
-			
+
 			queryHost = readDomainName(buf, offs);
 			int type = buf.getShort(); // query type
-			
+
 			//checking the filter on the answer does not always work due to cname redirects (type 5 responses)
 			//therefore we just check the filter on the query host and thus we'll disallow also all cname redirects.
 			//This seems to work well - however is not 100% correct!			
-			
+
 			if (type == 1 || type == 28)
-				filter = filter || filter(queryHost);			
-			
+				filter = filter || filter(queryHost);
+
 			if (TRAFFIC_LOG != null)
-				TRAFFIC_LOG.logLine(client+", Q-"+type+", "+queryHost+", "+"<empty>");
-			
+				TRAFFIC_LOG.logLine(client + ", Q-" + type + ", " + queryHost + ", " + "<empty>");
+
 			buf.getShort(); // query class
 		}
 
 		for (int i = 0; i < answerCount; i++) {
-			String host = readDomainName(buf,offs);			
+			String host = readDomainName(buf, offs);
 			int type = buf.getShort(); // type			
 			buf.getShort(); // class
 			buf.getInt(); // TTL
 			int len = buf.getShort(); // len
-					
+
 			if ((type == 1 || type == 28) && filter) {
 				// replace ip!
 				if (type == 1) // IPV4
@@ -101,24 +102,24 @@ public class DNSResponsePatcher {
 					buf.put(ipv6_localhost);
 			} else
 				buf.position(buf.position() + len); // go ahead
-			
+
 			//log answer
 			if (TRAFFIC_LOG != null) {
 				byte[] answer = new byte[len];
-				String answerStr=null;
+				String answerStr = null;
 				buf.position(buf.position() - len);
-				
+
 				if (type == 5)
-					answerStr = readDomainName(buf,offs);
+					answerStr = readDomainName(buf, offs);
 				else {
 					buf.get(answer);
-					
+
 					if (type == 1 || type == 28)
 						answerStr = InetAddress.getByAddress(answer).getHostAddress();
-					else 
+					else
 						answerStr = new String(answer);
-				}				
-				TRAFFIC_LOG.logLine(client+", A-"+type+", "+host+", "+answerStr+", /Length:"+len);				
+				}
+				TRAFFIC_LOG.logLine(client + ", A-" + type + ", " + host + ", " + answerStr + ", /Length:" + len);
 			}
 		}
 		return buf.array();
@@ -126,20 +127,20 @@ public class DNSResponsePatcher {
 
 	private static boolean filter(String host) {
 		boolean result;
-		
-		if (FILTER==null)
-			result = false;			
-		else 
-			result = FILTER.contains(host);
-		
-		if (result == true) 
-			Logger.getLogger().logLine("FILTERED:"+host);
+
+		if (FILTER == null)
+			result = false;
 		else
-			Logger.getLogger().logLine("ALLOWED:"+host);
-		
+			result = FILTER.contains(host);
+
+		if (result == true)
+			Logger.getLogger().logLine("FILTERED:" + host);
+		else
+			Logger.getLogger().logLine("ALLOWED:" + host);
+
 		return result;
 	}
-	
+
 
 	private static String readDomainName(ByteBuffer buf, int offs) throws IOException {
 

@@ -53,6 +53,7 @@ import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+
 import dnsfilter.DNSCommunicator;
 import dnsfilter.DNSFilterManager;
 import dnsfilter.DNSFilterProxy;
@@ -61,28 +62,28 @@ import util.Utils;
 
 public class DNSFilterService extends VpnService implements Runnable, ExecutionEnvironmentInterface {
 
-	private static String VIRTUALDNS_IPV4="10.10.10.10";
-	private static String VIRTUALDNS_IPV6="fdc8:1095:91e1:aaaa:aaaa:aaaa:aaaa:aaa1";
-	private static String ADDRESS_IPV4="10.0.2.15";
-	private static String ADDRESS_IPV6="fdc8:1095:91e1:aaaa:aaaa:aaaa:aaaa:aaa2";
-	
+	private static String VIRTUALDNS_IPV4 = "10.10.10.10";
+	private static String VIRTUALDNS_IPV6 = "fdc8:1095:91e1:aaaa:aaaa:aaaa:aaaa:aaa1";
+	private static String ADDRESS_IPV4 = "10.0.2.15";
+	private static String ADDRESS_IPV6 = "fdc8:1095:91e1:aaaa:aaaa:aaaa:aaaa:aaa2";
+
 	public static DNSFilterManager DNSFILTER = null;
 	public static DNSFilterProxy DNSFILTERPROXY = null;
-	private static DNSFilterService INSTANCE=null;
+	private static DNSFilterService INSTANCE = null;
 
 	private static boolean JUST_STARTED = false;
 	private static boolean DNS_PROXY_PORT_IS_REDIRECTED = false;
-			
+
 	private ParcelFileDescriptor vpnInterface;
 	FileInputStream in = null;
-	FileOutputStream out =null;
+	FileOutputStream out = null;
 
-	private boolean blocking = false;	
+	private boolean blocking = false;
 	private static WakeLock wakeLock = null;
 
-	
+
 	public static void detectDNSServers() {
-		
+
 		DNSFilterManager dnsFilterMgr = DNSFILTER;
 
 		if (dnsFilterMgr == null)
@@ -101,22 +102,22 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 		if (detect) {
 			try {
 				Class<?> SystemProperties = Class.forName("android.os.SystemProperties");
-				Method method = SystemProperties.getMethod("get", new Class[] { String.class });
+				Method method = SystemProperties.getMethod("get", new Class[]{String.class});
 
-				for (String name : new String[] { "net.dns1", "net.dns2", "net.dns3", "net.dns4", }) {
+				for (String name : new String[]{"net.dns1", "net.dns2", "net.dns3", "net.dns4",}) {
 					String value = (String) method.invoke(null, name);
 					if (value != null && !value.equals("")) {
 						Logger.getLogger().logLine("DNS:" + value);
-						if (!value.equals(VIRTUALDNS_IPV4) &&!value.equals(VIRTUALDNS_IPV6))
+						if (!value.equals(VIRTUALDNS_IPV4) && !value.equals(VIRTUALDNS_IPV6))
 							dnsAdrs.add(InetAddress.getByName(value));
 					}
 				}
 			} catch (Exception e) {
 				Logger.getLogger().logException(e);
 			}
-		}		
+		}
 		if (dnsAdrs.isEmpty()) { //fallback
-			StringTokenizer fallbackDNS = new StringTokenizer(dnsFilterMgr.getConfig().getProperty("fallbackDNS", ""),";");
+			StringTokenizer fallbackDNS = new StringTokenizer(dnsFilterMgr.getConfig().getProperty("fallbackDNS", ""), ";");
 			int cnt = fallbackDNS.countTokens();
 			for (int i = 0; i < cnt; i++) {
 				String value = fallbackDNS.nextToken().trim();
@@ -124,26 +125,26 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 				try {
 					dnsAdrs.add(InetAddress.getByName(value));
 				} catch (Exception e) {
-					Logger.getLogger().logLine("Invalid fallbackDNS entry: '"+value+"'\n"+e.toString());
-				}				
+					Logger.getLogger().logLine("Invalid fallbackDNS entry: '" + value + "'\n" + e.toString());
+				}
 			}
-		}			
+		}
 		DNSCommunicator.getInstance().setDNSServers(dnsAdrs.toArray(new InetAddress[dnsAdrs.size()]));
 	}
-	
+
 	public void run() {
-		Logger.getLogger().logLine("VPN Runner Thread started!" );		
-		try {			
+		Logger.getLogger().logLine("VPN Runner Thread started!");
+		try {
 			while (true) {
-				
+
 				byte[] data = new byte[1024];
 				int length = in.read(data);
-				
+
 				if (length > 0) {
-					try {					
+					try {
 						IPPacket parsedIP = new IPPacket(data, 0, length);
 						if (parsedIP.getVersion() == 6) {
-							Logger.getLogger().logLine("!!!IPV6 Packet!!! Protocol:"+parsedIP.getProt());
+							Logger.getLogger().logLine("!!!IPV6 Packet!!! Protocol:" + parsedIP.getProt());
 							/*Logger.getLogger().logLine("SourceAddress:"+IPPacket.int2ip(parsedIP.getSourceIP()));
 							Logger.getLogger().logLine("DestAddress:"+IPPacket.int2ip(parsedIP.getDestIP()));
 							Logger.getLogger().logLine("TTL:"+parsedIP.getTTL());	
@@ -157,39 +158,38 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 							}*/
 						}
 						if (parsedIP.checkCheckSum() != 0)
-							throw new IOException("IP Header Checksum Error!");					
-						
+							throw new IOException("IP Header Checksum Error!");
+
 						if (parsedIP.getProt() == 1) {
-							Logger.getLogger().logLine("Received ICMP Paket Type:" + (data[20]&0xff));
+							Logger.getLogger().logLine("Received ICMP Paket Type:" + (data[20] & 0xff));
 						}
 						if (parsedIP.getProt() == 17) {
-							
+
 							UDPPacket parsedPacket = new UDPPacket(data, 0, length);
 							if (parsedPacket.checkCheckSum() != 0)
-								throw new IOException("UDP packet Checksum Error!");							
-							
-							DatagramSocket dnsSocket = new DatagramSocket();							
+								throw new IOException("UDP packet Checksum Error!");
+
+							DatagramSocket dnsSocket = new DatagramSocket();
 
 							if (!protect(dnsSocket)) {
 								throw new IOException("Cannot protect the tunnel");
-							}							
+							}
 							new Thread(new DNSResolver(dnsSocket, parsedPacket, out)).start();
-						} 
+						}
 					} catch (IOException e) {
-						Logger.getLogger().logLine("IOEXCEPTION: "+e.toString() );
+						Logger.getLogger().logLine("IOEXCEPTION: " + e.toString());
 					} catch (Exception e) {
 						Logger.getLogger().logException(e);
 					}
-				} else
-					if (!blocking)
-						Thread.sleep(1000);
+				} else if (!blocking)
+					Thread.sleep(1000);
 			}
 
 		} catch (Exception e) {
-			if (vpnInterface!=null) //not stopped
-				Logger.getLogger().logLine("EXCEPTION: "+e.toString() );
-			Logger.getLogger().logLine("VPN Runner Thread terminated!" );
-		} 
+			if (vpnInterface != null) //not stopped
+				Logger.getLogger().logLine("EXCEPTION: " + e.toString());
+			Logger.getLogger().logLine("VPN Runner Thread terminated!");
+		}
 	}
 
 	@Override
@@ -197,15 +197,15 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 		INSTANCE = this;
 		ExecutionEnvironment.setEnvironment(this);
 		registerReceiver(new ConnectionChangeReceiver(), new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
-		
+
 		if (DNSFILTER != null) {
 			Logger.getLogger().logLine("DNS Filter already running!");
-		} else {			
+		} else {
 			try {
 				DNSFilterManager.WORKDIR = DNSProxyActivity.WORKPATH.getAbsolutePath() + "/";
 				DNSFILTER = new DNSFilterManager();
 				DNSFILTER.init();
-				JUST_STARTED=true; //used in detectDNSServers to ensure eventually changed static DNS Servers config is taken
+				JUST_STARTED = true; //used in detectDNSServers to ensure eventually changed static DNS Servers config is taken
 				detectDNSServers();
 
 				//start DNS Proxy Mode if configured 
@@ -226,14 +226,14 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 			Intent notificationIntent = new Intent(this, DNSProxyActivity.class);
 			PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 			builder.setSession("DNS Filter");
-			builder.addAddress(ADDRESS_IPV4, 24).addDnsServer(VIRTUALDNS_IPV4).addRoute(VIRTUALDNS_IPV4, 32);			
+			builder.addAddress(ADDRESS_IPV4, 24).addDnsServer(VIRTUALDNS_IPV4).addRoute(VIRTUALDNS_IPV4, 32);
 			builder.addAddress(ADDRESS_IPV6, 48).addDnsServer(VIRTUALDNS_IPV6).addRoute(VIRTUALDNS_IPV6, 128);
 
 			// add additional IPs to route e.g. for handling application like
 			// google chrome bypassing the DNS via own DNS servers
 			StringTokenizer additionalRouteIps = new StringTokenizer(DNSFILTER.getConfig().getProperty("routeIPs", ""), ";");
 			int cnt = additionalRouteIps.countTokens();
-			if (cnt !=0 && Build.VERSION.SDK_INT < 21) {
+			if (cnt != 0 && Build.VERSION.SDK_INT < 21) {
 				cnt = 0;
 				Logger.getLogger().logLine("WARNING!: Setting 'routeIPs' not supported for Android version below 5.01!\n Setting ignored!");
 			}
@@ -256,9 +256,9 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 				builder.addDisallowedApplication("dnsfilter.android");
 
 			//apply app whitelist
-			StringTokenizer appWhiteList  = new StringTokenizer(DNSFILTER.getConfig().getProperty("androidAppWhiteList", ""), ",");
+			StringTokenizer appWhiteList = new StringTokenizer(DNSFILTER.getConfig().getProperty("androidAppWhiteList", ""), ",");
 			cnt = appWhiteList.countTokens();
-			if (cnt !=0 && Build.VERSION.SDK_INT < 21) {
+			if (cnt != 0 && Build.VERSION.SDK_INT < 21) {
 				cnt = 0;
 				Logger.getLogger().logLine("WARNING!: Application whitelisting not supported for Android version below 5.01!\n Setting ignored!");
 			}
@@ -267,30 +267,29 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 			}
 
 			// Android 7/8 has an issue with VPN in combination with some google apps - bypass the filter
-			if (Build.VERSION.SDK_INT>=24 && Build.VERSION.SDK_INT <= 27) { // Android 7/8
-				Logger.getLogger().logLine("Running on SDK"+Build.VERSION.SDK_INT);
+			if (Build.VERSION.SDK_INT >= 24 && Build.VERSION.SDK_INT <= 27) { // Android 7/8
+				Logger.getLogger().logLine("Running on SDK" + Build.VERSION.SDK_INT);
 				excludeApp("com.android.vending", builder); //white list play store
 				excludeApp("com.google.android.apps.docs", builder); //white list google drive
 				excludeApp("com.google.android.apps.photos", builder); //white list google photos
 				excludeApp("com.google.android.gm", builder); //white list gmail
 				excludeApp("com.google.android.apps.translate", builder); //white list google translate
 			}
-			
-			if (Build.VERSION.SDK_INT>=21) {
+
+			if (Build.VERSION.SDK_INT >= 21) {
 				builder.setBlocking(true);
 				Logger.getLogger().logLine("Using Blocking Mode!");
-				blocking  = true;
+				blocking = true;
 			}
 
 			vpnInterface = builder.setConfigureIntent(pendingIntent).establish();
-			
+
 			if (vpnInterface != null) {
 				in = new FileInputStream(vpnInterface.getFileDescriptor());
 				out = new FileOutputStream(vpnInterface.getFileDescriptor());
-				Logger.getLogger().logLine("VPN Connected!");				
-				new Thread(this).start();			
-			}
-			else Logger.getLogger().logLine("Error! Cannot get VPN Interface! Try restart!");			
+				Logger.getLogger().logLine("VPN Connected!");
+				new Thread(this).start();
+			} else Logger.getLogger().logLine("Error! Cannot get VPN Interface! Try restart!");
 
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
@@ -311,12 +310,12 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 			outputStream.writeBytes("exit\n");
 			outputStream.flush();
 			InputStream stdout = su.getInputStream();
-			Logger.getLogger().logLine("\n"+new String(Utils.readFully(stdout,1024)));
+			Logger.getLogger().logLine("\n" + new String(Utils.readFully(stdout, 1024)));
 			su.waitFor();
 			Logger.getLogger().logLine("SUCCESS! EXECUTED SU, iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-port 5300!");
-			DNS_PROXY_PORT_IS_REDIRECTED =true;
+			DNS_PROXY_PORT_IS_REDIRECTED = true;
 		} catch (Exception e) {
-			Logger.getLogger().logLine("Exception during setting Port redirection:"+e.toString());
+			Logger.getLogger().logLine("Exception during setting Port redirection:" + e.toString());
 
 		}
 	}
@@ -326,18 +325,18 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 		try {
 			builder.addDisallowedApplication(app);
 		} catch (PackageManager.NameNotFoundException e) {
-			Logger.getLogger().logLine("Error during app whitelisting:"+e.getMessage());
+			Logger.getLogger().logLine("Error during app whitelisting:" + e.getMessage());
 		}
 	}
 
 
 	@Override
 	public void onDestroy() {
-		Logger.getLogger().logLine("destroyed");		
-		stopVPN();		
+		Logger.getLogger().logLine("destroyed");
+		stopVPN();
 		super.onDestroy();
 	}
-	
+
 	private boolean stopVPN() {
 		try {
 			if (DNSFILTER != null && !DNSFILTER.canStop()) {
@@ -345,19 +344,19 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 				return false;
 			}
 			ParcelFileDescriptor runningVPN = vpnInterface;
-			if (runningVPN  != null) {
-				vpnInterface=null;
+			if (runningVPN != null) {
+				vpnInterface = null;
 				in.close();
 				out.close();
-				runningVPN.close();			
+				runningVPN.close();
 			}
 			//stop eventually running proxy mode
 			if (DNSFILTERPROXY != null) {
 				DNSFILTERPROXY.stop();
-				DNSFILTERPROXY=null;
+				DNSFILTERPROXY = null;
 				Logger.getLogger().logLine("DNSFilterProxy Mode stopped!");
 			}
-			if (DNSFILTER != null)	{		
+			if (DNSFILTER != null) {
 				DNSFILTER.stop();
 				DNSFILTER = null;
 				Logger.getLogger().logLine("DNSFilter stopped!");
@@ -369,7 +368,7 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 			return false;
 		}
 	}
-	
+
 	public static boolean stop() {
 		if (INSTANCE == null)
 			return true;
@@ -384,20 +383,20 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 
 
 	public static String openConnectionsCount() {
-		return ""+DNSResolver.getResolverCount();
+		return "" + DNSResolver.getResolverCount();
 	}
 
 
 	@Override
 	public void wakeLock() {
 		wakeLock = ((PowerManager) getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "My Tag");
-		wakeLock.acquire();			
+		wakeLock.acquire();
 	}
 
 	@Override
 	public void releaseWakeLock() {
 		WakeLock wl = wakeLock;
 		if (wl != null)
-			wl.release();		
+			wl.release();
 	}
 }

@@ -29,82 +29,82 @@ import java.net.InetAddress;
 import util.Logger;
 
 public class DNSCommunicator {
-	
+
 	private static DNSCommunicator INSTANCE = new DNSCommunicator();
-	
-	private static int TIMEOUT=12000;
-	InetAddress[] dnsServers=new InetAddress[0];
-	int curDNS=-1;
-	String lastDNS="";	
-	
-	
+
+	private static int TIMEOUT = 12000;
+	InetAddress[] dnsServers = new InetAddress[0];
+	int curDNS = -1;
+	String lastDNS = "";
+
+
 	public static DNSCommunicator getInstance() {
 		return INSTANCE;
 	}
-	
+
 	public synchronized void setDNSServers(InetAddress[] newDNSServers) {
-		if (hasChanged(newDNSServers, dnsServers)) {			
+		if (hasChanged(newDNSServers, dnsServers)) {
 			dnsServers = newDNSServers;
-			if (dnsServers.length >0) {
-				lastDNS=dnsServers[0].getHostAddress();
-				curDNS=0;
+			if (dnsServers.length > 0) {
+				lastDNS = dnsServers[0].getHostAddress();
+				curDNS = 0;
 			} else {
-				lastDNS="";
-				curDNS=-1;
+				lastDNS = "";
+				curDNS = -1;
 			}
 			Logger.getLogger().logLine("Using updated DNS Servers!");
 		}
 	}
-	
-	private boolean hasChanged(InetAddress[] newDNS, InetAddress[]curDNS) {
-		
+
+	private boolean hasChanged(InetAddress[] newDNS, InetAddress[] curDNS) {
+
 		if (newDNS.length != curDNS.length)
 			return true;
-		
+
 		for (int i = 0; i < newDNS.length; i++)
 			if (!newDNS[i].equals(curDNS[i]))
 				return true;
-		
-		return false;		
+
+		return false;
 	}
 
-	private synchronized void switchDNSServer(InetAddress current) throws IOException {	
+	private synchronized void switchDNSServer(InetAddress current) throws IOException {
 		if (current == getCurrentDNS()) {  //might have been switched by other thread already
-			curDNS = (curDNS+1) % dnsServers.length;			
-			Logger.getLogger().logLine("Switched DNS Server to:"+getCurrentDNS().getHostAddress() );
+			curDNS = (curDNS + 1) % dnsServers.length;
+			Logger.getLogger().logLine("Switched DNS Server to:" + getCurrentDNS().getHostAddress());
 		}
 	}
-		
+
 	public synchronized InetAddress getCurrentDNS() throws IOException {
-		if (dnsServers.length ==0)
+		if (dnsServers.length == 0)
 			throw new IOException("No DNS Server initialized!");
 		else {
-			lastDNS=dnsServers[curDNS].getHostAddress();
+			lastDNS = dnsServers[curDNS].getHostAddress();
 			return dnsServers[curDNS];
 		}
 	}
-	
+
 	public String getLastDNSAddress() {
 		return lastDNS;
-	}	
-	
-	public void requestDNS (DatagramSocket socket,  DatagramPacket request, DatagramPacket response) throws IOException {
+	}
+
+	public void requestDNS(DatagramSocket socket, DatagramPacket request, DatagramPacket response) throws IOException {
 		InetAddress dns = getCurrentDNS();
 		request.setAddress(dns);
 		request.setPort(53);
 		socket.setSoTimeout(TIMEOUT);
 		try {
 			socket.send(request);
-		} catch (IOException eio){
+		} catch (IOException eio) {
 			switchDNSServer(dns);
-			throw new IOException("Cannot reach "+dns.getHostAddress()+"!"+eio.getMessage());			
+			throw new IOException("Cannot reach " + dns.getHostAddress() + "!" + eio.getMessage());
 		}
 		try {
-			socket.receive(response);			
-		} catch (IOException eio){			
-			switchDNSServer(dns);		
-			throw new IOException ("No DNS Response from "+dns.getHostAddress());
+			socket.receive(response);
+		} catch (IOException eio) {
+			switchDNSServer(dns);
+			throw new IOException("No DNS Response from " + dns.getHostAddress());
 		}
-		
+
 	}
 }

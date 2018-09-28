@@ -21,13 +21,15 @@
  */
 
 package dnsfilter.android;
+
 import util.Logger;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
 public class ConnectionChangeReceiver extends BroadcastReceiver implements Runnable {
-	
+
 	@Override
 	public synchronized void onReceive(Context context, Intent intent) {
 
@@ -45,15 +47,14 @@ public class ConnectionChangeReceiver extends BroadcastReceiver implements Runna
 	@Override
 	public void run() {
 		try {
-			Thread.sleep(10000);				
+			Thread.sleep(10000);
 			DNSFilterService.detectDNSServers();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			Logger.getLogger().logException(e);
 		}
-		
+
 	}
 
-	
 
 }

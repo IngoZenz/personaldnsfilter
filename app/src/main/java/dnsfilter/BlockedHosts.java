@@ -33,26 +33,26 @@ import util.LRUCache;
 import util.ObjectPackagingManager;
 import util.Utils;
 
-public class BlockedHosts implements Set{
+public class BlockedHosts implements Set {
 
 	private static class MyPackagingManager implements ObjectPackagingManager {
 
 		@Override
-		public int objectSize() {		
+		public int objectSize() {
 			return 8;
 		}
 
 		@Override
-		public Object bytesToObject(byte[] data, int offs){
+		public Object bytesToObject(byte[] data, int offs) {
 			return Utils.byteArrayToLong(data, offs);
 		}
 
 		@Override
 		public void objectToBytes(Object object, byte[] data, int offs) {
-			Utils.writeLongToByteArray((Long)object,  data,  offs);		
+			Utils.writeLongToByteArray((Long) object, data, offs);
 		}
 	}
-	
+
 	private static ObjectPackagingManager PACK_MGR = new MyPackagingManager();
 	private static Object NOT_NULL = new Object();
 	private LRUCache okCache;
@@ -67,20 +67,20 @@ public class BlockedHosts implements Set{
 	public BlockedHosts(int maxCountEstimate, int okCacheSize, int filterListCacheSize, Hashtable hostsFilterOverRule) {
 		okCache = new LRUCache(okCacheSize);
 		filterListCache = new LRUCache(filterListCacheSize);
-		this.hostsFilterOverRule= hostsFilterOverRule;
-		
+		this.hostsFilterOverRule = hostsFilterOverRule;
+
 		int slots = maxCountEstimate / 6000;
 		if ((slots % 2) == 0)
 			slots++;
-		
-		blockedHostsHashes = new HugePackedSet(slots, PACK_MGR);		
+
+		blockedHostsHashes = new HugePackedSet(slots, PACK_MGR);
 	}
 
 	private BlockedHosts(HugePackedSet blockedHostsHashes, int okCacheSize, int filterListCacheSize, Hashtable hostsFilterOverRule) {
 		this.blockedHostsHashes = blockedHostsHashes;
 		okCache = new LRUCache(okCacheSize);
 		filterListCache = new LRUCache(filterListCacheSize);
-		this.hostsFilterOverRule= hostsFilterOverRule;
+		this.hostsFilterOverRule = hostsFilterOverRule;
 	}
 
 
@@ -123,7 +123,7 @@ public class BlockedHosts implements Set{
 		}
 	}
 
-	
+
 	public static boolean checkIndexVersion(String path) throws IOException {
 		return HugePackedSet.checkIndexVersion(path);
 	}
@@ -154,7 +154,7 @@ public class BlockedHosts implements Set{
 
 		try {
 			lock(0); //shared read lock ==> block Updates of the structure
-		
+
 			String hostName = (String) object;
 			long hosthash = Utils.getLongStringHash(hostName);
 			if (okCache.get(hosthash) != null)
@@ -173,13 +173,13 @@ public class BlockedHosts implements Set{
 		}
 	}
 
-	
+
 	private boolean contains(String hostName, long hosthash) {
 
-		if (hostsFilterOverRule!= null) {
+		if (hostsFilterOverRule != null) {
 			Object val = hostsFilterOverRule.get(hostName);
 			if (val != null)
-				return  ((Boolean) val).booleanValue();
+				return ((Boolean) val).booleanValue();
 		}
 		if (blockedHostsHashes.contains(hosthash))
 			return true;
@@ -187,13 +187,13 @@ public class BlockedHosts implements Set{
 		int idx = hostName.indexOf('.');
 		while (idx != -1) {
 			hostName = hostName.substring(idx + 1);
-			
-			if (hostsFilterOverRule!= null) {
+
+			if (hostsFilterOverRule != null) {
 				Object val = hostsFilterOverRule.get(hostName);
-				if (val != null) 
-					return  ((Boolean) val).booleanValue();
+				if (val != null)
+					return ((Boolean) val).booleanValue();
 			}
-			
+
 			if (blockedHostsHashes.contains(Utils.getLongStringHash(hostName)))
 				return true;
 			idx = hostName.indexOf('.');
@@ -215,7 +215,7 @@ public class BlockedHosts implements Set{
 
 		filterListCache.clear();
 		filterListCache = hostFilter.filterListCache;
-		
+
 		hostsFilterOverRule = hostFilter.hostsFilterOverRule;
 
 		blockedHostsHashes.migrateTo(hostFilter.blockedHostsHashes);
@@ -272,6 +272,5 @@ public class BlockedHosts implements Set{
 		throw new UnsupportedOperationException("Not supported!");
 	}
 
-	
 
 }

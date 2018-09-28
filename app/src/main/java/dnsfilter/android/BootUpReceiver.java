@@ -31,31 +31,31 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Environment;
 
-public class BootUpReceiver extends BroadcastReceiver{
+public class BootUpReceiver extends BroadcastReceiver {
 
-    @Override
-    public void onReceive(Context context, Intent intent) {
-    	Properties config;
-    	if ((config = getConfig()) != null && Boolean.parseBoolean(config.getProperty("AUTOSTART", "false"))) {
-	    	DNSProxyActivity.BOOT_START=true;
-	        Intent i = new Intent(context, DNSProxyActivity.class);  
-	        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-	        context.startActivity(i);  
-    	}
-    }
-    
-    public Properties getConfig() {
-    	
-    File propsFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/PersonalDNSFilter/dnsfilter.conf");
-	 
+	@Override
+	public void onReceive(Context context, Intent intent) {
+		Properties config;
+		if ((config = getConfig()) != null && Boolean.parseBoolean(config.getProperty("AUTOSTART", "false"))) {
+			DNSProxyActivity.BOOT_START = true;
+			Intent i = new Intent(context, DNSProxyActivity.class);
+			i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			context.startActivity(i);
+		}
+	}
+
+	public Properties getConfig() {
+
+		File propsFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/dnsfilter.conf");
+
 		try {
 			InputStream in = new FileInputStream(propsFile);
-			Properties config= new Properties(); 
+			Properties config = new Properties();
 			config.load(in);
 			in.close();
 			return config;
-		} catch (Exception e ) {
+		} catch (Exception e) {
 			return null;
 		}
-    }
+	}
 }
