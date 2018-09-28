@@ -49,7 +49,7 @@ import util.LoggerInterface;
 
 public class DNSFilterManager implements LoggerInterface
 {
-	public static final String VERSION = "1.50.25.1";
+	public static final String VERSION = "1.50.26";
 	static public boolean debug;
 	static public String WORKDIR = "";	
 	private static String filterReloadURL;

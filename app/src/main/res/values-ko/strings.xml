@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">필터 업데이트 간격 (일) :</string>
     <string name="active">유효한</string>
   <string name="shortText">짧은 텍스트</string>
+    <string name="cfgBackupRestore">구성 백업 및 복원</string>
+  <string name="backupConfig">구성 백업</string>
+  <string name="restoreBackup">백업 복원</string>
+    <string name="restoreDefault">기본 구성 복원</string>
 </resources>

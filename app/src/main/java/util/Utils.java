@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -208,6 +210,15 @@ public class Utils {
 			out.close();
 			in.close();	
 		}
+	}
+
+	public static void copyFile(File from, File to) throws IOException {
+		File dir = to.getParentFile();
+		if (dir!=null)
+			dir.mkdirs();
+		InputStream in  = new FileInputStream(from);
+		OutputStream out = new FileOutputStream(to);
+		copyFully(in,out,true);
 	}
 
 }

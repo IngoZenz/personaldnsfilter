@@ -11,7 +11,7 @@
   <string name="editAdditionalHostsCheckBox">Configurar hosts addicionals</string>
   <string name="keepAwakeCheckBox">Impedir Repòs del Dispositiu</string>
   <string name="EnableAutoStart">Autoinici</string>
-  <string name="EnableAdfilter">Permetre blocatge d\'anunci</string>
+  <string name="EnableAdfilter">Permetre blocatge</string>
   <string name="dnsLabel">DNS:</string>
     <string name="manualDNSCheck">Desactiveu el descobriment del servidor DNS: servidors DNS manuals a continuació:</string>
     <string name="dnsCfgConfigDialogTitle">Configuració del servidor DNS</string>
@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">Interval d\'actualització del filtre en dies:</string>
     <string name="active">Actiu</string>
     <string name="shortText">text curt</string>
+  <string name="cfgBackupRestore">Còpia de seguretat i restauració</string>
+  <string name="backupConfig">Configuració de còpia de seguretat</string>
+  <string name="restoreBackup">Restaurar còpia de seguretat</string>
+    <string name="restoreDefault">Restaura la configuració per defecte</string>
 </resources>

@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">סנן את מרווח הזמן לעדכון בימים:</string>
     <string name="active">פָּעִיל</string>
   <string name="shortText">טקסט קצר</string>
+    <string name="cfgBackupRestore">תצורה גיבוי ושחזור</string>
+  <string name="backupConfig">גיבוי תצורה</string>
+  <string name="restoreBackup">שחזור גיבוי</string>
+    <string name="restoreDefault">שחזור תצורת ברירת מחדל</string>
 </resources>

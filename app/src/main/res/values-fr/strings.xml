@@ -11,7 +11,7 @@
   <string name="editAdditionalHostsCheckBox">Configurer des hôtes supplémentaires</string>
   <string name="keepAwakeCheckBox">Empêcher la veille de l\'appareil</string>
   <string name="EnableAutoStart">Démarrage auto</string>
-  <string name="EnableAdfilter">Activer le blocage des pubs</string>
+  <string name="EnableAdfilter">Activer le blocage</string>
   <string name="dnsLabel">DNS :</string>
     <string name="manualDNSCheck">Désactiver la découverte du serveur DNS - Serveurs DNS manuels ci-dessous:</string>
     <string name="dnsCfgConfigDialogTitle">Configuration du serveur DNS</string>
@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">Intervalle de mise à jour du filtre en jours:</string>
     <string name="active">Actif</string>
     <string name="shortText">texte court</string>
+  <string name="cfgBackupRestore">Sauvegarde et restauration</string>
+  <string name="backupConfig">Configuration de sauvegarde</string>
+  <string name="restoreBackup">Restaurer la sauvegarde</string>
+    <string name="restoreDefault">Restaurer la configuration par défaut</string>
 </resources>

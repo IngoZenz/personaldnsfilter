@@ -11,7 +11,7 @@
   <string name="editAdditionalHostsCheckBox">További gazdák konfigurálása</string>
   <string name="keepAwakeCheckBox">Az eszköz alvó állapotának megakadályozása</string>
   <string name="EnableAutoStart">Automatikus indítás</string>
-  <string name="EnableAdfilter">Hirdetés blokkolás bekapcsolása</string>
+  <string name="EnableAdfilter">Hirdetés blokkolás</string>
   <string name="dnsLabel">DNS:</string>
     <string name="manualDNSCheck">A DNS kiszolgálói felfedezés letiltása - Kézi DNS-kiszolgálók alább:</string>
     <string name="dnsCfgConfigDialogTitle">DNS kiszolgáló konfiguráció</string>
@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">Frissítési frissítés intervallum napokban:</string>
     <string name="active">Aktív</string>
   <string name="shortText">rövid szöveg</string>
+  <string name="cfgBackupRestore">Biztonsági mentés és visszaállítás</string>
+  <string name="backupConfig">Konfigurációs mentés</string>
+  <string name="restoreBackup">Biztonsági mentés visszaállítása</string>
+    <string name="restoreDefault">Alapértelmezett konfiguráció visszaállítása</string>
 </resources>

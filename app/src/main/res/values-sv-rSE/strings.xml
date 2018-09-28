@@ -11,7 +11,7 @@
   <string name="editAdditionalHostsCheckBox">Konfigurera ytterligare värdar</string>
   <string name="keepAwakeCheckBox">Förhindra enhets viloläge</string>
   <string name="EnableAutoStart">Autostart</string>
-  <string name="EnableAdfilter">Aktivera annonsblockering</string>
+  <string name="EnableAdfilter">Aktivera blockering</string>
   <string name="dnsLabel">DNS:</string>
     <string name="manualDNSCheck">Inaktivera DNS Server Discovery - Manuella DNS-servrar nedan:</string>
     <string name="dnsCfgConfigDialogTitle">DNS-serverkonfiguration</string>
@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">Filtrera uppdateringsintervall i dagar:</string>
     <string name="active">Aktiva</string>
     <string name="shortText">kort text</string>
+  <string name="cfgBackupRestore">Säkerhetskopiera och återställa</string>
+  <string name="backupConfig">Konfigurationsbackup</string>
+    <string name="restoreBackup">Återställa säkerhetskopia</string>
+    <string name="restoreDefault">Återställ standardkonfiguration</string>
 </resources>

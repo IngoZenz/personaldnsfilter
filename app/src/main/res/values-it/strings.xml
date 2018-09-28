@@ -11,7 +11,7 @@
   <string name="editAdditionalHostsCheckBox">Configura host aggiuntivi</string>
   <string name="keepAwakeCheckBox">Evita spegnimento schermo</string>
   <string name="EnableAutoStart">Avvio automatico</string>
-  <string name="EnableAdfilter">Abilita blocco annunci</string>
+  <string name="EnableAdfilter">Abilita blocco</string>
   <string name="dnsLabel">DNS:</string>
     <string name="manualDNSCheck">Disabilita rilevazione server DNS - Server DNS manuali di seguito:</string>
     <string name="dnsCfgConfigDialogTitle">Configurazione del server DNS</string>
@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">Filtra intervallo di aggiornamento in giorni:</string>
     <string name="active">Attivo</string>
   <string name="shortText">testo breve</string>
+  <string name="cfgBackupRestore">Backup e ripristino</string>
+  <string name="backupConfig">Backup di configurazione</string>
+  <string name="restoreBackup">Ripristinare il backup</string>
+    <string name="restoreDefault">Ripristina configurazione predefinita</string>
 </resources>

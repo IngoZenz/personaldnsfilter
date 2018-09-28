@@ -11,7 +11,7 @@
   <string name="editAdditionalHostsCheckBox">Konfigurer eksta verter </string>
   <string name="keepAwakeCheckBox">Forhindre at enheten går i dvale</string>
   <string name="EnableAutoStart">Autostart</string>
-  <string name="EnableAdfilter">Aktiver annonseblokkering</string>
+  <string name="EnableAdfilter">Aktiver blokkering</string>
   <string name="dnsLabel">DNS:</string>
     <string name="manualDNSCheck">Deaktiver DNS Server Discovery - Manuelle DNS-servere nedenfor:</string>
     <string name="dnsCfgConfigDialogTitle">DNS-server konfigurasjon</string>
@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">Filter oppdateringsintervall i dager:</string>
     <string name="active">Aktiv</string>
   <string name="shortText">kort tekst</string>
+  <string name="cfgBackupRestore">Konfigurasjonskopiering og gjenoppretting</string>
+  <string name="backupConfig">Konfigurasjonskopiering</string>
+  <string name="restoreBackup">Gjennopprett backup</string>
+    <string name="restoreDefault">Gjenopprett standardkonfigurasjon</string>
 </resources>

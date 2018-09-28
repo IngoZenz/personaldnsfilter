@@ -11,7 +11,7 @@
   <string name="editAdditionalHostsCheckBox">Konfigurovat další hostitele</string>
   <string name="keepAwakeCheckBox">Zabránit uspání zařízení</string>
   <string name="EnableAutoStart">Automatické spuštění</string>
-  <string name="EnableAdfilter">Povolit blokování reklam</string>
+  <string name="EnableAdfilter">Povolit blokování</string>
   <string name="dnsLabel">DNS:</string>
   <string name="dnsCfgConfigDialogTitle">Konfigurace serveru DNS</string>
   <string name="appWhitelistCheckBox">Aplikace Whitelist</string>
@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">Interval aktualizace filtru v dnech:</string>
     <string name="active">Aktivní</string>
     <string name="shortText">krátký text</string>
+  <string name="cfgBackupRestore">Zálohování a obnovení</string>
+  <string name="backupConfig">Konfigurace zálohování</string>
+  <string name="restoreBackup">Obnovit zálohu</string>
+    <string name="restoreDefault">Obnovit výchozí konfiguraci</string>
 </resources>

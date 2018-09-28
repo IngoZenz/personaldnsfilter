@@ -12,7 +12,7 @@
   <string name="appWhitelistCheckBox">App Whitelist</string>
   <string name="keepAwakeCheckBox">Prevent device sleep</string>
   <string name="EnableAutoStart">Autostart</string>
-  <string name="EnableAdfilter">Enable ad-blocking</string>
+  <string name="EnableAdfilter">Enable blocking</string>
   <string name="dnsLabel">DNS:</string>
   <string name="manualDNSCheck">Disable DNS Server Discovery - Manual DNS Servers below:</string>
   <string name="dnsCfgConfigDialogTitle">DNS Server Configuration</string>
@@ -20,4 +20,8 @@
   <string name="active">Active</string>
   <string name="shortText">Short Text</string>
   <string name="URL" translatable="false">http://</string>
+  <string name="cfgBackupRestore">Backup and Restore</string>
+  <string name="backupConfig">Backup Configuration</string>
+  <string name="restoreBackup">Restore Backup</string>
+  <string name="restoreDefault">Restore Default Configuration</string>
 </resources>

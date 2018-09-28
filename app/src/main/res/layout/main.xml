@@ -94,7 +94,7 @@
                     android:paddingRight="7dp"
                     android:text="@string/filterUpdateDays"
                     android:textColor="#424242"
-                    android:textSize="14dp"/>
+                    android:textSize="14dp" />
 
                 <EditText
                     android:id="@+id/filterloadinterval"
@@ -102,11 +102,11 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="15dp"
                     android:background="#CCCCCC"
+                    android:gravity="center"
                     android:inputType="number"
                     android:text="14"
                     android:textColor="#424242"
-                    android:textSize="14dp"
-                    android:gravity="center"/>
+                    android:textSize="14dp" />
             </LinearLayout>
 
             <ScrollView
@@ -237,6 +237,85 @@
                 android:layout_marginLeft="10dp"
                 android:orientation="vertical" />
         </ScrollView>
+
+        <dnsfilter.android.PaddedCheckBox
+            android:id="@+id/backupRestoreChk"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="25dp"
+            android:layout_marginTop="0dp"
+            android:button="@drawable/custom_checkbox"
+            android:checked="true"
+            android:text="@string/cfgBackupRestore"
+            android:textColor="#424242" />
+
+        <LinearLayout
+            android:id="@+id/backupRestoreView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginTop="3dp"
+            android:background="#E0E0E0"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/backupBtn"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/custom_button"
+                android:padding="2dp"
+                android:text="@string/backupConfig"
+                android:textAlignment="center"
+                android:textColor="#212121"
+                android:textSize="14dp" />
+
+            <Button
+                android:id="@+id/RestoreBackupBtn"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/custom_button"
+                android:padding="2dp"
+                android:text="@string/restoreBackup"
+                android:textAlignment="center"
+                android:textColor="#212121"
+                android:textSize="14dp" />
+
+            <Button
+                android:id="@+id/RestoreDefaultBtn"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/custom_button"
+                android:padding="2dp"
+                android:text="@string/restoreDefault"
+                android:textAlignment="center"
+                android:textColor="#212121"
+                android:textSize="14dp" />
+
+            <TextView
+                android:id="@+id/backupLog"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="0dp"
+                android:layout_marginLeft="0dp"
+                android:layout_marginRight="0dp"
+                android:layout_marginTop="0dp"
+                android:background="#EFEFF0"
+                android:textColor="#000000"
+                android:textSize="14dp" />
+
+        </LinearLayout>
 
         <dnsfilter.android.PaddedCheckBox
             android:id="@+id/keepAwakeCheck"

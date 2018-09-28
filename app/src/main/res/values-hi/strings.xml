@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">दिनों में फ़िल्टर अपडेट अंतराल:</string>
     <string name="active">सक्रिय</string>
   <string name="shortText">"छोटा लेख "</string>
+    <string name="cfgBackupRestore">कॉन्फ़िगरेशन बैकअप और पुनर्स्थापित करें</string>
+  <string name="backupConfig">कॉन्फ़िगरेशन बैकअप</string>
+  <string name="restoreBackup">बैकअप बहाल</string>
+    <string name="restoreDefault">डिफ़ॉल्ट कॉन्फ़िगरेशन पुनर्स्थापित करें</string>
 </resources>

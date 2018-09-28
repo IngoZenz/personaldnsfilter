@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">Suodattimen päivitysväli päivinä:</string>
     <string name="active">Aktiivinen</string>
     <string name="shortText">lyhyt teksti</string>
+    <string name="cfgBackupRestore">varmuuskopiointi ja palautus</string>
+  <string name="backupConfig">Varmuuskopioinnin määritys</string>
+  <string name="restoreBackup">Palauta varmuuskopio</string>
+    <string name="restoreDefault">Palauta oletusasetukset</string>
 </resources>

@@ -11,7 +11,7 @@
   <string name="editAdditionalHostsCheckBox">Ek ana bilgisayarları yapılandır</string>
   <string name="keepAwakeCheckBox">Cihazın uykuya geçmesini önle</string>
   <string name="EnableAutoStart">Otomatik başlatma</string>
-  <string name="EnableAdfilter">Reklam engellemeyi etkinleştir</string>
+  <string name="EnableAdfilter">engellemeyi etkinleştir</string>
   <string name="dnsLabel">DNS:</string>
     <string name="manualDNSCheck">Aşağıdaki DNS Sunucusu Discovery - Manuel DNS Sunucularını devre dışı bırakın:</string>
     <string name="dnsCfgConfigDialogTitle">DNS Sunucusu Yapılandırması</string>
@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">Güncelleme aralığını gün cinsinden filtrele:</string>
     <string name="active">Aktif</string>
     <string name="shortText">kısa metin</string>
+  <string name="cfgBackupRestore">Yedekleme ve Geri Yükleme</string>
+  <string name="backupConfig">Yapılandırma Yedeği</string>
+    <string name="restoreBackup">Yedeklemeyi Geri Yükle</string>
+    <string name="restoreDefault">Obnovit výchozí konfiguraci</string>
 </resources>

@@ -11,7 +11,7 @@
   <string name="editAdditionalHostsCheckBox">Configureer extra hosts </string>
   <string name="keepAwakeCheckBox">Apparaat blijft actief</string>
   <string name="EnableAutoStart">Autostart</string>
-  <string name="EnableAdfilter">Advertentieblokkering inschakelen</string>
+  <string name="EnableAdfilter">blokkering inschakelen</string>
   <string name="dnsLabel">DNS:</string>
     <string name="manualDNSCheck">Schakel DNS-serverdetectie uit - Handmatige DNS-servers hieronder:</string>
     <string name="dnsCfgConfigDialogTitle">DNS-serverconfiguratie</string>
@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">Update-interval filter in dagen:</string>
     <string name="active">Actief</string>
     <string name="shortText">"korte tekst "</string>
+  <string name="cfgBackupRestore">Back-up en herstel</string>
+  <string name="backupConfig">Back-up configuratie</string>
+  <string name="restoreBackup">Back-up terugzetten</string>
+    <string name="restoreDefault">Standaardconfiguratie herstellen</string>
 </resources>

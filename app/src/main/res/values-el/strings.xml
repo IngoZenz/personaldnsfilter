@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">Διάρκεια ενημέρωσης φίλτρου σε ημέρες:</string>
     <string name="active">ενεργός</string>
     <string name="shortText">σύντομο κείμενο</string>
+    <string name="cfgBackupRestore">Διαμόρφωση αντιγράφων ασφαλείας και επαναφορά</string>
+  <string name="backupConfig">Δημιουργία αντιγράφων ασφαλείας διαμόρφωσης</string>
+  <string name="restoreBackup">"Επαναφορά αντιγράφων ασφαλείας "</string>
+    <string name="restoreDefault">Επαναφορά προεπιλεγμένης ρύθμισης παραμέτρων</string>
 </resources>

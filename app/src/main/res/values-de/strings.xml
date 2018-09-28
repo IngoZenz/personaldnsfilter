@@ -11,7 +11,7 @@
   <string name="editAdditionalHostsCheckBox">Zusätzliche Hosts konfigurieren</string>
   <string name="keepAwakeCheckBox">Schlafmodus des Geräts verhindern</string>
   <string name="EnableAutoStart">Autostart</string>
-  <string name="EnableAdfilter">Werbeblocker aktivieren</string>
+  <string name="EnableAdfilter">Blocker aktivieren</string>
   <string name="dnsLabel">DNS:</string>
     <string name="manualDNSCheck">DNS-Server-Erkennung deaktivieren - Manuelle DNS-Server unten:</string>
     <string name="dnsCfgConfigDialogTitle">DNS-Serverkonfiguration</string>
@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">Filter Update Intervall in Tagen:</string>
     <string name="active">Aktiv</string>
     <string name="shortText">Kurztext</string>
+  <string name="cfgBackupRestore">Sichern und Wiederherstellen</string>
+  <string name="backupConfig">Konfiguration Sichern</string>
+  <string name="restoreBackup">Backup wiederherstellen</string>
+    <string name="restoreDefault">Standardkonfiguration Wiederherstellen</string>
 </resources>

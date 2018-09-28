@@ -30,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
@@ -48,6 +49,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.graphics.Color;
 import android.net.VpnService;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.WifiLock;
@@ -85,6 +87,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private  static CheckBox advancedConfigCheck;
 	private  static CheckBox editFilterLoadCheck;
 	private  static CheckBox editAdditionalHostsCheck;
+	private static CheckBox backupRestoreCheck;
+	private static Button backupBtn;
+	private static Button restoreBtn;
+	private static Button restoreDefaultsBtn;
 	private static CheckBox appWhiteListCheck;
 	private static ScrollView appWhiteListScroll;
 	private static AppSelectorView appSelector;
@@ -119,6 +125,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private static WakeLock wakeLock;
 	
 	private static Intent SERVICE = null;
+	private static Properties config = null;
 
 
 	private class MyUIThreadLogger implements Runnable {;
@@ -154,10 +161,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 						logStr = logStr.substring(newLine + 4);
 					logSize = logStr.length();
 					logOutView.setText(fromHtml(logStr));
-				}				
-				logOutView.setSelection(logOutView.getText().length());
-				scrollView.fullScroll(ScrollView.FOCUS_DOWN);
-				
+				}
+
+				if (!advancedConfigCheck.isChecked()) { //avoid focus lost when editing advanced settings
+					logOutView.setSelection(logOutView.getText().length());
+					scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+				}
 			}
 			setTitle("personalDNSfilter V"+DNSFilterManager.VERSION+" (Connections:"+DNSFilterService.openConnectionsCount()+")");
 			dnsField.setText(DNSCommunicator.getInstance().getLastDNSAddress());
@@ -228,6 +237,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		stopBtn.setOnClickListener(this);
 		reloadFilterBtn = (Button) findViewById(R.id.filterReloadBtn);
 		reloadFilterBtn.setOnClickListener(this);
+		backupBtn = (Button) findViewById(R.id.backupBtn);
+		backupBtn.setOnClickListener(this);
+		restoreBtn = (Button) findViewById(R.id.RestoreBackupBtn);
+		restoreBtn.setOnClickListener(this);
+		restoreDefaultsBtn = (Button) findViewById(R.id.RestoreDefaultBtn);
+		restoreDefaultsBtn.setOnClickListener(this);
 
 		uiText = "";
 
@@ -255,16 +270,21 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		dnsField.setText(uiText);
 		dnsField.setEnabled(true);
 		dnsField.setOnClickListener(this);
-		
+
 		checked = enableAdFilterCheck != null && enableAdFilterCheck.isChecked();
 		enableAdFilterCheck = (CheckBox) findViewById(R.id.enableAddFilter);
 		enableAdFilterCheck.setChecked(checked);
 		enableAdFilterCheck.setOnClickListener(this);
-		
+
 		checked = enableAutoStartCheck != null && enableAutoStartCheck.isChecked();
 		enableAutoStartCheck = (CheckBox) findViewById(R.id.enableAutoStart);
 		enableAutoStartCheck.setChecked(checked);
 		enableAutoStartCheck.setOnClickListener(this);
+
+		checked = backupRestoreCheck != null && backupRestoreCheck.isChecked();
+		backupRestoreCheck = (CheckBox) findViewById(R.id.backupRestoreChk);
+		backupRestoreCheck.setChecked(checked);
+		backupRestoreCheck.setOnClickListener(this);
 
 		checked = appWhiteListCheck != null && appWhiteListCheck.isChecked();
 		appWhiteListCheck = (CheckBox) findViewById(R.id.appWhitelist);
@@ -275,17 +295,17 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		keepAwakeCheck = (CheckBox) findViewById(R.id.keepAwakeCheck);
 		keepAwakeCheck.setChecked(checked);
 		keepAwakeCheck.setOnClickListener(this);
-		
+
 		checked = advancedConfigCheck != null && advancedConfigCheck.isChecked();
 		advancedConfigCheck = (CheckBox) findViewById(R.id.advancedConfigCheck);
 		advancedConfigCheck.setChecked(checked);
 		advancedConfigCheck.setOnClickListener(this);
-		
+
 		checked = editFilterLoadCheck != null && editFilterLoadCheck.isChecked();
 		editFilterLoadCheck = (CheckBox) findViewById(R.id.editFilterLoad);
 		editFilterLoadCheck.setChecked(checked);
 		editFilterLoadCheck.setOnClickListener(this);
-		
+
 		checked = editAdditionalHostsCheck != null && editAdditionalHostsCheck.isChecked();
 		editAdditionalHostsCheck = (CheckBox) findViewById(R.id.editAdditionalHosts);
 		editAdditionalHostsCheck.setChecked(checked);
@@ -302,11 +322,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		if (additionalHostsField != null)
 			uiText = additionalHostsField.getText().toString();
-		
+
 		additionalHostsField = (EditText) findViewById(R.id.additionalHostsField);
-		additionalHostsField.setText(uiText);	
+		additionalHostsField.setText(uiText);
 		additionalHostsField.addTextChangedListener(this);
-		
+
 		handleAdvancedConfig();
 
 		if (myLogger!= null)
@@ -328,32 +348,38 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 					finish();
 				BOOT_START = false;
 			}
+			loadAndApplyConfig();
+			appStart = false; // now started
+		}
+	}
 
-			Properties config = getConfig();
-			if (config != null) {
+	private void loadAndApplyConfig () {
 
-				manualDNSCheck.setChecked(!Boolean.parseBoolean(config.getProperty("detectDNS", "true")));
-				manualDNSView.setText(config.getProperty("fallbackDNS").replace(";","\n").replace(" ",""));
+		config = getConfig();
 
-				FilterConfig.FilterConfigEntry[]  filterEntries = buildFilterEntries(config);
-				filterCfg.setEntries(filterEntries);
+		if (config != null) {
 
-				filterReloadIntervalView.setText(config.getProperty("reloadIntervalDays","7"));
+			releaseWakeLock(); // will be set again below in case configured
 
-				enableAdFilterCheck.setChecked(config.getProperty("filterHostsFile")!=null);
-				enableAutoStartCheck.setChecked(Boolean.parseBoolean(config.getProperty("AUTOSTART","false")));
+			manualDNSCheck.setChecked(!Boolean.parseBoolean(config.getProperty("detectDNS", "true")));
 
-				keepAwakeCheck.setChecked(Boolean.parseBoolean(config.getProperty("androidKeepAwake","false")));
-				if (keepAwakeCheck.isChecked())
-					requestWakeLock();
+			manualDNSView.setText(config.getProperty("fallbackDNS").replace(";", "\n").replace(" ", ""));
 
-				//set whitelisted Apps into UI
-				appSelector.setSelectedApps(config.getProperty("androidAppWhiteList",""));
+			FilterConfig.FilterConfigEntry[] filterEntries = buildFilterEntries(config);
+			filterCfg.setEntries(filterEntries);
 
-				appStart = false; // now started
-				
-				handleStart(); //start
-			}
+			filterReloadIntervalView.setText(config.getProperty("reloadIntervalDays", "7"));
+
+			enableAdFilterCheck.setChecked(config.getProperty("filterHostsFile") != null);
+			enableAutoStartCheck.setChecked(Boolean.parseBoolean(config.getProperty("AUTOSTART", "false")));
+
+			keepAwakeCheck.setChecked(Boolean.parseBoolean(config.getProperty("androidKeepAwake", "false")));
+			if (keepAwakeCheck.isChecked())
+				requestWakeLock();
+
+			//set whitelisted Apps into UI
+			appSelector.setSelectedApps(config.getProperty("androidAppWhiteList", ""));
+			handleStart();
 		}
 	}
 
@@ -704,6 +730,21 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			return;
 		}
 
+		if (destination == backupBtn) {
+			doBackup();
+			return;
+		}
+
+		if (destination == restoreBtn) {
+			doRestore();
+			return;
+		}
+		if (destination == restoreDefaultsBtn) {
+			doRestoreDefaults();
+			return;
+		}
+
+
 		persistConfig();
 
 		if (destination == startBtn || destination == enableAdFilterCheck)
@@ -713,7 +754,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		if (destination == reloadFilterBtn)
 			handlefilterReload();
 		
-		if (destination == advancedConfigCheck || destination ==editAdditionalHostsCheck || destination == editFilterLoadCheck || destination == appWhiteListCheck ) {
+		if (destination == advancedConfigCheck || destination ==editAdditionalHostsCheck || destination == editFilterLoadCheck || destination == appWhiteListCheck || destination == backupRestoreCheck) {
 			handleAdvancedConfig();
 		}		
 		if (destination == keepAwakeCheck) {
@@ -724,6 +765,88 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			}
 		}
 	}
+
+	private void copyLocalFile(String from, String to) throws IOException {
+		File fromFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/"+from);
+		File toFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/"+to);
+		Utils.copyFile(fromFile, toFile);
+	}
+
+	private void copyFromAssets(String from, String to) throws IOException {
+		AssetManager assetManager=this.getAssets();
+		InputStream defIn = assetManager.open(from);
+		File toFile = new File((Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/"+to));
+		toFile.getParentFile().mkdirs();
+		FileOutputStream out = new FileOutputStream(toFile);
+		Utils.copyFully(defIn,out, true );
+	}
+
+	private void doBackup() {
+		TextView backupStatusView = findViewById(R.id.backupLog);
+		try {
+			copyLocalFile("dnsfilter.conf", "backup/dnsfilter.conf");
+			copyLocalFile("additionalHosts.txt", "backup/additionalHosts.txt");
+			copyLocalFile("VERSION.TXT", "backup/VERSION.TXT");
+			backupStatusView.setTextColor(Color.parseColor("#23751C"));
+			backupStatusView.setText("Backup Success!");
+		} catch (IOException eio) {
+			backupStatusView.setTextColor(Color.parseColor("#D03D06"));
+			backupStatusView.setText("Backup Failed! "+eio.getMessage());
+		}
+	}
+
+	private void doRestoreDefaults() {
+		TextView backupStatusView = findViewById(R.id.backupLog);
+		try {
+
+			if (!DNSFilterService.stop())
+				throw new IOException ("Can not stop - Retry later!");
+
+			copyFromAssets("dnsfilter.conf", "dnsfilter.conf");
+			copyFromAssets("additionalHosts.txt", "additionalHosts.txt");
+
+			//cleanup hostsfile and index in order to force reload
+			String filterHostFile = null;
+			if (config != null && ( (filterHostFile = config.getProperty("filterHostsFile")) != null)) {
+				new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/"+filterHostFile).delete();
+				Utils.deleteFolder(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/"+filterHostFile+".IDX");
+			}
+
+			backupStatusView.setTextColor(Color.parseColor("#23751C"));
+			loadAndApplyConfig();
+			backupStatusView.setText("Restore Success!");
+		} catch (IOException eio) {
+			backupStatusView.setTextColor(Color.parseColor("#D03D06"));
+			backupStatusView.setText("Restore Failed! "+eio.getMessage());
+		}
+	}
+
+	private void doRestore() {		TextView backupStatusView = findViewById(R.id.backupLog);
+		try {
+
+			if (!DNSFilterService.stop())
+				throw new IOException ("Can not stop - Retry later!");
+
+			copyLocalFile("backup/dnsfilter.conf", "dnsfilter.conf");
+			copyLocalFile("backup/additionalHosts.txt", "additionalHosts.txt");
+			copyLocalFile("backup/VERSION.TXT", "VERSION.TXT");
+
+			//cleanup hostsfile and index in order to force reload
+			String filterHostFile = null;
+			if (config != null && ( (filterHostFile = config.getProperty("filterHostsFile")) != null)) {
+				new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/"+filterHostFile).delete();
+				Utils.deleteFolder(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/"+filterHostFile+".IDX");
+			}
+
+			backupStatusView.setTextColor(Color.parseColor("#23751C"));
+			loadAndApplyConfig();
+			backupStatusView.setText("Restore Success!");
+		} catch (IOException eio) {
+			backupStatusView.setTextColor(Color.parseColor("#D03D06"));
+			backupStatusView.setText("Restore Failed! "+eio.getMessage());
+		}
+	}
+
 
 	private void handleDNSConfigDialog() {
 		advDNSConfigDia.show();
@@ -743,6 +866,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	}
 
 	private void handleAdvancedConfig() {
+		((TextView)findViewById(R.id.backupLog)).setText("");
 		if (advancedConfigCheck.isChecked()) {
 			//App Whitelisting only supported on SDK >= 21
 			if  (Build.VERSION.SDK_INT >= 21)
@@ -750,6 +874,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			keepAwakeCheck.setVisibility(View.VISIBLE);
 			editAdditionalHostsCheck.setVisibility(View.VISIBLE);
 			editFilterLoadCheck.setVisibility(View.VISIBLE);
+			backupRestoreCheck.setVisibility(View.VISIBLE);
+
+			if (backupRestoreCheck.isChecked()) {
+				findViewById(R.id.backupRestoreView).setVisibility(View.VISIBLE);
+			} else {
+				findViewById(R.id.backupRestoreView).setVisibility(View.GONE);
+			}
 
 			if (appWhiteListCheck.isChecked()) {
 				appWhiteListScroll.setVisibility(View.VISIBLE);
@@ -785,9 +916,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			appWhiteListCheck.setVisibility(View.GONE);
 			appWhiteListScroll.setVisibility(View.GONE);
 			appSelector.clear();
+			findViewById(R.id.backupRestoreView).setVisibility(View.GONE);
 			keepAwakeCheck.setVisibility(View.GONE);
 			editAdditionalHostsCheck.setVisibility(View.GONE);
 			editFilterLoadCheck.setVisibility(View.GONE);
+			backupRestoreCheck.setVisibility(View.GONE);
 			editAdditionalHostsCheck.setChecked(false);
 			additionalHostsField.setText("");
 			additionalHostsChanged = false;

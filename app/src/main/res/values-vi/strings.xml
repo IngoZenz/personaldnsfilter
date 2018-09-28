@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">Lọc khoảng thời gian cập nhật trong ngày:</string>
     <string name="active">hoạt động</string>
     <string name="shortText">văn bản ngắn</string>
+    <string name="cfgBackupRestore">Sao lưu và khôi phục</string>
+  <string name="backupConfig">Sao lưu cấu hình</string>
+    <string name="restoreBackup">"Khôi phục lại bản sao lưu "</string>
+    <string name="restoreDefault">Khôi phục cấu hình mặc định</string>
 </resources>

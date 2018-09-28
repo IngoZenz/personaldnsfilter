@@ -11,7 +11,7 @@
   <string name="editAdditionalHostsCheckBox">Подесите додатне домаћини</string>
   <string name="keepAwakeCheckBox">Спречавање уређај сна</string>
   <string name="EnableAutoStart">Аутоматско покретање</string>
-  <string name="EnableAdfilter">Омогући блокирање огласа</string>
+  <string name="EnableAdfilter">Омогући блокирање</string>
   <string name="dnsLabel">ДНС:</string>
     <string name="manualDNSCheck">Онемогући откривање ДНС сервера - ручни ДНС сервери доле:</string>
     <string name="dnsCfgConfigDialogTitle">Конфигурација ДНС сервера</string>
@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">Интервал ажурирања филтера у данима:</string>
     <string name="active">активан</string>
     <string name="shortText">кратки текст</string>
+  <string name="cfgBackupRestore">Бацкуп анд Ресторе</string>
+  <string name="backupConfig">Конфигурација Бацкуп</string>
+    <string name="restoreBackup">Ресторе Бацкуп</string>
+    <string name="restoreDefault">Враћање почетне конфигурације</string>
 </resources>

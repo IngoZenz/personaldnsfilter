@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">تصفية الفاصل الزمني للتحديث في أيام</string>
     <string name="active">نشيط</string>
     <string name="shortText">نص قصير</string>
+  <string name="backupConfig">تكوين النسخ الاحتياطي</string>
+  <string name="restoreBackup">استرجاع النسخة الاحتياطية</string>
+    <string name="restoreDefault">استعادة التكوين الافتراضي</string>
+  <string name="cfgBackupRestore">النسخ الاحتياطي والاستعادة</string>
 </resources>

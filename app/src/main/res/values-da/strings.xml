@@ -11,7 +11,7 @@
   <string name="editAdditionalHostsCheckBox">Konfigurer yderligere værter</string>
   <string name="keepAwakeCheckBox">Stop enheden i at gå i dvale</string>
   <string name="EnableAutoStart">Automatisk start</string>
-  <string name="EnableAdfilter">Aktiver annonceblokering</string>
+  <string name="EnableAdfilter">Aktiver blokering</string>
   <string name="dnsLabel">DNS:</string>
     <string name="manualDNSCheck">Deaktiver DNS Server Discovery - Manuelle DNS-servere nedenfor:</string>
     <string name="dnsCfgConfigDialogTitle">DNS-server konfiguration</string>
@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">Filter opdateringsinterval i dage:</string>
     <string name="active">Aktiv</string>
     <string name="shortText">kort tekst</string>
+  <string name="cfgBackupRestore">Backup og Gendan</string>
+  <string name="backupConfig">Sikkerhedskopieringskonfiguration</string>
+  <string name="restoreBackup">Gendan sikkerhedskopiering</string>
+    <string name="restoreDefault">Gendan standardkonfiguration</string>
 </resources>

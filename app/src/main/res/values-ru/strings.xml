@@ -11,7 +11,7 @@
   <string name="editAdditionalHostsCheckBox">Настроить дополнительные хосты</string>
   <string name="keepAwakeCheckBox">Предотвратить переход устройства в сон</string>
   <string name="EnableAutoStart">Автозапуск</string>
-  <string name="EnableAdfilter">Включить блокировку рекламы</string>
+  <string name="EnableAdfilter">Включить блокировку</string>
   <string name="dnsLabel">DNS:</string>
     <string name="manualDNSCheck">Отключить открытие DNS-сервера - ручные DNS-серверы ниже:</string>
     <string name="dnsCfgConfigDialogTitle">Настройка DNS-сервера</string>
@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">Интервал обновления фильтра в днях:</string>
     <string name="active">активный</string>
     <string name="shortText">короткий текст</string>
+  <string name="cfgBackupRestore">Резервное копирование и восстановление</string>
+  <string name="backupConfig">Резервирование конфигурации</string>
+    <string name="restoreBackup">Восстановление резервной копии</string>
+    <string name="restoreDefault">Restabiliți configurarea implicită</string>
 </resources>

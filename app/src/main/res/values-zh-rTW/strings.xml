@@ -19,4 +19,8 @@
     <string name="filterUpdateDays">过滤更新间隔天数</string>
     <string name="active">活性</string>
     <string name="shortText">简短的文字</string>
+    <string name="cfgBackupRestore">配置备份和还原</string>
+  <string name="backupConfig">备份配置</string>
+  <string name="restoreBackup">恢复备份</string>
+    <string name="restoreDefault">恢复默认配置</string>
 </resources>
