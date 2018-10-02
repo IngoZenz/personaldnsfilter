@@ -5,7 +5,7 @@
   <string name="listenPortLabel">Poort:</string>
   <string name="startBtnLabel">Herstart</string>
   <string name="stopBtnLabel">Sluiten</string>
-  <string name="filterReloadBtnLabel">Filer herladen</string>
+  <string name="filterReloadBtnLabel">Filter herladen</string>
   <string name="EnableConfigCheckBox">Geavanceerde instellingen</string>
   <string name="editFilterLoadCheckBox">Configureer filter update</string>
   <string name="editAdditionalHostsCheckBox">Configureer extra hosts </string>
