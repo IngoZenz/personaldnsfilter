@@ -811,7 +811,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			String filterHostFile = null;
 			if (config != null && ((filterHostFile = config.getProperty("filterHostsFile")) != null)) {
 				new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/" + filterHostFile).delete();
-				Utils.deleteFolder(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/" + filterHostFile + ".IDX");
 			}
 
 			backupStatusView.setTextColor(Color.parseColor("#23751C"));
@@ -838,7 +837,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			String filterHostFile = null;
 			if (config != null && ((filterHostFile = config.getProperty("filterHostsFile")) != null)) {
 				new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/" + filterHostFile).delete();
-				Utils.deleteFolder(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/" + filterHostFile + ".IDX");
 			}
 
 			backupStatusView.setTextColor(Color.parseColor("#23751C"));
