@@ -2,7 +2,7 @@
 
     <TableRow
         xmlns:android="http://schemas.android.com/apk/res/android"
-        android:paddingTop="5dp"
+        android:paddingTop="15dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1">
@@ -24,7 +24,7 @@
 
          <EditText
              android:layout_weight="1"
-             android:background="#E0E0E0"
+             android:background="#eeeeee"
              android:layout_width="0dp"
              android:layout_height="wrap_content"
              android:paddingLeft="0dp"
@@ -41,7 +41,7 @@
             android:paddingLeft="10dp"  >
 			
             <EditText
-                android:background="#E0E0E0"
+                android:background="#eeeeee"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"  
                 android:layout_weight="1"
@@ -52,7 +52,8 @@
 			
         </HorizontalScrollView>
 
-		 <TextView
+		 <Button
+            android:background="@drawable/custom_button"
             android:layout_weight="0"
             android:layout_width="28dp"
             android:layout_height="wrap_content"
@@ -62,9 +63,8 @@
             android:textColor="#424242"
             android:textSize="14dp"
             android:gravity="center"
-            android:background="#CCCCCC"
             android:textStyle="bold">
-        </TextView>
+        </Button>
 		
     </TableRow>
 

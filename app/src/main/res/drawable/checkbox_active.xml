@@ -1,53 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-
-<!-- Bottom 2dp Shadow -->
-<item>
-    <shape  android:shape="rectangle">
-
-        <gradient
-android:angle="270"
-android:centerX="0%"
-android:centerColor="#00FFFFFF"
-android:startColor="#005F5F5F"
-android:endColor="#5F5F5F"
-android:type="linear"
-/>
-		<corners android:radius="4dp" />
-
-    </shape>
-</item>
-
-<!-- Green Top color -->
-<item android:bottom="2px">
-
-    <shape  android:shape="rectangle">
-
-    <solid android:color="#00BCD4" />
-    <corners android:radius="4dp" />
-    <padding
-		android:left="0dp"
-		android:top="0dp"
-		android:right="0dp"
-		android:bottom="0dp"
-		/>
-		<size
-		android:width="22dp"
-		android:height="22dp"
-		/>
-	</shape>
-
-</item>
-
-<!-- Green Top color -->
-<item android:top="8px" android:right="8px" android:left="8px" android:bottom="10px">
-
-    <shape  android:shape="rectangle">
-
-    <solid android:color="#1FA3B1" />
-    <corners android:radius="2dp" />
-	</shape>
-
-</item>
-
+	<!-- outer ring -->
+	<item>
+		<shape android:shape="oval">
+			<size
+				android:width="22dp"
+				android:height="22dp"/>
+			<stroke
+				android:width="2dp"
+				android:color="#00BCD4">
+			</stroke>
+			<!-- fake background -->
+			<solid
+				android:color="#00FFFFFF">
+			</solid>
+		</shape>
+	</item>
+	<!-- center dot -->
+	<item android:top="4.8dp" android:right="4.8dp" android:left="4.8dp" android:bottom="4.8dp">
+		<shape  android:shape="oval">
+			<solid android:color="#00BCD4" />
+		</shape>
+	</item>
 </layer-list>
+
+
+
