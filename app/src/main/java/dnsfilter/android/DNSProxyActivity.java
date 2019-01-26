@@ -204,12 +204,23 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 
 		FilterConfig.FilterConfigEntry[] cfgEntries = null;
-		if (filterCfg != null)
+		String filterCategory = null;
+		if (filterCfg != null) {
 			cfgEntries = filterCfg.getFilterEntries();
+			filterCategory = filterCfg.getCurrentCategory();
+			filterCfg.cleanUp(); //clean references etc
+		}
 
-		filterCfg = new FilterConfig((TableLayout) findViewById(R.id.filtercfgtable));
-		if (cfgEntries != null)
+		Button categoryUp = ((Button) findViewById(R.id.CategoryUp));
+		Button categoryDn = ((Button) findViewById(R.id.CategoryDown));
+		TextView categoryField = ((TextView) findViewById(R.id.categoryFilter));
+
+
+		filterCfg = new FilterConfig((TableLayout) findViewById(R.id.filtercfgtable), categoryUp, categoryDn, categoryField);
+		if (cfgEntries != null) {
 			filterCfg.setEntries(cfgEntries);
+			filterCfg.setCurrentCategory(filterCategory);
+		}
 
 		String uiText = "";
 		if (filterReloadIntervalView != null)
@@ -391,15 +402,18 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		String urls = config.getProperty("filterAutoUpdateURL", "");
 		String url_IDs = config.getProperty("filterAutoUpdateURL_IDs", "");
 		String url_switchs = config.getProperty("filterAutoUpdateURL_switchs", "");
+		String url_categories = config.getProperty("filterAutoUpdateURL_categories", "");
 
 		StringTokenizer urlTokens = new StringTokenizer(urls, ";");
 		StringTokenizer urlIDTokens = new StringTokenizer(url_IDs, ";");
 		StringTokenizer urlSwitchTokens = new StringTokenizer(url_switchs, ";");
+		StringTokenizer categoryTokens = new StringTokenizer(url_categories, ";");
 
 		int count = urlTokens.countTokens();
 		FilterConfig.FilterConfigEntry[] result = new FilterConfig.FilterConfigEntry[count];
 
 		for (int i = 0; i < count; i++) {
+			String urlHost = null;
 			String urlStr = urlTokens.nextToken().trim();
 			String url_id = "";
 			if (urlIDTokens.hasMoreTokens())
@@ -408,17 +422,33 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				URL url = null;
 				try {
 					url = new URL(urlStr);
-					url_id = url.getHost();
+					urlHost=url.getHost();
+					url_id = urlHost;
 				} catch (MalformedURLException e) {
 					Logger.getLogger().logException(e);
 					url_id = "-";
+				}
+			}
+			String url_category = "";
+			if (categoryTokens.hasMoreTokens())
+				url_category = categoryTokens.nextToken().trim();
+			else if (urlHost != null)
+				url_category = urlHost;
+			else {
+				URL url = null;
+				try {
+					url = new URL(urlStr);
+					url_category = url.getHost();
+				} catch (MalformedURLException e) {
+					Logger.getLogger().logException(e);
+					url_category = "-";
 				}
 			}
 			boolean active = true;
 			if (urlSwitchTokens.hasMoreTokens())
 				active = Boolean.parseBoolean(urlSwitchTokens.nextToken().trim());
 
-			result[i] = new FilterConfig.FilterConfigEntry(active, url_id, urlStr);
+			result[i] = new FilterConfig.FilterConfigEntry(active, url_category,url_id, urlStr);
 		}
 		return result;
 	}
@@ -575,12 +605,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 
 	public String[] getFilterCfgStrings(FilterConfig.FilterConfigEntry[] filterEntries) {
-		String[] result = {"", "", ""};
+		String[] result = {"", "", "", ""};
 		String dim = "";
 		for (int i = 0; i < filterEntries.length; i++) {
 			result[0] = result[0] + dim + filterEntries[i].active;
 			result[1] = result[1] + dim + filterEntries[i].id;
 			result[2] = result[2] + dim + filterEntries[i].url;
+			result[3] = result[3] + dim + filterEntries[i].category;
 			dim = "; ";
 		}
 		return result;
@@ -616,6 +647,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 				else if (ln.trim().startsWith("filterAutoUpdateURL_switchs"))
 					ln = "filterAutoUpdateURL_switchs = " + filterCfgStrings[0];
+
+				else if (ln.trim().startsWith("filterAutoUpdateURL_categories"))
+					ln = "filterAutoUpdateURL_categories = " + filterCfgStrings[3];
 
 				else if (ln.trim().startsWith("filterAutoUpdateURL"))
 					ln = "filterAutoUpdateURL = " + filterCfgStrings[2];

@@ -19,9 +19,15 @@
   <string name="filterUpdateDays">Filter Update Interval in Days:</string>
   <string name="active">Active</string>
   <string name="shortText">Short Text</string>
-  <string name="URL" translatable="false">http://</string>
+  <string name="URL">URL</string>
   <string name="cfgBackupRestore">Backup and Restore</string>
   <string name="backupConfig">Backup Configuration</string>
   <string name="restoreBackup">Restore Backup</string>
   <string name="restoreDefault">Restore Default Configuration</string>
+  <string name="category">Category</string>
+  <string name="name">Name</string>
+  <string name="left" translatable="false"><![CDATA[<]]></string>
+  <string name="right" translatable="false"><![CDATA[>]]></string>
+  <string name="editFilterDialogTitle">Edit Filter</string>
+
 </resources>

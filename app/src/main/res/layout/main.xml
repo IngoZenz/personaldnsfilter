@@ -111,6 +111,69 @@
                     android:textSize="14dp" />
             </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="0dp"
+                    android:layout_marginTop="5dp"
+                    android:paddingRight="7dp"
+                    android:text="@string/category"
+                    android:textColor="#424242"
+                    android:textSize="14dp" />
+
+                <Button
+                    android:id="@+id/CategoryDown"
+                    android:layout_weight="0.1"
+                    android:layout_width="0dp"
+                    android:textAllCaps="true"
+                    android:elevation="2.3dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="0dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/custom_button"
+                    android:padding="10dp"
+                    android:text="@string/left"
+                    android:textColor="#FFFFFF"
+                    android:fontFamily="sans-serif-medium"
+                    android:textSize="12sp" />
+
+                <EditText
+                    android:id="@+id/categoryFilter"
+                    android:layout_weight="0.8"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:background="#cfd8dc"
+                    android:gravity="center"
+                    android:inputType="number"
+                    android:text="All Active"
+                    android:textColor="#424242"
+                    android:textSize="14dp" />
+                <Button
+                    android:id="@+id/CategoryUp"
+                    android:layout_weight="0.1"
+                    android:layout_width="0dp"
+                    android:textAllCaps="true"
+                    android:elevation="2.3dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="0dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/custom_button"
+                    android:padding="10dp"
+                    android:text="@string/right"
+                    android:textColor="#FFFFFF"
+                    android:fontFamily="sans-serif-medium"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
             <ScrollView
                 android:layout_width="fill_parent"
                 android:layout_height="match_parent"
@@ -137,12 +200,14 @@
                             android:textSize="14dp"
                             android:textStyle="bold" />
 
+                        <TextView android:visibility="gone"></TextView>
+
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight=".3"
                             android:paddingLeft="10dp"
-                            android:text="@string/shortText"
+                            android:text="@string/name"
                             android:textColor="#424242"
                             android:textSize="14dp"
                             android:textStyle="bold" />
@@ -159,12 +224,13 @@
 
                         <TextView
                             android:layout_width="28dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="28dp"
+                            android:padding="2dp"
                             android:layout_marginLeft="10dp"
                             android:layout_marginRight="10dp"
                             android:layout_weight="0"
                             android:gravity="center"
-                            android:text="+/-"
+                            android:drawableLeft="@drawable/twotone_edit_24px"
                             android:textColor="#424242"
                             android:textSize="14sp"
                             android:textStyle="bold" />
@@ -394,6 +460,7 @@
             android:textColor="#FFFFFF"
             android:fontFamily="sans-serif-medium"
             android:textSize="12sp" />
+
 
         <Button
             android:id="@+id/startBtn"
