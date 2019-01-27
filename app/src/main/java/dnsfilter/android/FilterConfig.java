@@ -16,6 +16,7 @@ import android.view.View.OnClickListener;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.TreeMap;
 
 import util.Logger;
 
@@ -24,6 +25,9 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 
 	static String NEW_ITEM = "<new>";
 	static String INVALID_URL = "<invalid URL!>";
+	static String ALL_CATEGORIES = "All Categories";
+	static String ALL_ACTIVE = "All Active Filters";
+
 
 
 	TableLayout configTable;
@@ -38,6 +42,7 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 	Button categoryUp;
 	Button categoryDown;
 	TextView categoryField;
+	TreeMap <String, Integer> categoryMap;
 
 	@Override
 	public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
@@ -45,10 +50,6 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 			dialog.dismiss();
 
 		return false;
-	}
-
-	public void cleanUp() {
-		//ToDo: Clear References!
 	}
 
 
@@ -84,8 +85,9 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 		this.categoryUp = categoryUp;
 		this.categoryDown = categoryDn;
 		this.categoryField = categoryField;
-		categoryDown.setOnClickListener(this);
-		categoryUp.setOnClickListener(this);
+		categoryField.setText(ALL_ACTIVE);
+
+		categoryMap = new TreeMap();
 	}
 
 	private View[] getContentCells(TableRow row) {
@@ -103,17 +105,48 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 	private void addItem(FilterConfigEntry entry) {
 		TableRow row = (TableRow) LayoutInflater.from(configTable.getContext()).inflate(R.layout.filterconfigentry, null);
 		configTable.addView(row);
+
+
+
 		View[] cells = getContentCells(row);
 		((CheckBox) cells[0]).setChecked(entry.active);
 		((TextView) cells[1]).setText(entry.category);
 		((TextView) cells[2]).setText(entry.id);
 		((TextView) cells[3]).setText(entry.url);
 		cells[4].setOnClickListener(this);
+
+		setVisibility(row);
+	}
+
+	private void setVisibility(TableRow row) {
+		String currentCategory = categoryField.getText().toString();
+		String rowCategory = ((TextView)row.getVirtualChildAt(1)).getText().toString();
+		boolean active = ((CheckBox)row.getVirtualChildAt(0)).isChecked();
+		boolean visible =	(currentCategory.equals(ALL_CATEGORIES)) ||
+				(currentCategory.equals(ALL_ACTIVE) && 	active) ||
+				(rowCategory.equals(NEW_ITEM)) ||
+				(rowCategory.equals(currentCategory));
+
+		if (visible)
+			row.setVisibility(View.VISIBLE);
+		else
+			row.setVisibility(View.GONE);
 	}
 
 
 	public void setEntries(FilterConfigEntry[] entries) {
+
 		this.filterEntries = entries;
+		categoryMap.clear();
+		categoryMap.put(ALL_ACTIVE,new Integer(0));
+		categoryMap.put(ALL_CATEGORIES,new Integer(0));
+		for (int i = 0; i < filterEntries.length; i++) {
+			Integer count = categoryMap.get(filterEntries[i].category);
+			if (count == null)
+				count = new Integer(0);
+			count = new Integer(count.intValue()+1);
+			categoryMap.put(filterEntries[i].category, count);
+		}
 	}
 
 	public void load() {
@@ -122,6 +155,9 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 		for (int i = 0; i < filterEntries.length; i++)
 			addItem(filterEntries[i]);
 		addEmptyEndItem();
+
+		categoryDown.setOnClickListener(this);
+		categoryUp.setOnClickListener(this);
 
 		loaded = true;
 	}
@@ -146,11 +182,7 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 		FilterConfigEntry[] result = new FilterConfigEntry[count];
 		for (int i = 0; i < count; i++) {
 			View[] rowContent = getContentCells((TableRow) configTable.getChildAt(i + 1));
-			if (!handleRowChange(rowContent))
-				return filterEntries;
-			else {
-				result[i] = new FilterConfigEntry(((CheckBox) rowContent[0]).isChecked(),((TextView) rowContent[1]).getText().toString().trim(), ((TextView) rowContent[2]).getText().toString().trim(), ((TextView) rowContent[3]).getText().toString().trim());
-			}
+			result[i] = new FilterConfigEntry(((CheckBox) rowContent[0]).isChecked(),((TextView) rowContent[1]).getText().toString().trim(), ((TextView) rowContent[2]).getText().toString().trim(), ((TextView) rowContent[3]).getText().toString().trim());
 		}
 		return result;
 	}
@@ -158,9 +190,13 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 	public void clear() {
 		filterEntries = getFilterEntries();
 		int count = configTable.getChildCount() - 1;
-		for (int i = count; i > 0; i--)
-			configTable.removeViewAt(i);
-
+		for (int i = count; i > 0; i--) {
+			TableRow row = (TableRow) configTable.getChildAt(i);
+			row.getChildAt(4).setOnClickListener(null);
+			configTable.removeView(row);
+		}
+		categoryDown.setOnClickListener(null);
+		categoryUp.setOnClickListener(null);
 		loaded = false;
 	}
 
@@ -175,6 +211,32 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 	}
 
 	private void handleCategoryChange(Button v) {
+		String currentCategory = categoryField.getText().toString();
+		String newCategory;
+		if (!categoryMap.containsKey(currentCategory))
+			newCategory = ALL_ACTIVE;
+
+		else if (v == categoryUp) {
+			newCategory = categoryMap.higherKey(currentCategory);
+			if (newCategory == null)
+				newCategory = categoryMap.firstKey();
+		}
+		else {
+			newCategory = categoryMap.lowerKey(currentCategory);
+			if (newCategory == null)
+				newCategory = categoryMap.lastKey();
+		}
+		categoryField.setText(newCategory);
+		updateView();
+	}
+
+	private void updateView() {
+		int count = configTable.getChildCount() - 2;
+
+		for (int i = 0; i < count; i++) {
+			TableRow row = ((TableRow) configTable.getChildAt(i + 1));
+			setVisibility(row);
+		}
 	}
 
 	private void showEditDialog(TableRow row) {
@@ -193,6 +255,7 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 	private void handleEditDialogEvent(View v) {
 		if (v == editCancel) {
 			editDialog.dismiss();
+			editDialog.findViewById(R.id.errorMsg).setVisibility(View.GONE);
 			return;
 		}
 
@@ -204,14 +267,55 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 			if (!newItem) {
 				editedRow.getChildAt(3).setOnClickListener(null);
 				configTable.removeView(editedRow);
+				String currentCategory = ((TextView)currentContent[1]).getText().toString();
+				Integer count = categoryMap.get(currentCategory);
+				if (count.intValue() ==1)
+					categoryMap.remove(currentCategory);
+				else
+					categoryMap.put(currentCategory, new Integer(count.intValue()-1));
 			}
 			editDialog.dismiss();
+			editDialog.findViewById(R.id.errorMsg).setVisibility(View.GONE);
 		}
 		else if (v == editOk) {
-			boolean active = ((CheckBox)editDialog.findViewById(R.id.activeChk)).isChecked();
-			String category = ((TextView)editDialog.findViewById(R.id.filterCategory)).getText().toString();
-			String name = ((TextView)editDialog.findViewById(R.id.filterName)).getText().toString();
-			String url = ((TextView)editDialog.findViewById(R.id.filterUrl)).getText().toString();
+			View[] content = new View[4];
+			content[0] = editDialog.findViewById(R.id.activeChk);
+			content[1] = editDialog.findViewById(R.id.filterCategory);
+			content[2] = editDialog.findViewById(R.id.filterName);
+			content[3] = editDialog.findViewById(R.id.filterUrl);
+
+			try  {
+				validateContent(content);
+			} catch (Exception e) {
+				TextView errorView = editDialog.findViewById(R.id.errorMsg);
+				errorView.setVisibility(View.VISIBLE);
+				errorView.setText(e.getMessage());
+				return;
+			}
+
+			boolean active = ((CheckBox)content[0]).isChecked();
+			String category = ((TextView)content[1]).getText().toString();
+			String name = ((TextView)content[2]).getText().toString();
+			String url = ((TextView)content[3]).getText().toString();
+
+			//category changed? => Update categories!
+
+			String currentCategory = ((TextView)currentContent[1]).getText().toString();
+			if (!currentCategory.equals(category)) {
+				//decrease count for previous category
+				if (!currentCategory.equals(NEW_ITEM)) {
+					Integer count = categoryMap.get(currentCategory);
+					if (count.intValue() ==1)
+						categoryMap.remove(currentCategory);
+					else
+						categoryMap.put(currentCategory, new Integer(count.intValue()-1));
+				}
+				//increase count for new category
+				Integer count = categoryMap.get(category);
+				if (count == null)
+					count = new Integer(0);
+				categoryMap.put(category, new Integer(count.intValue()+1));
+			}
 
 			((CheckBox)currentContent[0]).setChecked(active);
 			((TextView)currentContent[1]).setText(category);
@@ -220,31 +324,30 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 
 			if (newItem)
 				newItem(editedRow);
-			else
-				handleRowChange(currentContent);
 
 			editDialog.dismiss();
+			editDialog.findViewById(R.id.errorMsg).setVisibility(View.GONE);
 		}
 
 	}
 
 	private void newItem(TableRow row) {
-		View[] cells = getContentCells(row);
-		if (handleRowChange(cells)) {
-			addEmptyEndItem();
-		}
+		addEmptyEndItem();
 	}
 
-	private boolean handleRowChange(View[] cells) {
+	private void validateContent(View[] cells) throws Exception{
 		try {
 			URL url = new URL(((TextView) cells[3]).getText().toString());
 			String shortTxt = ((TextView) cells[2]).getText().toString().trim();
 			if (shortTxt.equals(NEW_ITEM) || shortTxt.equals(""))
+				((TextView) cells[2]).setText(url.getHost());
+
+			String category = ((TextView) cells[1]).getText().toString().trim();
+			if (category.equals(NEW_ITEM) || category.equals(""))
 				((TextView) cells[1]).setText(url.getHost());
-			return true;
+
 		} catch (MalformedURLException e) {
-			((TextView) cells[2]).setText(INVALID_URL);
-			return false;
+			throw e;
 		}
 	}
 }

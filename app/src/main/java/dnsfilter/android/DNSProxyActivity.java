@@ -208,7 +208,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		if (filterCfg != null) {
 			cfgEntries = filterCfg.getFilterEntries();
 			filterCategory = filterCfg.getCurrentCategory();
-			filterCfg.cleanUp(); //clean references etc
+			filterCfg.clear(); //clean references etc
 		}
 
 		Button categoryUp = ((Button) findViewById(R.id.CategoryUp));
