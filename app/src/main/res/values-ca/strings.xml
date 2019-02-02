@@ -23,4 +23,7 @@
   <string name="backupConfig">Configuració de còpia de seguretat</string>
   <string name="restoreBackup">Restaurar còpia de seguretat</string>
     <string name="restoreDefault">Restaura la configuració per defecte</string>
+    <string name="category">Categoria</string>
+  <string name="name">Nom</string>
+  <string name="editFilterDialogTitle">Edita el filtre</string>
 </resources>

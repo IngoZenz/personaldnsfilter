@@ -23,4 +23,7 @@
   <string name="backupConfig">Резервна копія конфігурації</string>
     <string name="restoreBackup">Відновити резервну копію</string>
     <string name="restoreDefault">Відновити налаштування за замовчуванням</string>
+    <string name="category">категорії</string>
+  <string name="name">називати</string>
+  <string name="editFilterDialogTitle">Редагувати фільтр</string>
 </resources>

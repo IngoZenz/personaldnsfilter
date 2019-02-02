@@ -23,4 +23,7 @@
   <string name="restoreBackup">استرجاع النسخة الاحتياطية</string>
     <string name="restoreDefault">استعادة التكوين الافتراضي</string>
   <string name="cfgBackupRestore">النسخ الاحتياطي والاستعادة</string>
+    <string name="category">"فئة "</string>
+  <string name="name">"اسم "</string>
+  <string name="editFilterDialogTitle">تحرير مرشح</string>
 </resources>

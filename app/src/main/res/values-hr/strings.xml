@@ -23,4 +23,7 @@
   <string name="backupConfig">Konfiguracija sigurnosne kopije</string>
   <string name="restoreBackup">Obnoviti povrat</string>
     <string name="restoreDefault">Vraćanje zadane konfiguracije</string>
+    <string name="category">Kategorija</string>
+  <string name="name">Ime</string>
+  <string name="editFilterDialogTitle">Uredi filtar</string>
 </resources>

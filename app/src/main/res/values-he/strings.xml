@@ -23,4 +23,7 @@
   <string name="backupConfig">גיבוי תצורה</string>
   <string name="restoreBackup">שחזור גיבוי</string>
     <string name="restoreDefault">שחזור תצורת ברירת מחדל</string>
+    <string name="category">"סוּג "</string>
+  <string name="name">"לְכַנוֹת "</string>
+  <string name="editFilterDialogTitle">ערוך מסנן</string>
 </resources>

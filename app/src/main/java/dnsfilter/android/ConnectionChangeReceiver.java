@@ -22,6 +22,7 @@
 
 package dnsfilter.android;
 
+import util.ExecutionEnvironment;
 import util.Logger;
 
 import android.content.BroadcastReceiver;
@@ -34,7 +35,8 @@ public class ConnectionChangeReceiver extends BroadcastReceiver implements Runna
 	public synchronized void onReceive(Context context, Intent intent) {
 
 		try {
-			Logger.getLogger().logLine("Received Network Connection Event: " + intent.getAction());
+			if (ExecutionEnvironment.getEnvironment().debug())
+				Logger.getLogger().logLine("Received Network Connection Event: " + intent.getAction());
 			DNSFilterService.detectDNSServers();
 			//some devices send only 1 network change event when the connection is closed but not when the network is back!
 			//therefore we check again for the new DNS after some seconds (in own thread) and hope connection is available then! 

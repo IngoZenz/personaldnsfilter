@@ -23,4 +23,7 @@
   <string name="backupConfig">Yapılandırma Yedeği</string>
     <string name="restoreBackup">Yedeklemeyi Geri Yükle</string>
     <string name="restoreDefault">Obnovit výchozí konfiguraci</string>
+    <string name="category">Kategori</string>
+  <string name="name">Isim</string>
+  <string name="editFilterDialogTitle">Filtreyi Düzenle</string>
 </resources>

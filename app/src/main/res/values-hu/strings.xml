@@ -23,4 +23,7 @@
   <string name="backupConfig">Konfigurációs mentés</string>
   <string name="restoreBackup">Biztonsági mentés visszaállítása</string>
     <string name="restoreDefault">Alapértelmezett konfiguráció visszaállítása</string>
+    <string name="category">Kategória</string>
+  <string name="name">Név</string>
+  <string name="editFilterDialogTitle">Szűrő szerkesztése</string>
 </resources>

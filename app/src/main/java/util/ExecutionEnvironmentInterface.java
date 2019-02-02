@@ -26,5 +26,5 @@ public interface ExecutionEnvironmentInterface {
 	
 	public void wakeLock();
 	public void releaseWakeLock();
-
+	public boolean debug();
 }

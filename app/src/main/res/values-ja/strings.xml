@@ -23,4 +23,7 @@
   <string name="backupConfig">構成バックアップ</string>
   <string name="restoreBackup">バックアップを復元</string>
     <string name="restoreDefault">기본 구성 복원</string>
+    <string name="category">種類</string>
+  <string name="name">名前</string>
+  <string name="editFilterDialogTitle">フィルタを編集</string>
 </resources>

@@ -23,4 +23,7 @@
   <string name="backupConfig">Δημιουργία αντιγράφων ασφαλείας διαμόρφωσης</string>
   <string name="restoreBackup">"Επαναφορά αντιγράφων ασφαλείας "</string>
     <string name="restoreDefault">Επαναφορά προεπιλεγμένης ρύθμισης παραμέτρων</string>
+    <string name="category">"κατηγορία "</string>
+  <string name="name">Ονομα</string>
+  <string name="editFilterDialogTitle">Επεξεργασία φίλτρου</string>
 </resources>

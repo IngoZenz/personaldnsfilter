@@ -23,4 +23,7 @@
   <string name="backupConfig">Sao lưu cấu hình</string>
     <string name="restoreBackup">"Khôi phục lại bản sao lưu "</string>
     <string name="restoreDefault">Khôi phục cấu hình mặc định</string>
+    <string name="category">thể loại</string>
+  <string name="name">danh</string>
+  <string name="editFilterDialogTitle">Chỉnh sửa bộ lọc</string>
 </resources>

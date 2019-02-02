@@ -51,6 +51,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Color;
+import android.net.Uri;
 import android.net.VpnService;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.WifiLock;
@@ -61,8 +62,10 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.text.Editable;
 import android.text.Html;
+import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextWatcher;
+import android.text.style.UnderlineSpan;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -109,6 +112,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private static String SCROLL_PAUSE = "II  ";
 	private static String SCROLL_CONTINUE = ">>  ";
 	private static boolean scroll_locked = false;
+	private static TextView donate_field;
 
 	private static boolean additionalHostsChanged = false;
 	private static LoggerInterface myLogger;
@@ -127,10 +131,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	private static Intent SERVICE = null;
 	private static Properties config = null;
+	protected static boolean debug = false;
 
 
 	private class MyUIThreadLogger implements Runnable {
-		;
 
 		private String m_logStr;
 
@@ -258,6 +262,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		restoreBtn.setOnClickListener(this);
 		restoreDefaultsBtn = (Button) findViewById(R.id.RestoreDefaultBtn);
 		restoreDefaultsBtn.setOnClickListener(this);
+		donate_field = (TextView)findViewById(R.id.donate);
+		donate_field.setText(fromHtml("<strong>Want to support us? Feel free to <a href='https://www.paypal.me/iZenz'>DONATE</a></strong>!"));
+		donate_field.setOnClickListener(this);
+
 
 		uiText = "";
 
@@ -373,6 +381,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		config = getConfig();
 
 		if (config != null) {
+			debug = Boolean.parseBoolean(config.getProperty("debug", "false"));
 
 			releaseWakeLock(); // will be set again below in case configured
 
@@ -756,6 +765,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	@Override
 	public void onClick(View destination) {
 
+		if (destination == donate_field) {
+			handleDonate();
+			return;
+		}
 		if (destination == dnsField) {
 			handleDNSConfigDialog();
 			return;
@@ -800,6 +813,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				releaseWakeLock();
 			}
 		}
+	}
+
+	private void handleDonate() {
+		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.paypal.me/IZenz"));
+		startActivity(browserIntent);
 	}
 
 	private void copyLocalFile(String from, String to) throws IOException {

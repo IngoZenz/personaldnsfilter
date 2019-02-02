@@ -26,6 +26,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+import util.ExecutionEnvironment;
 import util.Logger;
 
 public class DNSCommunicator {
@@ -52,7 +53,8 @@ public class DNSCommunicator {
 				lastDNS = "";
 				curDNS = -1;
 			}
-			Logger.getLogger().logLine("Using updated DNS Servers!");
+			if (ExecutionEnvironment.getEnvironment().debug())
+				Logger.getLogger().logLine("Using updated DNS Servers!");
 		}
 	}
 
@@ -71,7 +73,8 @@ public class DNSCommunicator {
 	private synchronized void switchDNSServer(InetAddress current) throws IOException {
 		if (current == getCurrentDNS()) {  //might have been switched by other thread already
 			curDNS = (curDNS + 1) % dnsServers.length;
-			Logger.getLogger().logLine("Switched DNS Server to:" + getCurrentDNS().getHostAddress());
+			if (ExecutionEnvironment.getEnvironment().debug())
+				Logger.getLogger().logLine("Switched DNS Server to:" + getCurrentDNS().getHostAddress());
 		}
 	}
 

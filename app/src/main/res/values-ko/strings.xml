@@ -23,4 +23,7 @@
   <string name="backupConfig">구성 백업</string>
   <string name="restoreBackup">백업 복원</string>
     <string name="restoreDefault">기본 구성 복원</string>
+    <string name="category">"종류 "</string>
+  <string name="name">명의</string>
+  <string name="editFilterDialogTitle">필터 편집</string>
 </resources>

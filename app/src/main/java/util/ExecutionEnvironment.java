@@ -51,4 +51,9 @@ public class ExecutionEnvironment implements ExecutionEnvironmentInterface {
 		// by default do nothing		
 	}
 
+	@Override
+	public boolean debug() {
+		return false;
+	}
+
 }

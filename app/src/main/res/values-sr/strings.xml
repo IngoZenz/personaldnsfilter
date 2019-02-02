@@ -23,4 +23,7 @@
   <string name="backupConfig">Конфигурација Бацкуп</string>
     <string name="restoreBackup">Ресторе Бацкуп</string>
     <string name="restoreDefault">Враћање почетне конфигурације</string>
+    <string name="category">врста</string>
+  <string name="name">назив</string>
+  <string name="editFilterDialogTitle">Уреди филтар</string>
 </resources>

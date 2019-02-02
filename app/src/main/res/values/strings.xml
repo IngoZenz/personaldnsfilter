@@ -19,7 +19,7 @@
   <string name="filterUpdateDays">Filter Update Interval in Days:</string>
   <string name="active">Active</string>
   <string name="shortText">Short Text</string>
-  <string name="URL">URL</string>
+  <string name="URL" translatable="false">URL</string>
   <string name="cfgBackupRestore">Backup and Restore</string>
   <string name="backupConfig">Backup Configuration</string>
   <string name="restoreBackup">Restore Backup</string>

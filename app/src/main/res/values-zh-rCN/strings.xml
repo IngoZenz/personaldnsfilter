@@ -23,4 +23,7 @@
   <string name="backupConfig">备份配置</string>
   <string name="restoreBackup">恢复备份</string>
     <string name="restoreDefault">恢复默认配置</string>
+    <string name="category">类别</string>
+  <string name="name">名称</string>
+  <string name="editFilterDialogTitle">编辑过滤器</string>
 </resources>

@@ -22,7 +22,9 @@
 
 package dnsfilter;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -42,16 +45,18 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import util.ExecutionEnvironment;
+import util.ExecutionEnvironmentInterface;
 import util.FileLogger;
 import util.Logger;
 import util.LoggerInterface;
 
 
 public class DNSFilterManager implements LoggerInterface {
-	public static final String VERSION = "1.50.29-dev";
+	public static final String VERSION = "1.50.29";
 	static public boolean debug;
 	static public String WORKDIR = "";
 	private static String filterReloadURL;
+	private static boolean filterHostsFileRemoveDuplicates;
 	private static String filterhostfile;
 	private static long filterReloadIntervalDays;
 	private static long nextReload;
@@ -280,6 +285,11 @@ public class DNSFilterManager implements LoggerInterface {
 
 		fin = new BufferedReader(new InputStreamReader(new FileInputStream(filterfile)));
 		addHostIn = new BufferedReader(new InputStreamReader(new FileInputStream(additionalHosts)));
+		File uniqueEntriyFile = new File(WORKDIR + "uniqueentries.tmp");
+		BufferedOutputStream fout = null;
+
+		if (filterHostsFileRemoveDuplicates)
+			fout = new BufferedOutputStream(new FileOutputStream(uniqueEntriyFile));
 
 		int processed = 0;
 		int uniqueEntries = 0;
@@ -293,8 +303,11 @@ public class DNSFilterManager implements LoggerInterface {
 				if (hostEntry != null && !hostEntry[1].equals("localhost")) {
 					if (!hostFilterSet.add(hostEntry[1]))
 						;//Logger.getLogger().logLine("Duplicate detected ==>" + entry);
-					else uniqueEntries++;
-
+					else {
+						uniqueEntries++;
+						if (fin != addHostIn && filterHostsFileRemoveDuplicates)
+							fout.write((hostEntry[1]+"\n").getBytes()); // create filterhosts without duplicates
+					}
 					processed++;
 					if (processed % 10000 == 0) {
 						Logger.getLogger().logLine("Building index for " + processed + "/" + size + " entries completed!");
@@ -303,6 +316,14 @@ public class DNSFilterManager implements LoggerInterface {
 			}
 		}
 		fin.close();
+
+		if (filterHostsFileRemoveDuplicates) {
+			fout.flush();
+			fout.close();
+			//store unique entries as FilterHosts
+			filterfile.delete();
+			uniqueEntriyFile.renameTo(filterfile);
+		}
 
 		try {
 			if (hostFilter != null)
@@ -407,6 +428,7 @@ public class DNSFilterManager implements LoggerInterface {
 		filterReloadIntervalDays = 4;
 		nextReload = 0;
 		reloadUrlChanged = false;
+		filterHostsFileRemoveDuplicates = false;
 		validIndex = true;
 		hostFilter = null;
 		hostsFilterOverRule = null;
@@ -475,6 +497,7 @@ public class DNSFilterManager implements LoggerInterface {
 			}
 
 			debug = Boolean.parseBoolean(config.getProperty("debug", "false"));
+			filterHostsFileRemoveDuplicates = Boolean.parseBoolean(config.getProperty("filterHostsFileRemoveDuplicates", "false"));
 
 			filterhostfile = config.getProperty("filterHostsFile");
 

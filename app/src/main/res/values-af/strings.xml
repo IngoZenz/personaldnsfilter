@@ -23,4 +23,7 @@
   <string name="backupConfig">Rugsteunkonfigurasie</string>
   <string name="restoreBackup">Herstel rugsteun</string>
     <string name="restoreDefault">Herstel standaardkonfigurasie</string>
+    <string name="category">Kategorie</string>
+  <string name="name">"Naam "</string>
+  <string name="editFilterDialogTitle">Wysig filter</string>
 </resources>

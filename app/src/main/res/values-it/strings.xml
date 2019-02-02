@@ -23,4 +23,7 @@
   <string name="backupConfig">Backup di configurazione</string>
   <string name="restoreBackup">Ripristinare il backup</string>
     <string name="restoreDefault">Ripristina configurazione predefinita</string>
+    <string name="category">Categoria</string>
+  <string name="name">Nome</string>
+  <string name="editFilterDialogTitle">Modifica filtro</string>
 </resources>

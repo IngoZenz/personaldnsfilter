@@ -10,6 +10,11 @@
     android:weightSum="1">
 
     <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:layout_weight="0.95">
+    <LinearLayout
         android:id="@+id/linearLayout1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -138,13 +143,13 @@
                     android:layout_marginTop="5dp"
                     android:layout_marginBottom="4dp"
                     android:background="@drawable/custom_button"
-                    android:padding="10dp"
+                    android:padding="3dp"
                     android:text="@string/left"
                     android:textColor="#FFFFFF"
                     android:fontFamily="sans-serif-medium"
-                    android:textSize="12sp" />
+                    android:textSize="18sp" />
 
-                <EditText
+                <TextView
                     android:id="@+id/categoryFilter"
                     android:layout_weight="0.8"
                     android:layout_width="0dp"
@@ -165,13 +170,13 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="0dp"
                     android:layout_marginTop="5dp"
-                    android:layout_marginBottom="4dp"
+                    android:layout_marginBottom="3dp"
                     android:background="@drawable/custom_button"
-                    android:padding="10dp"
+                    android:padding="4dp"
                     android:text="@string/right"
                     android:textColor="#FFFFFF"
                     android:fontFamily="sans-serif-medium"
-                    android:textSize="12sp" />
+                    android:textSize="18sp" />
             </LinearLayout>
 
             <ScrollView
@@ -352,7 +357,7 @@
                 android:textAlignment="center"
                 android:textColor="#FFFFFF"
                 android:fontFamily="sans-serif-medium"
-                android:textSize="12sp" />
+                android:textSize="11sp" />
 
             <Button
                 android:id="@+id/RestoreBackupBtn"
@@ -370,7 +375,7 @@
                 android:textAlignment="center"
                 android:textColor="#FFFFFF"
                 android:fontFamily="sans-serif-medium"
-                android:textSize="12sp" />
+                android:textSize="11sp" />
 
             <Button
                 android:id="@+id/RestoreDefaultBtn"
@@ -389,7 +394,7 @@
                 android:textAlignment="center"
                 android:textColor="#FFFFFF"
                 android:fontFamily="sans-serif-medium"
-                android:textSize="12sp" />
+                android:textSize="11sp" />
 
             <TextView
                 android:id="@+id/backupLog"
@@ -459,7 +464,7 @@
             android:text="@string/filterReloadBtnLabel"
             android:textColor="#FFFFFF"
             android:fontFamily="sans-serif-medium"
-            android:textSize="12sp" />
+            android:textSize="11sp" />
 
 
         <Button
@@ -476,7 +481,7 @@
             android:text="@string/startBtnLabel"
             android:textColor="#FFFFFF"
             android:fontFamily="sans-serif-medium"
-            android:textSize="12sp" />
+            android:textSize="11sp" />
 
         <Button
             android:id="@+id/stopBtn"
@@ -492,7 +497,7 @@
             android:text="@string/stopBtnLabel"
             android:textColor="#FFFFFF"
             android:fontFamily="sans-serif-medium"
-            android:textSize="12sp" />
+            android:textSize="11sp" />
 
     </LinearLayout>
 
@@ -535,4 +540,16 @@
             android:textIsSelectable="true"
             android:textSize="14sp" />
     </ScrollView>
+    </LinearLayout>
+    <TextView
+        android:id="@+id/donate"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="0dp"
+        android:layout_weight="0.05"
+        android:background="#00BCD4"
+        android:gravity="center"
+        android:textColor="#455a64"
+        android:textSize="12dp"
+        android:visibility="visible" />
 </LinearLayout>

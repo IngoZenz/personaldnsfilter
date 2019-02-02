@@ -23,4 +23,7 @@
   <string name="backupConfig">Konfigurasjonskopiering</string>
   <string name="restoreBackup">Gjennopprett backup</string>
     <string name="restoreDefault">Gjenopprett standardkonfigurasjon</string>
+    <string name="category">Kategori</string>
+  <string name="name">Navn</string>
+  <string name="editFilterDialogTitle">Rediger filter</string>
 </resources>

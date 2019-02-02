@@ -23,4 +23,7 @@
   <string name="backupConfig">कॉन्फ़िगरेशन बैकअप</string>
   <string name="restoreBackup">बैकअप बहाल</string>
     <string name="restoreDefault">डिफ़ॉल्ट कॉन्फ़िगरेशन पुनर्स्थापित करें</string>
+    <string name="category">वर्ग</string>
+  <string name="name">उपनाम</string>
+  <string name="editFilterDialogTitle">फ़िल्टर संपादित करें</string>
 </resources>

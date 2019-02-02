@@ -23,4 +23,7 @@
   <string name="backupConfig">Резервирование конфигурации</string>
     <string name="restoreBackup">Восстановление резервной копии</string>
     <string name="restoreDefault">Restabiliți configurarea implicită</string>
+    <string name="category">категория</string>
+  <string name="name">название</string>
+  <string name="editFilterDialogTitle">Редактировать фильтр</string>
 </resources>

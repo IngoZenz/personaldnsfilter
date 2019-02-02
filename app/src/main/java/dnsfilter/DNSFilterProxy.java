@@ -30,6 +30,8 @@ import java.net.UnknownHostException;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import util.ExecutionEnvironment;
+import util.ExecutionEnvironmentInterface;
 import util.Logger;
 
 public class DNSFilterProxy implements Runnable {
@@ -61,8 +63,23 @@ public class DNSFilterProxy implements Runnable {
 	}
 
 	public static void main(String[] args) throws Exception {
+		class StandaloneEnvironment extends ExecutionEnvironment {
+
+			boolean debug;
+
+			public StandaloneEnvironment (boolean debug) {
+				this.debug=debug;
+			}
+
+			@Override
+			public boolean debug() {
+				return debug;
+			}
+		}
+
 		DNSFilterManager filtermgr = new DNSFilterManager();
 		filtermgr.init();
+		ExecutionEnvironment.setEnvironment(new StandaloneEnvironment(filtermgr.debug));
 		initDNS(filtermgr);
 		new DNSFilterProxy(53).run();
 	}

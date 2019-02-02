@@ -23,4 +23,7 @@
   <string name="backupConfig">Kopia zapasowa konfiguracji</string>
   <string name="restoreBackup">Przywracania kopii zapasowej</string>
     <string name="restoreDefault">Przywróć konfigurację domyślną</string>
+    <string name="category">Kategoria</string>
+  <string name="name">Nazwa</string>
+  <string name="editFilterDialogTitle">Edytuj filtr</string>
 </resources>

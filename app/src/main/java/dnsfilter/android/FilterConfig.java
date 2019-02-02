@@ -261,7 +261,6 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 
 		View[] currentContent = getContentCells(editedRow);
 		boolean newItem = ((TextView)currentContent[2]).getText().toString().equals(NEW_ITEM);
-		Logger.getLogger().logLine(newItem+", "+((TextView)currentContent[2]).getText().toString()+","+NEW_ITEM);
 
 		if (v == editDelete) {
 			if (!newItem) {

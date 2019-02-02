@@ -23,4 +23,7 @@
   <string name="backupConfig">Back-up configuratie</string>
   <string name="restoreBackup">Back-up terugzetten</string>
     <string name="restoreDefault">Standaardconfiguratie herstellen</string>
+    <string name="category">Categorie</string>
+  <string name="name">Naam</string>
+  <string name="editFilterDialogTitle">Bewerk filter</string>
 </resources>

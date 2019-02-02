@@ -96,7 +96,8 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 
 		JUST_STARTED = false;
 
-		Logger.getLogger().logLine("Detecting DNS Servers...");
+		if (DNSProxyActivity.debug)
+			Logger.getLogger().logLine("Detecting DNS Servers...");
 		Vector<InetAddress> dnsAdrs = new Vector<InetAddress>();
 
 		if (detect) {
@@ -107,7 +108,7 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 				for (String name : new String[]{"net.dns1", "net.dns2", "net.dns3", "net.dns4",}) {
 					String value = (String) method.invoke(null, name);
 					if (value != null && !value.equals("")) {
-						Logger.getLogger().logLine("DNS:" + value);
+						if (DNSProxyActivity.debug) Logger.getLogger().logLine("DNS:" + value);
 						if (!value.equals(VIRTUALDNS_IPV4) && !value.equals(VIRTUALDNS_IPV6))
 							dnsAdrs.add(InetAddress.getByName(value));
 					}
@@ -121,7 +122,7 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 			int cnt = fallbackDNS.countTokens();
 			for (int i = 0; i < cnt; i++) {
 				String value = fallbackDNS.nextToken().trim();
-				Logger.getLogger().logLine("DNS:" + value);
+				if (DNSProxyActivity.debug) Logger.getLogger().logLine("DNS:" + value);
 				try {
 					dnsAdrs.add(InetAddress.getByName(value));
 				} catch (Exception e) {
@@ -144,24 +145,26 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 					try {
 						IPPacket parsedIP = new IPPacket(data, 0, length);
 						if (parsedIP.getVersion() == 6) {
-							Logger.getLogger().logLine("!!!IPV6 Packet!!! Protocol:" + parsedIP.getProt());
-							/*Logger.getLogger().logLine("SourceAddress:"+IPPacket.int2ip(parsedIP.getSourceIP()));
-							Logger.getLogger().logLine("DestAddress:"+IPPacket.int2ip(parsedIP.getDestIP()));
-							Logger.getLogger().logLine("TTL:"+parsedIP.getTTL());	
-							Logger.getLogger().logLine("Length:"+parsedIP.getLength());	
-							if (parsedIP.getProt() ==0){
-								Logger.getLogger().logLine("Hopp by Hopp Header");
-								Logger.getLogger().logLine("NextHeader:"+(data[40]&0xff));
-								Logger.getLogger().logLine("Hdr Ext Len:"+(data[41]&0xff));
-								if ((data[40]&0xff) == 58) // ICMP
-									Logger.getLogger().logLine("Received ICMP IPV6 Paket Type:" + (data[48]&0xff));
-							}*/
+							if (DNSProxyActivity.debug) { //IPV6 Debug Logging
+								Logger.getLogger().logLine("!!!IPV6 Packet!!! Protocol:" + parsedIP.getProt());
+								Logger.getLogger().logLine("SourceAddress:" + IPPacket.int2ip(parsedIP.getSourceIP()));
+								Logger.getLogger().logLine("DestAddress:" + IPPacket.int2ip(parsedIP.getDestIP()));
+								Logger.getLogger().logLine("TTL:" + parsedIP.getTTL());
+								Logger.getLogger().logLine("Length:" + parsedIP.getLength());
+								if (parsedIP.getProt() == 0) {
+									Logger.getLogger().logLine("Hopp by Hopp Header");
+									Logger.getLogger().logLine("NextHeader:" + (data[40] & 0xff));
+									Logger.getLogger().logLine("Hdr Ext Len:" + (data[41] & 0xff));
+									if ((data[40] & 0xff) == 58) // ICMP
+										Logger.getLogger().logLine("Received ICMP IPV6 Paket Type:" + (data[48] & 0xff));
+								}
+							}
 						}
 						if (parsedIP.checkCheckSum() != 0)
 							throw new IOException("IP Header Checksum Error!");
 
 						if (parsedIP.getProt() == 1) {
-							Logger.getLogger().logLine("Received ICMP Paket Type:" + (data[20] & 0xff));
+							if (DNSProxyActivity.debug) Logger.getLogger().logLine("Received ICMP Paket Type:" + (data[20] & 0xff));
 						}
 						if (parsedIP.getProt() == 17) {
 
@@ -398,5 +401,10 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 		WakeLock wl = wakeLock;
 		if (wl != null)
 			wl.release();
+	}
+
+	@Override
+	public boolean debug() {
+		return DNSProxyActivity.debug;
 	}
 }

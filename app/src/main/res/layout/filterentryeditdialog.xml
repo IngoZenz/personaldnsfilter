@@ -98,21 +98,21 @@
                     android:textSize="14dp" />
             </HorizontalScrollView>
 
-            <dnsfilter.android.PaddedCheckBox
-                android:id="@+id/activeChk"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:button="@drawable/custom_checkbox"
-                android:checked="true"
-                android:text="@string/active"
-                android:textSize="14dp"
-                android:textColor="#424242"
-                android:layout_gravity="right"/>
-
         </LinearLayout>
 
     </LinearLayout>
+    <dnsfilter.android.PaddedCheckBox
+        android:id="@+id/activeChk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:button="@drawable/custom_checkbox"
+        android:checked="true"
+        android:text="@string/active"
+        android:textSize="14dp"
+        android:textColor="#424242"
+        android:layout_gravity="right"
+        android:layout_marginRight="15dp"
+        android:layout_marginLeft="15dp"/>
 
     <TextView
         android:id="@+id/errorMsg"
@@ -121,7 +121,8 @@
         android:layout_marginBottom="15dp"
         android:layout_marginLeft="15dp"
         android:layout_marginTop="15dp"
-        android:textColor="#D03D06" />
+        android:textColor="#D03D06"
+        android:visibility="gone"/>
 
     <LinearLayout
         android:id="@+id/linearLayout2"
@@ -142,32 +143,31 @@
             android:elevation="2.3dp"
             android:fontFamily="sans-serif-medium"
             android:padding="5dp" />
+        <Button
+            android:id="@+id/filterEditCancelBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/custom_button"
+            android:drawableLeft="@drawable/baseline_cancel_24px"
+            android:elevation="2.3dp"
+            android:padding="5dp"/>
 
         <Button
             android:id="@+id/filterEditDelBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
-            android:layout_marginLeft="5dp"
+            android:layout_marginLeft="40dp"
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_button"
             android:drawableLeft="@drawable/twotone_delete_forever_24px"
             android:elevation="2.3dp"
-            android:padding="5dp"
-            android:textAllCaps="true" />
+            android:padding="5dp" />
 
-        <Button
-            android:id="@+id/filterEditCancelBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginTop="5dp"
-            android:background="@drawable/custom_button"
-            android:drawableLeft="@drawable/baseline_cancel_24px"
-            android:elevation="2.3dp"
-            android:padding="5dp"
-            android:textAllCaps="true" />
+
     </LinearLayout>
 
 </LinearLayout>
