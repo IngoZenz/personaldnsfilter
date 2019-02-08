@@ -32,6 +32,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketAddress;
 
+import util.ExecutionEnvironment;
 import util.Logger;
 import util.Utils;
 
@@ -39,6 +40,7 @@ public class DNSResolver implements Runnable {
 
 	private static int THR_COUNT = 0;
 	private static Object CNT_SYNC = new Object();
+	private static boolean IO_ERROR=false;
 	private DatagramSocket dnsSocket;
 
 	//for android usage based on IP packages from the VPN Interface
@@ -135,8 +137,15 @@ public class DNSResolver implements Runnable {
 			else
 				processIPPackageMode();
 
+			IO_ERROR=false;
+
 		} catch (IOException e) {
-			Logger.getLogger().logLine(e.getMessage());
+			if (ExecutionEnvironment.getEnvironment().debug())
+				Logger.getLogger().logLine(e.getMessage());
+			else if (!IO_ERROR) { // a new IO Error occured
+				Logger.getLogger().logLine("IO Error occured! Check network!");
+				IO_ERROR= true; //prevent repeating error logs while the network is down
+			}
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
 		} finally {
