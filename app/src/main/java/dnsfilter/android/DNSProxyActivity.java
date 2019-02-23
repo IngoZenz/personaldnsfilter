@@ -1166,16 +1166,16 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	@Override
 	public boolean onCreateActionMode(ActionMode mode, Menu menu) {
 
-		String selection = getSelectedText();
+		String selection = getSelectedText(true);
 
 		if (Build.VERSION.SDK_INT < 23)
 			findViewById(R.id.copyfromlog).setVisibility(View.VISIBLE);
 
-		if (selection.indexOf(NO_FILTER_PREF) != -1 || Build.VERSION.SDK_INT < 23) {
+		if (selection.indexOf(NO_FILTER_PREF) != -1) {
 			add_filter = menu.add("Add Filter");
 			//add_filter.setOnMenuItemClickListener(this);
 		}
-		if (selection.indexOf(IN_FILTER_PREF) != -1 || Build.VERSION.SDK_INT < 23) {
+		if (selection.indexOf(IN_FILTER_PREF) != -1 ) {
 			remove_filter = menu.add("Remove Filter");
 			//remove_filter.setOnMenuItemClickListener(this);
 		}
@@ -1191,7 +1191,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	@Override
 	public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-		String selection = getSelectedText();
 
 		if (item == add_filter) {
 			onCopyFilterFromLogView(true);
@@ -1224,14 +1223,25 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		super.onActionModeStarted(mode);
 	}
 
-	private String getSelectedText(){
+	private String getSelectedText(boolean fullLine){
 
 		int start= logOutView.getSelectionStart();
 		int end = logOutView.getSelectionEnd();
 		String selection = "";
-		if (end > start)
-			selection = logOutView.getText().subSequence(start, end).toString();
+		if (end > start) {
+			Editable text = logOutView.getText();
+			if (fullLine) {
+				while (text.charAt(start) != '\n' && start > 0)
+					start--;
+				if (start !=0)
+					start++;
+				while (text.charAt(end) != '\n' && end < text.length())
+					end++;
 
+				logOutView.setSelection(start, end);
+			}
+			selection = text.subSequence(start, end).toString();
+		}
 		return selection;
 	}
 
@@ -1252,7 +1262,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	public void onCopyFilterFromLogView(boolean filter) {
 
-		String selection = getSelectedText();
+		String selection = getSelectedText(false);
 
 		//close menu
 		logOutView.clearFocus();
