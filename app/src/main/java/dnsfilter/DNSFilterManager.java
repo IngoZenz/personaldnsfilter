@@ -34,10 +34,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -45,7 +45,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import util.ExecutionEnvironment;
-import util.ExecutionEnvironmentInterface;
+
 import util.FileLogger;
 import util.Logger;
 import util.LoggerInterface;
@@ -65,6 +65,10 @@ public class DNSFilterManager implements LoggerInterface {
 	private static boolean reloadUrlChanged;
 	private static String additionalHostsImportTS = "0";
 	private static boolean validIndex;
+	private static boolean indexAbort = false;
+
+	private static long lastFinishedIndexRunTS = 0;
+	private static long lastRequestedIndexRunTS = 0;
 
 	private static LoggerInterface TRAFFIC_LOG;
 
@@ -76,7 +80,12 @@ public class DNSFilterManager implements LoggerInterface {
 
 	protected Properties config = null;
 
+
 	private class AsyncIndexBuilder implements Runnable {
+
+		public AsyncIndexBuilder() {
+			lastRequestedIndexRunTS = System.currentTimeMillis();
+		}
 
 		@Override
 		public void run() {
@@ -251,106 +260,150 @@ public class DNSFilterManager implements LoggerInterface {
 		}
 	}
 
+
+	private static Object INDEXSYNC= new Object();
+	private static boolean indexing = false;
+
+	private void abortIndexing() {
+		indexAbort = true;
+		synchronized (INDEXSYNC) {
+
+			while (indexing) {
+				try {
+					INDEXSYNC.wait();
+				} catch (InterruptedException e) {
+					Logger.getLogger().logException(e);
+				}
+			}
+			indexAbort = false;
+		}
+	}
+
 	private void rebuildIndex() throws IOException {
-		Logger.getLogger().logLine("Reading filter file and building index...!");
-		File filterfile = new File(WORKDIR + filterhostfile);
-		File additionalHosts = new File(WORKDIR + "additionalHosts.txt");
-		File indexFile = new File(WORKDIR + filterhostfile + ".idx");
-		BufferedReader fin = new BufferedReader(new InputStreamReader(new FileInputStream(filterfile)));
-		BufferedReader addHostIn = new BufferedReader(new InputStreamReader(new FileInputStream(additionalHosts)));
-		String entry = null;
-		int size = 0;
+		synchronized (INDEXSYNC) {
+			try {
+				Logger.getLogger().logLine("Reading filter file and building index...!");
+				File filterfile = new File(WORKDIR + filterhostfile);
+				File additionalHosts = new File(WORKDIR + "additionalHosts.txt");
+				File indexFile = new File(WORKDIR + filterhostfile + ".idx");
+				BufferedReader fin = new BufferedReader(new InputStreamReader(new FileInputStream(filterfile)));
+				BufferedReader addHostIn = new BufferedReader(new InputStreamReader(new FileInputStream(additionalHosts)));
 
-		BlockedHosts hostFilterSet = new BlockedHosts(Math.max(1, (int) ((filterfile.length() + additionalHosts.length()) / 30)), okCacheSize, filterListCacheSize, hostsFilterOverRule);
+				String entry = null;
+				int size = 0;
 
-		while ((entry = fin.readLine()) != null || fin != addHostIn) {
-			if (entry == null) {
-				//ready with filter file continue with additionalHosts
-				fin.close();
-				fin = addHostIn;
-			} else {
-				String[] hostEntry = parseHosts(entry);
-				if (hostEntry != null) {
-					hostFilterSet.prepareInsert(hostEntry[1]);
-					size++;
-				}
-			}
-		}
+				BlockedHosts hostFilterSet = new BlockedHosts(Math.max(1, (int) ((filterfile.length() + additionalHosts.length()) / 30)), okCacheSize, filterListCacheSize, hostsFilterOverRule);
 
-		fin.close();
-
-		hostFilterSet.finalPrepare();
-
-		Logger.getLogger().logLine("Building index for " + size + " entries...!");
-
-		fin = new BufferedReader(new InputStreamReader(new FileInputStream(filterfile)));
-		addHostIn = new BufferedReader(new InputStreamReader(new FileInputStream(additionalHosts)));
-		File uniqueEntriyFile = new File(WORKDIR + "uniqueentries.tmp");
-		BufferedOutputStream fout = null;
-
-		if (filterHostsFileRemoveDuplicates)
-			fout = new BufferedOutputStream(new FileOutputStream(uniqueEntriyFile));
-
-		int processed = 0;
-		int uniqueEntries = 0;
-		while ((entry = fin.readLine()) != null || fin != addHostIn) {
-			if (entry == null) {
-				//ready with filter file continue with additionalHosts
-				fin.close();
-				fin = addHostIn;
-			} else {
-				String[] hostEntry = parseHosts(entry);
-				if (hostEntry != null && !hostEntry[1].equals("localhost")) {
-					if (!hostFilterSet.add(hostEntry[1]))
-						;//Logger.getLogger().logLine("Duplicate detected ==>" + entry);
-					else {
-						uniqueEntries++;
-						if (fin != addHostIn && filterHostsFileRemoveDuplicates)
-							fout.write((hostEntry[1]+"\n").getBytes()); // create filterhosts without duplicates
-					}
-					processed++;
-					if (processed % 10000 == 0) {
-						Logger.getLogger().logLine("Building index for " + processed + "/" + size + " entries completed!");
+				while (!indexAbort && ((entry = fin.readLine()) != null || fin != addHostIn)) {
+					if (entry == null) {
+						//ready with filter file continue with additionalHosts
+						fin.close();
+						fin = addHostIn;
+					} else {
+						String[] hostEntry = parseHosts(entry);
+						if (hostEntry != null) {
+							hostFilterSet.prepareInsert(hostEntry[1]);
+							size++;
+						}
 					}
 				}
+
+				fin.close();
+				if (fin != addHostIn)
+					addHostIn.close();
+
+				if (indexAbort) {
+					Logger.getLogger().logLine("Indexing Aborted!");
+					return;
+				}
+
+				hostFilterSet.finalPrepare();
+
+				Logger.getLogger().logLine("Building index for " + size + " entries...!");
+
+				fin = new BufferedReader(new InputStreamReader(new FileInputStream(filterfile)));
+				addHostIn = new BufferedReader(new InputStreamReader(new FileInputStream(additionalHosts)));
+				File uniqueEntriyFile = new File(WORKDIR + "uniqueentries.tmp");
+				BufferedOutputStream fout = null;
+
+				if (filterHostsFileRemoveDuplicates)
+					fout = new BufferedOutputStream(new FileOutputStream(uniqueEntriyFile));
+
+				int processed = 0;
+				int uniqueEntries = 0;
+				while (!indexAbort && ((entry = fin.readLine()) != null || fin != addHostIn)) {
+					if (entry == null) {
+						//ready with filter file continue with additionalHosts
+						fin.close();
+						fin = addHostIn;
+					} else {
+						String[] hostEntry = parseHosts(entry);
+						if (hostEntry != null && !hostEntry[1].equals("localhost")) {
+							if (!hostFilterSet.add(hostEntry[1]))
+								;//Logger.getLogger().logLine("Duplicate detected ==>" + entry);
+							else {
+								uniqueEntries++;
+								if (fin != addHostIn && filterHostsFileRemoveDuplicates)
+									fout.write((hostEntry[1] + "\n").getBytes()); // create filterhosts without duplicates
+							}
+							processed++;
+							if (processed % 10000 == 0) {
+								Logger.getLogger().logLine("Building index for " + processed + "/" + size + " entries completed!");
+							}
+						}
+					}
+				}
+				fin.close();
+				if (fin != addHostIn)
+					addHostIn.close();
+
+				if (indexAbort) {
+					Logger.getLogger().logLine("Indexing Aborted!");
+					if (filterHostsFileRemoveDuplicates)
+						fout.close();
+					return;
+				}
+
+				if (filterHostsFileRemoveDuplicates) {
+					fout.flush();
+					fout.close();
+					//store unique entries as FilterHosts
+					filterfile.delete();
+					uniqueEntriyFile.renameTo(filterfile);
+				}
+
+				try {
+					if (hostFilter != null)
+						hostFilter.lock(1); // Exclusive Lock ==> No reader allowed during update of hostfilter
+
+					Logger.getLogger().logLine("Persisting index for " + size + " entries...!");
+					Logger.getLogger().logLine("Index contains " + uniqueEntries + " unique entries!");
+
+					hostFilterSet.persist(WORKDIR + filterhostfile + ".idx");
+					hostFilterSet.clear(); //release memory
+
+					hostFilterSet = BlockedHosts.loadPersistedIndex(indexFile.getAbsolutePath(), false, okCacheSize, filterListCacheSize, hostsFilterOverRule); //loads only file handles not the whole structure.
+
+					if (hostFilter != null) {
+						hostFilter.migrateTo(hostFilterSet);
+
+					} else {
+						hostFilter = hostFilterSet;
+						DNSResponsePatcher.init(hostFilter, TRAFFIC_LOG); //give newly created filter to DNSResponsePatcher
+					}
+				} finally {
+					hostFilter.unLock(1); //Update done! Release exclusive lock so readers are welcome!
+				}
+				validIndex = true;
+				lastFinishedIndexRunTS = System.currentTimeMillis();
+				Logger.getLogger().logLine("Processing new filter file completed!");
+				additionalHostsImportTS = "" + additionalHosts.lastModified();
+				updateIndexReloadInfoConfFile(filterReloadURL, additionalHostsImportTS); //update last loaded URL and additionalHosts
+			} finally {
+				indexing = false;
+				INDEXSYNC.notifyAll();
 			}
 		}
-		fin.close();
-
-		if (filterHostsFileRemoveDuplicates) {
-			fout.flush();
-			fout.close();
-			//store unique entries as FilterHosts
-			filterfile.delete();
-			uniqueEntriyFile.renameTo(filterfile);
-		}
-
-		try {
-			if (hostFilter != null)
-				hostFilter.lock(1); // Exclusive Lock ==> No reader allowed during update of hostfilter
-
-			Logger.getLogger().logLine("Persisting index for " + size + " entries...!");
-			Logger.getLogger().logLine("Index contains " + uniqueEntries + " unique entries!");
-
-			hostFilterSet.persist(WORKDIR + filterhostfile + ".idx");
-			hostFilterSet.clear(); //release memory
-
-			hostFilterSet = BlockedHosts.loadPersistedIndex(indexFile.getAbsolutePath(), false, okCacheSize, filterListCacheSize, hostsFilterOverRule); //loads only file handles not the whole structure.  
-
-			if (hostFilter != null) {
-				hostFilter.migrateTo(hostFilterSet);
-
-			} else {
-				hostFilter = hostFilterSet;
-				DNSResponsePatcher.init(hostFilter, TRAFFIC_LOG); //give newly created filter to DNSResponsePatcher
-			}
-		} finally {
-			hostFilter.unLock(1); //Update done! Release exclusive lock so readers are welcome!
-		}
-		validIndex = true;
-		Logger.getLogger().logLine("Processing new filter file completed!");
-		additionalHostsImportTS = "" + additionalHosts.lastModified();
-		updateIndexReloadInfoConfFile(filterReloadURL, additionalHostsImportTS); //update last loaded URL and additionalHosts
 	}
 
 	private void reloadFilter(boolean async) throws IOException {
@@ -377,8 +430,10 @@ public class DNSFilterManager implements LoggerInterface {
 					new Thread(new AsyncIndexBuilder()).start();
 				}
 			} else if (filterfile.exists()) {
-				if (!async)
+				if (!async) {
+					lastRequestedIndexRunTS = System.currentTimeMillis();
 					rebuildIndex();
+				}
 				else
 					new Thread(new AsyncIndexBuilder()).start();
 			}
@@ -420,6 +475,113 @@ public class DNSFilterManager implements LoggerInterface {
 		}
 	}
 
+	public void updateFilter(String entries, boolean filter) throws IOException {
+
+		String copyPasteStartSection = "##### AUTOMATIC ENTRIES BELOW! #####";
+		String whitelistSection = "## Whitelisted Entries! ##";
+		String blacklistSection = "## Blacklisted Entries! ##";
+
+		if (entries.trim().equals("") || hostFilter == null)
+			return;
+
+		StringTokenizer entryTokens = new StringTokenizer(entries, "\n");
+		HashSet<String> entriestoChange = new HashSet<String>();
+
+		// find which entries need to be overwritten
+		while (entryTokens.hasMoreTokens()) {
+			String entry = entryTokens.nextToken().trim();
+			boolean filterContains = hostFilter.contains(entry);
+			if ((filter && !filterContains) || (!filter && filterContains))
+				entriestoChange.add(entry);
+		}
+
+		// update additional hosts file
+		File additionalHosts = new File(WORKDIR + "additionalHosts.txt");
+		File additionalHostsNew = new File(WORKDIR + "additionalHosts.txt.tmp");
+
+		BufferedReader addHostIn = new BufferedReader(new InputStreamReader(new FileInputStream(additionalHosts)));
+		BufferedWriter addHostOut = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(additionalHostsNew)));
+
+		String entry = null;
+
+		boolean copyPasteSection = false;
+		boolean listSection = false;
+		while ((entry = addHostIn.readLine()) != null) {
+			String host = entry;
+			boolean hostEntry =  !(entry.trim().equals("") &&!entry.startsWith("#"));
+			if (entry.startsWith("!"))
+				host = entry.trim().substring(1);
+			if (!hostEntry || !entriestoChange.contains(host)) {// take over entries with no change required
+				addHostOut.write(entry+"\n");
+			}
+			if (!copyPasteSection)
+				copyPasteSection = entry.startsWith(copyPasteStartSection);
+			if (!listSection) {
+				listSection = filter && entry.startsWith(blacklistSection) || !filter && entry.startsWith(whitelistSection);
+				if (listSection) //write entries to be changed in list section within additional hosts
+					writeNewEntries(filter, entriestoChange, addHostOut);
+			}
+		}
+
+		addHostIn.close();
+
+		//write copy paste section comment into add Hosts file if not there
+		if (!copyPasteSection)
+			addHostOut.write("\n"+copyPasteStartSection+"\n");
+
+		if (!listSection) {
+			if (filter)
+				addHostOut.write("\n" + blacklistSection + "\n");
+			else
+				addHostOut.write("\n" + whitelistSection + "\n");
+
+			writeNewEntries(filter, entriestoChange, addHostOut);
+		}
+
+		addHostOut.flush();
+		addHostOut.close();
+
+		additionalHosts.delete();
+
+		if (entriestoChange.size()>0)
+			abortIndexing(); //abort eventually running interferring indexing - will be retriggerd below
+
+		additionalHostsNew.renameTo(additionalHosts);
+
+		if (entriestoChange.size()>0) {
+			new Thread(new AsyncIndexBuilder()).start(); //trigger reindexing
+		}
+	}
+
+	private void writeNewEntries(boolean filter, HashSet<String> entriestoChange, BufferedWriter addHostOut) throws IOException {
+
+		String excludePref="";
+		if (!filter)
+			excludePref="!";
+
+		if (hostsFilterOverRule == null) {
+			hostsFilterOverRule = new Hashtable();
+			hostFilter.setHostsFilterOverRule(hostsFilterOverRule);
+		}
+
+		Iterator<String> entryit = entriestoChange.iterator();
+		while (entryit.hasNext()) {
+			String entry = entryit.next();
+			boolean skip = false;
+
+			if (lastFinishedIndexRunTS > lastRequestedIndexRunTS) {
+				hostsFilterOverRule.remove(entry);
+				// skip previously whitelisted entry which shall be blacklisted again and is already part of the default filters
+				// Requires that the index is up-to-date (lastFinishedIndexRunTS > lastRequestedIndexRunTS)
+				skip = (filter && hostFilter.contains(entry));
+			}
+			if (!skip) {
+				addHostOut.write( "\n"+excludePref + entry);
+				hostsFilterOverRule.put(entry, filter);  //write filter in order to take effect immediately
+			}
+
+		}
+	}
 
 	private void initStatics() {
 		debug = false;
@@ -562,6 +724,7 @@ public class DNSFilterManager implements LoggerInterface {
 
 	public synchronized void stop() {
 
+		abortIndexing();
 		serverStopped = true;
 		this.notifyAll();
 		if (hostFilter != null)
@@ -574,7 +737,9 @@ public class DNSFilterManager implements LoggerInterface {
 	}
 
 	public boolean canStop() {
+
 		return !reloading_filter;
+		//return true;
 	}
 
 

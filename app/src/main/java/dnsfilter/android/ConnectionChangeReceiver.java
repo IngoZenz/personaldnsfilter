@@ -31,6 +31,12 @@ import android.content.Intent;
 
 public class ConnectionChangeReceiver extends BroadcastReceiver implements Runnable {
 
+	private static ConnectionChangeReceiver instance = new ConnectionChangeReceiver();
+
+	public static ConnectionChangeReceiver getInstance() {
+		return instance;
+	}
+
 	@Override
 	public synchronized void onReceive(Context context, Intent intent) {
 

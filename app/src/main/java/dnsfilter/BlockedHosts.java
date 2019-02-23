@@ -83,6 +83,21 @@ public class BlockedHosts implements Set {
 		this.hostsFilterOverRule = hostsFilterOverRule;
 	}
 
+	public void setHostsFilterOverRule(Hashtable hostsFilterOverRule){
+		if (hostsFilterOverRule == null)
+			throw new IllegalArgumentException("Argument null not allowed!");
+		this.hostsFilterOverRule = hostsFilterOverRule;
+	}
+
+	public void clearCache (Set entries) {
+		Iterator it = entries.iterator();
+		while (it.hasNext()){
+			Object key = it.next();
+			okCache.remove(key);
+			filterListCache.remove(key);
+		}
+	}
+
 
 	synchronized public void lock(int type) {
 		if (type == 0) {
@@ -157,6 +172,13 @@ public class BlockedHosts implements Set {
 
 			String hostName = (String) object;
 			long hosthash = Utils.getLongStringHash(hostName);
+
+			if (hostsFilterOverRule != null) {
+				Object val = hostsFilterOverRule.get(hostName);
+				if (val != null)
+					return ((Boolean) val).booleanValue();
+			}
+
 			if (okCache.get(hosthash) != null)
 				return false;
 			else if (filterListCache.get(hosthash) != null)
@@ -176,11 +198,6 @@ public class BlockedHosts implements Set {
 
 	private boolean contains(String hostName, long hosthash) {
 
-		if (hostsFilterOverRule != null) {
-			Object val = hostsFilterOverRule.get(hostName);
-			if (val != null)
-				return ((Boolean) val).booleanValue();
-		}
 		if (blockedHostsHashes.contains(hosthash))
 			return true;
 

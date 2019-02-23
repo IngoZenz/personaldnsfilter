@@ -357,7 +357,8 @@
                 android:textAlignment="center"
                 android:textColor="#FFFFFF"
                 android:fontFamily="sans-serif-medium"
-                android:textSize="11sp" />
+                android:textSize="11sp"
+                android:textStyle="bold"/> />
 
             <Button
                 android:id="@+id/RestoreBackupBtn"
@@ -375,7 +376,8 @@
                 android:textAlignment="center"
                 android:textColor="#FFFFFF"
                 android:fontFamily="sans-serif-medium"
-                android:textSize="11sp" />
+                android:textSize="11sp"
+                android:textStyle="bold"/>
 
             <Button
                 android:id="@+id/RestoreDefaultBtn"
@@ -394,7 +396,8 @@
                 android:textAlignment="center"
                 android:textColor="#FFFFFF"
                 android:fontFamily="sans-serif-medium"
-                android:textSize="11sp" />
+                android:textSize="11sp"
+                android:textStyle="bold"/>
 
             <TextView
                 android:id="@+id/backupLog"
@@ -464,7 +467,8 @@
             android:text="@string/filterReloadBtnLabel"
             android:textColor="#FFFFFF"
             android:fontFamily="sans-serif-medium"
-            android:textSize="11sp" />
+            android:textSize="11sp"
+            android:textStyle="bold"/>
 
 
         <Button
@@ -481,7 +485,8 @@
             android:text="@string/startBtnLabel"
             android:textColor="#FFFFFF"
             android:fontFamily="sans-serif-medium"
-            android:textSize="11sp" />
+            android:textSize="11sp"
+            android:textStyle="bold"/>
 
         <Button
             android:id="@+id/stopBtn"
@@ -497,7 +502,8 @@
             android:text="@string/stopBtnLabel"
             android:textColor="#FFFFFF"
             android:fontFamily="sans-serif-medium"
-            android:textSize="11sp" />
+            android:textSize="11sp"
+            android:textStyle="bold"/>
 
     </LinearLayout>
 
@@ -513,6 +519,47 @@
         android:gravity="right"
         android:textColor="#424242"
         android:textStyle="bold" />
+
+        <LinearLayout
+            android:id="@+id/copyfromlog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:weightSum="1">
+
+            <TextView
+                android:id="@+id/addFilterBtn"
+                android:textAllCaps="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginBottom="0dp"
+                android:background="#777474"
+                android:padding="10dp"
+                android:text="Add Filter"
+                android:textColor="#FFFFFF"
+                android:fontFamily="sans-serif-medium"
+                android:textSize="11sp"
+                android:textStyle="bold"/>
+
+
+            <TextView
+                android:id="@+id/removeFilterBtn"
+                android:textAllCaps="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="0dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginBottom="0dp"
+                android:background="#777474"
+                android:padding="10dp"
+                android:text="Remove Filter"
+                android:textColor="#FFFFFF"
+                android:fontFamily="sans-serif-medium"
+                android:textSize="11sp"
+                android:textStyle="bold"/>
+
+        </LinearLayout>
 
     <ScrollView
         android:id="@+id/ScrollView01"
@@ -538,7 +585,7 @@
             android:text=""
             android:textColor="#455a64"
             android:textIsSelectable="true"
-            android:textSize="14sp" />
+            android:textSize="14sp"/>
     </ScrollView>
     </LinearLayout>
     <TextView

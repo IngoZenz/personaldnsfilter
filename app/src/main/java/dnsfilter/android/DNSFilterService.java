@@ -44,6 +44,7 @@ import util.Logger;
 
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -199,7 +200,8 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		INSTANCE = this;
 		ExecutionEnvironment.setEnvironment(this);
-		registerReceiver(new ConnectionChangeReceiver(), new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
+
+		registerReceiver(ConnectionChangeReceiver.getInstance(), new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
 
 		if (DNSFILTER != null) {
 			Logger.getLogger().logLine("DNS Filter already running!");
@@ -337,6 +339,11 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 	public void onDestroy() {
 		Logger.getLogger().logLine("destroyed");
 		stopVPN();
+		try {
+			unregisterReceiver(ConnectionChangeReceiver.getInstance());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		super.onDestroy();
 	}
 

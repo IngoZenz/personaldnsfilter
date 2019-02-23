@@ -9,6 +9,3 @@ sample4712.justasample.com
 # "!" prefix in front of the host name.
 
 !whitelistsample.justasample.com
-
-
-

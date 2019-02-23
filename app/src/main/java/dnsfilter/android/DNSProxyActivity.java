@@ -30,7 +30,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
@@ -62,11 +61,12 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.text.Editable;
 import android.text.Html;
-import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextWatcher;
-import android.text.style.UnderlineSpan;
+import android.view.ActionMode;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -78,7 +78,7 @@ import android.widget.TextView;
 import android.app.Dialog;
 
 
-public class DNSProxyActivity extends Activity implements OnClickListener, LoggerInterface, TextWatcher, DialogInterface.OnKeyListener {
+public class DNSProxyActivity extends Activity implements OnClickListener, LoggerInterface, TextWatcher, DialogInterface.OnKeyListener, ActionMode.Callback, MenuItem.OnMenuItemClickListener {
 
 	protected static boolean BOOT_START = false;
 
@@ -95,6 +95,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private static Button backupBtn;
 	private static Button restoreBtn;
 	private static Button restoreDefaultsBtn;
+	private static TextView addFilterBtn;
+	private static TextView removeFilterBtn;
 	private static CheckBox appWhiteListCheck;
 	private static ScrollView appWhiteListScroll;
 	private static AppSelectorView appSelector;
@@ -113,6 +115,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private static String SCROLL_CONTINUE = ">>  ";
 	private static boolean scroll_locked = false;
 	private static TextView donate_field;
+	private static MenuItem add_filter;
+	private static MenuItem remove_filter;
+
 
 	private static boolean additionalHostsChanged = false;
 	private static LoggerInterface myLogger;
@@ -134,6 +139,37 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected static boolean debug = false;
 
 
+	private static String IN_FILTER_PREF = "X \u0009";
+	private static String NO_FILTER_PREF = "✓\u0009";
+
+	private void addToLogView(String logStr) {
+
+		StringTokenizer logLines = new StringTokenizer(logStr,"\n");
+		while (logLines.hasMoreElements()) {
+
+			String logLn = logLines.nextToken();
+
+			boolean filterHostLog = logLn.startsWith(IN_FILTER_PREF);
+			boolean okHostLog = logLn.startsWith(NO_FILTER_PREF);
+
+			if (filterHostLog || okHostLog) {
+
+				if (filterHostLog)
+					logLn = "<font color='#D03D06'>" + logLn + "</font><br>";
+				else
+					logLn = "<font color='#23751C'>" + logLn + "</font><br>";
+
+				logOutView.append(fromHtml(logLn));
+			} else {
+				String newLn = "\n";
+				if (!logLines.hasMoreElements() && !logStr.endsWith("\n"))
+					newLn = "";
+				logOutView.append(logLn + newLn);
+			}
+
+		}
+	}
+
 	private class MyUIThreadLogger implements Runnable {
 
 		private String m_logStr;
@@ -147,26 +183,23 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 			if (!scroll_locked) {
 				if (m_logStr.startsWith("FILTERED")) {
-					m_logStr = "<font color='#D03D06'>" + m_logStr.substring(9, m_logStr.length() - 1) + "</font><br>";
-					logOutView.append(fromHtml(m_logStr));
-
+					m_logStr = IN_FILTER_PREF + m_logStr.substring(9, m_logStr.length());
 				} else if (m_logStr.startsWith("ALLOWED")) {
-					m_logStr = "<font color='#23751C'>" + m_logStr.substring(8, m_logStr.length() - 1) + "</font><br>";
-					logOutView.append(fromHtml(m_logStr));
-				} else {
-					logOutView.append(m_logStr);
+					m_logStr = NO_FILTER_PREF+m_logStr.substring(8, m_logStr.length());
 				}
+
+				addToLogView(m_logStr);
 
 				logSize = logSize + m_logStr.length();
 
 				if (logSize >= 20000) {
-					String logStr = toHtml(logOutView.getEditableText());
+					String logStr = logOutView.getEditableText().toString();
 					logStr = logStr.substring(logSize - 10000);
-					int newLine = logStr.indexOf("<br>");
+					int newLine = logStr.indexOf("\n");
 					if (newLine != -1)
-						logStr = logStr.substring(newLine + 4);
+						logStr = logStr.substring(newLine + 1);
 					logSize = logStr.length();
-					logOutView.setText(fromHtml(logStr));
+					addToLogView(logStr);
 				}
 
 				if (!advancedConfigCheck.isChecked()) { //avoid focus lost when editing advanced settings
@@ -205,7 +238,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}
 		setContentView(R.layout.main);
 		setTitle("personalDNSfilter V" + DNSFilterManager.VERSION + " (Connections:" + DNSFilterService.openConnectionsCount() + ")");
-
 
 		FilterConfig.FilterConfigEntry[] cfgEntries = null;
 		String filterCategory = null;
@@ -262,6 +294,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		restoreBtn.setOnClickListener(this);
 		restoreDefaultsBtn = (Button) findViewById(R.id.RestoreDefaultBtn);
 		restoreDefaultsBtn.setOnClickListener(this);
+		addFilterBtn = (TextView) findViewById(R.id.addFilterBtn);
+		addFilterBtn.setOnClickListener(this);
+		removeFilterBtn = (TextView) findViewById(R.id.removeFilterBtn);
+		removeFilterBtn.setOnClickListener(this);
 		donate_field = (TextView)findViewById(R.id.donate);
 		donate_field.setText(fromHtml("<strong>Want to support us? Feel free to <a href='https://www.paypal.me/iZenz'>DONATE</a></strong>!"));
 		donate_field.setOnClickListener(this);
@@ -277,11 +313,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		scrollLockField.setOnClickListener(this);
 
+
 		if (logOutView != null)
-			uiText = toHtml(logOutView.getEditableText());
+			uiText = logOutView.getEditableText().toString();
 		logOutView = (EditText) findViewById(R.id.logOutput);
-		logOutView.setText(fromHtml(uiText));
+		addToLogView(uiText);
 		logOutView.setKeyListener(null);
+		logOutView.setCustomSelectionActionModeCallback(this);
 
 		uiText = "";
 
@@ -349,6 +387,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		additionalHostsField = (EditText) findViewById(R.id.additionalHostsField);
 		additionalHostsField.setText(uiText);
 		additionalHostsField.addTextChangedListener(this);
+
+		findViewById(R.id.copyfromlog).setVisibility(View.GONE);
 
 		handleAdvancedConfig();
 
@@ -765,30 +805,38 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	@Override
 	public void onClick(View destination) {
 
-		if (destination == donate_field) {
+		if (destination == addFilterBtn) {
+			onCopyFilterFromLogView(true);
+			return;
+		}
+		else if (destination == removeFilterBtn) {
+			onCopyFilterFromLogView(false);
+			return;
+		}
+		else if (destination == donate_field) {
 			handleDonate();
 			return;
 		}
-		if (destination == dnsField) {
+		else if (destination == dnsField) {
 			handleDNSConfigDialog();
 			return;
 		}
 
-		if (destination == scrollLockField) {
+		else if (destination == scrollLockField) {
 			handleScrollLock();
 			return;
 		}
 
-		if (destination == backupBtn) {
+		else if (destination == backupBtn) {
 			doBackup();
 			return;
 		}
 
-		if (destination == restoreBtn) {
+		else if (destination == restoreBtn) {
 			doRestore();
 			return;
 		}
-		if (destination == restoreDefaultsBtn) {
+		else if (destination == restoreDefaultsBtn) {
 			doRestoreDefaults();
 			return;
 		}
@@ -1113,5 +1161,121 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	public void onTextChanged(CharSequence s, int start, int before, int count) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+
+		String selection = getSelectedText();
+
+		if (Build.VERSION.SDK_INT < 23)
+			findViewById(R.id.copyfromlog).setVisibility(View.VISIBLE);
+
+		if (selection.indexOf(NO_FILTER_PREF) != -1 || Build.VERSION.SDK_INT < 23) {
+			add_filter = menu.add("Add Filter");
+			//add_filter.setOnMenuItemClickListener(this);
+		}
+		if (selection.indexOf(IN_FILTER_PREF) != -1 || Build.VERSION.SDK_INT < 23) {
+			remove_filter = menu.add("Remove Filter");
+			//remove_filter.setOnMenuItemClickListener(this);
+		}
+
+		return true;
+	}
+
+	@Override
+	public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+		//Logger.getLogger().logLine("onPrepareActionMode "+menu.size());
+		return false;
+	}
+
+	@Override
+	public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+		String selection = getSelectedText();
+
+		if (item == add_filter) {
+			onCopyFilterFromLogView(true);
+		}
+		else if (item == remove_filter) {
+			onCopyFilterFromLogView(false);
+		}
+		return false;
+	}
+
+	@Override
+	public void onDestroyActionMode(ActionMode mode) {
+		if (Build.VERSION.SDK_INT < 23)
+			//hide the special copy paste buttons if visible
+			findViewById(R.id.copyfromlog).setVisibility(View.GONE);
+	}
+
+	@Override
+	public void onActionModeStarted(android.view.ActionMode mode) {
+
+	/*	if (Build.VERSION.SDK_INT < 23 && logOutView.hasFocus()) {
+			// get Action Menu on old devices before 6.0
+			int start = logOutView.getSelectionStart();
+			int end = logOutView.getSelectionEnd();
+
+			if (end > start)
+				findViewById(R.id.copyfromlog).setVisibility(View.VISIBLE);
+		}*/
+
+		super.onActionModeStarted(mode);
+	}
+
+	private String getSelectedText(){
+
+		int start= logOutView.getSelectionStart();
+		int end = logOutView.getSelectionEnd();
+		String selection = "";
+		if (end > start)
+			selection = logOutView.getText().subSequence(start, end).toString();
+
+		return selection;
+	}
+
+	@Override
+	public boolean onMenuItemClick(MenuItem item) {
+
+		/*String selection = getSelectedText();
+
+		if (item == add_filter) {
+			onCopyFilterFromLogView(true);
+		}
+		else if (item == remove_filter) {
+			onCopyFilterFromLogView(false);
+		}*/
+
+		return false;
+	}
+
+	public void onCopyFilterFromLogView(boolean filter) {
+
+		String selection = getSelectedText();
+
+		//close menu
+		logOutView.clearFocus();
+
+		applyCopiedHosts(selection, filter);
+	}
+
+	private void applyCopiedHosts(String entryStr, boolean filter) {
+
+		StringTokenizer entryTokens = new StringTokenizer(entryStr, "\n");
+		String entries = "";
+		while (entryTokens.hasMoreTokens()) {
+			String token = entryTokens.nextToken();
+			if (token.startsWith(IN_FILTER_PREF) || token.startsWith(NO_FILTER_PREF)) {
+				entries = entries+token.substring(1).trim()+"\n";
+			}
+		}
+		DNSFilterManager filterMgr = DNSFilterService.DNSFILTER;
+		if (filterMgr != null)
+			try {
+				filterMgr.updateFilter(entries,filter);
+			} catch (IOException e) {
+				Logger.getLogger().logException(e);
+			}
 	}
 }
