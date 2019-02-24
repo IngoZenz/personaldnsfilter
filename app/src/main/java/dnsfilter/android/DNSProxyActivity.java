@@ -62,7 +62,6 @@ import android.os.PowerManager.WakeLock;
 import android.text.Editable;
 import android.text.Html;
 import android.text.Spannable;
-import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextWatcher;
 import android.view.ActionMode;
@@ -183,22 +182,19 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		public synchronized void run() {
 
 			if (!scroll_locked) {
-				if (m_logStr.startsWith("FILTERED")) {
-					m_logStr = IN_FILTER_PREF + m_logStr.substring(9, m_logStr.length());
-				} else if (m_logStr.startsWith("ALLOWED")) {
-					m_logStr = NO_FILTER_PREF+m_logStr.substring(8, m_logStr.length());
-				}
+				m_logStr = m_logStr.replace("FILTERED:",IN_FILTER_PREF);
+				m_logStr = m_logStr.replace("ALLOWED:",NO_FILTER_PREF);
 
 				addToLogView(m_logStr);
 
-				int logSize = logOutView.getText().length();
+				int logSize = logOutView.getText().toString().length();
 
-				if (logSize >= 2000) {
-					Spannable logStr = logOutView.getText();
-					int start = 1000;
-					while (logStr.subSequence(start, start+4) != "<br>" && start < logStr.length()-4)
+				if (logSize >= 5000) {
+					String logStr = logOutView.getText().toString();
+					int start = logStr.length() /2;
+					while (logStr.substring(start, start+4) != "<br>" && start < logStr.length()-4)
 						start++;
-					logStr = new SpannableString(logStr.subSequence(start+4,logStr.length()));
+					logStr = logStr.substring(start+4,logStr.length());
 					logOutView.setText(logStr);
 				}
 
@@ -210,13 +206,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			setTitle("personalDNSfilter V" + DNSFilterManager.VERSION + " (Connections:" + DNSFilterService.openConnectionsCount() + ")");
 			dnsField.setText(DNSCommunicator.getInstance().getLastDNSAddress());
 		}
-	}
-
-	private String toHtml(Spanned txt) {
-		if (Build.VERSION.SDK_INT >= 24)
-			return Html.toHtml(txt, 0);
-		else
-			return Html.toHtml(txt);
 	}
 
 	private Spanned fromHtml(String txt) {
@@ -302,9 +291,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		donate_field.setText(fromHtml("<strong>Want to support us? Feel free to <a href='https://www.paypal.me/iZenz'>DONATE</a></strong>!"));
 		donate_field.setOnClickListener(this);
 
-
-		uiText = "";
-
 		scrollLockField = (TextView) findViewById(R.id.scrolllock);
 		if (scroll_locked)
 			scrollLockField.setText(SCROLL_CONTINUE);
@@ -322,6 +308,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		if (logTxt != null)
 			logOutView.setText(logTxt);
+		else
+			logOutView.setText(fromHtml("<strong><em>****This is personalDNSfilter V+"+DNSFilterManager.VERSION +"****</em></strong><br><br>"));
 
 		logOutView.setKeyListener(null);
 		logOutView.setCustomSelectionActionModeCallback(this);
@@ -1234,13 +1222,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		int end = logOutView.getSelectionEnd();
 		String selection = "";
 		if (end > start) {
-			Editable text = logOutView.getText();
+			Spannable text = logOutView.getText();
 			if (fullLine) {
 				while (text.charAt(start) != '\n' && start > 0)
 					start--;
 				if (start !=0)
 					start++;
-				while (text.charAt(end) != '\n' && end < text.length())
+				while (text.charAt(end) != '\n' && end < text.length()-1)
 					end++;
 
 				logOutView.setSelection(start, end);
