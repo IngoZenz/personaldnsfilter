@@ -61,6 +61,8 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.text.Editable;
 import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextWatcher;
 import android.view.ActionMode;
@@ -86,7 +88,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private Button stopBtn;
 	private Button reloadFilterBtn;
 	private static EditText logOutView;
-	private static int logSize = 0;
 	private static TextView dnsField;
 	private static CheckBox advancedConfigCheck;
 	private static CheckBox editFilterLoadCheck;
@@ -190,16 +191,15 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 				addToLogView(m_logStr);
 
-				logSize = logSize + m_logStr.length();
+				int logSize = logOutView.getText().length();
 
-				if (logSize >= 20000) {
-					String logStr = logOutView.getEditableText().toString();
-					logStr = logStr.substring(logSize - 10000);
-					int newLine = logStr.indexOf("\n");
-					if (newLine != -1)
-						logStr = logStr.substring(newLine + 1);
-					logSize = logStr.length();
-					addToLogView(logStr);
+				if (logSize >= 2000) {
+					Spannable logStr = logOutView.getText();
+					int start = 1000;
+					while (logStr.subSequence(start, start+4) != "<br>" && start < logStr.length()-4)
+						start++;
+					logStr = new SpannableString(logStr.subSequence(start+4,logStr.length()));
+					logOutView.setText(logStr);
 				}
 
 				if (!advancedConfigCheck.isChecked()) { //avoid focus lost when editing advanced settings
@@ -314,10 +314,15 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		scrollLockField.setOnClickListener(this);
 
 
+		Spannable logTxt = null;
 		if (logOutView != null)
-			uiText = logOutView.getEditableText().toString();
+			logTxt = logOutView.getText();
+
 		logOutView = (EditText) findViewById(R.id.logOutput);
-		addToLogView(uiText);
+
+		if (logTxt != null)
+			logOutView.setText(logTxt);
+
 		logOutView.setKeyListener(null);
 		logOutView.setCustomSelectionActionModeCallback(this);
 
