@@ -187,15 +187,17 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 				addToLogView(m_logStr);
 
-				int logSize = logOutView.getText().toString().length();
+				int logSize = logOutView.getText().length();
 
-				if (logSize >= 5000) {
-					String logStr = logOutView.getText().toString();
-					int start = logStr.length() /2;
-					while (logStr.substring(start, start+4) != "<br>" && start < logStr.length()-4)
+				if (logSize >= 4000) {
+					Spannable logStr = logOutView.getText();
+					int start = logSize / 2;
+
+					while (logStr.charAt(start) != '\n' && start < logStr.length()-1)
 						start++;
-					logStr = logStr.substring(start+4,logStr.length());
-					logOutView.setText(logStr);
+
+					logOutView.setText(logStr.subSequence(start, logStr.length()));
+
 				}
 
 				if (!advancedConfigCheck.isChecked()) { //avoid focus lost when editing advanced settings
