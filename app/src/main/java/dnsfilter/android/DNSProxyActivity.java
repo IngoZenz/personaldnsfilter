@@ -68,6 +68,7 @@ import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -79,7 +80,7 @@ import android.widget.TextView;
 import android.app.Dialog;
 
 
-public class DNSProxyActivity extends Activity implements OnClickListener, LoggerInterface, TextWatcher, DialogInterface.OnKeyListener, ActionMode.Callback, MenuItem.OnMenuItemClickListener {
+public class DNSProxyActivity extends Activity implements OnClickListener, LoggerInterface, TextWatcher, DialogInterface.OnKeyListener, ActionMode.Callback, MenuItem.OnMenuItemClickListener,View.OnTouchListener, View.OnFocusChangeListener {
 
 	protected static boolean BOOT_START = false;
 
@@ -138,6 +139,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private static Properties config = null;
 	protected static boolean debug = false;
 
+	private static int NO_ACTION_MENU = 0;
+
 
 	private static String IN_FILTER_PREF = "X \u0009";
 	private static String NO_FILTER_PREF = "✓\u0009";
@@ -169,6 +172,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		}
 	}
+
+
 
 	private class MyUIThreadLogger implements Runnable {
 
@@ -315,6 +320,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		logOutView.setKeyListener(null);
 		logOutView.setCustomSelectionActionModeCallback(this);
+		logOutView.setOnTouchListener(this);
+		logOutView.setOnFocusChangeListener(this);
+		logOutView.setOnClickListener(this);
 
 		uiText = "";
 
@@ -800,6 +808,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	@Override
 	public void onClick(View destination) {
 
+		if (destination == logOutView) {
+			findViewById(R.id.copyfromlog).setVisibility(View.GONE);
+			return;
+		}
+
 		if (destination == addFilterBtn) {
 			onCopyFilterFromLogView(true);
 			return;
@@ -1161,6 +1174,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	@Override
 	public boolean onCreateActionMode(ActionMode mode, Menu menu) {
 
+		NO_ACTION_MENU = -1; //received event - callback working on this device!
+
 		String selection = getSelectedText(true);
 
 		if (Build.VERSION.SDK_INT < 23)
@@ -1180,7 +1195,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	@Override
 	public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-		//Logger.getLogger().logLine("onPrepareActionMode "+menu.size());
 		return false;
 	}
 
@@ -1217,6 +1231,64 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		super.onActionModeStarted(mode);
 	}
+
+	@Override
+	public boolean onTouch(View v, MotionEvent event) {
+
+		if (Build.VERSION.SDK_INT < 23)
+			return false; // for old devices anyhow the fallback option is used
+
+		if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
+
+			String selection = getSelectedText(true);
+
+			if (NO_ACTION_MENU >= 0  && !selection.equals("")) {
+
+				if (NO_ACTION_MENU <=1) {
+					NO_ACTION_MENU++;
+					doAsyncCheck(); //check again after a second if the action menu works - if not => fallback
+				}
+
+				if (NO_ACTION_MENU > 1) {
+					//2 times no Action ==> Action Menu not working on this device
+					// ==>Fallback to the Buttons on top of Log View
+					findViewById(R.id.copyfromlog).setVisibility(View.VISIBLE);
+				}
+			}
+		}
+		return false;
+	}
+
+	private void doAsyncCheck() {
+		new Thread(new Runnable() {
+			@Override
+			synchronized public void run() {
+				try {
+					wait (1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				Runnable uiRunner = new Runnable() {
+					public void run() {
+						String selection = getSelectedText(true);
+						if (NO_ACTION_MENU >= 0 && !selection.equals("")) {
+							findViewById(R.id.copyfromlog).setVisibility(View.VISIBLE);
+						}
+					}
+				} ;
+				runOnUiThread(uiRunner);
+			}
+		}).start();
+	}
+
+	@Override
+	public void onFocusChange(View v, boolean hasFocus) {
+		if (!hasFocus)
+			findViewById(R.id.copyfromlog).setVisibility(View.GONE);
+
+	}
+
+
 
 	private String getSelectedText(boolean fullLine){
 
@@ -1266,6 +1338,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	}
 
 	private void applyCopiedHosts(String entryStr, boolean filter) {
+		findViewById(R.id.copyfromlog).setVisibility(View.GONE);
 
 		StringTokenizer entryTokens = new StringTokenizer(entryStr, "\n");
 		String entries = "";
