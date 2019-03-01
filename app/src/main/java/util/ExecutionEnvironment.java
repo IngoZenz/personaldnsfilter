@@ -50,6 +50,11 @@ public class ExecutionEnvironment implements ExecutionEnvironmentInterface {
 	public void releaseWakeLock() {
 		// by default do nothing		
 	}
+	
+	@Override
+	public String getWorkDir() {
+		return "./";		
+	}
 
 	@Override
 	public boolean debug() {

@@ -41,7 +41,6 @@ public class DNSResolver implements Runnable {
 	private static int THR_COUNT = 0;
 	private static Object CNT_SYNC = new Object();
 	private static boolean IO_ERROR=false;
-	private DatagramSocket dnsSocket;
 
 	//for android usage based on IP packages from the VPN Interface
 	private UDPPacket udpRequestPacket;
@@ -53,16 +52,15 @@ public class DNSResolver implements Runnable {
 
 	private boolean datagramPacketMode = false;
 
-	public DNSResolver(DatagramSocket dnsSocket, UDPPacket udpRequestPacket, OutputStream reponseOut) {
-		this.dnsSocket = dnsSocket;
+	public DNSResolver(UDPPacket udpRequestPacket, OutputStream reponseOut) {
+
 		this.udpRequestPacket = udpRequestPacket;
 		this.responseOut = reponseOut;
 	}
 
 	//for non Android usage based on DatagramPacket
-	public DNSResolver(DatagramSocket dnsSocket, DatagramPacket request, DatagramSocket replySocket) {
+	public DNSResolver(DatagramPacket request, DatagramSocket replySocket) {
 		datagramPacketMode = true;
-		this.dnsSocket = dnsSocket;
 		this.dataGramRequest = request;
 		this.replySocket = replySocket;
 	}
@@ -89,7 +87,7 @@ public class DNSResolver implements Runnable {
 		DatagramPacket response = new DatagramPacket(packetData, offs, packetData.length - offs);
 
 		//forward request to DNS and receive response
-		DNSCommunicator.getInstance().requestDNS(dnsSocket, request, response);
+		DNSCommunicator.getInstance().requestDNS(request, response);
 
 		// patch the response by applying filter			
 		byte[] buf = DNSResponsePatcher.patchResponse(clientID, response.getData(), offs);
@@ -116,7 +114,7 @@ public class DNSResolver implements Runnable {
 		DatagramPacket response = new DatagramPacket(data, dataGramRequest.getOffset(), data.length - dataGramRequest.getOffset());
 
 		//forward request to DNS and receive response
-		DNSCommunicator.getInstance().requestDNS(dnsSocket, dataGramRequest, response);
+		DNSCommunicator.getInstance().requestDNS(dataGramRequest, response);
 
 		// patch the response by applying filter			
 		DNSResponsePatcher.patchResponse(sourceAdr.toString(), response.getData(), response.getOffset());
@@ -143,13 +141,12 @@ public class DNSResolver implements Runnable {
 			if (ExecutionEnvironment.getEnvironment().debug())
 				Logger.getLogger().logLine(e.getMessage());
 			else if (!IO_ERROR) { // a new IO Error occured
-				Logger.getLogger().logLine("IO Error occured! Check network!");
+				Logger.getLogger().logLine(e.getMessage()+"\nIO Error occured! Check network or DNS Config!");
 				IO_ERROR= true; //prevent repeating error logs while the network is down
 			}
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
 		} finally {
-			dnsSocket.close();
 			synchronized (CNT_SYNC) {
 				THR_COUNT--;
 			}

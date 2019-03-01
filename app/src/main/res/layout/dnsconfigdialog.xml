@@ -21,19 +21,33 @@
             android:text="@string/manualDNSCheck"
             android:textColor="#424242" >
         </dnsfilter.android.PaddedCheckBox>
-        <EditText
-            android:id="@+id/manualDNS"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textMultiLine"
-            android:textColor="#424242"
-            android:textSize="14dp"
             android:padding="10dp"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:layout_marginBottom="25dp"
             android:background="#eceff1">
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#eceff1"
+            android:scrollbars="none">
+
+        <EditText
+            android:id="@+id/manualDNS"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textMultiLine|textNoSuggestions"
+            android:textColor="#424242"
+            android:textSize="14dp"
+            android:background="#eceff1">
         </EditText>
+        </HorizontalScrollView>
+        </LinearLayout>
+
 
 </LinearLayout>
 

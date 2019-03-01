@@ -1,4 +1,6 @@
-/* 
+package dnsfilter;
+
+/*
  PersonalDNSFilter 1.5
  Copyright (C) 2017 Ingo Zenz
 
@@ -17,10 +19,9 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
  Find the latest version at http://www.zenz-solutions.de/personaldnsfilter
- Contact:i.z@gmx.net 
+ Contact:i.z@gmx.net
  */
 
-package dnsfilter;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -46,20 +47,20 @@ public class DNSFilterProxy implements Runnable {
 
 	private static void initDNS(DNSFilterManager dnsFilterMgr) {
 
-		Vector<InetAddress> dnsAdrs = new Vector<InetAddress>();
+		Vector<DNSServer> dnsAdrs = new Vector<DNSServer>();
 
 		StringTokenizer fallbackDNS = new StringTokenizer(dnsFilterMgr.getConfig().getProperty("fallbackDNS", ""), ";");
 		int cnt = fallbackDNS.countTokens();
 		for (int i = 0; i < cnt; i++) {
-			String value = fallbackDNS.nextToken().trim();
-			Logger.getLogger().logLine("DNS:" + value);
+			String dnsEntry = fallbackDNS.nextToken().trim();
+			Logger.getLogger().logLine("DNS:" + dnsEntry);
 			try {
-				dnsAdrs.add(InetAddress.getByName(value));
-			} catch (UnknownHostException e) {
+				dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry,15000));
+			} catch (IOException e) {
 				Logger.getLogger().logException(e);
 			}
 		}
-		DNSCommunicator.getInstance().setDNSServers(dnsAdrs.toArray(new InetAddress[dnsAdrs.size()]));
+		DNSCommunicator.getInstance().setDNSServers(dnsAdrs.toArray(new DNSServer[dnsAdrs.size()]));
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -98,7 +99,7 @@ public class DNSFilterProxy implements Runnable {
 				byte[] data = new byte[1024];
 				DatagramPacket request = new DatagramPacket(data, 0, 1024);
 				receiver.receive(request);
-				new Thread(new DNSResolver(new DatagramSocket(), request, receiver)).start();
+				new Thread(new DNSResolver(request, receiver)).start();
 			} catch (IOException e) {
 				if (!stopped)
 					Logger.getLogger().logLine("Exception:" + e.getMessage());

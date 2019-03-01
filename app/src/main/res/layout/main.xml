@@ -280,7 +280,7 @@
                     android:background="@drawable/text_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:inputType="textMultiLine"
+                    android:inputType="textMultiLine|textNoSuggestions"
                     android:padding="10dp"
                     android:textColor="#424242"
                     android:textSize="14sp" />

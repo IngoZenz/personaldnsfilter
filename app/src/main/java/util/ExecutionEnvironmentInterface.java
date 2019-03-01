@@ -26,5 +26,6 @@ public interface ExecutionEnvironmentInterface {
 	
 	public void wakeLock();
 	public void releaseWakeLock();
+	public String getWorkDir();
 	public boolean debug();
 }

@@ -22,6 +22,7 @@
 
 package dnsfilter.android;
 
+import dnsfilter.DNSServer;
 import ip.IPPacket;
 import ip.UDPPacket;
 
@@ -99,7 +100,7 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 
 		if (DNSProxyActivity.debug)
 			Logger.getLogger().logLine("Detecting DNS Servers...");
-		Vector<InetAddress> dnsAdrs = new Vector<InetAddress>();
+		Vector<DNSServer> dnsAdrs = new Vector<DNSServer>();
 
 		if (detect) {
 			try {
@@ -111,7 +112,7 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 					if (value != null && !value.equals("")) {
 						if (DNSProxyActivity.debug) Logger.getLogger().logLine("DNS:" + value);
 						if (!value.equals(VIRTUALDNS_IPV4) && !value.equals(VIRTUALDNS_IPV6))
-							dnsAdrs.add(InetAddress.getByName(value));
+							dnsAdrs.add(DNSServer.getInstance().createDNSServer(DNSServer.UDP,InetAddress.getByName(value),53,15000,null));
 					}
 				}
 			} catch (Exception e) {
@@ -122,16 +123,16 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 			StringTokenizer fallbackDNS = new StringTokenizer(dnsFilterMgr.getConfig().getProperty("fallbackDNS", ""), ";");
 			int cnt = fallbackDNS.countTokens();
 			for (int i = 0; i < cnt; i++) {
-				String value = fallbackDNS.nextToken().trim();
-				if (DNSProxyActivity.debug) Logger.getLogger().logLine("DNS:" + value);
+				String dnsEntry = fallbackDNS.nextToken().trim();
+				if (DNSProxyActivity.debug) Logger.getLogger().logLine("DNS:" + dnsEntry);
 				try {
-					dnsAdrs.add(InetAddress.getByName(value));
+					dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry,15000));
 				} catch (Exception e) {
-					Logger.getLogger().logLine("Invalid fallbackDNS entry: '" + value + "'\n" + e.toString());
+					Logger.getLogger().logLine("Invalid fallbackDNS entry: '" +dnsEntry + "'\n" + e.toString());
 				}
 			}
 		}
-		DNSCommunicator.getInstance().setDNSServers(dnsAdrs.toArray(new InetAddress[dnsAdrs.size()]));
+		DNSCommunicator.getInstance().setDNSServers(dnsAdrs.toArray(new DNSServer[dnsAdrs.size()]));
 	}
 
 	public void run() {
@@ -173,12 +174,7 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 							if (parsedPacket.checkCheckSum() != 0)
 								throw new IOException("UDP packet Checksum Error!");
 
-							DatagramSocket dnsSocket = new DatagramSocket();
-
-							if (!protect(dnsSocket)) {
-								throw new IOException("Cannot protect the tunnel");
-							}
-							new Thread(new DNSResolver(dnsSocket, parsedPacket, out)).start();
+							new Thread(new DNSResolver(parsedPacket, out)).start();
 						}
 					} catch (IOException e) {
 						Logger.getLogger().logLine("IOEXCEPTION: " + e.toString());
@@ -408,6 +404,11 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 		WakeLock wl = wakeLock;
 		if (wl != null)
 			wl.release();
+	}
+
+	@Override
+	public String getWorkDir() {
+		return DNSProxyActivity.WORKPATH+"/";
 	}
 
 	@Override

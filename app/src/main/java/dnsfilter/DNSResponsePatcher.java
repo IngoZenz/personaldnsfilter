@@ -57,72 +57,78 @@ public class DNSResponsePatcher {
 
 	public static byte[] patchResponse(String client, byte[] response, int offs) throws IOException {
 
-		ByteBuffer buf = ByteBuffer.wrap(response, offs, response.length - offs);
-		String queryHost = "";
+		try {
+			ByteBuffer buf = ByteBuffer.wrap(response, offs, response.length - offs);
+			String queryHost = "";
 
-		buf.getShort(); // ID
-		buf.getShort(); // Flags
-		int questCount = buf.getShort();
-		int answerCount = buf.getShort();
-		buf.getShort(); // auths
-		buf.getShort(); // additional
+			buf.getShort(); // ID
+			buf.getShort(); // Flags
+			int questCount = buf.getShort();
+			int answerCount = buf.getShort();
+			buf.getShort(); // auths
+			buf.getShort(); // additional
 
-		boolean filter = false;
+			boolean filter = false;
 
-		for (int i = 0; i < questCount; i++) {
+			for (int i = 0; i < questCount; i++) {
 
-			queryHost = readDomainName(buf, offs);
-			int type = buf.getShort(); // query type
+				queryHost = readDomainName(buf, offs);
+				int type = buf.getShort(); // query type
 
-			//checking the filter on the answer does not always work due to cname redirects (type 5 responses)
-			//therefore we just check the filter on the query host and thus we'll disallow also all cname redirects.
-			//This seems to work well - however is not 100% correct!			
+				//checking the filter on the answer does not always work due to cname redirects (type 5 responses)
+				//therefore we just check the filter on the query host and thus we'll disallow also all cname redirects.
+				//This seems to work well - however is not 100% correct!
 
-			if (type == 1 || type == 28)
-				filter = filter || filter(queryHost);
+				if (type == 1 || type == 28)
+					filter = filter || filter(queryHost);
 
-			if (TRAFFIC_LOG != null)
-				TRAFFIC_LOG.logLine(client + ", Q-" + type + ", " + queryHost + ", " + "<empty>");
+				if (TRAFFIC_LOG != null)
+					TRAFFIC_LOG.logLine(client + ", Q-" + type + ", " + queryHost + ", " + "<empty>");
 
-			buf.getShort(); // query class
-		}
-
-		for (int i = 0; i < answerCount; i++) {
-			String host = readDomainName(buf, offs);
-			int type = buf.getShort(); // type			
-			buf.getShort(); // class
-			buf.getInt(); // TTL
-			int len = buf.getShort(); // len
-
-			if ((type == 1 || type == 28) && filter) {
-				// replace ip!
-				if (type == 1) // IPV4
-					buf.put(ipv4_localhost);
-				else if (type == 28) // IPV6
-					buf.put(ipv6_localhost);
-			} else
-				buf.position(buf.position() + len); // go ahead
-
-			//log answer
-			if (TRAFFIC_LOG != null) {
-				byte[] answer = new byte[len];
-				String answerStr = null;
-				buf.position(buf.position() - len);
-
-				if (type == 5)
-					answerStr = readDomainName(buf, offs);
-				else {
-					buf.get(answer);
-
-					if (type == 1 || type == 28)
-						answerStr = InetAddress.getByAddress(answer).getHostAddress();
-					else
-						answerStr = new String(answer);
-				}
-				TRAFFIC_LOG.logLine(client + ", A-" + type + ", " + host + ", " + answerStr + ", /Length:" + len);
+				buf.getShort(); // query class
 			}
+
+			for (int i = 0; i < answerCount; i++) {
+				String host = readDomainName(buf, offs);
+				int type = buf.getShort(); // type
+				buf.getShort(); // class
+				buf.getInt(); // TTL
+				int len = buf.getShort(); // len
+
+				if ((type == 1 || type == 28) && filter) {
+					// replace ip!
+					if (type == 1) // IPV4
+						buf.put(ipv4_localhost);
+					else if (type == 28) // IPV6
+						buf.put(ipv6_localhost);
+				} else
+					buf.position(buf.position() + len); // go ahead
+
+				//log answer
+				if (TRAFFIC_LOG != null) {
+					byte[] answer = new byte[len];
+					String answerStr = null;
+					buf.position(buf.position() - len);
+
+					if (type == 5)
+						answerStr = readDomainName(buf, offs);
+					else {
+						buf.get(answer);
+
+						if (type == 1 || type == 28)
+							answerStr = InetAddress.getByAddress(answer).getHostAddress();
+						else
+							answerStr = new String(answer);
+					}
+					TRAFFIC_LOG.logLine(client + ", A-" + type + ", " + host + ", " + answerStr + ", /Length:" + len);
+				}
+			}
+			return buf.array();
+		} catch (IOException eio) {
+			throw eio;
+		} catch (Exception e){
+			throw new IOException ("Invalid DNS Response Message Structure", e);
 		}
-		return buf.array();
 	}
 
 	private static boolean filter(String host) {

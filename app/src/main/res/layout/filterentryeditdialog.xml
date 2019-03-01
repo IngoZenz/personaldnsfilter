@@ -63,7 +63,8 @@
                 android:background="#eceff1"
                 android:text="blah"
                 android:textColor="#424242"
-                android:textSize="14dp" />
+                android:textSize="14dp"
+                android:inputType="textNoSuggestions"/>
 
 
             <EditText
@@ -76,7 +77,8 @@
                 android:background="#eceff1"
                 android:text="blah"
                 android:textColor="#424242"
-                android:textSize="14dp" />
+                android:textSize="14dp"
+                android:inputType="textNoSuggestions"/>
 
             <HorizontalScrollView
                 android:layout_width="match_parent"
@@ -95,7 +97,8 @@
                     android:background="#eceff1"
                     android:text="blah"
                     android:textColor="#424242"
-                    android:textSize="14dp" />
+                    android:textSize="14dp"
+                    android:inputType="textNoSuggestions"/>
             </HorizontalScrollView>
 
         </LinearLayout>
