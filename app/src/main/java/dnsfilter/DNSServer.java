@@ -111,9 +111,7 @@ public class DNSServer {
 
         if (ip == null)
             ip = entryTokens[0];
-
-        Logger.getLogger().logLine("IP:"+ip);
-
+        
         int port = 53;
         if (entryTokens.length>1) {
             try {
