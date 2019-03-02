@@ -90,9 +90,30 @@ public class DNSServer {
     }
 
     public DNSServer createDNSServer(String spec, int timeout) throws IOException{
+
+        String ip = null;
+
+        if (spec.startsWith("[")) { //IPV6
+            int idx = spec.indexOf("]");
+            if (idx != -1) {
+                ip = spec.substring(1,idx);
+                spec = spec.substring(idx);
+            }
+        } else { // Check if String is just IP without brackets for backward compatibility
+            String specUpper = spec.toUpperCase();
+            if (specUpper.indexOf("::UDP") == -1 && specUpper.indexOf("::DOT") == -1 && specUpper.indexOf("::DOH") == -1 ) {
+                ip = spec; //just the ip String
+                spec = "";
+            }
+        }
+
         String[] entryTokens  = spec.split("::");
 
-        String ip = entryTokens[0];
+        if (ip == null)
+            ip = entryTokens[0];
+
+        Logger.getLogger().logLine("IP:"+ip);
+
         int port = 53;
         if (entryTokens.length>1) {
             try {
@@ -124,7 +145,7 @@ public class DNSServer {
 
     @Override
     public String toString() {
-        return address.getAddress().getHostAddress()+" :: "+address.getPort()+"::"+getProtocolName();
+        return "["+address.getAddress().getHostAddress()+"] :: "+address.getPort()+"::"+getProtocolName();
     }
 
     @Override

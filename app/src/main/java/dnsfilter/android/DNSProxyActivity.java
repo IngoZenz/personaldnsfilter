@@ -433,6 +433,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 			String manualDNS_Help =
 					"# Format: <IP>::<PORT>::<PROTOCOL>::<URL END POINT>\n"+
+					"# IPV6 Addresses with '::' must be in brackets '[IPV6]'!\n" +
 					"# Cloudflare examples below:\n" +
 					"# 1.1.1.1::53::UDP (Default DNS on UDP port 53 / just 1.1.1.1 will work as well)\n" +
 					"# 1.1.1.1::853::DoT (DNS over TLS)\n" +
