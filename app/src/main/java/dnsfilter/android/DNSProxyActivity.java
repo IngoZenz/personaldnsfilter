@@ -431,7 +431,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 			manualDNSCheck.setChecked(!Boolean.parseBoolean(config.getProperty("detectDNS", "true")));
 
-			manualDNSView.setText(config.getProperty("fallbackDNS").replace(";", "\n").replace(" ", ""));
+			String manualDNS_Help =
+					"# Format: <IP>::<PORT>::<PROTOCOL>::<URL END POINT>\n"+
+					"# Cloudflare examples below:\n" +
+					"# 1.1.1.1::53::UDP (Default DNS on UDP port 53 / just 1.1.1.1 will work as well)\n" +
+					"# 1.1.1.1::853::DoT (DNS over TLS)\n" +
+					"# 1.1.1.1::443::DoH::https://cloudflare-dns.com/dns-query (DNS over HTTPS)\n\n";
+			manualDNSView.setText(manualDNS_Help+config.getProperty("fallbackDNS").replace(";", "\n").replace(" ", ""));
 
 			FilterConfig.FilterConfigEntry[] filterEntries = buildFilterEntries(config);
 			filterCfg.setEntries(filterEntries);
@@ -672,6 +678,21 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		return result;
 	}
 
+	private String getFallbackDNSSettingFromUI(){
+		String uiText =  manualDNSView.getText().toString();
+		String result="";
+		StringTokenizer entries = new StringTokenizer(uiText,"\n");
+		while (entries.hasMoreTokens()) {
+			String entry = entries.nextToken().trim();
+			if (!entry.startsWith("#")&& !entry.equals(""))
+				result = result+entry+" ;";
+		}
+		if (!result.equals(""))
+			result = result.substring(0,result.length()-2); // cut last seperator;
+
+		return result;
+	}
+
 	private void persistConfig() {
 		try {
 
@@ -695,8 +716,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 					ln = "detectDNS = " + !manualDNSCheck.isChecked();
 
 				else if (ln.trim().startsWith("fallbackDNS"))
-					ln = "fallbackDNS = " + manualDNSView.getText().toString().trim().replace("\n", "; ");
-
+					ln = "fallbackDNS = " + getFallbackDNSSettingFromUI();
 				else if (ln.trim().startsWith("filterAutoUpdateURL_IDs"))
 					ln = "filterAutoUpdateURL_IDs = " + filterCfgStrings[1];
 
