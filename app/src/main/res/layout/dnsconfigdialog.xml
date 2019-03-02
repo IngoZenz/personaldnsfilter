@@ -31,6 +31,7 @@
             android:background="#eceff1">
 
         <HorizontalScrollView
+            android:id="@+id/manualDNSScroll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#eceff1"
@@ -40,6 +41,7 @@
             android:id="@+id/manualDNS"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:minWidth="200dp"
             android:inputType="textMultiLine|textNoSuggestions"
             android:textColor="#424242"
             android:textSize="14dp"

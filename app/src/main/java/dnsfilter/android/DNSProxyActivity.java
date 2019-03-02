@@ -74,6 +74,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.HorizontalScrollView;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TextView;
@@ -110,7 +111,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private static TextView scrollLockField;
 	private static Dialog advDNSConfigDia;
 	private static CheckBox manualDNSCheck;
-	private static TextView manualDNSView;
+	private static EditText manualDNSView;
 	private static boolean advDNSConfigDia_open = false;
 	private static String SCROLL_PAUSE = "II  ";
 	private static String SCROLL_CONTINUE = ">>  ";
@@ -275,7 +276,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		if (manualDNSView != null)
 			uiText = manualDNSView.getText().toString();
 
-		manualDNSView = (TextView) advDNSConfigDia.findViewById(R.id.manualDNS);
+		manualDNSView = (EditText) advDNSConfigDia.findViewById(R.id.manualDNS);
 		manualDNSView.setText(uiText);
 
 		startBtn = (Button) findViewById(R.id.startBtn);
@@ -522,8 +523,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	@Override
 	protected void onRestoreInstanceState(Bundle outState) {
-		if (advDNSConfigDia_open)
+		if (advDNSConfigDia_open) {
 			advDNSConfigDia.show();
+			((HorizontalScrollView) advDNSConfigDia.findViewById(R.id.manualDNSScroll)).fullScroll(ScrollView.FOCUS_LEFT);
+		}
 	}
 
 
@@ -959,6 +962,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	private void handleDNSConfigDialog() {
 		advDNSConfigDia.show();
+		((HorizontalScrollView) advDNSConfigDia.findViewById(R.id.manualDNSScroll)).fullScroll(ScrollView.FOCUS_LEFT);
 		advDNSConfigDia_open = true;
 	}
 
