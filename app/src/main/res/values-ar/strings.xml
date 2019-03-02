@@ -26,4 +26,6 @@
     <string name="category">"فئة "</string>
   <string name="name">"اسم "</string>
   <string name="editFilterDialogTitle">تحرير مرشح</string>
+    <string name="addFilter">إضافة مرشح</string>
+    <string name="removeFilter">إزالة مرشح</string>
 </resources>

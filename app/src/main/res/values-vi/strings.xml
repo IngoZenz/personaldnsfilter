@@ -26,4 +26,6 @@
     <string name="category">thể loại</string>
   <string name="name">danh</string>
   <string name="editFilterDialogTitle">Chỉnh sửa bộ lọc</string>
+    <string name="addFilter">Thêm bộ lọc</string>
+    <string name="removeFilter">Xóa bộ lọc</string>
 </resources>

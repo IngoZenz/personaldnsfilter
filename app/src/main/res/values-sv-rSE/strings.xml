@@ -26,4 +26,6 @@
     <string name="category">Kategori</string>
   <string name="name">"Benämning "</string>
   <string name="editFilterDialogTitle">Redigera filter</string>
+    <string name="addFilter">Lägg till filter</string>
+    <string name="removeFilter">Ta bort filter</string>
 </resources>

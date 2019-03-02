@@ -26,4 +26,6 @@
     <string name="category">"κατηγορία "</string>
   <string name="name">Ονομα</string>
   <string name="editFilterDialogTitle">Επεξεργασία φίλτρου</string>
+    <string name="addFilter">Προσθέστε φίλτρο</string>
+    <string name="removeFilter">Καταργήστε το φίλτρο</string>
 </resources>

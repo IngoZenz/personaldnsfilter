@@ -26,4 +26,6 @@
     <string name="category">Categorie</string>
   <string name="name">Nume</string>
   <string name="editFilterDialogTitle">Editați filtrul</string>
+    <string name="addFilter">Adăugați filtrul</string>
+    <string name="removeFilter">Eliminați filtrul</string>
 </resources>

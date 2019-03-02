@@ -138,10 +138,13 @@ public class DNSResolver implements Runnable {
 			IO_ERROR=false;
 
 		} catch (IOException e) {
+			String msg = e.getMessage();
+			if (e.getMessage()==null)
+				msg = e.toString();
 			if (ExecutionEnvironment.getEnvironment().debug())
-				Logger.getLogger().logLine(e.getMessage());
+				Logger.getLogger().logLine(msg);
 			else if (!IO_ERROR) { // a new IO Error occured
-				Logger.getLogger().logLine(e.getMessage()+"\nIO Error occured! Check network or DNS Config!");
+				Logger.getLogger().logLine(msg+"\nIO Error occured! Check network or DNS Config!");
 				IO_ERROR= true; //prevent repeating error logs while the network is down
 			}
 		} catch (Exception e) {

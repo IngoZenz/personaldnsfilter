@@ -29,5 +29,7 @@
   <string name="left" translatable="false"><![CDATA[<]]></string>
   <string name="right" translatable="false"><![CDATA[>]]></string>
   <string name="editFilterDialogTitle">Edit Filter</string>
+  <string name="addFilter">"Add Filter"</string>
+  <string name="removeFilter">"Remove Filter"</string>
 
 </resources>

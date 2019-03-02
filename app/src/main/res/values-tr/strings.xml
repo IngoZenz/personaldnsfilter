@@ -26,4 +26,6 @@
     <string name="category">Kategori</string>
   <string name="name">Isim</string>
   <string name="editFilterDialogTitle">Filtreyi Düzenle</string>
+    <string name="addFilter">Filtre ekle</string>
+    <string name="removeFilter">Filtreyi Kaldır</string>
 </resources>

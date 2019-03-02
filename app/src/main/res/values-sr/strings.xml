@@ -26,4 +26,6 @@
     <string name="category">врста</string>
   <string name="name">назив</string>
   <string name="editFilterDialogTitle">Уреди филтар</string>
+    <string name="addFilter">Додај филтер</string>
+    <string name="removeFilter">Уклони филтар</string>
 </resources>

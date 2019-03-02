@@ -26,4 +26,6 @@
     <string name="category">Kategorie</string>
   <string name="name">"Naam "</string>
   <string name="editFilterDialogTitle">Wysig filter</string>
+    <string name="addFilter">Voeg filter by</string>
+    <string name="removeFilter">Verwyder filter</string>
 </resources>

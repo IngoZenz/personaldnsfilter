@@ -26,4 +26,6 @@
     <string name="category">"종류 "</string>
   <string name="name">명의</string>
   <string name="editFilterDialogTitle">필터 편집</string>
+    <string name="addFilter">필터 추가</string>
+    <string name="removeFilter">필터 제거</string>
 </resources>

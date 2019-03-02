@@ -26,4 +26,6 @@
     <string name="category">Kategori</string>
   <string name="name">Navn</string>
   <string name="editFilterDialogTitle">Rediger filter</string>
+    <string name="addFilter">Legg filter</string>
+    <string name="removeFilter">Fjern filter</string>
 </resources>

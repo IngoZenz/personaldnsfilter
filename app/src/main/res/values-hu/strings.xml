@@ -26,4 +26,6 @@
     <string name="category">Kategória</string>
   <string name="name">Név</string>
   <string name="editFilterDialogTitle">Szűrő szerkesztése</string>
+    <string name="addFilter">Szűrő hozzáadása</string>
+    <string name="removeFilter">Szűrő eltávolítása</string>
 </resources>

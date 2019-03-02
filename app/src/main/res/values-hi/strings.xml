@@ -26,4 +26,6 @@
     <string name="category">वर्ग</string>
   <string name="name">उपनाम</string>
   <string name="editFilterDialogTitle">फ़िल्टर संपादित करें</string>
+    <string name="addFilter">फ़िल्टर जोड़ें</string>
+    <string name="removeFilter">फ़िल्टर निकालें</string>
 </resources>

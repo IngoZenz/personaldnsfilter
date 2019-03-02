@@ -26,4 +26,6 @@
     <string name="category">"סוּג "</string>
   <string name="name">"לְכַנוֹת "</string>
   <string name="editFilterDialogTitle">ערוך מסנן</string>
+    <string name="addFilter">הוסף מסנן</string>
+    <string name="removeFilter">הסר מסנן</string>
 </resources>

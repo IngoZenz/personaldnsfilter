@@ -26,4 +26,6 @@
     <string name="category">種類</string>
   <string name="name">名前</string>
   <string name="editFilterDialogTitle">フィルタを編集</string>
+    <string name="addFilter">フィルタを追加</string>
+    <string name="removeFilter">フィルタを削除</string>
 </resources>

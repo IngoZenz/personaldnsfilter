@@ -26,4 +26,6 @@
     <string name="category">Categoria</string>
   <string name="name">Nom</string>
   <string name="editFilterDialogTitle">Edita el filtre</string>
+    <string name="addFilter">Afegeix filtre</string>
+    <string name="removeFilter">Elimina filtre</string>
 </resources>

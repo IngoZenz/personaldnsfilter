@@ -26,4 +26,6 @@
     <string name="category">Kategorie</string>
   <string name="name">Název</string>
   <string name="editFilterDialogTitle">Upravit filtr</string>
+    <string name="addFilter">Přidat filtr</string>
+    <string name="removeFilter">Odstraňte filtr</string>
 </resources>

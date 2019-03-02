@@ -26,4 +26,6 @@
     <string name="category">категория</string>
   <string name="name">название</string>
   <string name="editFilterDialogTitle">Редактировать фильтр</string>
+    <string name="addFilter">Добавить фильтр</string>
+    <string name="removeFilter">Удалить фильтр</string>
 </resources>

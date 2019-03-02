@@ -26,4 +26,6 @@
     <string name="category">Kategoria</string>
   <string name="name">Nimi</string>
   <string name="editFilterDialogTitle">Muokkaa suodatinta</string>
+    <string name="addFilter">Lisää suodatin</string>
+    <string name="removeFilter">Poista suodatin</string>
 </resources>

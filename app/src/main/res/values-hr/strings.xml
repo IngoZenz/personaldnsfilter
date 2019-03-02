@@ -26,4 +26,6 @@
     <string name="category">Kategorija</string>
   <string name="name">Ime</string>
   <string name="editFilterDialogTitle">Uredi filtar</string>
+    <string name="addFilter">Dodaj filtar</string>
+    <string name="removeFilter">Ukloni filtar</string>
 </resources>

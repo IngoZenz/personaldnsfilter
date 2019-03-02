@@ -195,7 +195,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 				int logSize = logOutView.getText().length();
 
-				if (logSize >= 4000) {
+				if (logSize >= 10000) {
 					Spannable logStr = logOutView.getText();
 					int start = logSize / 2;
 
@@ -1206,11 +1206,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			findViewById(R.id.copyfromlog).setVisibility(View.VISIBLE);
 
 		if (selection.indexOf(NO_FILTER_PREF) != -1) {
-			add_filter = menu.add("Add Filter");
+			add_filter = menu.add(R.string.addFilter);
 			//add_filter.setOnMenuItemClickListener(this);
 		}
 		if (selection.indexOf(IN_FILTER_PREF) != -1 ) {
-			remove_filter = menu.add("Remove Filter");
+			remove_filter = menu.add(R.string.removeFilter);
 			//remove_filter.setOnMenuItemClickListener(this);
 		}
 
