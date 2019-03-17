@@ -218,6 +218,18 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 					DNSFILTERPROXY = new DNSFilterProxy(5300);
 					new Thread(DNSFILTERPROXY).start();
 				}
+
+				//run additional OS script if configured - e.g. for starting DNSScript proxy
+				String cmd = DNSFILTER.getConfig().getProperty("runOSCommandAtStart", "");
+
+				if (!cmd.equals("")) {
+					try {
+						runOSCommand(cmd);
+					} catch (Exception e) {
+						Logger.getLogger().logException(e);
+					}
+				}
+
 			} catch (Exception e) {
 				DNSFILTER = null;
 				Logger.getLogger().logException(e);
@@ -337,24 +349,29 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 		if (DNS_PROXY_PORT_IS_REDIRECTED)
 			return;
 		try {
-			Process su = Runtime.getRuntime().exec("su");
-			DataOutputStream outputStream = new DataOutputStream(su.getOutputStream());
-
-			outputStream.writeBytes("iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-port 5300\n");
-			outputStream.flush();
-
-			outputStream.writeBytes("exit\n");
-			outputStream.flush();
-			InputStream stdout = su.getInputStream();
-			Logger.getLogger().logLine("\n" + new String(Utils.readFully(stdout, 1024)));
-			su.waitFor();
-			Logger.getLogger().logLine("SUCCESS! EXECUTED SU, iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-port 5300!");
+			runOSCommand("iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-port 5300");
 			DNS_PROXY_PORT_IS_REDIRECTED = true;
 		} catch (Exception e) {
 			Logger.getLogger().logLine("Exception during setting Port redirection:" + e.toString());
 
 		}
 	}
+
+	private void runOSCommand(String command) throws Exception {
+
+		Process su = Runtime.getRuntime().exec("su");
+		DataOutputStream outputStream = new DataOutputStream(su.getOutputStream());
+		outputStream.writeBytes(command+"\n");
+		outputStream.flush();
+
+		outputStream.writeBytes("exit\n");
+		outputStream.flush();
+		InputStream stdout = su.getInputStream();
+		Logger.getLogger().logLine("\n" + new String(Utils.readFully(stdout, 1024)));
+		su.waitFor();
+		Logger.getLogger().logLine("Executed '"+command+"' !");
+	}
+
 
 	@SuppressLint("NewApi")
 	private void excludeApp(String app, Builder builder) {
