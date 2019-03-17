@@ -24,18 +24,13 @@ package dnsfilter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.nio.ByteBuffer;
-import java.util.StringTokenizer;
-
-
-import util.Logger;
+import java.net.UnknownHostException;
 import util.conpool.Connection;
 import util.http.HttpHeader;
 
@@ -82,8 +77,8 @@ public class DNSServer {
     public DNSServer createDNSServer(int protocol, InetAddress address, int port, int timeout, String endPoint) throws IOException {
         switch (protocol) {
             case UDP: return new UDP(address, port, timeout);
-            case TCP: return new TCP(address, port, timeout, false);
-            case DOT: return new TCP(address, port, timeout,true);
+            case TCP: return new TCP(address, port, timeout, false, endPoint);
+            case DOT: return new TCP(address, port, timeout,true, endPoint);
             case DOH: return new DoH(address, port, timeout, endPoint);
             default: throw new IllegalArgumentException("Invalid protocol:"+protocol);
         }
@@ -124,14 +119,11 @@ public class DNSServer {
         if (entryTokens.length>2)
             proto = DNSServer.getProtoFromString(entryTokens[2]);
 
-        String endPointURL = null;
+        String endPoint = null;
         if (entryTokens.length>3)
-            endPointURL = entryTokens[3];
+            endPoint = entryTokens[3];
 
-        if (proto == DNSServer.DOH && endPointURL== null)
-            throw new IOException ("Endpoint URL not defined for DNS over HTTPS (DoH)!");
-
-        return getInstance().createDNSServer(proto,InetAddress.getByName(ip),port,timeout,endPointURL);
+        return getInstance().createDNSServer(proto,InetAddress.getByName(ip),port,timeout,endPoint);
     }
 
     public InetAddress getAddress() {
@@ -201,9 +193,16 @@ class UDP extends DNSServer {
 class TCP extends DNSServer {
     boolean ssl;
 
-    protected TCP(InetAddress address, int port, int timeout, boolean ssl) {
+    protected TCP(InetAddress address, int port, int timeout, boolean ssl, String hostName) throws IOException {
         super(address, port, timeout);
         this.ssl = ssl;
+
+        if (hostName != null) {
+            if (hostName.indexOf("://")!= -1)
+                throw new IOException("Invalid hostname specified for "+getProtocolName()+": "+hostName);
+
+            this.address = new InetSocketAddress(InetAddress.getByAddress(hostName, address.getAddress()), port);
+        }
     }
 
     @Override
@@ -244,6 +243,10 @@ class DoH extends DNSServer {
 
     protected DoH(InetAddress address, int port, int timeout, String url) throws IOException {
         super(address, port, timeout);
+
+        if (url== null)
+            throw new IOException ("Endpoint URL not defined for DNS over HTTPS (DoH)!");
+
         this.url= url;
         buildTemplate();
         urlHostAddress = new InetSocketAddress(InetAddress.getByAddress(urlHost, address.getAddress()), port);

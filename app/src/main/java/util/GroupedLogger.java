@@ -25,7 +25,12 @@ public class GroupedLogger implements LoggerInterface {
 	public void log(String txt) {
 		for (int i = 0; i <nestedLoggers.length; i++)
 			nestedLoggers[i].log(txt);
+	}
 
+	@Override
+	public void message(String txt) {
+		for (int i = 0; i <nestedLoggers.length; i++)
+			nestedLoggers[i].message(txt);
 	}
 
 	@Override

@@ -32,7 +32,7 @@ import java.io.FileOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.DatagramSocket;
+
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -44,8 +44,10 @@ import util.ExecutionEnvironmentInterface;
 import util.Logger;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -128,7 +130,8 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 				try {
 					dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry,15000));
 				} catch (Exception e) {
-					Logger.getLogger().logLine("Invalid fallbackDNS entry: '" +dnsEntry + "'\n" + e.toString());
+					Logger.getLogger().logLine("Cannot create DNS Server for "+dnsEntry+"!\n" + e.toString());
+					Logger.getLogger().message("Invalid DNS Server entry: '" +dnsEntry);
 				}
 			}
 		}
@@ -292,10 +295,42 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 				new Thread(this).start();
 			} else Logger.getLogger().logLine("Error! Cannot get VPN Interface! Try restart!");
 
+			Notification noti;
+			if (android.os.Build.VERSION.SDK_INT >= 16) {
+
+				Notification.Builder notibuilder;
+				if (android.os.Build.VERSION.SDK_INT >= 26)
+					notibuilder = new Notification.Builder(this, getChannel());
+				else
+					notibuilder = new Notification.Builder(this);
+
+				noti = notibuilder
+						.setContentTitle("DNSFilter is running!")
+						.setSmallIcon(R.drawable.icon)
+						.setContentIntent(pendingIntent)
+						.build();
+			} else {
+				noti = new Notification(R.drawable.icon, "DNSFilter is running!",0);
+			}
+
+			startForeground(1, noti);
+
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
 		}
+
 		return START_STICKY;
+	}
+
+	private String getChannel() {
+		final String NOTIFICATION_CHANNEL_ID = "DNS Filter";
+
+		NotificationManager mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		if (Build.VERSION.SDK_INT >= 26) {
+			mNotificationManager.createNotificationChannel(new NotificationChannel(NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_ID, NotificationManager.IMPORTANCE_DEFAULT));
+		}
+
+		return NOTIFICATION_CHANNEL_ID;
 	}
 
 	private void setUpPortRedir() {
@@ -415,4 +450,6 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 	public boolean debug() {
 		return DNSProxyActivity.debug;
 	}
+
+
 }

@@ -42,6 +42,8 @@ import dnsfilter.DNSFilterManager;
 
 import util.Logger;
 import util.LoggerInterface;
+import util.TimeoutListener;
+import util.TimoutNotificator;
 import util.Utils;
 
 import android.app.Activity;
@@ -50,6 +52,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.net.VpnService;
 import android.net.wifi.WifiManager;
@@ -82,6 +86,7 @@ import android.app.Dialog;
 
 
 public class DNSProxyActivity extends Activity implements OnClickListener, LoggerInterface, TextWatcher, DialogInterface.OnKeyListener, ActionMode.Callback, MenuItem.OnMenuItemClickListener,View.OnTouchListener, View.OnFocusChangeListener {
+
 
 	protected static boolean BOOT_START = false;
 
@@ -117,6 +122,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private static String SCROLL_CONTINUE = ">>  ";
 	private static boolean scroll_locked = false;
 	private static TextView donate_field;
+	private static int donate_field_color = Color.TRANSPARENT;
+	private static Spanned donate_field_txt = fromHtml("<strong>Want to support us? Feel free to <a href='https://www.paypal.me/iZenz'>DONATE</a></strong>!");
 	private static MenuItem add_filter;
 	private static MenuItem remove_filter;
 
@@ -128,7 +135,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	private static boolean appStart = true;
 
-	public static String DNSNAME = null;
 	public static File WORKPATH = null;
 
 	private static String ADDITIONAL_HOSTS_TO_LONG = "additionalHosts.txt too long to edit here!\nSize Limit: 512 KB!\nUse other editor!";
@@ -145,6 +151,45 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	private static String IN_FILTER_PREF = "X \u0009";
 	private static String NO_FILTER_PREF = "✓\u0009";
+
+	private static class MsgTimeoutListener implements TimeoutListener {
+
+		long timeout = Long.MAX_VALUE;
+
+		DNSProxyActivity activity;
+
+		public void setActivity(DNSProxyActivity activity) {
+			this.activity= activity;
+		}
+
+		private void setTimeout(int timeout) {
+			this.timeout = System.currentTimeMillis()+timeout;
+			TimoutNotificator.getInstance().register(this);
+		}
+
+		@Override
+		public void timeoutNotification() {
+			activity.setMessage(donate_field_txt, donate_field_color);
+
+		}
+
+		@Override
+		public long getTimoutTime() {
+			return timeout;
+		}
+	};
+
+
+	private static MsgTimeoutListener MsgTO = new MsgTimeoutListener();
+
+
+	private static Spanned fromHtml(String txt) {
+		if (Build.VERSION.SDK_INT >= 24)
+			return Html.fromHtml(txt, 0);
+		else
+			return Html.fromHtml(txt);
+	}
+
 
 	private void addToLogView(String logStr) {
 
@@ -173,7 +218,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		}
 	}
-
 
 
 	private class MyUIThreadLogger implements Runnable {
@@ -216,19 +260,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}
 	}
 
-	private Spanned fromHtml(String txt) {
-		if (Build.VERSION.SDK_INT >= 24)
-			return Html.fromHtml(txt, 0);
-		else
-			return Html.fromHtml(txt);
-	}
-
 	/**
 	 * Called when the activity is first created.
 	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		MsgTO.setActivity(this);
 		if (getIntent().getBooleanExtra("SHOULD_FINISH", false)) {
 			finish();
 			System.exit(0);
@@ -296,8 +334,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		removeFilterBtn = (TextView) findViewById(R.id.removeFilterBtn);
 		removeFilterBtn.setOnClickListener(this);
 		donate_field = (TextView)findViewById(R.id.donate);
-		donate_field.setText(fromHtml("<strong>Want to support us? Feel free to <a href='https://www.paypal.me/iZenz'>DONATE</a></strong>!"));
+		donate_field.setText(donate_field_txt);
 		donate_field.setOnClickListener(this);
+
+		Drawable background = donate_field.getBackground();
+		if (background instanceof ColorDrawable)
+			donate_field_color = ((ColorDrawable) background).getColor();
 
 		scrollLockField = (TextView) findViewById(R.id.scrolllock);
 		if (scroll_locked)
@@ -697,7 +739,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private void persistConfig() {
 		try {
 
-			persistAdditionalHosts();
+			boolean changed = persistAdditionalHosts();
 
 			boolean filterAds = enableAdFilterCheck.isChecked();
 
@@ -712,6 +754,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(propsFile)));
 			while ((ln = reader.readLine()) != null) {
+
+				String lnOld = ln;
 
 				if (ln.trim().startsWith("detectDNS"))
 					ln = "detectDNS = " + !manualDNSCheck.isChecked();
@@ -749,6 +793,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 					ln = ln.replace("filterHostsFile", "#!!!filterHostsFile");
 
 				out.write((ln + "\r\n").getBytes());
+
+				changed = changed || !lnOld.equals(ln);
 			}
 
 			reader.close();
@@ -759,7 +805,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			fout.write(out.toByteArray());
 			fout.flush();
 			fout.close();
-			Logger.getLogger().logLine("Config persisted!\nRestart is required in case of configuration changes!");
+			if (changed) Logger.getLogger().message("Config Changed!\nRestart might be required!");
 
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
@@ -1076,7 +1122,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}
 	}
 
-	private void persistAdditionalHosts() {
+	private boolean persistAdditionalHosts() {
 		String addHostsTxt = additionalHostsField.getText().toString();
 		if (!addHostsTxt.equals("") && !addHostsTxt.equals(ADDITIONAL_HOSTS_TO_LONG)) {
 			if (additionalHostsChanged)
@@ -1090,6 +1136,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 					Logger.getLogger().logLine("Cannot persistAdditionalHosts!\n" + eio.toString());
 				}
 		}
+		return additionalHostsChanged;
 	}
 
 	private void handlefilterReload() {
@@ -1169,6 +1216,24 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		runOnUiThread(new MyUIThreadLogger(txt));
 	}
 
+
+	@Override
+	public void message(String txt) {
+		setMessage(fromHtml("<strong>"+txt+"</strong>"), Color.parseColor("#ffcc00"));
+		MsgTO.setTimeout(5000);
+	}
+
+
+	private void setMessage(final Spanned msg, final int backgroundColor) {
+		runOnUiThread(new Runnable () {
+
+			@Override
+			public void run() {
+				donate_field.setBackgroundColor(backgroundColor);
+				donate_field.setText(msg);
+			}
+		});
+	}
 
 	@Override
 	public void closeLogger() {

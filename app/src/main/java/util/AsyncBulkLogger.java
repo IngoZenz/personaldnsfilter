@@ -105,6 +105,13 @@ public class AsyncBulkLogger implements LoggerInterface, Runnable {
 	}
 
 	@Override
+	public void message(String txt) {
+		synchronized (pin) {
+			out.message(txt); // write message out directly as it might go to different channel
+		}
+	}
+
+	@Override
 	public void run() {
 
 		byte[] buf = new byte[4096];

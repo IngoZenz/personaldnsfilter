@@ -151,7 +151,7 @@ public class Connection implements TimeoutListener {
 		CUSTOM_HOSTS.put(adr.getHostName(), adr);		
 	}
 	
-	private static void setCustomHostsFile(String filename) {
+	public static void setCustomHostsFile(String filename) {
 		CUSTOM_HOSTS_FILE_NAME = filename;
 	}
 

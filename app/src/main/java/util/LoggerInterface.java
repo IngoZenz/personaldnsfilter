@@ -28,6 +28,8 @@ public interface LoggerInterface {
 	public void logException(Exception e);
 
 	public void log(String txt);
+
+	public void message(String txt);
 	
 	public void closeLogger();
 }

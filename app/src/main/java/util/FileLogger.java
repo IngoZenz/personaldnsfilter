@@ -145,6 +145,11 @@ public class FileLogger implements LoggerInterface, Runnable {
 		}
 	}
 
+	@Override
+	public void message(String txt) {
+		log(txt);
+	}
+
 	private OutputStream getOutputStream() throws IOException {
 		if (curSlotSize < slotSize)
 			return fout;

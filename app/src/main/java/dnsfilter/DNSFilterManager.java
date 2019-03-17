@@ -52,7 +52,7 @@ import util.LoggerInterface;
 
 
 public class DNSFilterManager implements LoggerInterface {
-	public static final String VERSION = "1.50.30";
+	public static final String VERSION = "1.50.31-dev";
 	static public boolean debug;
 	static public String WORKDIR = "";
 	private static String filterReloadURL;
@@ -227,7 +227,7 @@ public class DNSFilterManager implements LoggerInterface {
 						out.write(buf, 0, r);
 						received = received + r;
 						if (received > delta) {
-							Logger.getLogger().logLine("Bytes received:" + received);
+							Logger.getLogger().message("Bytes received:" + received);
 							delta = delta + 100000;
 						}
 					}
@@ -301,7 +301,7 @@ public class DNSFilterManager implements LoggerInterface {
 						fin = addHostIn;
 					} else {
 						String[] hostEntry = parseHosts(entry);
-						if (hostEntry != null) {
+						if (hostEntry != null && !hostEntry[1].equals("localhost")) {
 							hostFilterSet.prepareInsert(hostEntry[1]);
 							size++;
 						}
@@ -348,11 +348,12 @@ public class DNSFilterManager implements LoggerInterface {
 							}
 							processed++;
 							if (processed % 10000 == 0) {
-								Logger.getLogger().logLine("Building index for " + processed + "/" + size + " entries completed!");
+								Logger.getLogger().message("Building index for " + processed + "/" + size + " entries completed!");
 							}
 						}
 					}
 				}
+				Logger.getLogger().message("Building index for " + processed + "/" + size + " entries completed!");
 				fin.close();
 				if (fin != addHostIn)
 					addHostIn.close();
@@ -755,6 +756,11 @@ public class DNSFilterManager implements LoggerInterface {
 
 	@Override
 	public void log(String txt) {
+		System.out.print(txt);
+	}
+
+	@Override
+	public void message(String txt)  {
 		System.out.print(txt);
 	}
 

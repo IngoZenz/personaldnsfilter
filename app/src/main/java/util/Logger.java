@@ -71,7 +71,13 @@ public class Logger implements LoggerInterface {
 	@Override
 	public void log(String txt) {
 		System.out.print(txt);
-		
+
+	}
+
+	@Override
+	public void message(String txt) {
+		System.out.print(txt);
+
 	}
 
 	@Override
