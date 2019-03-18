@@ -40,6 +40,7 @@ import java.util.StringTokenizer;
 import dnsfilter.DNSCommunicator;
 import dnsfilter.DNSFilterManager;
 
+import dnsfilter.DNSResponsePatcher;
 import util.Logger;
 import util.LoggerInterface;
 import util.TimeoutListener;
@@ -875,11 +876,23 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	}
 
 
+	private void showFilterRate() {
+		DNSFilterManager filterMgr = DNSFilterService.DNSFILTER;
+		if (filterMgr != null){
+			long all = DNSResponsePatcher.getOkCount()+DNSResponsePatcher.getFilterCount();
+			long filterRate = 100*DNSResponsePatcher.getFilterCount() / all;
+			if (all != 0) {
+				Logger.getLogger().message("Filter rate: "+filterRate+"% ("+DNSResponsePatcher.getFilterCount()+" requests)");
+			}
+		}
+	}
+
 	@Override
 	public void onClick(View destination) {
 
 		if (destination == logOutView) {
 			findViewById(R.id.copyfromlog).setVisibility(View.GONE);
+			showFilterRate();
 			return;
 		}
 
@@ -940,6 +953,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			}
 		}
 	}
+
 
 	private void handleDonate() {
 		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.paypal.me/IZenz"));

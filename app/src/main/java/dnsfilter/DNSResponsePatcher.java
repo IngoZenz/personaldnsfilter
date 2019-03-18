@@ -40,6 +40,10 @@ public class DNSResponsePatcher {
 	private static byte[] ipv4_localhost;
 	private static byte[] ipv6_localhost;
 
+	private static long okCnt=0;
+	private static long filterCnt=0;
+
+
 	static {
 		try {
 			ipv4_localhost = InetAddress.getByName("127.0.0.1").getAddress();
@@ -53,7 +57,18 @@ public class DNSResponsePatcher {
 	public static void init(Set filter, LoggerInterface trafficLogger) {
 		FILTER = filter;
 		TRAFFIC_LOG = trafficLogger;
+		okCnt=0;
+		filterCnt=0;
 	}
+
+	public static long getFilterCount() {
+		return filterCnt;
+	}
+
+	public static long getOkCount() {
+		return okCnt;
+	}
+
 
 	public static byte[] patchResponse(String client, byte[] response, int offs) throws IOException {
 
@@ -143,6 +158,11 @@ public class DNSResponsePatcher {
 			Logger.getLogger().logLine("FILTERED:" + host);
 		else
 			Logger.getLogger().logLine("ALLOWED:" + host);
+
+		if (result == false)
+			okCnt++;
+		else
+			filterCnt++;
 
 		return result;
 	}
