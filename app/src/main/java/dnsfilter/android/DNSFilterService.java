@@ -62,14 +62,17 @@ import dnsfilter.DNSCommunicator;
 import dnsfilter.DNSFilterManager;
 import dnsfilter.DNSFilterProxy;
 import dnsfilter.DNSResolver;
-import util.Utils;
 
-public class DNSFilterService extends VpnService implements Runnable, ExecutionEnvironmentInterface {
+
+public class DNSFilterService extends VpnService implements ExecutionEnvironmentInterface {
 
 	private static String VIRTUALDNS_IPV4 = "10.10.10.10";
 	private static String VIRTUALDNS_IPV6 = "fdc8:1095:91e1:aaaa:aaaa:aaaa:aaaa:aaa1";
 	private static String ADDRESS_IPV4 = "10.0.2.15";
 	private static String ADDRESS_IPV6 = "fdc8:1095:91e1:aaaa:aaaa:aaaa:aaaa:aaa2";
+
+	private static String START_DNSCRYPTPROXY = "dnscrypt-proxy -config /system/etc/dnscrypt-proxy/dnscrypt-proxy.toml";
+	private static String KILL_DNSCRYPTPROXY = "killall dnscrypt-proxy";
 
 	public static DNSFilterManager DNSFILTER = null;
 	public static DNSFilterProxy DNSFILTERPROXY = null;
@@ -78,12 +81,112 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 	private static boolean JUST_STARTED = false;
 	private static boolean DNS_PROXY_PORT_IS_REDIRECTED = false;
 
-	private ParcelFileDescriptor vpnInterface;
-	FileInputStream in = null;
-	FileOutputStream out = null;
+	private static int startCounter = 0;
+
+	private static WakeLock wakeLock = null;
 
 	private boolean blocking = false;
-	private static WakeLock wakeLock = null;
+	private VPNRunner vpnRunner=null;
+	boolean manageDNSCryptProxy = false;
+	boolean dnsCryptProxyStartTriggered = false;
+
+
+	class VPNRunner implements Runnable {
+
+		ParcelFileDescriptor vpnInterface;
+		FileInputStream in = null;
+		FileOutputStream out = null;
+		Thread thread = null;
+		boolean stopped = false;
+		int id;
+
+
+		private VPNRunner(int id, ParcelFileDescriptor vpnInterface){
+			this.id=id;
+			this.vpnInterface= vpnInterface;
+			in = new FileInputStream(vpnInterface.getFileDescriptor());
+			out = new FileOutputStream(vpnInterface.getFileDescriptor());
+			Logger.getLogger().logLine("VPN Connected!");
+		}
+
+		private void stop() {
+			stopped = true;
+			try {
+				in.close();
+				out.close();
+				vpnInterface.close();
+				if (thread != null)
+					thread.interrupt();
+			} catch (Exception e) {
+				Logger.getLogger().logException(e);
+			}
+		}
+
+		@Override
+		public void run() {
+			Logger.getLogger().logLine("VPN Runner Thread "+id+" started!");
+			thread = Thread.currentThread();
+			try {
+				while (!stopped) {
+					byte[] data = new byte[1024];
+					int length = in.read(data);
+					if (stopped)
+						break;
+
+					if (length > 0) {
+						try {
+							IPPacket parsedIP = new IPPacket(data, 0, length);
+							if (parsedIP.getVersion() == 6) {
+								if (DNSProxyActivity.debug) { //IPV6 Debug Logging
+									Logger.getLogger().logLine("!!!IPV6 Packet!!! Protocol:" + parsedIP.getProt());
+									Logger.getLogger().logLine("SourceAddress:" + IPPacket.int2ip(parsedIP.getSourceIP()));
+									Logger.getLogger().logLine("DestAddress:" + IPPacket.int2ip(parsedIP.getDestIP()));
+									Logger.getLogger().logLine("TTL:" + parsedIP.getTTL());
+									Logger.getLogger().logLine("Length:" + parsedIP.getLength());
+									if (parsedIP.getProt() == 0) {
+										Logger.getLogger().logLine("Hopp by Hopp Header");
+										Logger.getLogger().logLine("NextHeader:" + (data[40] & 0xff));
+										Logger.getLogger().logLine("Hdr Ext Len:" + (data[41] & 0xff));
+										if ((data[40] & 0xff) == 58) // ICMP
+											Logger.getLogger().logLine("Received ICMP IPV6 Paket Type:" + (data[48] & 0xff));
+									}
+								}
+							}
+							if (parsedIP.checkCheckSum() != 0)
+								throw new IOException("IP Header Checksum Error!");
+
+							if (parsedIP.getProt() == 1) {
+								if (DNSProxyActivity.debug) Logger.getLogger().logLine("Received ICMP Paket Type:" + (data[20] & 0xff));
+							}
+							if (parsedIP.getProt() == 17) {
+
+								UDPPacket parsedPacket = new UDPPacket(data, 0, length);
+								if (parsedPacket.checkCheckSum() != 0)
+									throw new IOException("UDP packet Checksum Error!");
+
+								new Thread(new DNSResolver(parsedPacket, out)).start();
+							}
+						} catch (IOException e) {
+							Logger.getLogger().logLine("IOEXCEPTION: " + e.toString());
+						} catch (Exception e) {
+							Logger.getLogger().logException(e);
+						}
+					} else if (!blocking)
+						Thread.sleep(1000);
+				}
+
+			} catch (Exception e) {
+				if (!stopped) { //not stopped
+					Logger.getLogger().logLine("VPN);Runner died!");
+					Logger.getLogger().logException(e);
+				}
+			}
+
+			Logger.getLogger().logLine("VPN Runner Thread "+id+" terminated!");
+		}
+
+
+	}
 
 
 	public static void detectDNSServers() {
@@ -138,62 +241,6 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 		DNSCommunicator.getInstance().setDNSServers(dnsAdrs.toArray(new DNSServer[dnsAdrs.size()]));
 	}
 
-	public void run() {
-		Logger.getLogger().logLine("VPN Runner Thread started!");
-		try {
-			while (true) {
-
-				byte[] data = new byte[1024];
-				int length = in.read(data);
-
-				if (length > 0) {
-					try {
-						IPPacket parsedIP = new IPPacket(data, 0, length);
-						if (parsedIP.getVersion() == 6) {
-							if (DNSProxyActivity.debug) { //IPV6 Debug Logging
-								Logger.getLogger().logLine("!!!IPV6 Packet!!! Protocol:" + parsedIP.getProt());
-								Logger.getLogger().logLine("SourceAddress:" + IPPacket.int2ip(parsedIP.getSourceIP()));
-								Logger.getLogger().logLine("DestAddress:" + IPPacket.int2ip(parsedIP.getDestIP()));
-								Logger.getLogger().logLine("TTL:" + parsedIP.getTTL());
-								Logger.getLogger().logLine("Length:" + parsedIP.getLength());
-								if (parsedIP.getProt() == 0) {
-									Logger.getLogger().logLine("Hopp by Hopp Header");
-									Logger.getLogger().logLine("NextHeader:" + (data[40] & 0xff));
-									Logger.getLogger().logLine("Hdr Ext Len:" + (data[41] & 0xff));
-									if ((data[40] & 0xff) == 58) // ICMP
-										Logger.getLogger().logLine("Received ICMP IPV6 Paket Type:" + (data[48] & 0xff));
-								}
-							}
-						}
-						if (parsedIP.checkCheckSum() != 0)
-							throw new IOException("IP Header Checksum Error!");
-
-						if (parsedIP.getProt() == 1) {
-							if (DNSProxyActivity.debug) Logger.getLogger().logLine("Received ICMP Paket Type:" + (data[20] & 0xff));
-						}
-						if (parsedIP.getProt() == 17) {
-
-							UDPPacket parsedPacket = new UDPPacket(data, 0, length);
-							if (parsedPacket.checkCheckSum() != 0)
-								throw new IOException("UDP packet Checksum Error!");
-
-							new Thread(new DNSResolver(parsedPacket, out)).start();
-						}
-					} catch (IOException e) {
-						Logger.getLogger().logLine("IOEXCEPTION: " + e.toString());
-					} catch (Exception e) {
-						Logger.getLogger().logException(e);
-					}
-				} else if (!blocking)
-					Thread.sleep(1000);
-			}
-
-		} catch (Exception e) {
-			if (vpnInterface != null) //not stopped
-				Logger.getLogger().logLine("EXCEPTION: " + e.toString());
-			Logger.getLogger().logLine("VPN Runner Thread terminated!");
-		}
-	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
@@ -219,12 +266,14 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 					new Thread(DNSFILTERPROXY).start();
 				}
 
-				//run additional OS script if configured - e.g. for starting DNSScript proxy
-				String cmd = DNSFILTER.getConfig().getProperty("runOSCommandAtStart", "");
+				//run DNSCryptProxy when configured
+				manageDNSCryptProxy = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("manageDNSCryptProxy", "false"));
 
-				if (!cmd.equals("")) {
+				if (manageDNSCryptProxy && !dnsCryptProxyStartTriggered) {
 					try {
-						runOSCommand(cmd);
+						runOSCommand(false, KILL_DNSCRYPTPROXY);
+						runOSCommand(true, START_DNSCRYPTPROXY);
+						dnsCryptProxyStartTriggered = true;
 					} catch (Exception e) {
 						Logger.getLogger().logException(e);
 					}
@@ -298,13 +347,11 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 				blocking = true;
 			}
 
-			vpnInterface = builder.setConfigureIntent(pendingIntent).establish();
+			ParcelFileDescriptor vpnInterface = builder.setConfigureIntent(pendingIntent).establish();
 
 			if (vpnInterface != null) {
-				in = new FileInputStream(vpnInterface.getFileDescriptor());
-				out = new FileOutputStream(vpnInterface.getFileDescriptor());
-				Logger.getLogger().logLine("VPN Connected!");
-				new Thread(this).start();
+				vpnRunner = new  VPNRunner(++startCounter, vpnInterface);
+				new Thread(vpnRunner).start();
 			} else Logger.getLogger().logLine("Error! Cannot get VPN Interface! Try restart!");
 
 			Notification noti;
@@ -357,7 +404,10 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 		}
 	}
 
+
 	private void runOSCommand(String command) throws Exception {
+
+		Logger.getLogger().logLine("Exec '"+command+"' !");
 
 		Process su = Runtime.getRuntime().exec("su");
 		DataOutputStream outputStream = new DataOutputStream(su.getOutputStream());
@@ -366,10 +416,46 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 
 		outputStream.writeBytes("exit\n");
 		outputStream.flush();
+
 		InputStream stdout = su.getInputStream();
-		Logger.getLogger().logLine("\n" + new String(Utils.readFully(stdout, 1024)));
+
+		byte[] buf = new byte[1024];
+		int r;
+
+		while ( (r = stdout.read(buf)) != -1) {
+			Logger.getLogger().log(new String(buf,0,r));
+		}
+
+		InputStream stderr = su.getErrorStream();
+
+		while ( (r = stderr.read(buf)) != -1) {
+			Logger.getLogger().log(new String(buf,0,r));
+		}
+
 		su.waitFor();
-		Logger.getLogger().logLine("Executed '"+command+"' !");
+		int exitVal = su.exitValue();
+		if (exitVal != 0)
+			throw new Exception ("Error in process execution: "+exitVal);
+	}
+
+	private void runOSCommand(boolean async, final String command) throws Exception {
+
+		if (!async)
+			runOSCommand(command);
+		else{
+			new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					try {
+						runOSCommand(command);
+					} catch (Exception e) {
+						e.printStackTrace();
+						Logger.getLogger().logException(e);
+					}
+				}
+			}).start();
+		}
 	}
 
 
@@ -401,12 +487,9 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 				Logger.getLogger().logLine("Cannot stop - pending operation!");
 				return false;
 			}
-			ParcelFileDescriptor runningVPN = vpnInterface;
+			VPNRunner runningVPN = vpnRunner;
 			if (runningVPN != null) {
-				vpnInterface = null;
-				in.close();
-				out.close();
-				runningVPN.close();
+				vpnRunner.stop();
 			}
 			//stop eventually running proxy mode
 			if (DNSFILTERPROXY != null) {
@@ -427,12 +510,22 @@ public class DNSFilterService extends VpnService implements Runnable, ExecutionE
 		}
 	}
 
-	public static boolean stop() {
-		if (INSTANCE == null)
+	public static boolean stop(boolean appExit) {
+
+		DNSFilterService instance = INSTANCE;
+
+		if (instance == null)
 			return true;
 		else {
-			if (INSTANCE.stopVPN()) {
-				INSTANCE = null;
+			if (instance.manageDNSCryptProxy)
+				try {
+					instance.runOSCommand(false, KILL_DNSCRYPTPROXY);
+					instance.dnsCryptProxyStartTriggered = false;
+				} catch (Exception e) {
+					Logger.getLogger().logException(e);
+				}
+			if (instance.stopVPN()) {
+				INSTANCE= null;
 				return true;
 			} else
 				return false;

@@ -52,7 +52,7 @@ import util.LoggerInterface;
 
 
 public class DNSFilterManager implements LoggerInterface {
-	public static final String VERSION = "1.50.31-dev";
+	public static final String VERSION = "1.50.31-dev-05";
 	static public boolean debug;
 	static public String WORKDIR = "";
 	private static String filterReloadURL;
@@ -207,30 +207,36 @@ public class DNSFilterManager implements LoggerInterface {
 			int urlCnt = urlTokens.countTokens();
 			for (int i = 0; i < urlCnt; i++) {
 				String urlStr = urlTokens.nextToken().trim();
-				if (!urlStr.equals("")) {
-					Logger.getLogger().logLine("DNS Filter: Updating filter from " + urlStr + "...");
-					out.write(("\n# Load Filter from URL:" + urlStr + "\n").getBytes());
-					URL url = new URL(urlStr);
-					URLConnection con;
-					con = url.openConnection();
+				try {
+					if (!urlStr.equals("")) {
+						Logger.getLogger().logLine("DNS Filter: Updating filter from " + urlStr + "...");
+						out.write(("\n# Load Filter from URL:" + urlStr + "\n").getBytes());
 
-					con.setConnectTimeout(120000);
-					con.setReadTimeout(120000);
+						URL url = new URL(urlStr);
+						URLConnection con;
+						con = url.openConnection();
 
-					InputStream in = con.getInputStream();
-					byte[] buf = new byte[10000];
-					int r;
+						con.setConnectTimeout(120000);
+						con.setReadTimeout(120000);
 
-					int received = 0;
-					int delta = 100000;
-					while ((r = in.read(buf)) != -1) {
-						out.write(buf, 0, r);
-						received = received + r;
-						if (received > delta) {
-							Logger.getLogger().message("Bytes received:" + received);
-							delta = delta + 100000;
+						InputStream in = con.getInputStream();
+						byte[] buf = new byte[10000];
+						int r;
+
+						int received = 0;
+						int delta = 100000;
+						while ((r = in.read(buf)) != -1) {
+							out.write(buf, 0, r);
+							received = received + r;
+							if (received > delta) {
+								Logger.getLogger().message("Bytes received:" + received);
+								delta = delta + 100000;
+							}
 						}
 					}
+				} catch (IOException eio) {
+					Logger.getLogger().message("ERROR loading filter:"+urlStr);
+					throw eio;
 				}
 			}
 			Logger.getLogger().logLine("Updating filter completed!");

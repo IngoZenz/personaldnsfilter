@@ -40,6 +40,7 @@ import java.util.StringTokenizer;
 import dnsfilter.DNSCommunicator;
 import dnsfilter.DNSFilterManager;
 
+import dnsfilter.DNSResponsePatcher;
 import util.Logger;
 import util.LoggerInterface;
 import util.TimeoutListener;
@@ -875,11 +876,23 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	}
 
 
+	private void showFilterRate() {
+		DNSFilterManager filterMgr = DNSFilterService.DNSFILTER;
+		if (filterMgr != null){
+			long all = DNSResponsePatcher.getOkCount()+DNSResponsePatcher.getFilterCount();
+			long filterRate = 100*DNSResponsePatcher.getFilterCount() / all;
+			if (all != 0) {
+				Logger.getLogger().message("Block rate: "+filterRate+"% ("+DNSResponsePatcher.getFilterCount()+" blocked)!");
+			}
+		}
+	}
+
 	@Override
 	public void onClick(View destination) {
 
 		if (destination == logOutView) {
 			findViewById(R.id.copyfromlog).setVisibility(View.GONE);
+			showFilterRate();
 			return;
 		}
 
@@ -941,6 +954,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}
 	}
 
+
 	private void handleDonate() {
 		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.paypal.me/IZenz"));
 		startActivity(browserIntent);
@@ -979,7 +993,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		TextView backupStatusView = findViewById(R.id.backupLog);
 		try {
 
-			if (!DNSFilterService.stop())
+			if (!DNSFilterService.stop(false))
 				throw new IOException("Can not stop - Retry later!");
 
 			copyFromAssets("dnsfilter.conf", "dnsfilter.conf");
@@ -1004,7 +1018,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		TextView backupStatusView = findViewById(R.id.backupLog);
 		try {
 
-			if (!DNSFilterService.stop())
+			if (!DNSFilterService.stop(false))
 				throw new IOException("Can not stop - Retry later!");
 
 			copyLocalFile("backup/dnsfilter.conf", "dnsfilter.conf");
@@ -1147,8 +1161,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 
 	private synchronized void handleStop() {
-		if (SERVICE != null)
+		if (SERVICE != null) {
+			DNSFilterService.stop(true);
 			stopService(SERVICE);
+		}
+
 		Intent intent = new Intent(this, DNSProxyActivity.class);
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 		intent.putExtra("SHOULD_FINISH", true);
@@ -1157,7 +1174,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	private void handleStart() {
 
-		if (!DNSFilterService.stop())
+		if (!DNSFilterService.stop(false))
 			return;
 
 		if (SERVICE != null) {
