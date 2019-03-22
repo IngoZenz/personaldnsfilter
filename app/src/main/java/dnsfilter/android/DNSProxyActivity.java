@@ -880,8 +880,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		DNSFilterManager filterMgr = DNSFilterService.DNSFILTER;
 		if (filterMgr != null){
 			long all = DNSResponsePatcher.getOkCount()+DNSResponsePatcher.getFilterCount();
-			long filterRate = 100*DNSResponsePatcher.getFilterCount() / all;
+			
 			if (all != 0) {
+				long filterRate = 100*DNSResponsePatcher.getFilterCount() / all;
 				Logger.getLogger().message("Block rate: "+filterRate+"% ("+DNSResponsePatcher.getFilterCount()+" blocked)!");
 			}
 		}
