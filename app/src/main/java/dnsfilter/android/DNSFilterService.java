@@ -271,8 +271,8 @@ public class DNSFilterService extends VpnService implements ExecutionEnvironment
 
 				if (manageDNSCryptProxy && !dnsCryptProxyStartTriggered) {
 					try {
-						runOSCommand(false, KILL_DNSCRYPTPROXY);
-						runOSCommand(true, START_DNSCRYPTPROXY);
+						runOSCommand(true,false, KILL_DNSCRYPTPROXY);
+						runOSCommand(false, true,START_DNSCRYPTPROXY);
 						dnsCryptProxyStartTriggered = true;
 					} catch (Exception e) {
 						Logger.getLogger().logException(e);
@@ -396,7 +396,7 @@ public class DNSFilterService extends VpnService implements ExecutionEnvironment
 		if (DNS_PROXY_PORT_IS_REDIRECTED)
 			return;
 		try {
-			runOSCommand("iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-port 5300");
+			runOSCommand(false, "iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-port 5300");
 			DNS_PROXY_PORT_IS_REDIRECTED = true;
 		} catch (Exception e) {
 			Logger.getLogger().logLine("Exception during setting Port redirection:" + e.toString());
@@ -405,7 +405,7 @@ public class DNSFilterService extends VpnService implements ExecutionEnvironment
 	}
 
 
-	private void runOSCommand(String command) throws Exception {
+	private void runOSCommand(boolean ignoreError, String command) throws Exception {
 
 		Logger.getLogger().logLine("Exec '"+command+"' !");
 
@@ -434,21 +434,21 @@ public class DNSFilterService extends VpnService implements ExecutionEnvironment
 
 		su.waitFor();
 		int exitVal = su.exitValue();
-		if (exitVal != 0)
+		if (exitVal != 0  && !ignoreError)
 			throw new Exception ("Error in process execution: "+exitVal);
 	}
 
-	private void runOSCommand(boolean async, final String command) throws Exception {
+	private void runOSCommand(final boolean ignoreError, boolean async, final String command) throws Exception {
 
 		if (!async)
-			runOSCommand(command);
+			runOSCommand(ignoreError, command);
 		else{
 			new Thread(new Runnable() {
 
 				@Override
 				public void run() {
 					try {
-						runOSCommand(command);
+						runOSCommand(ignoreError, command);
 					} catch (Exception e) {
 						e.printStackTrace();
 						Logger.getLogger().logException(e);
