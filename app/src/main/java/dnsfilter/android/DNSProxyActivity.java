@@ -136,7 +136,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	private static boolean appStart = true;
 
-	public static File WORKPATH = null;
+	public static File WORKPATH = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter");
 
 	private static String ADDITIONAL_HOSTS_TO_LONG = "additionalHosts.txt too long to edit here!\nSize Limit: 512 KB!\nUse other editor!";
 
@@ -1182,8 +1182,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			stopService(SERVICE);
 		}
 		SERVICE = null;
-
-		WORKPATH = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter");
 
 		try {
 			Intent intent = VpnService.prepare(this.getApplicationContext());
