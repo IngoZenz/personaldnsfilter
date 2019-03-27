@@ -22,11 +22,19 @@
 
 package dnsfilter;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Vector;
 
 import util.HugePackedSet;
 import util.LRUCache;
@@ -63,6 +71,7 @@ public class BlockedHosts implements Set {
 	private boolean exclusiveLock = false;
 
 	private HugePackedSet blockedHostsHashes;
+	private Vector<String[]> blockedPatterns;
 
 	public BlockedHosts(int maxCountEstimate, int okCacheSize, int filterListCacheSize, Hashtable hostsFilterOverRule) {
 		okCache = new LRUCache(okCacheSize);
@@ -76,8 +85,9 @@ public class BlockedHosts implements Set {
 		blockedHostsHashes = new HugePackedSet(slots, PACK_MGR);
 	}
 
-	private BlockedHosts(HugePackedSet blockedHostsHashes, int okCacheSize, int filterListCacheSize, Hashtable hostsFilterOverRule) {
+	private BlockedHosts(HugePackedSet blockedHostsHashes, Vector<String[]> blockedPatterns, int okCacheSize, int filterListCacheSize, Hashtable hostsFilterOverRule) {
 		this.blockedHostsHashes = blockedHostsHashes;
+		this.blockedPatterns = blockedPatterns;
 		okCache = new LRUCache(okCacheSize);
 		filterListCache = new LRUCache(filterListCacheSize);
 		this.hostsFilterOverRule = hostsFilterOverRule;
@@ -144,24 +154,117 @@ public class BlockedHosts implements Set {
 	}
 
 	public static BlockedHosts loadPersistedIndex(String path, boolean inMemory, int okCacheSize, int filterListCacheSize, Hashtable hostsFilterOverRule) throws IOException {
-		return new BlockedHosts(HugePackedSet.load(path, inMemory, PACK_MGR), okCacheSize, filterListCacheSize, hostsFilterOverRule);
+		Vector<String[]> blockedPatterns = null;
+		File patternFile = new File(path+"/blockedpatterns");
+		if (patternFile.exists()){
+			BufferedReader fin = new BufferedReader(new InputStreamReader(new FileInputStream(patternFile)));
+			blockedPatterns = new Vector<String[]>();
+			String entry;
+			while ( (entry = fin.readLine()) != null) {
+				blockedPatterns.addElement( ((String)entry).trim().split("\\*", -1));
+			}
+			fin.close();
+		}
+		return new BlockedHosts(HugePackedSet.load(path, inMemory, PACK_MGR), blockedPatterns, okCacheSize, filterListCacheSize, hostsFilterOverRule);
 	}
 
 	public void persist(String path) throws IOException {
 		blockedHostsHashes.persist(path);
+		if (blockedPatterns!= null) {
+			OutputStream patterns = new BufferedOutputStream(new FileOutputStream(path+"/blockedpatterns"));
+			Iterator it = blockedPatterns.iterator();
+			while (it.hasNext()) {
+				String[] fixedParts = (String[]) it.next();
+				String patternStr = fixedParts[0];
+				for (int i = 1; i < fixedParts.length; i++) {
+					patternStr = patternStr+"*"+fixedParts[i];
+				}
+				patterns.write((patternStr+"\n").getBytes());
+			}
+			patterns.flush();
+			patterns.close();
+		}
 	}
 
+
 	public void prepareInsert(String host) {
-		blockedHostsHashes.prepareInsert(Utils.getLongStringHash(host));
+		if (host.indexOf("*") == -1) //patterns are handled differently
+			blockedHostsHashes.prepareInsert(Utils.getLongStringHash(host));
 	}
 
 	public void finalPrepare() {
 		blockedHostsHashes.finalPrepare();
 	}
 
+
+	private Vector<String[]> getInitializedPatternStruct() {
+		if (blockedPatterns==null)
+			blockedPatterns = new Vector<String[]>();
+		return blockedPatterns;
+	}
+
 	@Override
 	public boolean add(Object host) {
-		return blockedHostsHashes.add(Utils.getLongStringHash((String) host));
+		if (((String) host).indexOf("*") == -1)
+			return blockedHostsHashes.add(Utils.getLongStringHash((String) host));
+		else { //Pattern
+			getInitializedPatternStruct().addElement( ((String)host).trim().split("\\*", -1));
+			return true;
+		}
+	}
+
+	private boolean containsPatternMatch(String host) {
+
+		if ( blockedPatterns == null)
+			return false;
+
+		Iterator it = blockedPatterns.iterator();
+		while (it.hasNext()) {
+			String[] fixedParts = (String[]) it.next();
+			if (wildCardMatch(fixedParts, host))
+				return true;
+		}
+		return false;
+	}
+
+	private static boolean wildCardMatch(String[] fixedParts, String host) {
+
+		// Iterate over the parts.
+		for (int i = 0; i < fixedParts.length; i++) {
+			String part = fixedParts[i];
+
+			int idx = -1;
+			if (i < fixedParts.length-1)
+				idx = host.indexOf(part);
+			else
+				idx = host.lastIndexOf(part);
+
+
+			if (i == 0 && !part.equals("") && idx != 0) {
+				// i == 0 ==> we are on the first fixed part
+				// first fixed part is not empty ==> Matching String must start with first fixed part
+				// if not, no match!
+				return false;
+			}
+
+			if (i == fixedParts.length-1 && !part.equals("") && idx + part.length() != host.length()) {
+				// i == last part
+				// last part is not empty ==> Matching String must end with last part
+				// if not, no match
+				return false;
+			}
+
+			// part not detected in the text.
+			if (idx == -1) {
+				return false;
+			}
+
+			// Move ahead, towards the right of the text.
+			host = host.substring(idx + part.length());
+
+		}
+
+		return true;
 	}
 
 	@Override
@@ -201,6 +304,9 @@ public class BlockedHosts implements Set {
 		if (blockedHostsHashes.contains(hosthash))
 			return true;
 
+		if (containsPatternMatch(hostName))
+			return true;
+
 		int idx = hostName.indexOf('.');
 		while (idx != -1) {
 			hostName = hostName.substring(idx + 1);
@@ -213,6 +319,10 @@ public class BlockedHosts implements Set {
 
 			if (blockedHostsHashes.contains(Utils.getLongStringHash(hostName)))
 				return true;
+
+			if (containsPatternMatch(hostName))
+				return true;
+
 			idx = hostName.indexOf('.');
 		}
 		return false;
@@ -234,6 +344,8 @@ public class BlockedHosts implements Set {
 		filterListCache = hostFilter.filterListCache;
 
 		hostsFilterOverRule = hostFilter.hostsFilterOverRule;
+
+		blockedPatterns = hostFilter.blockedPatterns;
 
 		blockedHostsHashes.migrateTo(hostFilter.blockedHostsHashes);
 	}
