@@ -263,14 +263,14 @@ class DoH extends DNSServer {
         REQ_TEMPLATE.setValue("content-type", "application/dns-message");
         REQ_TEMPLATE.setValue("Connection", "keep-alive");
         REQ_TEMPLATE.setRequest("POST "+url+" "+"HTTP/1.1");
-        REQ_TEMPLATE.setValue("Content-Length","9999");
+        REQ_TEMPLATE.setValue("Content-Length","999");
 
         reqTemplate = REQ_TEMPLATE.getServerRequestHeader(false);
         urlHost = REQ_TEMPLATE.remote_host_name;
     }
 
     private byte[] buildRequestHeader(int length) throws IOException {
-       return reqTemplate.replace("\nContent-Length: 9999","\nContent-Length: "+length).getBytes();
+       return reqTemplate.replace("\nContent-Length: 999","\nContent-Length: "+length).getBytes();
     }
 
     @Override

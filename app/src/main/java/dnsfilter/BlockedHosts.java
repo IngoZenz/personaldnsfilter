@@ -239,31 +239,25 @@ public class BlockedHosts implements Set {
 			else
 				idx = host.lastIndexOf(part);
 
-
 			if (i == 0 && !part.equals("") && idx != 0) {
 				// i == 0 ==> we are on the first fixed part
 				// first fixed part is not empty ==> Matching String must start with first fixed part
 				// if not, no match!
 				return false;
 			}
-
 			if (i == fixedParts.length-1 && !part.equals("") && idx + part.length() != host.length()) {
 				// i == last part
 				// last part is not empty ==> Matching String must end with last part
 				// if not, no match
 				return false;
 			}
-
 			// part not detected in the text.
 			if (idx == -1) {
 				return false;
 			}
-
 			// Move ahead, towards the right of the text.
 			host = host.substring(idx + part.length());
-
 		}
-
 		return true;
 	}
 
@@ -275,12 +269,6 @@ public class BlockedHosts implements Set {
 
 			String hostName = (String) object;
 			long hosthash = Utils.getLongStringHash(hostName);
-
-			if (hostsFilterOverRule != null) {
-				Object val = hostsFilterOverRule.get(hostName);
-				if (val != null)
-					return ((Boolean) val).booleanValue();
-			}
 
 			if (okCache.get(hosthash) != null)
 				return false;
@@ -298,32 +286,29 @@ public class BlockedHosts implements Set {
 		}
 	}
 
-
 	private boolean contains(String hostName, long hosthash) {
 
-		if (blockedHostsHashes.contains(hosthash))
-			return true;
+		int idx = 0;
 
-		if (containsPatternMatch(hostName))
-			return true;
-
-		int idx = hostName.indexOf('.');
 		while (idx != -1) {
-			hostName = hostName.substring(idx + 1);
 
 			if (hostsFilterOverRule != null) {
 				Object val = hostsFilterOverRule.get(hostName);
 				if (val != null)
 					return ((Boolean) val).booleanValue();
 			}
-
-			if (blockedHostsHashes.contains(Utils.getLongStringHash(hostName)))
+			if (blockedHostsHashes.contains(hosthash))
 				return true;
 
 			if (containsPatternMatch(hostName))
 				return true;
 
 			idx = hostName.indexOf('.');
+
+			if (idx != -1) {
+				hostName = hostName.substring(idx + 1);
+				hosthash = Utils.getLongStringHash(hostName);
+			}
 		}
 		return false;
 	}
@@ -332,6 +317,10 @@ public class BlockedHosts implements Set {
 		blockedHostsHashes.clear();
 		filterListCache.clear();
 		okCache.clear();
+		if (hostsFilterOverRule != null)
+			hostsFilterOverRule.clear();
+		if (blockedPatterns != null)
+			blockedPatterns.clear();
 	}
 
 	protected void migrateTo(BlockedHosts hostFilter) {
