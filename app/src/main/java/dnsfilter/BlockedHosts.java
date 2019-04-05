@@ -322,8 +322,7 @@ public class BlockedHosts implements Set {
 		blockedHostsHashes.clear();
 		filterListCache.clear();
 		okCache.clear();
-		if (hostsFilterOverRule != null)
-			hostsFilterOverRule.clear();
+		hostsFilterOverRule = null; // do not clear as provided from outside and reused
 		if (blockedPatterns != null)
 			blockedPatterns.clear();
 	}
