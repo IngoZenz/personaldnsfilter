@@ -74,6 +74,14 @@ public class HugePackedSet implements Set {
 		slotSizes = null; //save memory
 	}
 
+	public void finalPrepare(int maxCountEstimate) {
+		int slotSize = ((int) (maxCountEstimate*1.2)) / slotCount;
+		for (int i = 0; i < slotCount; i++)
+			subsets[i] = new PackedSortedList(slotSize, objMgr);
+
+		slotSizes = null; //save memory
+	}
+
 	@Override
 	public boolean add(Object obj) {
 		boolean added = subsets[(int) (Math.abs( obj.hashCode()) %  slotCount) ].add(obj);

@@ -196,6 +196,11 @@ public class BlockedHosts implements Set {
 		blockedHostsHashes.finalPrepare();
 	}
 
+	public void finalPrepare(int maxCountEstimate) {
+		blockedHostsHashes.finalPrepare(maxCountEstimate);
+	}
+
+
 
 	private Vector<String[]> getInitializedPatternStruct() {
 		if (blockedPatterns==null)

@@ -80,9 +80,15 @@ public class PackedSortedList implements List, RandomAccess {
 	}
 
 	private void addInternal(int pos, Object key) {
-		if (pos != count) {
-			System.arraycopy(datapack, pos * object_size, datapack, pos * object_size + object_size, ((count-pos)*object_size));						
+		byte[] destination = datapack;
+		if (count >= datapack.length/object_size) {
+			destination = new byte[datapack.length+1000*object_size]; //resize for additional 1000 entries
+			System.arraycopy(datapack,0, destination, 0,pos*object_size);
 		}
+		if (pos != count) {
+			System.arraycopy(datapack, pos * object_size, destination, pos * object_size + object_size, ((count-pos)*object_size));
+		}
+		datapack = destination;
 		objMgr.objectToBytes(key, datapack, pos * object_size);
 		
 		count++;

@@ -125,6 +125,29 @@ public class Utils {
 		return str.substring(0, i);
 	}
 
+	public static int readLineBytesFromStream(InputStream in, byte[] buf) throws IOException {
+		short last2Bytes = 0;
+		int r = 0;
+		int pos = -1;
+		while (r != -1 && r!=10 && last2Bytes!=0xd0a) {
+
+			r = in.read();
+			pos++;
+
+			if (r != -1) {
+				last2Bytes = (short) ((last2Bytes << 8) + (int) r);
+				if (pos == buf.length)
+					throw new IOException("Buffer Overflow!");
+
+				buf[pos] = (byte) (r);
+			}
+		}
+		if (pos==0) //nothing read
+			return -1; //EOF
+
+		return pos;
+	}
+
 
 	public static String readLineFromStreamRN(InputStream in) throws IOException {
 		return readLineFromStream(in, true);

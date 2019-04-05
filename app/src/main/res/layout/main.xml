@@ -596,6 +596,7 @@
         android:layout_weight="0.05"
         android:background="#00BCD4"
         android:gravity="center"
+        android:maxLines="1"
         android:textColor="#455a64"
         android:textSize="12dp"
         android:visibility="visible" />
