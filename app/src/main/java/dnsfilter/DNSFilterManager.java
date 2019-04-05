@@ -425,6 +425,10 @@ public class DNSFilterManager implements LoggerInterface {
 
 				int processed = 0;
 				int uniqueEntries = 0;
+
+				if (ffDownloaded)
+					fin.readLine(); // skip first comment line
+
 				while (!indexAbort && ((entry = fin.readLine()) != null || fin != addHostIn)) {
 					if (entry == null) {
 						//ready with filter file continue with additionalHosts
@@ -432,9 +436,9 @@ public class DNSFilterManager implements LoggerInterface {
 						fin = addHostIn;
 					} else {
 						String[] hostEntry;
-						if (!ffDownloaded)
+						if (!ffDownloaded || fin == addHostIn )
 							hostEntry = parseHosts(entry);
-						else
+						else // reading downloaded filterfile with known plain hosts format
 							hostEntry = new String[] {"",entry};
 
 						if (hostEntry != null && !hostEntry[1].equals("localhost")) {
