@@ -237,7 +237,7 @@ public class DNSFilterManager implements LoggerInterface {
 
 						int received = 0;
 						int delta = 100000;
-						while ((r = Utils.readLineBytesFromStream(in,buf)) != -1) {
+						while ((r = Utils.readLineBytesFromStream(in,buf, true)) != -1) {
 
 							String[] hostEntry = parseHosts(new String(buf,0,r).trim());
 
@@ -352,10 +352,10 @@ public class DNSFilterManager implements LoggerInterface {
 						if (downloadInfoFile.exists()) {
 							InputStream in = new BufferedInputStream(new FileInputStream(downloadInfoFile));
 							byte[] info = new byte[1024];
-							int r = Utils.readLineBytesFromStream(in, info);
+							int r = Utils.readLineBytesFromStream(in, info, true);
 							ffileCount = Integer.parseInt(new String(info, 0, r));
 							// check if valid
-							r = Utils.readLineBytesFromStream(in, info);
+							r = Utils.readLineBytesFromStream(in, info, true);
 							if (r==-1 || Long.parseLong(new String(info,0,r)) != filterfile.lastModified())
 								ffileCount=-1; //invalid
 
@@ -506,7 +506,8 @@ public class DNSFilterManager implements LoggerInterface {
 						DNSResponsePatcher.init(hostFilter, TRAFFIC_LOG); //give newly created filter to DNSResponsePatcher
 					}
 				} finally {
-					hostFilter.unLock(1); //Update done! Release exclusive lock so readers are welcome!
+					if (hostFilter != null)
+						hostFilter.unLock(1); //Update done! Release exclusive lock so readers are welcome!
 				}
 				validIndex = true;
 				lastFinishedIndexRunTS = System.currentTimeMillis();

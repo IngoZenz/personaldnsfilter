@@ -125,7 +125,7 @@ public class Utils {
 		return str.substring(0, i);
 	}
 
-	public static int readLineBytesFromStream(InputStream in, byte[] buf) throws IOException {
+	public static int readLineBytesFromStream(InputStream in, byte[] buf, boolean printableOnly) throws IOException {
 		short last2Bytes = 0;
 		int r = 0;
 		int pos = -1;
@@ -138,6 +138,9 @@ public class Utils {
 				last2Bytes = (short) ((last2Bytes << 8) + (int) r);
 				if (pos == buf.length)
 					throw new IOException("Buffer Overflow!");
+
+				if (printableOnly && r < 32 && r < 9 && r > 13)
+					throw new IOException ("Non Printable character:"+ r);
 
 				buf[pos] = (byte) (r);
 			}
