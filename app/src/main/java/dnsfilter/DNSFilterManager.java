@@ -54,7 +54,7 @@ import util.Utils;
 
 
 public class DNSFilterManager implements LoggerInterface {
-	public static final String VERSION = "1.50.32-dev";
+	public static final String VERSION = "1.50.32-dev02";
 	static public boolean debug;
 	static public String WORKDIR = "";
 	private static String filterReloadURL;
@@ -439,6 +439,7 @@ public class DNSFilterManager implements LoggerInterface {
 						//ready with filter file continue with additionalHosts
 						fin.close();
 						fin = addHostIn;
+						ffileCount=uniqueEntries;
 					} else {
 						String[] hostEntry;
 						if (!ffDownloaded || fin == addHostIn )

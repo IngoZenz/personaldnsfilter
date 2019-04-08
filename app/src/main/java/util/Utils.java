@@ -142,7 +142,7 @@ public class Utils {
 				buf[pos] = (byte) (r);
 			}
 		}
-		if (pos==0) //nothing read
+		if (pos==0 && r!=10) //nothing read
 			return -1; //EOF
 
 		return pos;
