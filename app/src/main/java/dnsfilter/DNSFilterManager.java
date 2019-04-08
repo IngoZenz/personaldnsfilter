@@ -80,6 +80,9 @@ public class DNSFilterManager implements LoggerInterface {
 	private boolean reloading_filter = false;
 
 
+	private static String DOWNLOADED_FF_PREFIX= "# Downloaded by personalDNSFilter at: ";
+
+
 	protected Properties config = null;
 
 
@@ -210,7 +213,7 @@ public class DNSFilterManager implements LoggerInterface {
 			ExecutionEnvironment.getEnvironment().wakeLock(); //ensure device stays awake until filter update is completed
 
 			OutputStream out = new FileOutputStream(WORKDIR + filterhostfile + ".tmp");
-			out.write(("# Downloaded by personalDNSFilter at: " + new Date() + "from URLs: "+  filterReloadURL+"\n").getBytes());
+			out.write((DOWNLOADED_FF_PREFIX+ new Date() + "from URLs: "+  filterReloadURL+"\n").getBytes());
 
 			StringTokenizer urlTokens = new StringTokenizer(filterReloadURL, ";");
 
@@ -339,7 +342,7 @@ public class DNSFilterManager implements LoggerInterface {
 				int ffileCount = -1;
 				String firstffLine = fin.readLine();
 				boolean ffDownloaded = false;
-				if (firstffLine.startsWith("# Downloaded by personalDNSFilter")) {
+				if (firstffLine.startsWith(DOWNLOADED_FF_PREFIX)) {
 					// downloaded file - we should know the number of entries and the format is plain hosts
 					ffDownloaded = true;
 					// try to read the info about number of downloaded entries
@@ -420,8 +423,10 @@ public class DNSFilterManager implements LoggerInterface {
 				File uniqueEntriyFile = new File(WORKDIR + "uniqueentries.tmp");
 				BufferedOutputStream fout = null;
 
-				if (filterHostsFileRemoveDuplicates)
+				if (filterHostsFileRemoveDuplicates) {
 					fout = new BufferedOutputStream(new FileOutputStream(uniqueEntriyFile));
+					fout.write((firstffLine+"\n").getBytes()); // take over header info from original
+				}
 
 				int processed = 0;
 				int uniqueEntries = 0;
@@ -739,6 +744,7 @@ public class DNSFilterManager implements LoggerInterface {
 		boolean filterEnabled = false;
 		try {
 			Logger.getLogger().logLine("***Initializing PersonalDNSFilter Version " + VERSION + "!***");
+			Logger.getLogger().logLine("Using Directory: "+WORKDIR);
 
 			config = new Properties();
 			FileInputStream in = new FileInputStream(WORKDIR + "dnsfilter.conf");
