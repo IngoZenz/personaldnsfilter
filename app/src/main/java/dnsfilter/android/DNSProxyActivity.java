@@ -47,10 +47,12 @@ import util.TimeoutListener;
 import util.TimoutNotificator;
 import util.Utils;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -136,7 +138,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	private static boolean appStart = true;
 
-	public static File WORKPATH = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter");
+	public static File WORKPATH = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter");;
 
 	private static String ADDITIONAL_HOSTS_TO_LONG = "additionalHosts.txt too long to edit here!\nSize Limit: 512 KB!\nUse other editor!";
 
@@ -268,10 +270,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		MsgTO.setActivity(this);
+
 		if (getIntent().getBooleanExtra("SHOULD_FINISH", false)) {
 			finish();
 			System.exit(0);
 		}
+
 		setContentView(R.layout.main);
 		setTitle("personalDNSfilter V" + DNSFilterManager.VERSION + " (Connections:" + DNSFilterService.openConnectionsCount() + ")");
 
@@ -450,16 +454,42 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		Logger.setLogger(this);
 		myLogger = Logger.getLogger();
 
-		if (appStart) {
-			logLine("Initializing ...");
-			if (BOOT_START) {
-				Logger.getLogger().logLine("Running on SDK" + Build.VERSION.SDK_INT);
-				if (Build.VERSION.SDK_INT >= 20) //on older Android we have to keep the app in forgrounnd due to teh VPN Accespt dialog popping up after each reboot.
-					finish();
-				BOOT_START = false;
+		boolean storagePermission = true;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+				storagePermission=false;
+				requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1);
+				Logger.getLogger().logLine("Need Storage Permissions to start!");
 			}
-			loadAndApplyConfig();
-			appStart = false; // now started
+		}
+
+		if (appStart && storagePermission) {
+			initAppAndStartup();
+		}
+	}
+
+
+	private void initAppAndStartup() {
+		logLine("Initializing ...");
+		if (BOOT_START) {
+			Logger.getLogger().logLine("Running on SDK" + Build.VERSION.SDK_INT);
+			if (Build.VERSION.SDK_INT >= 20) //on older Android we have to keep the app in forgrounnd due to teh VPN Accespt dialog popping up after each reboot.
+				finish();
+			BOOT_START = false;
+		}
+		loadAndApplyConfig();
+		appStart = false; // now started
+	}
+
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		if(grantResults[0]== PackageManager.PERMISSION_GRANTED){
+			initAppAndStartup();
+		}
+		else {
+			System.exit(-1);
 		}
 	}
 
@@ -582,11 +612,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	private Properties getConfig() {
 
-		File propsFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/dnsfilter.conf");
+		File propsFile = new File(WORKPATH + "/dnsfilter.conf");
 		if (!propsFile.exists()) {
 			Logger.getLogger().logLine(propsFile + " not found! - creating default config!");
 			createDefaultConfiguration();
-			propsFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/dnsfilter.conf");
+			propsFile = new File(WORKPATH+"/dnsfilter.conf");
 		}
 		try {
 			InputStream in = new FileInputStream(propsFile);
@@ -595,7 +625,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			in.close();
 
 			// check for additionalHosts.txt
-			File f = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/additionalHosts.txt");
+			File f = new File(WORKPATH+"/additionalHosts.txt");
 			if (!f.exists()) {
 				f.createNewFile();
 				FileOutputStream fout = new FileOutputStream(f);
@@ -606,7 +636,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			}
 
 			//check versions, in case different merge existing configuration with defaults
-			File versionFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/VERSION.TXT");
+			File versionFile = new File(WORKPATH+"/VERSION.TXT");
 			String vStr = "";
 			if (versionFile.exists()) {
 				InputStream vin = new FileInputStream(versionFile);
@@ -629,7 +659,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private Properties mergeAndPersistConfig(Properties currentConfig) throws IOException {
 		String[] currentKeys = currentConfig.keySet().toArray(new String[0]);
 		BufferedReader defCfgReader = new BufferedReader(new InputStreamReader(this.getAssets().open("dnsfilter.conf")));
-		File mergedConfig = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/dnsfilter.conf");
+		File mergedConfig = new File(WORKPATH+"/dnsfilter.conf");
 		FileOutputStream mergedout = new FileOutputStream(mergedConfig);
 		String ln = "";
 		while ((ln = defCfgReader.readLine()) != null) {
@@ -668,11 +698,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	private void createDefaultConfiguration() {
 		try {
-			File f = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter");
+			File f = new File(WORKPATH+"");
 			f.mkdir();
 
 			//dnsfilter.conf
-			f = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/dnsfilter.conf");
+			f = new File(WORKPATH+"/dnsfilter.conf");
 			f.createNewFile();
 			FileOutputStream fout = new FileOutputStream(f);
 
@@ -681,7 +711,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			Utils.copyFully(defIn, fout, true);
 
 			//additionalHosts.txt
-			f = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/additionalHosts.txt");
+			f = new File(WORKPATH+"/additionalHosts.txt");
 			if (!f.exists()) {
 				f.createNewFile();
 				fout = new FileOutputStream(f);
@@ -692,7 +722,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			}
 
 			//VERSION.TXT
-			f = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/VERSION.TXT");
+			f = new File(WORKPATH+"/VERSION.TXT");
 			f.createNewFile();
 			fout = new FileOutputStream(f);
 
@@ -749,7 +779,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 			String[] filterCfgStrings = getFilterCfgStrings(filterCfg.getFilterEntries());
 
-			File propsFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/dnsfilter.conf");
+			File propsFile = new File(WORKPATH+"/dnsfilter.conf");
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			String ln;
 
@@ -802,7 +832,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			out.flush();
 			out.close();
 
-			FileOutputStream fout = new FileOutputStream(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/dnsfilter.conf");
+			FileOutputStream fout = new FileOutputStream(WORKPATH+"/dnsfilter.conf");
 			fout.write(out.toByteArray());
 			fout.flush();
 			fout.close();
@@ -962,15 +992,15 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	}
 
 	private void copyLocalFile(String from, String to) throws IOException {
-		File fromFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/" + from);
-		File toFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/" + to);
+		File fromFile = new File(WORKPATH+"/" + from);
+		File toFile = new File(WORKPATH+"/" + to);
 		Utils.copyFile(fromFile, toFile);
 	}
 
 	private void copyFromAssets(String from, String to) throws IOException {
 		AssetManager assetManager = this.getAssets();
 		InputStream defIn = assetManager.open(from);
-		File toFile = new File((Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/" + to));
+		File toFile = new File((WORKPATH+"/" + to));
 		toFile.getParentFile().mkdirs();
 		FileOutputStream out = new FileOutputStream(toFile);
 		Utils.copyFully(defIn, out, true);
@@ -1003,7 +1033,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			//cleanup hostsfile and index in order to force reload
 			String filterHostFile = null;
 			if (config != null && ((filterHostFile = config.getProperty("filterHostsFile")) != null)) {
-				new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/" + filterHostFile).delete();
+				new File(WORKPATH+"/" + filterHostFile).delete();
 			}
 
 			backupStatusView.setTextColor(Color.parseColor("#23751C"));
@@ -1029,7 +1059,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			//cleanup hostsfile and index in order to force reload
 			String filterHostFile = null;
 			if (config != null && ((filterHostFile = config.getProperty("filterHostsFile")) != null)) {
-				new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/" + filterHostFile).delete();
+				new File(WORKPATH+"/" + filterHostFile).delete();
 			}
 
 			backupStatusView.setTextColor(Color.parseColor("#23751C"));
@@ -1122,7 +1152,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	private void loadAdditionalHosts() {
 		try {
-			File f = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/additionalHosts.txt");
+			File f = new File(WORKPATH+"/additionalHosts.txt");
 
 			if (f.length() > 524288) {
 				additionalHostsField.setText(ADDITIONAL_HOSTS_TO_LONG);
@@ -1142,7 +1172,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		if (!addHostsTxt.equals("") && !addHostsTxt.equals(ADDITIONAL_HOSTS_TO_LONG)) {
 			if (additionalHostsChanged)
 				try {
-					File f = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/additionalHosts.txt");
+					File f = new File(WORKPATH+"/additionalHosts.txt");
 					FileOutputStream fout = new FileOutputStream(f);
 					fout.write(addHostsTxt.getBytes());
 					fout.flush();
