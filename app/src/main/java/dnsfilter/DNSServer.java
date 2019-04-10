@@ -23,6 +23,7 @@ package dnsfilter;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
@@ -213,24 +214,29 @@ class TCP extends DNSServer {
 
     @Override
     public void resolve(DatagramPacket request, DatagramPacket response) throws IOException {
-        Connection con = Connection.connect(address,timeout,ssl,null, Proxy.NO_PROXY);
-        con.setSoTimeout(timeout);
-        try {
-            DataInputStream in = new DataInputStream (con.getInputStream());
-            DataOutputStream out = new DataOutputStream(con.getOutputStream());
-            out.writeShort(request.getLength());
-            out.write(request.getData(), request.getOffset(), request.getLength());
-            out.flush();
-            int size = in.readShort();
-            readResponseFromStream(in, size, response);
-            response.setSocketAddress(address);
-            con.release(true);
-
-        } catch (IOException eio) {
-            con.release(false);
-            throw eio;
+        for (int i = 0; i<2; i++) { //retry once in case of EOFException (pooled connection was already closed
+            Connection con = Connection.connect(address, timeout, ssl, null, Proxy.NO_PROXY);
+            con.setSoTimeout(timeout);
+            try {
+                DataInputStream in = new DataInputStream(con.getInputStream());
+                DataOutputStream out = new DataOutputStream(con.getOutputStream());
+                out.writeShort(request.getLength());
+                out.write(request.getData(), request.getOffset(), request.getLength());
+                out.flush();
+                int size = in.readShort();
+                readResponseFromStream(in, size, response);
+                response.setSocketAddress(address);
+                con.release(true);
+                return;
+            } catch (EOFException eof) {
+                con.release(false);
+                if (i == 1)
+                    throw eof; // retried already once, now throw exception
+            } catch (IOException eio) {
+                con.release(false);
+                throw eio;
+            }
         }
-
     }
 }
 
@@ -277,25 +283,32 @@ class DoH extends DNSServer {
     public void resolve(DatagramPacket request, DatagramPacket response) throws IOException {
 
         byte[] reqHeader = buildRequestHeader(request.getLength());
-        Connection con = Connection.connect(urlHostAddress, timeout, true, null, Proxy.NO_PROXY);
-        try {
-            OutputStream out = con.getOutputStream();
-            DataInputStream in = new DataInputStream(con.getInputStream());
-            out.write(reqHeader);
-            out.write(request.getData(), request.getOffset(), request.getLength());
-            out.flush();
-            HttpHeader responseHeader = new HttpHeader(in, HttpHeader.RESPONSE_HEADER);
-            if (responseHeader.getResponseCode() != 200)
-                throw new IOException("DoH failed for "+url+"! "+responseHeader.getResponseCode()+" - "+responseHeader.getResponseMessage());
 
-            int size = (int) responseHeader.getContentLength();
-            readResponseFromStream(in, size, response);
-            response.setSocketAddress(address);
-            con.release(true);
+        for (int i = 0; i<2; i++) { //retry once in case of EOFException (pooled connection was already closed
+            Connection con = Connection.connect(urlHostAddress, timeout, true, null, Proxy.NO_PROXY);
+            try {
+                OutputStream out = con.getOutputStream();
+                DataInputStream in = new DataInputStream(con.getInputStream());
+                out.write(reqHeader);
+                out.write(request.getData(), request.getOffset(), request.getLength());
+                out.flush();
+                HttpHeader responseHeader = new HttpHeader(in, HttpHeader.RESPONSE_HEADER);
+                if (responseHeader.getResponseCode() != 200)
+                    throw new IOException("DoH failed for " + url + "! " + responseHeader.getResponseCode() + " - " + responseHeader.getResponseMessage());
 
-        } catch (IOException eio) {
-            con.release(false);
-            throw eio;
+                int size = (int) responseHeader.getContentLength();
+                readResponseFromStream(in, size, response);
+                response.setSocketAddress(address);
+                con.release(true);
+                return;
+            } catch (EOFException eof) {
+                con.release(false);
+                if (i == 1)
+                    throw eof; // retried already once, now throw exception
+            } catch (IOException eio) {
+                con.release(false);
+                throw eio;
+            }
         }
 
     }

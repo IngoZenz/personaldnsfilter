@@ -23,6 +23,7 @@ Contact:i.z@gmx.net
 package util;
 
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -111,7 +112,7 @@ public class Utils {
 		byte last = 0;
 		while (!exit) {
 			r = in.read();
-			byte b = (byte) (r & 0xff);
+			byte b = (byte) (r);
 			exit = (r == -1 || (b == 10 && (!crlf || last == 13)));
 			if (!exit) {
 				str.append((char) b);
@@ -119,6 +120,10 @@ public class Utils {
 				last = b;
 			}
 		}
+
+		if (r == -1 && i == 0)
+			throw new EOFException("Stream is closed!");
+
 		if (i > 0 && last == 13)
 			i = i - 1;
 
@@ -128,11 +133,10 @@ public class Utils {
 	public static int readLineBytesFromStream(InputStream in, byte[] buf, boolean printableOnly) throws IOException {
 		short last2Bytes = 0;
 		int r = 0;
-		int pos = -1;
+		int pos = 0;
 		while (r != -1 && r!=10 && last2Bytes!=0xd0a) {
 
 			r = in.read();
-			pos++;
 
 			if (r != -1) {
 				last2Bytes = (short) ((last2Bytes << 8) + (int) r);
@@ -140,12 +144,13 @@ public class Utils {
 					throw new IOException("Buffer Overflow!");
 
 				if (printableOnly && r < 32 && r < 9 && r > 13)
-					throw new IOException ("Non Printable character:"+ r);
+					throw new IOException ("Non Printable character: "+r+"("+((char)r)+")");
 
 				buf[pos] = (byte) (r);
+				pos++;
 			}
 		}
-		if (pos==0 && r!=10) //nothing read
+		if (pos==0) //nothing read
 			return -1; //EOF
 
 		return pos;

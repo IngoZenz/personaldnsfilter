@@ -54,7 +54,7 @@ import util.Utils;
 
 
 public class DNSFilterManager implements LoggerInterface {
-	public static final String VERSION = "1.50.32-dev02";
+	public static final String VERSION = "1.50.32-dev04";
 	static public boolean debug;
 	static public String WORKDIR = "";
 	private static String filterReloadURL;
@@ -221,6 +221,7 @@ public class DNSFilterManager implements LoggerInterface {
 			int count = 0;
 			for (int i = 0; i < urlCnt; i++) {
 				String urlStr = urlTokens.nextToken().trim();
+				int skippedWildcard=0;
 				try {
 					if (!urlStr.equals("")) {
 						Logger.getLogger().message("Connecting: "+urlStr);
@@ -244,10 +245,11 @@ public class DNSFilterManager implements LoggerInterface {
 							if (hostEntry != null && !hostEntry[1].equals("localhost")) {
 								String host = hostEntry[1];
 								if (host.indexOf('*') != -1)
-									throw new IOException("Wildcards only supported in additionalHosts.txt! - Wrong entry: " + host);
-								out.write((host + "\n").getBytes());
-
-								count++;
+									skippedWildcard++;
+								else {
+									out.write((host + "\n").getBytes());
+									count++;
+								}
 							}
 							received = received + r;
 							if (received > delta) {
@@ -256,6 +258,8 @@ public class DNSFilterManager implements LoggerInterface {
 							}
 						}
 						in.close();
+						if (skippedWildcard!=0)
+							Logger.getLogger().logLine("WARNING! - "+skippedWildcard+" skipped entrie(s) for " + urlStr+"! Wildcards are only supported in additionalHosts.txt!");
 					}
 				} catch (IOException eio) {
 					String msg = "ERROR loading filter: "+urlStr;
@@ -353,10 +357,10 @@ public class DNSFilterManager implements LoggerInterface {
 							InputStream in = new BufferedInputStream(new FileInputStream(downloadInfoFile));
 							byte[] info = new byte[1024];
 							int r = Utils.readLineBytesFromStream(in, info, true);
-							ffileCount = Integer.parseInt(new String(info, 0, r));
+							ffileCount = Integer.parseInt(new String(info, 0, r).trim());
 							// check if valid
 							r = Utils.readLineBytesFromStream(in, info, true);
-							if (r==-1 || Long.parseLong(new String(info,0,r)) != filterfile.lastModified())
+							if (r==-1 || Long.parseLong(new String(info,0,r).trim()) != filterfile.lastModified())
 								ffileCount=-1; //invalid
 
 							in.close();
