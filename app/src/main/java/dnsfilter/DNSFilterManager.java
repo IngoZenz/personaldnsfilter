@@ -238,7 +238,7 @@ public class DNSFilterManager implements LoggerInterface {
 
 						int received = 0;
 						int delta = 100000;
-						while ((r = Utils.readLineBytesFromStream(in,buf, true)) != -1) {
+						while ((r = Utils.readLineBytesFromStream(in,buf, true, true)) != -1) {
 
 							String[] hostEntry = parseHosts(new String(buf,0,r).trim());
 
@@ -356,10 +356,10 @@ public class DNSFilterManager implements LoggerInterface {
 						if (downloadInfoFile.exists()) {
 							InputStream in = new BufferedInputStream(new FileInputStream(downloadInfoFile));
 							byte[] info = new byte[1024];
-							int r = Utils.readLineBytesFromStream(in, info, true);
+							int r = Utils.readLineBytesFromStream(in, info, true, true);
 							ffileCount = Integer.parseInt(new String(info, 0, r).trim());
 							// check if valid
-							r = Utils.readLineBytesFromStream(in, info, true);
+							r = Utils.readLineBytesFromStream(in, info, true, true);
 							if (r==-1 || Long.parseLong(new String(info,0,r).trim()) != filterfile.lastModified())
 								ffileCount=-1; //invalid
 

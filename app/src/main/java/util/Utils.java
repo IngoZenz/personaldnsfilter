@@ -130,31 +130,47 @@ public class Utils {
 		return str.substring(0, i);
 	}
 
-	public static int readLineBytesFromStream(InputStream in, byte[] buf, boolean printableOnly) throws IOException {
-		short last2Bytes = 0;
-		int r = 0;
-		int pos = 0;
-		while (r != -1 && r!=10 && last2Bytes!=0xd0a) {
+	public static int readLineBytesFromStream(InputStream in, byte[] buf, boolean printableOnly, boolean ignoreComment) throws IOException {
+
+		int r = in.read();
+		while (ignoreComment && r == 35) {
+			//lines starts with # - ignore line!
+			while (r != 1 && r != 10)
+				r = in.read();
 
 			r = in.read();
+		}
 
-			if (r != -1) {
-				last2Bytes = (short) ((last2Bytes << 8) + (int) r);
-				if (pos == buf.length)
-					throw new IOException("Buffer Overflow!");
+		if (r == -1)
+			return -1;
 
-				if (printableOnly && r < 32 && r < 9 && r > 13)
-					throw new IOException ("Non Printable character: "+r+"("+((char)r)+")");
+		if (buf.length == 0)
+			throw new IOException("Buffer Overflow!");
 
-				buf[pos] = (byte) (r);
-				pos++;
+		buf[0] = (byte)r;
+		int pos = 1;
+
+		while (r != -1 && r!=10) {
+
+			while (r != -1 && r!=10) {
+
+				r = in.read();
+
+				if (r != -1) {
+					if (pos == buf.length)
+						throw new IOException("Buffer Overflow!");
+
+					if (printableOnly && r < 32 && r < 9 && r > 13)
+						throw new IOException ("Non Printable character: "+r+"("+((char)r)+")");
+
+					buf[pos] = (byte) (r);
+					pos++;
+				}
 			}
 		}
-		if (pos==0) //nothing read
-			return -1; //EOF
-
 		return pos;
 	}
+
 
 
 	public static String readLineFromStreamRN(InputStream in) throws IOException {

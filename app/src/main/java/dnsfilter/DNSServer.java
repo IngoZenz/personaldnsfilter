@@ -214,7 +214,7 @@ class TCP extends DNSServer {
 
     @Override
     public void resolve(DatagramPacket request, DatagramPacket response) throws IOException {
-        for (int i = 0; i<2; i++) { //retry once in case of EOFException (pooled connection was already closed
+        for (int i = 0; i<2; i++) { //retry once in case of EOFException (pooled connection was already closed)
             Connection con = Connection.connect(address, timeout, ssl, null, Proxy.NO_PROXY);
             con.setSoTimeout(timeout);
             try {
@@ -231,7 +231,7 @@ class TCP extends DNSServer {
             } catch (EOFException eof) {
                 con.release(false);
                 if (i == 1)
-                    throw eof; // retried already once, now throw exception
+                    throw new IOException ("EOF when reading from "+this.toString(),eof); // retried already once, now throw exception
             } catch (IOException eio) {
                 con.release(false);
                 throw eio;
@@ -284,7 +284,7 @@ class DoH extends DNSServer {
 
         byte[] reqHeader = buildRequestHeader(request.getLength());
 
-        for (int i = 0; i<2; i++) { //retry once in case of EOFException (pooled connection was already closed
+        for (int i = 0; i<2; i++) { //retry once in case of EOFException (pooled connection was already closed)
             Connection con = Connection.connect(urlHostAddress, timeout, true, null, Proxy.NO_PROXY);
             try {
                 OutputStream out = con.getOutputStream();
@@ -304,13 +304,12 @@ class DoH extends DNSServer {
             } catch (EOFException eof) {
                 con.release(false);
                 if (i == 1)
-                    throw eof; // retried already once, now throw exception
+                    throw new IOException ("EOF when reading from "+this.toString(),eof); // retried already once, now throw exception
             } catch (IOException eio) {
                 con.release(false);
                 throw eio;
             }
         }
-
     }
 }
 
