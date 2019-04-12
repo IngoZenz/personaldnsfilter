@@ -780,7 +780,8 @@ public class DNSFilterManager implements LoggerInterface {
 			}
 
 			debug = Boolean.parseBoolean(config.getProperty("debug", "false"));
-			filterHostsFileRemoveDuplicates = Boolean.parseBoolean(config.getProperty("filterHostsFileRemoveDuplicates", "false"));
+			//filterHostsFileRemoveDuplicates = Boolean.parseBoolean(config.getProperty("filterHostsFileRemoveDuplicates", "false"));
+			filterHostsFileRemoveDuplicates = true;
 
 			filterhostfile = config.getProperty("filterHostsFile");
 
