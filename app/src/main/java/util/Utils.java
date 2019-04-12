@@ -135,7 +135,7 @@ public class Utils {
 		int r = in.read();
 		while (ignoreComment && r == 35) {
 			//lines starts with # - ignore line!
-			while (r != 1 && r != 10)
+			while (r != -1 && r != 10)
 				r = in.read();
 
 			if (r != 1)
