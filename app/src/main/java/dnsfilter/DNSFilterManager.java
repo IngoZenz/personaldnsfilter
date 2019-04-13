@@ -882,7 +882,7 @@ public class DNSFilterManager implements LoggerInterface {
 
 	@Override
 	public void message(String txt)  {
-		System.out.print(txt);
+		System.out.println(txt);
 	}
 
 	@Override
