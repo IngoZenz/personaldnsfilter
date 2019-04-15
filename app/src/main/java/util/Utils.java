@@ -138,7 +138,7 @@ public class Utils {
 			while (r != -1 && r != 10)
 				r = in.read();
 
-			if (r != 1)
+			if (r != -1)
 				r = in.read();
 		}
 
