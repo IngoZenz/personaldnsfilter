@@ -54,7 +54,7 @@ import util.Utils;
 
 
 public class DNSFilterManager implements LoggerInterface {
-	public static final String VERSION = "1.50.32";
+	public static final String VERSION = "1.50.33-dev01";
 	static public boolean debug;
 	static public String WORKDIR = "";
 	private static String filterReloadURL;
@@ -234,27 +234,29 @@ public class DNSFilterManager implements LoggerInterface {
 
 						InputStream in = new BufferedInputStream(con.getInputStream(),2048);
 						byte[] buf = new byte[2048];
-						int r;
+						int[] r;
 
 						int received = 0;
 						int delta = 100000;
-						while ((r = Utils.readLineBytesFromStream(in,buf, true, true)) != -1) {
+						while ((r = readHostFileEntry(in,buf))[1] != -1) {
 
-							String[] hostEntry = parseHosts(new String(buf,0,r).trim());
+							if (r[1] != 0) {
+								String hostEntry = new String(buf, 0, r[1]);
 
-							if (hostEntry != null && !hostEntry[1].equals("localhost")) {
-								String host = hostEntry[1];
-								if (host.indexOf('*') != -1)
-									skippedWildcard++;
-								else {
-									out.write((host + "\n").getBytes());
-									count++;
+								if (hostEntry != null && !hostEntry.equals("localhost")) {
+									String host = hostEntry;
+									if (r[0] == 1) //wildcard
+										skippedWildcard++;
+									else {
+										out.write((host + "\n").getBytes());
+										count++;
+									}
 								}
-							}
-							received = received + r;
-							if (received > delta) {
-								Logger.getLogger().message("Bytes received:" + received);
-								delta = delta + 100000;
+								received = received + r[1];
+								if (received > delta) {
+									Logger.getLogger().message("Bytes received:" + received);
+									delta = delta + 100000;
+								}
 							}
 						}
 						in.close();
@@ -287,6 +289,69 @@ public class DNSFilterManager implements LoggerInterface {
 			ExecutionEnvironment.getEnvironment().releaseWakeLock();
 		}
 	}
+
+	public int[] readHostFileEntry(InputStream in, byte[] buf) throws IOException {
+
+		int token = 0;
+		int wildcard = 0;
+
+		int r = in.read();
+		while (r == 35) {
+			//lines starts with # - ignore line!
+			r = Utils.skipLine(in);
+
+			if (r != -1)
+				r = Utils.skipWhitespace(in, r);
+		}
+
+		if (r == -1)
+			return new int[]{wildcard, -1};
+
+		if (buf.length == 0)
+			throw new IOException("Buffer Overflow!");
+
+		if (r == 42) //wildcard
+			wildcard =1;
+
+		buf[0] = (byte)r;
+		int pos = 1;
+
+		while (r != -1 && r!=10) {
+
+			while (r != -1 && r!=10) {
+
+				r = in.read();
+
+				if (r == 9 || r == 32 || r == 13) {
+					if (token == 1) {
+						r = Utils.skipLine(in);
+						return new int[]{wildcard, pos};
+					} else {
+						token = 1;
+						wildcard = 0;
+						r = Utils.skipWhitespace(in, r);
+						pos = 0;
+					}
+				}
+
+				if (r == 42) //wildcard
+					wildcard =1;
+
+				if (r != -1) {
+					if (pos == buf.length)
+						throw new IOException("Buffer Overflow!");
+
+					if ( r < 32 && r < 9 && r > 13)
+						throw new IOException ("Non Printable character: "+r+"("+((char)r)+")");
+
+					buf[pos] = (byte) (r);
+					pos++;
+				}
+			}
+		}
+		return new int[]{wildcard, pos-1}; //skip linefeed
+	}
+
 
 	private String[] parseHosts(String line) throws IOException {
 		if (line.startsWith("#") || line.startsWith("!") || line.trim().equals("") )

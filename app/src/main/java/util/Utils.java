@@ -135,8 +135,7 @@ public class Utils {
 		int r = in.read();
 		while (ignoreComment && r == 35) {
 			//lines starts with # - ignore line!
-			while (r != -1 && r != 10)
-				r = in.read();
+			r = skipLine(in);
 
 			if (r != -1)
 				r = in.read();
@@ -173,6 +172,20 @@ public class Utils {
 	}
 
 
+	public static int skipLine(InputStream in) throws IOException {
+		int r = 0;
+		while (r != -1 && r != 10)
+			r = in.read();
+
+		return r;
+	}
+
+	public static int skipWhitespace(InputStream in, int r) throws IOException {
+		while (r != -1 && r != 10 && (r == 9 || r == 32 || r == 13) )
+			r = in.read();
+
+		return r;
+	}
 
 	public static String readLineFromStreamRN(InputStream in) throws IOException {
 		return readLineFromStream(in, true);
