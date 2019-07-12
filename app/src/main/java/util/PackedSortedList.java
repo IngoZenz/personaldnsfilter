@@ -1,7 +1,7 @@
 
  /* 
  PersonalHttpProxy 1.5
- Copyright (C) 2013-2015 Ingo Zenz
+ Copyright (C) 2013-2019 Ingo Zenz
 
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -38,7 +38,9 @@ import java.util.RandomAccess;
 
 public class PackedSortedList implements List, RandomAccess {
 	
-	private boolean inMemory;
+	private boolean keepInMemory;
+	private boolean persistentOutdated;
+	private boolean loaded = false;
 	private int object_size;
 	private byte[] datapack = null;
 	private int count = 0;			
@@ -51,16 +53,21 @@ public class PackedSortedList implements List, RandomAccess {
 		this.objMgr = objMgr;
 		this.object_size=objMgr.objectSize();
 		datapack = new byte[size * object_size];
-		inMemory = true;
+		keepInMemory = true;
+		loaded = true;
 	}
 
-	private PackedSortedList(byte [] datapack, int count, boolean inMemory, File persistedPackFile, ObjectPackagingManager objMgr) {
+	private PackedSortedList(byte [] datapack, int count, boolean inMemory, File persistedPackFile, ObjectPackagingManager objMgr) throws IOException {
 		this.objMgr = objMgr;
 		this.object_size=objMgr.objectSize();
 		this.datapack=datapack;		
 		this.count = count;		
-		this.inMemory= inMemory;		
+		this.keepInMemory = inMemory;
 		this.persistedPackFile=persistedPackFile;
+		persistentOutdated = false;
+
+		if (inMemory)
+			loadinMemory();
 	}
 
 	private int binarySearch(Object key) {
@@ -69,6 +76,8 @@ public class PackedSortedList implements List, RandomAccess {
 
 	@Override
 	public boolean add(Object key) {
+
+		//write operations are NOT thread safe and need synchronization from caller!
 
 		int pos = -(binarySearch(key) + 1);
 		if (pos < 0) { // object already in list			
@@ -80,6 +89,10 @@ public class PackedSortedList implements List, RandomAccess {
 	}
 
 	private void addInternal(int pos, Object key) {
+
+		if (!loaded)
+			loadinMemory();
+
 		byte[] destination = datapack;
 		if (count >= datapack.length/object_size) {
 			destination = new byte[datapack.length+1000*object_size]; //resize for additional 1000 entries
@@ -90,7 +103,8 @@ public class PackedSortedList implements List, RandomAccess {
 		}
 		datapack = destination;
 		objMgr.objectToBytes(key, datapack, pos * object_size);
-		
+
+		persistentOutdated = true;
 		count++;
 	}
 
@@ -102,6 +116,8 @@ public class PackedSortedList implements List, RandomAccess {
 
 	@Override
 	public boolean addAll(Collection collection) {
+
+		//write operations are NOT thread safe and need synchronization from caller!
 
 		Iterator it = collection.iterator();
 
@@ -124,42 +140,51 @@ public class PackedSortedList implements List, RandomAccess {
 	}
 	
 	
-	private void releaseDataPack(boolean openedDataPack) {
-		if (openedDataPack) {
-			try {
+	private int persistedPackDataRefs = 0;
+
+	private synchronized void releaseDataPack() {
+
+		try {
+			persistedPackDataRefs--;
+			//Logger.getLogger().logLine("Released reference: "+persistedPackDataRefs);
+			if (persistedPackDataRefs <0)
+				throw new IllegalStateException("Inconsistent State! persistedPackDataRefs = "+  persistedPackDataRefs);
+			if ( persistedPackDataRefs == 0) { //no more references=>close
 				persistedPackData.close();
-			} catch (IOException e) {
-				//ignore
+				persistedPackData = null;
 			}
-			persistedPackData = null;				
-		}				
-		
+		} catch (IOException e) {
+			//ignore
+		}
+
 	}
 
-	private boolean aquireDataPack() throws FileNotFoundException {
+	private synchronized void  aquireDataPack() throws FileNotFoundException {
+
 		if (persistedPackData == null) {
+			if (persistedPackDataRefs >0)
+				throw new IllegalStateException("Inconsistent State! persistedPackData is null but there are "+persistedPackDataRefs+" references!");
 			persistedPackData = new RandomAccessFile(persistedPackFile, "r");
-			return true;
 		}
-		return false;
-			
+		persistedPackDataRefs++;
+		//Logger.getLogger().logLine("Aquired reference: "+persistedPackDataRefs);
 	}	
 
 	@Override
 	public boolean contains(Object key) {
+		//parallel read is threadsafe!
 		int pos = -1;
-		if (!inMemory) {
-			synchronized(this) {
-				boolean openedDataPack = false;				
-				try {
-					openedDataPack = aquireDataPack();					
-					pos = binarySearch(key);					
-				} catch (Exception e) {
-					throw new IllegalStateException (e);
-				} finally {
-					releaseDataPack(openedDataPack);
-				}
+		if (!loaded) {
+			try {
+				//we aquire datapack here in order to ensure it does not get closed until the binarySearch completed
+				aquireDataPack();
+				pos = binarySearch(key);
+			} catch (Exception e) {
+				throw new IllegalStateException (e);
+			} finally {
+				releaseDataPack();
 			}
+
 		} else pos = binarySearch(key);
 		return (pos > -1);
 	}
@@ -171,29 +196,31 @@ public class PackedSortedList implements List, RandomAccess {
 
 	@Override
 	public Object get(int pos) {
+		//parallel read is threadsafe!
+
 		if (pos >= count)
 			return null;
 		
 		int offs = pos * object_size;	
 		
-		if (inMemory)
+		if (loaded)
 			return objMgr.bytesToObject(datapack, offs);			
 		else {
-			synchronized (this) {
-				boolean openedDataPack = false;
-				try {
-					openedDataPack=aquireDataPack();										
+			try {
+				aquireDataPack();
+				byte[] obj = new byte[object_size];
+				synchronized (persistedPackData) {
 					persistedPackData.seek(offs);
-					byte[] obj = new byte[object_size];
 					persistedPackData.readFully(obj);
-					return objMgr.bytesToObject(obj, 0);					
-				} catch (IOException e) {
-					throw new IllegalStateException(e);
-				} finally {
-					releaseDataPack(openedDataPack);
 				}
-			}	
+				return objMgr.bytesToObject(obj, 0);
+			} catch (IOException e) {
+				throw new IllegalStateException(e);
+			} finally {
+				releaseDataPack();
+			}
 		}
+
 	}
 
 	@Override
@@ -272,40 +299,59 @@ public class PackedSortedList implements List, RandomAccess {
 	}
 	
 	public void persist(String path) throws IOException  {
-		
-		if (!inMemory)
-			throw new IOException("PackedSortedList can not be persisted when not in Memory!");
-		
-		FileOutputStream out = new FileOutputStream(path);
-		out.write(datapack,0,count*object_size);
-		out.flush();
-		out.close();
+
+		//No readers and writers allowed - needs synchronization from outside
+
+		if (persistentOutdated) {
+
+			if (!loaded)
+				throw new IOException("PackedSortedList can not be persisted when not in Memory!");
+
+			persistedPackFile = new File(path);
+
+			FileOutputStream out = new FileOutputStream(persistedPackFile);
+			try {
+				out.write(datapack, 0, count * object_size);
+				out.flush();
+			} finally {
+				out.close();
+			}
+			persistentOutdated = false;
+		}
+
+		if (!keepInMemory) {
+			datapack = null;
+			loaded = false;
+		}
 	}
 	
+	private void loadinMemory()  {
+		//No readers and writers allowed - needs synchronization from outside
+		try {
+			FileInputStream in = new FileInputStream(persistedPackFile);
+			int size = count * objMgr.objectSize();
+			datapack = new byte[size];
+
+			int r = 0;
+			int offs = 0;
+
+			while ((r = in.read(datapack, offs, size - offs)) != -1 && offs != size)
+				offs = offs + r;
+
+			in.close();
+			loaded = true;
+		} catch (IOException ioe){
+			throw new IllegalStateException(ioe);
+		}
+	}
+
 	public static PackedSortedList load(String path, boolean inMemory, ObjectPackagingManager objMgr) throws IOException  {
 		File f = new File(path);
 		int size = (int) f.length(); 
 		if (!f.exists() || !f.canRead())	
 			throw new IOException("Cannot read "+path);
 		
-		byte[] buf = null;
-		
-		if (inMemory) {
-			FileInputStream in = new FileInputStream(f);
-			buf = new byte[size];
-			
-			int r = 0;
-			int offs = 0;
-			
-			while ((r = in.read(buf,offs,size-offs)) != -1 && offs != size)
-				offs = offs+r;
-				
-			
-			in.close();
-		}
-		
-		return new PackedSortedList(buf, size / objMgr.objectSize(), inMemory, f, objMgr);		
-			
+		return new PackedSortedList(null, size / objMgr.objectSize(), inMemory, f, objMgr);
 	}
 	
 	public void clearAndReleaseAllMemory() {

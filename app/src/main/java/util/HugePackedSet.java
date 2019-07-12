@@ -1,6 +1,6 @@
  /* 
  PersonalHttpProxy 1.5
- Copyright (C) 2013-2015 Ingo Zenz
+ Copyright (C) 2013-2019 Ingo Zenz
 
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -41,7 +41,9 @@ public class HugePackedSet implements Set {
 	
 	private int[] slotSizes = null; 
 	
-	private PackedSortedList[] subsets = null; 
+	private PackedSortedList[] subsets = null;
+
+	private String loadedFromPath = null;
 	
 	public HugePackedSet(int slots, ObjectPackagingManager objMgr) {
 		this.objMgr = objMgr;
@@ -53,7 +55,8 @@ public class HugePackedSet implements Set {
 	}
 	
 	
-	private HugePackedSet(PackedSortedList[] subsets, int slots, int count, ObjectPackagingManager objMgr) {
+	private HugePackedSet(String persistencePath, PackedSortedList[] subsets, int slots, int count, ObjectPackagingManager objMgr) {
+		this.loadedFromPath = persistencePath;
 		this.objMgr = objMgr;
 		slotCount = slots;
 		this.subsets = subsets;
@@ -153,14 +156,6 @@ public class HugePackedSet implements Set {
 		throw new UnsupportedOperationException("Not supported!");
 	}
 	
-	
-	public void migrateTo(HugePackedSet pack) {
-		slotCount = pack.slotCount;		
-		count = pack.count;		
-		slotSizes = pack.slotSizes;		
-		subsets = pack.subsets; 
-	}
-	
 	public void persist(String path) throws IOException {
 		
 		//delete existing .tmp and index folders
@@ -190,6 +185,18 @@ public class HugePackedSet implements Set {
 		
 		File renameDir = new File(path);		
 		dir.renameTo(renameDir);
+
+		loadedFromPath = path;
+	}
+
+	public void updatePersist() throws IOException{
+		if (loadedFromPath == null)
+			throw new IOException("Can not update non persisted index!");
+
+		File dir = new File(loadedFromPath);
+		//write indexes
+		for (int i = 0; i < slotCount; i++)
+			subsets[i].persist(dir.getAbsolutePath()+"/idx"+i);
 	}
 	
 	
@@ -222,7 +229,7 @@ public class HugePackedSet implements Set {
 			count = count+subsets[i].size();
 		}
 		
-		return new HugePackedSet(subsets, slotCount, count, objMgr);
+		return new HugePackedSet(path, subsets, slotCount, count, objMgr);
 		
 	}
 

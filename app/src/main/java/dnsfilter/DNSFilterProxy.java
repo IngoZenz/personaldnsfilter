@@ -48,6 +48,7 @@ public class DNSFilterProxy implements Runnable {
 	private static void initDNS(DNSFilterManager dnsFilterMgr) {
 
 		Vector<DNSServer> dnsAdrs = new Vector<DNSServer>();
+		int timeout = Integer.parseInt(dnsFilterMgr.getConfig().getProperty("dnsRequestTimeout", "15000"));
 
 		StringTokenizer fallbackDNS = new StringTokenizer(dnsFilterMgr.getConfig().getProperty("fallbackDNS", ""), ";");
 		int cnt = fallbackDNS.countTokens();
@@ -55,7 +56,7 @@ public class DNSFilterProxy implements Runnable {
 			String dnsEntry = fallbackDNS.nextToken().trim();
 			Logger.getLogger().logLine("DNS:" + dnsEntry);
 			try {
-				dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry,15000));
+				dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry,timeout));
 			} catch (IOException e) {
 				Logger.getLogger().logException(e);
 			}

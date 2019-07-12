@@ -1,6 +1,6 @@
 /* 
  PersonalDNSFilter 1.5
- Copyright (C) 2017 Ingo Zenz
+ Copyright (C) 2017 - 2019 Ingo Zenz
 
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -99,15 +99,6 @@ public class BlockedHosts implements Set {
 		this.hostsFilterOverRule = hostsFilterOverRule;
 	}
 
-	public void clearCache (Set entries) {
-		Iterator it = entries.iterator();
-		while (it.hasNext()){
-			Object key = it.next();
-			okCache.remove(key);
-			filterListCache.remove(key);
-		}
-	}
-
 
 	synchronized public void lock(int type) {
 		if (type == 0) {
@@ -169,20 +160,34 @@ public class BlockedHosts implements Set {
 	}
 
 	public void persist(String path) throws IOException {
-		blockedHostsHashes.persist(path);
-		if (blockedPatterns!= null) {
-			OutputStream patterns = new BufferedOutputStream(new FileOutputStream(path+"/blockedpatterns"));
-			Iterator it = blockedPatterns.iterator();
-			while (it.hasNext()) {
-				String[] fixedParts = (String[]) it.next();
-				String patternStr = fixedParts[0];
-				for (int i = 1; i < fixedParts.length; i++) {
-					patternStr = patternStr+"*"+fixedParts[i];
+		try {
+			lock(1);
+			blockedHostsHashes.persist(path);
+			if (blockedPatterns != null) {
+				OutputStream patterns = new BufferedOutputStream(new FileOutputStream(path + "/blockedpatterns"));
+				Iterator it = blockedPatterns.iterator();
+				while (it.hasNext()) {
+					String[] fixedParts = (String[]) it.next();
+					String patternStr = fixedParts[0];
+					for (int i = 1; i < fixedParts.length; i++) {
+						patternStr = patternStr + "*" + fixedParts[i];
+					}
+					patterns.write((patternStr + "\n").getBytes());
 				}
-				patterns.write((patternStr+"\n").getBytes());
+				patterns.flush();
+				patterns.close();
 			}
-			patterns.flush();
-			patterns.close();
+		} finally {
+			unLock(1);
+		}
+	}
+
+	public void updatePersist() throws IOException {
+		try {
+			lock(1);
+			blockedHostsHashes.updatePersist();
+		} finally {
+			unLock(1);
 		}
 	}
 
@@ -207,6 +212,31 @@ public class BlockedHosts implements Set {
 			blockedPatterns = new Vector<String[]>();
 		return blockedPatterns;
 	}
+
+
+	public void clearCache(String host) {
+		long hostHash = Utils.getLongStringHash((String) host);
+		okCache.remove(hostHash);
+		filterListCache.remove(hostHash);
+	}
+
+	public boolean update(Object host) throws IOException {
+		try {
+			lock(1);
+
+			if (((String) host).indexOf("*") != -1)
+				throw new IOException("Wildcard not supported for update:" + host);
+
+			long hostHash = Utils.getLongStringHash((String) host);
+			okCache.remove(hostHash);
+			filterListCache.remove(hostHash);
+
+			return blockedHostsHashes.add(hostHash);
+		} finally {
+			unLock(1);
+		}
+	}
+
 
 	@Override
 	public boolean add(Object host) {
@@ -340,7 +370,8 @@ public class BlockedHosts implements Set {
 
 		blockedPatterns = hostFilter.blockedPatterns;
 
-		blockedHostsHashes.migrateTo(hostFilter.blockedHostsHashes);
+		//blockedHostsHashes.migrateTo(hostFilter.blockedHostsHashes);
+		blockedHostsHashes = hostFilter.blockedHostsHashes;
 	}
 
 	@Override

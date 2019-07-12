@@ -39,7 +39,8 @@
             android:background="#eceff1"
             android:maxLength="64"
             android:padding="10dp"
-            android:textColor="#424242" />
+            android:textColor="#424242"
+            android:drawableRight="@drawable/twotone_edit_24px"/>
 
         <LinearLayout
             android:id="@+id/linearLayout3"

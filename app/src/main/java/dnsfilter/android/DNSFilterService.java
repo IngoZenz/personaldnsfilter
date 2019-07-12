@@ -197,6 +197,13 @@ public class DNSFilterService extends VpnService implements ExecutionEnvironment
 			return;
 
 		boolean detect = Boolean.parseBoolean(dnsFilterMgr.getConfig().getProperty("detectDNS", "true"));
+		int timeout = 15000;
+
+		try {
+			timeout = Integer.parseInt(dnsFilterMgr.getConfig().getProperty("dnsRequestTimeout", "15000"));
+		} catch (Exception e) {
+			Logger.getLogger().logException(e);
+		}
 
 		if (!detect && !JUST_STARTED)
 			return;  //only static DNS server config already loaded
@@ -231,7 +238,7 @@ public class DNSFilterService extends VpnService implements ExecutionEnvironment
 				String dnsEntry = fallbackDNS.nextToken().trim();
 				if (DNSProxyActivity.debug) Logger.getLogger().logLine("DNS:" + dnsEntry);
 				try {
-					dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry,15000));
+					dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry,timeout));
 				} catch (Exception e) {
 					Logger.getLogger().logLine("Cannot create DNS Server for "+dnsEntry+"!\n" + e.toString());
 					Logger.getLogger().message("Invalid DNS Server entry: '" +dnsEntry);
