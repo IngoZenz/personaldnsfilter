@@ -52,7 +52,7 @@ public class Logger implements LoggerInterface {
 		LoggerInterface l =  (LoggerInterface) _loggers.get(id);
 		if (l!= null)
 			return l;
-		return (LoggerInterface) getLogger();
+		return getLogger();
 	}
 	
 
@@ -83,7 +83,7 @@ public class Logger implements LoggerInterface {
 	@Override
 	public void closeLogger() {
 		// TODO Auto-generated method stub
-		
 	}
+
 
 }
