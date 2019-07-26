@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 
+import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Properties;
 
@@ -380,9 +381,11 @@ public class RemoteAccessClient extends ConfigurationAccess {
     @Override
     public void updateFilter(String entries, boolean filter) throws IOException {
         try {
-            getConnection().getOutputStream().write(("updateFilter()\n"+entries+"\n"+filter+"\n").getBytes());
-            getConnection().getOutputStream().flush();
-            InputStream in = getConnection().getInputStream();
+            Socket con = getConnection();
+            OutputStream out = con.getOutputStream();
+            InputStream in = con.getInputStream();
+            out.write(("updateFilter()\n"+entries+"\n"+filter+"\n").getBytes());
+            out.flush();
             String response = Utils.readLineFromStream(in);
             if (!response.equals("OK")) {
                 throw new ConfigurationAccessException(response, null);

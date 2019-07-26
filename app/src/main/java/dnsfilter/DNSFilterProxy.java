@@ -70,15 +70,22 @@ public class DNSFilterProxy implements Runnable {
 
 	public static void main(String[] args) throws Exception {
 		class StandaloneEnvironment extends ExecutionEnvironment  {
+			
+			boolean debug = false;
+			boolean debugInit = false;
 
-			boolean debug;
-
-			public StandaloneEnvironment (boolean debug) {
-				this.debug=debug;
-			}
-
+			
 			@Override
 			public boolean debug() {
+				if (!debugInit) {
+					try {
+						debug = Boolean.parseBoolean(DNSFilterManager.getInstance().getConfig().getProperty("debug", "false"));
+					} catch (IOException e) {
+						Logger.getLogger().logException(e);
+					}
+					debugInit=true;
+				}
+					
 				return debug;
 			}
 
@@ -125,9 +132,10 @@ public class DNSFilterProxy implements Runnable {
 		}
 
 		Logger.setLogger(new GroupedLogger(new LoggerInterface[] {new StandaloneLogger()}));
+		ExecutionEnvironment.setEnvironment(new StandaloneEnvironment());
+		
 		DNSFilterManager filtermgr = DNSFilterManager.getInstance();
-
-		ExecutionEnvironment.setEnvironment(new StandaloneEnvironment(Boolean.parseBoolean(filtermgr.getConfig().getProperty("debug", "false"))));
+	
 		filtermgr.init();
 		initDNS(filtermgr);
 		DNSFilterProxy runner = new DNSFilterProxy(53);

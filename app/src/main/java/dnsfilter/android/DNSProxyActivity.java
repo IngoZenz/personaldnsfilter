@@ -629,7 +629,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		}
 
 		try {
-			REMOTE.updateFilter(entries,filter);
+			REMOTE.updateFilter(entries.trim(),filter);
 		} catch (IOException e) {
 			Logger.getLogger().logException(e);
 		}
@@ -999,7 +999,19 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 		if (REMOTE.isLocal()) {
 			try {
-				REMOTE = ConfigurationAccess.getRemote(this, "127.0.0.1", 3333, "test", "test");
+				String host = ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_host","");
+				String user = ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_user","");
+				String password = ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_password","");
+				if (host.equals("") || user.equals("") || password.equals(""))
+					throw new IOException("Remote Control not configured");
+
+				int port=3333;
+				try {
+					port = Integer.parseInt(ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_port","3333"));
+				} catch (Exception e) {
+					throw new IOException("Invalid connect_remote_ctrl_port");
+				}
+			REMOTE = ConfigurationAccess.getRemote(this, host, port, user, password);
 				((GroupedLogger) Logger.getLogger()).detachLogger(this);
 
 			} catch (IOException e) {
@@ -1388,7 +1400,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		//close menu
 		logOutView.clearFocus();
 
-		applyCopiedHosts(selection, filter);
+		applyCopiedHosts(selection.trim(), filter);
 	}
 
 	public void remoteWakeLock() {
