@@ -35,7 +35,7 @@
                 <action android:name="android.net.VpnService" />
             </intent-filter>
         </service>
-
+ 		
         <receiver
             android:name="dnsfilter.android.BootUpReceiver"
             android:enabled="true"

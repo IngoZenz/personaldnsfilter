@@ -22,9 +22,33 @@
 
 package dnsfilter.android;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Properties;
+import java.util.StringTokenizer;
+
+import dnsfilter.DNSCommunicator;
+import dnsfilter.DNSFilterManager;
+
+import dnsfilter.DNSResponsePatcher;
+import util.Logger;
+import util.LoggerInterface;
+import util.TimeoutListener;
+import util.TimoutNotificator;
+import util.Utils;
+
 import android.Manifest;
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -42,7 +66,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
-import android.os.StrictMode;
 import android.text.Editable;
 import android.text.Html;
 import android.text.Spannable;
@@ -62,103 +85,75 @@ import android.widget.HorizontalScrollView;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TextView;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Properties;
-import java.util.Stack;
-import java.util.StringTokenizer;
-
-import dnsfilter.ConfigurationAccess;
-import dnsfilter.DNSFilterManager;
-import util.ExecutionEnvironment;
-import util.ExecutionEnvironmentInterface;
-import util.GroupedLogger;
-import util.Logger;
-import util.LoggerInterface;
-import util.TimeoutListener;
-import util.TimoutNotificator;
-import util.Utils;
+import android.app.Dialog;
 
 
-public class DNSProxyActivity extends Activity implements ExecutionEnvironmentInterface, OnClickListener, LoggerInterface, TextWatcher, DialogInterface.OnKeyListener, ActionMode.Callback, MenuItem.OnMenuItemClickListener,View.OnTouchListener, View.OnFocusChangeListener {
+public class DNSProxyActivity extends Activity implements OnClickListener, LoggerInterface, TextWatcher, DialogInterface.OnKeyListener, ActionMode.Callback, MenuItem.OnMenuItemClickListener,View.OnTouchListener, View.OnFocusChangeListener {
 
 
 	protected static boolean BOOT_START = false;
 
-	protected Button startBtn;
-	protected Button stopBtn;
-	protected Button reloadFilterBtn;
-	protected Button remoteCtrlBtn;
-	protected static EditText logOutView;
-	protected static TextView dnsField;
-	protected static CheckBox advancedConfigCheck;
-	protected static CheckBox editFilterLoadCheck;
-	protected static CheckBox editAdditionalHostsCheck;
-	protected static CheckBox backupRestoreCheck;
-	protected static Button backupBtn;
-	protected static Button restoreBtn;
-	protected static Button restoreDefaultsBtn;
-	protected static TextView addFilterBtn;
-	protected static TextView removeFilterBtn;
-	protected static CheckBox appWhiteListCheck;
-	protected static ScrollView appWhiteListScroll;
-	protected static AppSelectorView appSelector;
-	protected static CheckBox keepAwakeCheck;
-	protected static CheckBox enableAutoStartCheck;
-	protected static CheckBox enableAdFilterCheck;
-	protected static EditText filterReloadIntervalView;
-	protected static FilterConfig filterCfg;
-	protected static EditText additionalHostsField;
-	protected static TextView scrollLockField;
-	protected static Dialog advDNSConfigDia;
-	protected static CheckBox manualDNSCheck;
-	protected static EditText manualDNSView;
-	protected static boolean advDNSConfigDia_open = false;
-	protected static String SCROLL_PAUSE = "II  ";
-	protected static String SCROLL_CONTINUE = ">>  ";
-	protected static boolean scroll_locked = false;
-	protected static TextView donate_field;
-	protected static int donate_field_color = Color.TRANSPARENT;
-	protected static Spanned donate_field_txt = fromHtml("<strong>Want to support us? Feel free to <a href='https://www.paypal.me/iZenz'>DONATE</a></strong>!");
-	protected static MenuItem add_filter;
-	protected static MenuItem remove_filter;
+	private Button startBtn;
+	private Button stopBtn;
+	private Button reloadFilterBtn;
+	private static EditText logOutView;
+	private static TextView dnsField;
+	private static CheckBox advancedConfigCheck;
+	private static CheckBox editFilterLoadCheck;
+	private static CheckBox editAdditionalHostsCheck;
+	private static CheckBox backupRestoreCheck;
+	private static Button backupBtn;
+	private static Button restoreBtn;
+	private static Button restoreDefaultsBtn;
+	private static TextView addFilterBtn;
+	private static TextView removeFilterBtn;
+	private static CheckBox appWhiteListCheck;
+	private static ScrollView appWhiteListScroll;
+	private static AppSelectorView appSelector;
+	private static CheckBox keepAwakeCheck;
+	private static CheckBox enableAutoStartCheck;
+	private static CheckBox enableAdFilterCheck;
+	private static EditText filterReloadIntervalView;
+	private static FilterConfig filterCfg;
+	private static EditText additionalHostsField;
+	private static TextView scrollLockField;
+	private static Dialog advDNSConfigDia;
+	private static CheckBox manualDNSCheck;
+	private static EditText manualDNSView;
+	private static boolean advDNSConfigDia_open = false;
+	private static String SCROLL_PAUSE = "II  ";
+	private static String SCROLL_CONTINUE = ">>  ";
+	private static boolean scroll_locked = false;
+	private static TextView donate_field;
+	private static int donate_field_color = Color.TRANSPARENT;
+	private static Spanned donate_field_txt = fromHtml("<strong>Want to support us? Feel free to <a href='https://www.paypal.me/iZenz'>DONATE</a></strong>!");
+	private static MenuItem add_filter;
+	private static MenuItem remove_filter;
 
 
-	protected static boolean additionalHostsChanged = false;
-	protected static LoggerInterface myLogger;
+	private static boolean additionalHostsChanged = false;
+	private static LoggerInterface myLogger;
 
-	protected ScrollView scrollView = null;
+	private ScrollView scrollView = null;
 
-	protected static boolean appStart = true;
+	private static boolean appStart = true;
 
-	protected static File WORKPATH = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter");
+	public static File WORKPATH = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter");;
 
-	protected static String ADDITIONAL_HOSTS_TO_LONG = "additionalHosts.txt too long to edit here!\nSize Limit: 512 KB!\nUse other editor!";
+	private static String ADDITIONAL_HOSTS_TO_LONG = "additionalHosts.txt too long to edit here!\nSize Limit: 512 KB!\nUse other editor!";
 
-	protected static Stack wakeLooks = new Stack();
+	private static WifiLock wifiLock;
+	private static WakeLock wakeLock;
 
-	protected static Intent SERVICE = null;
-	protected static Properties config = null;
+	private static Intent SERVICE = null;
+	private static Properties config = null;
 	protected static boolean debug = false;
 
-	protected static int NO_ACTION_MENU = 0;
+	private static int NO_ACTION_MENU = 0;
 
 
-	protected static String IN_FILTER_PREF = "X \u0009";
-	protected static String NO_FILTER_PREF = "✓\u0009";
-
-	ConfigurationAccess REMOTE = ConfigurationAccess.getLocal();
+	private static String IN_FILTER_PREF = "X \u0009";
+	private static String NO_FILTER_PREF = "✓\u0009";
 
 	private static class MsgTimeoutListener implements TimeoutListener {
 
@@ -263,18 +258,8 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 					scrollView.fullScroll(ScrollView.FOCUS_DOWN);
 				}
 			}
-			String version = "<unknown>";
-			String connCnt = "-1";
-			String lastDNS = "<unknown>";
-			try {
-				version = REMOTE.getVersion();
-				connCnt = REMOTE.openConnectionsCount()+"";
-				lastDNS= REMOTE.getLastDNSAddress();
-			} catch (IOException e){
-				addToLogView(e.toString()+"\n");
-			}
-			setTitle("personalDNSfilter V" + version + " (Connections:" + connCnt + ")");
-			dnsField.setText(lastDNS);
+			setTitle("personalDNSfilter V" + DNSFilterManager.VERSION + " (Connections:" + DNSFilterService.openConnectionsCount() + ")");
+			dnsField.setText(DNSCommunicator.getInstance().getLastDNSAddress());
 		}
 	}
 
@@ -283,12 +268,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-
-		StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().build());
-
 		super.onCreate(savedInstanceState);
-		ExecutionEnvironment.setEnvironment(this);
-
 		MsgTO.setActivity(this);
 
 		if (getIntent().getBooleanExtra("SHOULD_FINISH", false)) {
@@ -296,19 +276,8 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			System.exit(0);
 		}
 
-		DNSFilterManager.WORKDIR = DNSProxyActivity.WORKPATH.getAbsolutePath() + "/";
-
 		setContentView(R.layout.main);
-		String version = "<unknown>";
-		String connCnt = "-1";
-
-		try {
-			version = REMOTE.getVersion();
-			connCnt = REMOTE.openConnectionsCount()+"";
-		} catch (IOException e){
-			addToLogView(e.toString()+"\n");
-		}
-		setTitle("personalDNSfilter V" + version + " (Connections:" + connCnt + ")");
+		setTitle("personalDNSfilter V" + DNSFilterManager.VERSION + " (Connections:" + DNSFilterService.openConnectionsCount() + ")");
 
 		FilterConfig.FilterConfigEntry[] cfgEntries = null;
 		String filterCategory = null;
@@ -359,8 +328,6 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		stopBtn.setOnClickListener(this);
 		reloadFilterBtn = (Button) findViewById(R.id.filterReloadBtn);
 		reloadFilterBtn.setOnClickListener(this);
-		remoteCtrlBtn = (Button) findViewById(R.id.remoteCtrlBtn);
-		remoteCtrlBtn.setOnClickListener(this);
 		backupBtn = (Button) findViewById(R.id.backupBtn);
 		backupBtn.setOnClickListener(this);
 		restoreBtn = (Button) findViewById(R.id.RestoreBackupBtn);
@@ -476,16 +443,16 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 		handleAdvancedConfig();
 
-		if (myLogger != null) {
-			if (REMOTE.isLocal()) {
-				((GroupedLogger) Logger.getLogger()).detachLogger(myLogger);
-				((GroupedLogger) Logger.getLogger()).attachLogger(this);
-				myLogger = this;
-			}
-		} else {
-			Logger.setLogger(new GroupedLogger(new LoggerInterface[]{this}));
-			myLogger = this;
-		}
+		if (myLogger != null)
+			myLogger.closeLogger();
+		/*try {
+			Logger.setLogger(new AsyncBulkLogger(this));
+		} catch (IOException e) {
+			Logger.setLogger(this);
+			Logger.getLogger().logException(e);
+		}*/
+		Logger.setLogger(this);
+		myLogger = Logger.getLogger();
 
 		boolean storagePermission = true;
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -502,139 +469,6 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	}
 
 
-	protected Properties getConfig() {
-		try {
-			return REMOTE.getConfig();
-		} catch (Exception e){
-			Logger.getLogger().logException(e);
-			return null;
-		}
-	}
-
-
-
-	protected void updateConfig(byte[] cfg ) throws IOException {
-		REMOTE.updateConfig(cfg);
-	}
-
-
-
-	protected void showFilterRate() {
-
-		try {
-			long[] stats = REMOTE.getFilterStatistics();
-			long all = stats[0]+stats[1];
-
-			if (all != 0) {
-				long filterRate = 100*stats[1] / all;
-				Logger.getLogger().message("Block rate: "+filterRate+"% ("+stats[1]+" blocked)!");
-			}
-		} catch (Exception e) {
-			Logger.getLogger().logException(e);
-		}
-	}
-
-
-	protected void doBackup() {
-		TextView backupStatusView = findViewById(R.id.backupLog);
-		try {
-			REMOTE.doBackup();
-			backupStatusView.setTextColor(Color.parseColor("#23751C"));
-			backupStatusView.setText("Backup Success!");
-		} catch (IOException eio) {
-			backupStatusView.setTextColor(Color.parseColor("#D03D06"));
-			backupStatusView.setText("Backup Failed! " + eio.getMessage());
-		}
-	}
-
-	protected void doRestoreDefaults() {
-		TextView backupStatusView = findViewById(R.id.backupLog);
-		try {
-			REMOTE.doRestoreDefaults();
-			backupStatusView.setTextColor(Color.parseColor("#23751C"));
-			loadAndApplyConfig(false);
-			backupStatusView.setText("Restore Success!");
-		} catch (IOException eio) {
-			backupStatusView.setTextColor(Color.parseColor("#D03D06"));
-			backupStatusView.setText("Restore Failed! " + eio.getMessage());
-		}
-	}
-
-	protected void doRestore() {
-		TextView backupStatusView = findViewById(R.id.backupLog);
-		try {
-			REMOTE.doRestore();
-			backupStatusView.setTextColor(Color.parseColor("#23751C"));
-			loadAndApplyConfig(false);
-			backupStatusView.setText("Restore Success!");
-		} catch (IOException eio) {
-			backupStatusView.setTextColor(Color.parseColor("#D03D06"));
-			backupStatusView.setText("Restore Failed! " + eio.getMessage());
-		}
-	}
-
-
-
-
-	protected void loadAdditionalHosts() {
-		int limit= 524288;
-		try {
-			byte[] content = REMOTE.getAdditionalHosts(limit);
-			if (content == null) {
-				additionalHostsField.setText(ADDITIONAL_HOSTS_TO_LONG);
-				additionalHostsField.setEnabled(false);
-				return;
-			}
-			additionalHostsField.setText(new String(content));
-			additionalHostsChanged = false;
-		} catch (IOException eio) {
-			Logger.getLogger().logLine("Can not load /PersonalDNSFilter/additionalHosts.txt!\n" + eio.toString());
-		}
-	}
-
-
-	protected boolean persistAdditionalHosts() {
-		String addHostsTxt = additionalHostsField.getText().toString();
-		if (!addHostsTxt.equals("") && !addHostsTxt.equals(ADDITIONAL_HOSTS_TO_LONG)) {
-			if (additionalHostsChanged)
-				try {
-					REMOTE.updateAdditionalHosts(addHostsTxt.getBytes());
-				} catch (IOException eio) {
-					Logger.getLogger().logLine("Cannot persistAdditionalHosts!\n" + eio.toString());
-				}
-		}
-		return additionalHostsChanged;
-	}
-
-
-
-	protected void handlefilterReload() {
-		try {
-			REMOTE.triggerUpdateFilter();
-		} catch (Exception e) {
-			Logger.getLogger().logException(e);
-		}
-	}
-
-	protected  void applyCopiedHosts(String entryStr, boolean filter) {
-		findViewById(R.id.copyfromlog).setVisibility(View.GONE);
-
-		StringTokenizer entryTokens = new StringTokenizer(entryStr, "\n");
-		String entries = "";
-		while (entryTokens.hasMoreTokens()) {
-			String token = entryTokens.nextToken();
-			if (token.startsWith(IN_FILTER_PREF) || token.startsWith(NO_FILTER_PREF)) {
-				entries = entries+token.substring(1).trim()+"\n";
-			}
-		}
-
-		try {
-			REMOTE.updateFilter(entries,filter);
-		} catch (IOException e) {
-			Logger.getLogger().logException(e);
-		}
-	}
-
 	private void initAppAndStartup() {
 		logLine("Initializing ...");
 		if (BOOT_START) {
@@ -643,7 +477,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 				finish();
 			BOOT_START = false;
 		}
-		loadAndApplyConfig(true);
+		loadAndApplyConfig();
 		appStart = false; // now started
 	}
 
@@ -659,12 +493,14 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		}
 	}
 
-	protected void loadAndApplyConfig(boolean startApp) {
+	private void loadAndApplyConfig() {
 
 		config = getConfig();
 
 		if (config != null) {
 			debug = Boolean.parseBoolean(config.getProperty("debug", "false"));
+
+			releaseWakeLock(); // will be set again below in case configured
 
 			manualDNSCheck.setChecked(!Boolean.parseBoolean(config.getProperty("detectDNS", "true")));
 
@@ -687,12 +523,11 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 			keepAwakeCheck.setChecked(Boolean.parseBoolean(config.getProperty("androidKeepAwake", "false")));
 			if (keepAwakeCheck.isChecked())
-				remoteWakeLock();
+				requestWakeLock();
 
 			//set whitelisted Apps into UI
 			appSelector.setSelectedApps(config.getProperty("androidAppWhiteList", ""));
-			if (startApp)
-				handleStartWithVPN();
+			handleStart();
 		}
 	}
 
@@ -775,6 +610,133 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	}
 
 
+	private Properties getConfig() {
+
+		File propsFile = new File(WORKPATH + "/dnsfilter.conf");
+		if (!propsFile.exists()) {
+			Logger.getLogger().logLine(propsFile + " not found! - creating default config!");
+			createDefaultConfiguration();
+			propsFile = new File(WORKPATH+"/dnsfilter.conf");
+		}
+		try {
+			InputStream in = new FileInputStream(propsFile);
+			Properties config = new Properties();
+			config.load(in);
+			in.close();
+
+			// check for additionalHosts.txt
+			File f = new File(WORKPATH+"/additionalHosts.txt");
+			if (!f.exists()) {
+				f.createNewFile();
+				FileOutputStream fout = new FileOutputStream(f);
+
+				AssetManager assetManager = this.getAssets();
+				InputStream defIn = assetManager.open("additionalHosts.txt");
+				Utils.copyFully(defIn, fout, true);
+			}
+
+			//check versions, in case different merge existing configuration with defaults
+			File versionFile = new File(WORKPATH+"/VERSION.TXT");
+			String vStr = "";
+			if (versionFile.exists()) {
+				InputStream vin = new FileInputStream(versionFile);
+				vStr = new String(Utils.readFully(vin, 100));
+				vin.close();
+			}
+			if (!vStr.equals(DNSFilterManager.VERSION)) {
+				//Version Change ==> merge config with new default config
+				Logger.getLogger().logLine("Updated version! Previous version:" + vStr + ", current version:" + DNSFilterManager.VERSION);
+				createDefaultConfiguration();
+				config = mergeAndPersistConfig(config);
+			}
+			return config;
+		} catch (Exception e) {
+			Logger.getLogger().logException(e);
+			return null;
+		}
+	}
+
+	private Properties mergeAndPersistConfig(Properties currentConfig) throws IOException {
+		String[] currentKeys = currentConfig.keySet().toArray(new String[0]);
+		BufferedReader defCfgReader = new BufferedReader(new InputStreamReader(this.getAssets().open("dnsfilter.conf")));
+		File mergedConfig = new File(WORKPATH+"/dnsfilter.conf");
+		FileOutputStream mergedout = new FileOutputStream(mergedConfig);
+		String ln = "";
+		while ((ln = defCfgReader.readLine()) != null) {
+			for (int i = 0; i < currentKeys.length; i++)
+				if (ln.startsWith(currentKeys[i] + " ="))
+					ln = currentKeys[i] + " = " + currentConfig.getProperty(currentKeys[i], "");
+
+			mergedout.write((ln + "\r\n").getBytes());
+		}
+		defCfgReader.close();
+
+		//take over custom properties (such as filter overrules) which are not in def config
+		Properties defProps = new Properties();
+		defProps.load(this.getAssets().open("dnsfilter.conf"));
+		boolean first = true;
+		for (int i = 0; i < currentKeys.length; i++) {
+			if (!defProps.containsKey(currentKeys[i])) {
+				if (first)
+					mergedout.write(("\r\n# Merged custom config from previous config file:\r\n").getBytes());
+				first = false;
+				ln = currentKeys[i] + " = " + currentConfig.getProperty(currentKeys[i], "");
+				mergedout.write((ln + "\r\n").getBytes());
+			}
+		}
+		mergedout.flush();
+		mergedout.close();
+		Logger.getLogger().logLine("Merged configuration 'dnsfilter.conf' after update to version " + DNSFilterManager.VERSION + "!");
+		InputStream in = new FileInputStream(mergedConfig);
+		Properties config = new Properties();
+		config.load(in);
+		in.close();
+
+		return config;
+	}
+
+
+	private void createDefaultConfiguration() {
+		try {
+			File f = new File(WORKPATH+"");
+			f.mkdir();
+
+			//dnsfilter.conf
+			f = new File(WORKPATH+"/dnsfilter.conf");
+			f.createNewFile();
+			FileOutputStream fout = new FileOutputStream(f);
+
+			AssetManager assetManager = this.getAssets();
+			InputStream defIn = assetManager.open("dnsfilter.conf");
+			Utils.copyFully(defIn, fout, true);
+
+			//additionalHosts.txt
+			f = new File(WORKPATH+"/additionalHosts.txt");
+			if (!f.exists()) {
+				f.createNewFile();
+				fout = new FileOutputStream(f);
+
+				assetManager = this.getAssets();
+				defIn = assetManager.open("additionalHosts.txt");
+				Utils.copyFully(defIn, fout, true);
+			}
+
+			//VERSION.TXT
+			f = new File(WORKPATH+"/VERSION.TXT");
+			f.createNewFile();
+			fout = new FileOutputStream(f);
+
+			fout.write(DNSFilterManager.VERSION.getBytes());
+
+			fout.flush();
+			fout.close();
+
+			Logger.getLogger().logLine("Default configuration created successfully!");
+		} catch (IOException e) {
+			Logger.getLogger().logLine("FAILED creating default Configuration!");
+			Logger.getLogger().logException(e);
+		}
+	}
 
 
 	public String[] getFilterCfgStrings(FilterConfig.FilterConfigEntry[] filterEntries) {
@@ -817,10 +779,11 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 			String[] filterCfgStrings = getFilterCfgStrings(filterCfg.getFilterEntries());
 
+			File propsFile = new File(WORKPATH+"/dnsfilter.conf");
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			String ln;
 
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(REMOTE.readConfig())));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(propsFile)));
 			while ((ln = reader.readLine()) != null) {
 
 				String lnOld = ln;
@@ -869,10 +832,11 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			out.flush();
 			out.close();
 
-			if (changed) {
-				updateConfig(out.toByteArray());
-				Logger.getLogger().message("Config Changed!\nRestart might be required!");
-			}
+			FileOutputStream fout = new FileOutputStream(WORKPATH+"/dnsfilter.conf");
+			fout.write(out.toByteArray());
+			fout.flush();
+			fout.close();
+			if (changed) Logger.getLogger().message("Config Changed!\nRestart might be required!");
 
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
@@ -923,7 +887,36 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		return false;
 	}
 
+	private void requestWakeLock() {
+		wifiLock = ((WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL, "personalHttpProxy");
+		wifiLock.acquire();
+		wakeLock = ((PowerManager) getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "personalHttpProxy");
+		wakeLock.acquire();
+		Logger.getLogger().logLine("Aquired WIFI lock and partial wake lock!");
+	}
 
+	private void releaseWakeLock() {
+		if (wifiLock != null && wakeLock != null) {
+			wifiLock.release();
+			wakeLock.release();
+			wifiLock = null;
+			wakeLock = null;
+			Logger.getLogger().logLine("Released WIFI lock and partial wake lock!");
+		}
+	}
+
+
+	private void showFilterRate() {
+		DNSFilterManager filterMgr = DNSFilterService.DNSFILTER;
+		if (filterMgr != null){
+			long all = DNSResponsePatcher.getOkCount()+DNSResponsePatcher.getFilterCount();
+			
+			if (all != 0) {
+				long filterRate = 100*DNSResponsePatcher.getFilterCount() / all;
+				Logger.getLogger().message("Block rate: "+filterRate+"% ("+DNSResponsePatcher.getFilterCount()+" blocked)!");
+			}
+		}
+	}
 
 	@Override
 	public void onClick(View destination) {
@@ -973,13 +966,10 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 		persistConfig();
 
-		if (destination == remoteCtrlBtn)
-			handleRemoteControl();
-
 		if (destination == startBtn || destination == enableAdFilterCheck)
-			handleRestart();
+			handleStart();
 		if (destination == stopBtn)
-			handleExitApp();
+			handleStop();
 		if (destination == reloadFilterBtn)
 			handlefilterReload();
 
@@ -988,38 +978,97 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		}
 		if (destination == keepAwakeCheck) {
 			if (keepAwakeCheck.isChecked()) {
-				remoteWakeLock();
+				requestWakeLock();
 			} else {
-				remoteReleaseWakeLock();
+				releaseWakeLock();
 			}
 		}
-	}
-
-	private void handleRemoteControl() {
-
-		if (REMOTE.isLocal()) {
-			try {
-				REMOTE = ConfigurationAccess.getRemote(this, "127.0.0.1", 3333, "test", "test");
-				((GroupedLogger) Logger.getLogger()).detachLogger(this);
-
-			} catch (IOException e) {
-				Logger.getLogger().logLine("Remote Connect failed!" + e.toString());
-				REMOTE = ConfigurationAccess.getLocal();
-			}
-		} else {
-			REMOTE.releaseConfiguration();
-			REMOTE = ConfigurationAccess.getLocal();
-			myLogger = this;
-			((GroupedLogger) Logger.getLogger()).attachLogger(this);
-		}
-		loadAndApplyConfig(false);
-		logLine("====>CONNECTED to "+REMOTE+" <====");
 	}
 
 
 	private void handleDonate() {
 		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.paypal.me/IZenz"));
 		startActivity(browserIntent);
+	}
+
+	private void copyLocalFile(String from, String to) throws IOException {
+		File fromFile = new File(WORKPATH+"/" + from);
+		File toFile = new File(WORKPATH+"/" + to);
+		Utils.copyFile(fromFile, toFile);
+	}
+
+	private void copyFromAssets(String from, String to) throws IOException {
+		AssetManager assetManager = this.getAssets();
+		InputStream defIn = assetManager.open(from);
+		File toFile = new File((WORKPATH+"/" + to));
+		toFile.getParentFile().mkdirs();
+		FileOutputStream out = new FileOutputStream(toFile);
+		Utils.copyFully(defIn, out, true);
+	}
+
+	private void doBackup() {
+		TextView backupStatusView = findViewById(R.id.backupLog);
+		try {
+			copyLocalFile("dnsfilter.conf", "backup/dnsfilter.conf");
+			copyLocalFile("additionalHosts.txt", "backup/additionalHosts.txt");
+			copyLocalFile("VERSION.TXT", "backup/VERSION.TXT");
+			backupStatusView.setTextColor(Color.parseColor("#23751C"));
+			backupStatusView.setText("Backup Success!");
+		} catch (IOException eio) {
+			backupStatusView.setTextColor(Color.parseColor("#D03D06"));
+			backupStatusView.setText("Backup Failed! " + eio.getMessage());
+		}
+	}
+
+	private void doRestoreDefaults() {
+		TextView backupStatusView = findViewById(R.id.backupLog);
+		try {
+
+			if (!DNSFilterService.stop(false))
+				throw new IOException("Can not stop - Retry later!");
+
+			copyFromAssets("dnsfilter.conf", "dnsfilter.conf");
+			copyFromAssets("additionalHosts.txt", "additionalHosts.txt");
+
+			//cleanup hostsfile and index in order to force reload
+			String filterHostFile = null;
+			if (config != null && ((filterHostFile = config.getProperty("filterHostsFile")) != null)) {
+				new File(WORKPATH+"/" + filterHostFile).delete();
+			}
+
+			backupStatusView.setTextColor(Color.parseColor("#23751C"));
+			loadAndApplyConfig();
+			backupStatusView.setText("Restore Success!");
+		} catch (IOException eio) {
+			backupStatusView.setTextColor(Color.parseColor("#D03D06"));
+			backupStatusView.setText("Restore Failed! " + eio.getMessage());
+		}
+	}
+
+	private void doRestore() {
+		TextView backupStatusView = findViewById(R.id.backupLog);
+		try {
+
+			if (!DNSFilterService.stop(false))
+				throw new IOException("Can not stop - Retry later!");
+
+			copyLocalFile("backup/dnsfilter.conf", "dnsfilter.conf");
+			copyLocalFile("backup/additionalHosts.txt", "additionalHosts.txt");
+			copyLocalFile("backup/VERSION.TXT", "VERSION.TXT");
+
+			//cleanup hostsfile and index in order to force reload
+			String filterHostFile = null;
+			if (config != null && ((filterHostFile = config.getProperty("filterHostsFile")) != null)) {
+				new File(WORKPATH+"/" + filterHostFile).delete();
+			}
+
+			backupStatusView.setTextColor(Color.parseColor("#23751C"));
+			loadAndApplyConfig();
+			backupStatusView.setText("Restore Success!");
+		} catch (IOException eio) {
+			backupStatusView.setTextColor(Color.parseColor("#D03D06"));
+			backupStatusView.setText("Restore Failed! " + eio.getMessage());
+		}
 	}
 
 
@@ -1100,7 +1149,49 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		}
 	}
 
-	protected synchronized void handleExitApp() {
+
+	private void loadAdditionalHosts() {
+		try {
+			File f = new File(WORKPATH+"/additionalHosts.txt");
+
+			if (f.length() > 524288) {
+				additionalHostsField.setText(ADDITIONAL_HOSTS_TO_LONG);
+				additionalHostsField.setEnabled(false);
+				return;
+			}
+			InputStream in = new FileInputStream(f);
+			additionalHostsField.setText(new String(Utils.readFully(in, 1024)));
+			additionalHostsChanged = false;
+		} catch (IOException eio) {
+			Logger.getLogger().logLine("Can not load /PersonalDNSFilter/additionalHosts.txt!\n" + eio.toString());
+		}
+	}
+
+	private boolean persistAdditionalHosts() {
+		String addHostsTxt = additionalHostsField.getText().toString();
+		if (!addHostsTxt.equals("") && !addHostsTxt.equals(ADDITIONAL_HOSTS_TO_LONG)) {
+			if (additionalHostsChanged)
+				try {
+					File f = new File(WORKPATH+"/additionalHosts.txt");
+					FileOutputStream fout = new FileOutputStream(f);
+					fout.write(addHostsTxt.getBytes());
+					fout.flush();
+					fout.close();
+				} catch (IOException eio) {
+					Logger.getLogger().logLine("Cannot persistAdditionalHosts!\n" + eio.toString());
+				}
+		}
+		return additionalHostsChanged;
+	}
+
+	private void handlefilterReload() {
+		if (DNSFilterService.DNSFILTER != null)
+			DNSFilterService.DNSFILTER.triggerUpdateFilter();
+		else Logger.getLogger().logLine("DNS Filter is not running!");
+	}
+
+
+	private synchronized void handleStop() {
 		if (SERVICE != null) {
 			DNSFilterService.stop(true);
 			stopService(SERVICE);
@@ -1112,16 +1203,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		startActivity(intent);
 	}
 
-	private void handleRestart() {
-		try {
-			REMOTE.restart();
-			loadAndApplyConfig(false);
-		} catch (IOException e)  {
-			Logger.getLogger().logException(e);
-		}
-	}
-
-	protected void handleStartWithVPN() {
+	private void handleStart() {
 
 		if (!DNSFilterService.stop(false))
 			return;
@@ -1391,88 +1473,23 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		applyCopiedHosts(selection, filter);
 	}
 
-	public void remoteWakeLock() {
-		try {
-			REMOTE.wakeLock();
-		} catch (IOException e) {
-			Logger.getLogger().logLine("WakeLock failed! "+e);
-		}
-	}
+	private void applyCopiedHosts(String entryStr, boolean filter) {
+		findViewById(R.id.copyfromlog).setVisibility(View.GONE);
 
-	public void remoteReleaseWakeLock() {
-		try {
-			REMOTE.releaseWakeLock();
-		} catch (IOException e) {
-			Logger.getLogger().logLine("releaseWakeLock failed! " + e);
-		}
-	}
-
-
-
-	@Override
-	public void wakeLock(){
-		WifiLock wifiLock = ((WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL, "personalHttpProxy");
-		wifiLock.acquire();
-		WakeLock wakeLock = ((PowerManager) getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "personalHttpProxy");
-		wakeLock.acquire();
-		wakeLooks.push(new Object[]{wifiLock, wakeLock});
-		Logger.getLogger().logLine("Aquired WIFI lock and partial wake lock!");
-	}
-
-	@Override
-	public void releaseWakeLock() {
-		Object[] locks;
-		try {
-			locks = (Object[]) wakeLooks.pop();
-		} catch (Exception e) {
-			Logger.getLogger().logException(e);
-			return;
-		}
-		WifiLock wifiLock = (WifiLock) locks[0];
-		WakeLock wakeLock = (WakeLock) locks[1];
-		wifiLock.release();
-		wakeLock.release();
-		Logger.getLogger().logLine("Released WIFI lock and partial wake lock!");
-	}
-
-	@Override
-	public void releaseAllWakeLocks() {
-		Object[] locks;
-		while (!wakeLooks.isEmpty()) {
-			try {
-				locks = (Object[]) wakeLooks.pop();
-			} catch (Exception e) {
-				Logger.getLogger().logException(e);
-				return;
+		StringTokenizer entryTokens = new StringTokenizer(entryStr, "\n");
+		String entries = "";
+		while (entryTokens.hasMoreTokens()) {
+			String token = entryTokens.nextToken();
+			if (token.startsWith(IN_FILTER_PREF) || token.startsWith(NO_FILTER_PREF)) {
+				entries = entries+token.substring(1).trim()+"\n";
 			}
-			WifiLock wifiLock = (WifiLock) locks[0];
-			WakeLock wakeLock = (WakeLock) locks[1];
-			wifiLock.release();
-			wakeLock.release();
-			Logger.getLogger().logLine("Released WIFI lock and partial wake lock!");
 		}
+		DNSFilterManager filterMgr = DNSFilterService.DNSFILTER;
+		if (filterMgr != null)
+			try {
+				filterMgr.updateFilter(entries,filter);
+			} catch (IOException e) {
+				Logger.getLogger().logException(e);
+			}
 	}
-
-	@Override
-	public String getWorkDir() {
-		return DNSProxyActivity.WORKPATH+"/";
-	}
-
-	@Override
-	public boolean debug() {
-		return DNSProxyActivity.debug;
-	}
-
-	@Override
-	public void onReload() throws IOException {
-		DNSFilterService.onReload();
-	}
-
-	@Override
-	public InputStream getAsset(String path) throws IOException {
-		AssetManager assetManager = this.getAssets();
-		return(assetManager.open(path));
-	}
-
-
 }

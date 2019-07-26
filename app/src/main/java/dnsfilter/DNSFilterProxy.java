@@ -24,16 +24,16 @@ package dnsfilter;
 
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
 import util.ExecutionEnvironment;
-import util.GroupedLogger;
+import util.ExecutionEnvironmentInterface;
 import util.Logger;
-import util.LoggerInterface;
 
 public class DNSFilterProxy implements Runnable {
 
@@ -46,30 +46,26 @@ public class DNSFilterProxy implements Runnable {
 	}
 
 	private static void initDNS(DNSFilterManager dnsFilterMgr) {
-		try {
 
-			Vector<DNSServer> dnsAdrs = new Vector<DNSServer>();
-			int timeout = Integer.parseInt(dnsFilterMgr.getConfig().getProperty("dnsRequestTimeout", "15000"));
+		Vector<DNSServer> dnsAdrs = new Vector<DNSServer>();
+		int timeout = Integer.parseInt(dnsFilterMgr.getConfig().getProperty("dnsRequestTimeout", "15000"));
 
-			StringTokenizer fallbackDNS = new StringTokenizer(dnsFilterMgr.getConfig().getProperty("fallbackDNS", ""), ";");
-			int cnt = fallbackDNS.countTokens();
-			for (int i = 0; i < cnt; i++) {
-				String dnsEntry = fallbackDNS.nextToken().trim();
-				Logger.getLogger().logLine("DNS:" + dnsEntry);
-				try {
-					dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry, timeout));
-				} catch (IOException e) {
-					Logger.getLogger().logException(e);
-				}
+		StringTokenizer fallbackDNS = new StringTokenizer(dnsFilterMgr.getConfig().getProperty("fallbackDNS", ""), ";");
+		int cnt = fallbackDNS.countTokens();
+		for (int i = 0; i < cnt; i++) {
+			String dnsEntry = fallbackDNS.nextToken().trim();
+			Logger.getLogger().logLine("DNS:" + dnsEntry);
+			try {
+				dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry,timeout));
+			} catch (IOException e) {
+				Logger.getLogger().logException(e);
 			}
-			DNSCommunicator.getInstance().setDNSServers(dnsAdrs.toArray(new DNSServer[dnsAdrs.size()]));
-		} catch (IOException e) {
-			Logger.getLogger().logException(e);
 		}
+		DNSCommunicator.getInstance().setDNSServers(dnsAdrs.toArray(new DNSServer[dnsAdrs.size()]));
 	}
 
 	public static void main(String[] args) throws Exception {
-		class StandaloneEnvironment extends ExecutionEnvironment  {
+		class StandaloneEnvironment extends ExecutionEnvironment {
 
 			boolean debug;
 
@@ -81,57 +77,13 @@ public class DNSFilterProxy implements Runnable {
 			public boolean debug() {
 				return debug;
 			}
-
-			@Override
-			public void onReload() {
-				DNSFilterProxy.initDNS(DNSFilterManager.getInstance());
-			}
-
-			@Override
-			public InputStream getAsset(String path) throws IOException {
-				return Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
-			}
-
 		}
 
-		class StandaloneLogger  implements LoggerInterface {
-
-			@Override
-			public void logLine(String txt) {
-				System.out.println(txt);
-			}
-
-			@Override
-			public void logException(Exception e) {
-				e.printStackTrace();
-			}
-
-			@Override
-			public void log(String txt) {
-				System.out.print(txt);
-
-			}
-
-			@Override
-			public void message(String txt) {
-				logLine(txt);
-			}
-
-			@Override
-			public void closeLogger() {
-
-			}
-
-		}
-
-		Logger.setLogger(new GroupedLogger(new LoggerInterface[] {new StandaloneLogger()}));
-		DNSFilterManager filtermgr = DNSFilterManager.getInstance();
-
-		ExecutionEnvironment.setEnvironment(new StandaloneEnvironment(Boolean.parseBoolean(filtermgr.getConfig().getProperty("debug", "false"))));
+		DNSFilterManager filtermgr = new DNSFilterManager();
 		filtermgr.init();
+		ExecutionEnvironment.setEnvironment(new StandaloneEnvironment(filtermgr.debug));
 		initDNS(filtermgr);
-		DNSFilterProxy runner = new DNSFilterProxy(53);
-		runner.run();
+		new DNSFilterProxy(53).run();
 	}
 
 	@Override
@@ -164,6 +116,4 @@ public class DNSFilterProxy implements Runnable {
 			return;
 		receiver.close();
 	}
-
-
 }

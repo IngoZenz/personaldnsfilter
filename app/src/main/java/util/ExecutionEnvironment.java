@@ -22,10 +22,7 @@
 
 package util;
 
- import java.io.IOException;
- import java.io.InputStream;
-
- public class ExecutionEnvironment implements ExecutionEnvironmentInterface {
+public class ExecutionEnvironment implements ExecutionEnvironmentInterface {
 	
 	private static ExecutionEnvironmentInterface m_Env;
 	private static ExecutionEnvironmentInterface m_default = new ExecutionEnvironment();
@@ -53,11 +50,6 @@ package util;
 	public void releaseWakeLock() {
 		// by default do nothing		
 	}
-
-	 @Override
-	 public void releaseAllWakeLocks() {
-		 // by default do nothing
-	 }
 	
 	@Override
 	public String getWorkDir() {
@@ -65,16 +57,8 @@ package util;
 	}
 
 	@Override
-	public boolean debug()  {
+	public boolean debug() {
 		return false;
 	}
 
-	@Override
-	public void onReload() throws IOException {}
-
-	 @Override
-	 public InputStream getAsset(String path) throws IOException {
-		 throw new IOException("Not supported!");
-	 }
-
- }
+}

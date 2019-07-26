@@ -22,16 +22,10 @@
 
 package util;
 
- import java.io.IOException;
- import java.io.InputStream;
-
- public interface ExecutionEnvironmentInterface {
+public interface ExecutionEnvironmentInterface {
 	
 	public void wakeLock();
 	public void releaseWakeLock();
-	public void releaseAllWakeLocks();
 	public String getWorkDir();
 	public boolean debug();
-	public void onReload()  throws IOException;
-	public InputStream getAsset(String path) throws IOException;
 }

@@ -22,42 +22,49 @@
 
 package dnsfilter.android;
 
-import android.annotation.SuppressLint;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
-import android.net.VpnService;
-import android.os.Build;
-import android.os.ParcelFileDescriptor;
-import android.os.PowerManager.WakeLock;
+import dnsfilter.DNSServer;
+import ip.IPPacket;
+import ip.UDPPacket;
 
-import java.io.DataOutputStream;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.FileOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Method;
+
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import util.ExecutionEnvironment;
+import util.ExecutionEnvironmentInterface;
+import util.Logger;
+
+import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.net.VpnService;
+import android.os.Build;
+import android.os.ParcelFileDescriptor;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
+
 import dnsfilter.DNSCommunicator;
 import dnsfilter.DNSFilterManager;
 import dnsfilter.DNSFilterProxy;
 import dnsfilter.DNSResolver;
-import dnsfilter.DNSServer;
-import ip.IPPacket;
-import ip.UDPPacket;
-import util.Logger;
 
 
-public class DNSFilterService extends VpnService  {
+public class DNSFilterService extends VpnService implements ExecutionEnvironmentInterface {
 
 	private static String VIRTUALDNS_IPV4 = "10.10.10.10";
 	private static String VIRTUALDNS_IPV6 = "fdc8:1095:91e1:aaaa:aaaa:aaaa:aaaa:aaa1";
@@ -76,11 +83,12 @@ public class DNSFilterService extends VpnService  {
 
 	private static int startCounter = 0;
 
+	private static WakeLock wakeLock = null;
+
 	private boolean blocking = false;
 	private VPNRunner vpnRunner=null;
 	boolean manageDNSCryptProxy = false;
 	boolean dnsCryptProxyStartTriggered = false;
-	PendingIntent pendingIntent;
 
 
 	class VPNRunner implements Runnable {
@@ -177,145 +185,74 @@ public class DNSFilterService extends VpnService  {
 			Logger.getLogger().logLine("VPN Runner Thread "+id+" terminated!");
 		}
 
-	}
 
+	}
 
 
 	public static void detectDNSServers() {
 
+		DNSFilterManager dnsFilterMgr = DNSFILTER;
+
+		if (dnsFilterMgr == null)
+			return;
+
+		boolean detect = Boolean.parseBoolean(dnsFilterMgr.getConfig().getProperty("detectDNS", "true"));
+		int timeout = 15000;
+
 		try {
-			DNSFilterManager dnsFilterMgr = DNSFILTER;
+			timeout = Integer.parseInt(dnsFilterMgr.getConfig().getProperty("dnsRequestTimeout", "15000"));
+		} catch (Exception e) {
+			Logger.getLogger().logException(e);
+		}
 
-			if (dnsFilterMgr == null)
-				return;
+		if (!detect && !JUST_STARTED)
+			return;  //only static DNS server config already loaded
 
-			boolean detect = Boolean.parseBoolean(dnsFilterMgr.getConfig().getProperty("detectDNS", "true"));
+		JUST_STARTED = false;
 
-			int timeout = 15000;
+		if (DNSProxyActivity.debug)
+			Logger.getLogger().logLine("Detecting DNS Servers...");
+		Vector<DNSServer> dnsAdrs = new Vector<DNSServer>();
 
+		if (detect) {
 			try {
-				timeout = Integer.parseInt(dnsFilterMgr.getConfig().getProperty("dnsRequestTimeout", "15000"));
+				Class<?> SystemProperties = Class.forName("android.os.SystemProperties");
+				Method method = SystemProperties.getMethod("get", new Class[]{String.class});
+
+				for (String name : new String[]{"net.dns1", "net.dns2", "net.dns3", "net.dns4",}) {
+					String value = (String) method.invoke(null, name);
+					if (value != null && !value.equals("")) {
+						if (DNSProxyActivity.debug) Logger.getLogger().logLine("DNS:" + value);
+						if (!value.equals(VIRTUALDNS_IPV4) && !value.equals(VIRTUALDNS_IPV6))
+							dnsAdrs.add(DNSServer.getInstance().createDNSServer(DNSServer.UDP,InetAddress.getByName(value),53,15000,null));
+					}
+				}
 			} catch (Exception e) {
 				Logger.getLogger().logException(e);
 			}
-
-			if (!detect && !JUST_STARTED)
-				return;  //only static DNS server config already loaded
-
-			JUST_STARTED = false;
-
-			if (DNSProxyActivity.debug)
-				Logger.getLogger().logLine("Detecting DNS Servers...");
-			Vector<DNSServer> dnsAdrs = new Vector<DNSServer>();
-
-			if (detect) {
+		}
+		if (dnsAdrs.isEmpty()) { //fallback
+			StringTokenizer fallbackDNS = new StringTokenizer(dnsFilterMgr.getConfig().getProperty("fallbackDNS", ""), ";");
+			int cnt = fallbackDNS.countTokens();
+			for (int i = 0; i < cnt; i++) {
+				String dnsEntry = fallbackDNS.nextToken().trim();
+				if (DNSProxyActivity.debug) Logger.getLogger().logLine("DNS:" + dnsEntry);
 				try {
-					Class<?> SystemProperties = Class.forName("android.os.SystemProperties");
-					Method method = SystemProperties.getMethod("get", new Class[]{String.class});
-
-					for (String name : new String[]{"net.dns1", "net.dns2", "net.dns3", "net.dns4",}) {
-						String value = (String) method.invoke(null, name);
-						if (value != null && !value.equals("")) {
-							if (DNSProxyActivity.debug) Logger.getLogger().logLine("DNS:" + value);
-							if (!value.equals(VIRTUALDNS_IPV4) && !value.equals(VIRTUALDNS_IPV6))
-								dnsAdrs.add(DNSServer.getInstance().createDNSServer(DNSServer.UDP, InetAddress.getByName(value), 53, 15000, null));
-						}
-					}
+					dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry,timeout));
 				} catch (Exception e) {
-					Logger.getLogger().logException(e);
+					Logger.getLogger().logLine("Cannot create DNS Server for "+dnsEntry+"!\n" + e.toString());
+					Logger.getLogger().message("Invalid DNS Server entry: '" +dnsEntry);
 				}
 			}
-			if (dnsAdrs.isEmpty()) { //fallback
-				StringTokenizer fallbackDNS = new StringTokenizer(dnsFilterMgr.getConfig().getProperty("fallbackDNS", ""), ";");
-				int cnt = fallbackDNS.countTokens();
-				for (int i = 0; i < cnt; i++) {
-					String dnsEntry = fallbackDNS.nextToken().trim();
-					if (DNSProxyActivity.debug) Logger.getLogger().logLine("DNS:" + dnsEntry);
-					try {
-						dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry, timeout));
-					} catch (Exception e) {
-						Logger.getLogger().logLine("Cannot create DNS Server for " + dnsEntry + "!\n" + e.toString());
-						Logger.getLogger().message("Invalid DNS Server entry: '" + dnsEntry);
-					}
-				}
-			}
-			DNSCommunicator.getInstance().setDNSServers(dnsAdrs.toArray(new DNSServer[dnsAdrs.size()]));
-
-		} catch (IOException e) {
-			Logger.getLogger().logException(e);
 		}
-	}
-
-
-
-	private ParcelFileDescriptor initVPN() throws Exception {
-
-		Builder builder = new Builder();
-
-		builder.setSession("DNS Filter");
-		builder.addAddress(ADDRESS_IPV4, 24).addDnsServer(VIRTUALDNS_IPV4).addRoute(VIRTUALDNS_IPV4, 32);
-		builder.addAddress(ADDRESS_IPV6, 48).addDnsServer(VIRTUALDNS_IPV6).addRoute(VIRTUALDNS_IPV6, 128);
-
-		// add additional IPs to route e.g. for handling application like
-		// google chrome bypassing the DNS via own DNS servers
-		StringTokenizer additionalRouteIps = new StringTokenizer(DNSFILTER.getConfig().getProperty("routeIPs", ""), ";");
-		int cnt = additionalRouteIps.countTokens();
-		if (cnt != 0 && Build.VERSION.SDK_INT < 21) {
-			cnt = 0;
-			Logger.getLogger().logLine("WARNING!: Setting 'routeIPs' not supported for Android version below 5.01!\n Setting ignored!");
-		}
-		for (int i = 0; i < cnt; i++) {
-			String value = additionalRouteIps.nextToken().trim();
-			Logger.getLogger().logLine("Additional route IP:" + value);
-			try {
-				InetAddress adr = InetAddress.getByName(value);
-				int prefix = 32;
-				if (adr instanceof Inet6Address)
-					prefix = 128;
-				builder.addRoute(InetAddress.getByName(value), prefix);
-			} catch (UnknownHostException e) {
-				Logger.getLogger().logException(e);
-			}
-		}
-
-		// this app itself should bypass VPN in order to prevent endless recursion
-		if (Build.VERSION.SDK_INT >= 21)
-			builder.addDisallowedApplication("dnsfilter.android");
-
-		//apply app whitelist
-		StringTokenizer appWhiteList = new StringTokenizer(DNSFILTER.getConfig().getProperty("androidAppWhiteList", ""), ",");
-		cnt = appWhiteList.countTokens();
-		if (cnt != 0 && Build.VERSION.SDK_INT < 21) {
-			cnt = 0;
-			Logger.getLogger().logLine("WARNING!: Application whitelisting not supported for Android version below 5.01!\n Setting ignored!");
-		}
-		for (int i = 0; i < cnt; i++) {
-			excludeApp(appWhiteList.nextToken().trim(), builder);
-		}
-
-		// Android 7/8 has an issue with VPN in combination with some google apps - bypass the filter
-		if (Build.VERSION.SDK_INT >= 24 && Build.VERSION.SDK_INT <= 27) { // Android 7/8
-			Logger.getLogger().logLine("Running on SDK" + Build.VERSION.SDK_INT);
-			excludeApp("com.android.vending", builder); //white list play store
-			excludeApp("com.google.android.apps.docs", builder); //white list google drive
-			excludeApp("com.google.android.apps.photos", builder); //white list google photos
-			excludeApp("com.google.android.gm", builder); //white list gmail
-			excludeApp("com.google.android.apps.translate", builder); //white list google translate
-		}
-
-		if (Build.VERSION.SDK_INT >= 21) {
-			builder.setBlocking(true);
-			Logger.getLogger().logLine("Using Blocking Mode!");
-			blocking = true;
-		}
-
-		return builder.setConfigureIntent(pendingIntent).establish();
+		DNSCommunicator.getInstance().setDNSServers(dnsAdrs.toArray(new DNSServer[dnsAdrs.size()]));
 	}
 
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		INSTANCE = this;
+		ExecutionEnvironment.setEnvironment(this);
 
 		registerReceiver(ConnectionChangeReceiver.getInstance(), new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
 
@@ -324,7 +261,7 @@ public class DNSFilterService extends VpnService  {
 		} else {
 			try {
 				DNSFilterManager.WORKDIR = DNSProxyActivity.WORKPATH.getAbsolutePath() + "/";
-				DNSFILTER = DNSFilterManager.getInstance();
+				DNSFILTER = new DNSFilterManager();
 				DNSFILTER.init();
 				JUST_STARTED = true; //used in detectDNSServers to ensure eventually changed static DNS Servers config is taken
 				detectDNSServers();
@@ -356,20 +293,75 @@ public class DNSFilterService extends VpnService  {
 			}
 		}
 		try {
-
-			Intent notificationIntent = new Intent(this, DNSProxyActivity.class);
-			pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-			Notification noti;
-
 			// Initialize and start VPN Mode
-			ParcelFileDescriptor vpnInterface = initVPN();
+			Builder builder = new Builder();
+			Intent notificationIntent = new Intent(this, DNSProxyActivity.class);
+			PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+			builder.setSession("DNS Filter");
+			builder.addAddress(ADDRESS_IPV4, 24).addDnsServer(VIRTUALDNS_IPV4).addRoute(VIRTUALDNS_IPV4, 32);
+			builder.addAddress(ADDRESS_IPV6, 48).addDnsServer(VIRTUALDNS_IPV6).addRoute(VIRTUALDNS_IPV6, 128);
+
+			// add additional IPs to route e.g. for handling application like
+			// google chrome bypassing the DNS via own DNS servers
+			StringTokenizer additionalRouteIps = new StringTokenizer(DNSFILTER.getConfig().getProperty("routeIPs", ""), ";");
+			int cnt = additionalRouteIps.countTokens();
+			if (cnt != 0 && Build.VERSION.SDK_INT < 21) {
+				cnt = 0;
+				Logger.getLogger().logLine("WARNING!: Setting 'routeIPs' not supported for Android version below 5.01!\n Setting ignored!");
+			}
+			for (int i = 0; i < cnt; i++) {
+				String value = additionalRouteIps.nextToken().trim();
+				Logger.getLogger().logLine("Additional route IP:" + value);
+				try {
+					InetAddress adr = InetAddress.getByName(value);
+					int prefix = 32;
+					if (adr instanceof Inet6Address)
+						prefix = 128;
+					builder.addRoute(InetAddress.getByName(value), prefix);
+				} catch (UnknownHostException e) {
+					Logger.getLogger().logException(e);
+				}
+			}
+
+			// this app itself should bypass VPN in order to prevent endless recursion
+			if (Build.VERSION.SDK_INT >= 21)
+				builder.addDisallowedApplication("dnsfilter.android");
+
+			//apply app whitelist
+			StringTokenizer appWhiteList = new StringTokenizer(DNSFILTER.getConfig().getProperty("androidAppWhiteList", ""), ",");
+			cnt = appWhiteList.countTokens();
+			if (cnt != 0 && Build.VERSION.SDK_INT < 21) {
+				cnt = 0;
+				Logger.getLogger().logLine("WARNING!: Application whitelisting not supported for Android version below 5.01!\n Setting ignored!");
+			}
+			for (int i = 0; i < cnt; i++) {
+				excludeApp(appWhiteList.nextToken().trim(), builder);
+			}
+
+			// Android 7/8 has an issue with VPN in combination with some google apps - bypass the filter
+			if (Build.VERSION.SDK_INT >= 24 && Build.VERSION.SDK_INT <= 27) { // Android 7/8
+				Logger.getLogger().logLine("Running on SDK" + Build.VERSION.SDK_INT);
+				excludeApp("com.android.vending", builder); //white list play store
+				excludeApp("com.google.android.apps.docs", builder); //white list google drive
+				excludeApp("com.google.android.apps.photos", builder); //white list google photos
+				excludeApp("com.google.android.gm", builder); //white list gmail
+				excludeApp("com.google.android.apps.translate", builder); //white list google translate
+			}
+
+			if (Build.VERSION.SDK_INT >= 21) {
+				builder.setBlocking(true);
+				Logger.getLogger().logLine("Using Blocking Mode!");
+				blocking = true;
+			}
+
+			ParcelFileDescriptor vpnInterface = builder.setConfigureIntent(pendingIntent).establish();
 
 			if (vpnInterface != null) {
 				vpnRunner = new  VPNRunner(++startCounter, vpnInterface);
 				new Thread(vpnRunner).start();
 			} else Logger.getLogger().logLine("Error! Cannot get VPN Interface! Try restart!");
 
-
+			Notification noti;
 			if (android.os.Build.VERSION.SDK_INT >= 16) {
 
 				Notification.Builder notibuilder;
@@ -548,35 +540,32 @@ public class DNSFilterService extends VpnService  {
 	}
 
 
-	public  void reload() throws IOException {
-		VPNRunner runningVPN = vpnRunner;
-		if (runningVPN != null) {
-			vpnRunner.stop();
-		}
-
-		ParcelFileDescriptor vpnInterface=null;
-		try {
-			vpnInterface = initVPN();
-		} catch (Exception e){
-			throw new IOException("Cannot initialize VPN!",e);
-		}
-
-		if (vpnInterface != null) {
-			vpnRunner = new  VPNRunner(++startCounter, vpnInterface);
-			new Thread(vpnRunner).start();
-
-			JUST_STARTED = true; //used in detectDNSServers to ensure eventually changed static DNS Servers config is taken
-			detectDNSServers();
-		}
-		else throw new IOException("Error! Cannot get VPN Interface! Try restart!");
+	public static String openConnectionsCount() {
+		return "" + DNSResolver.getResolverCount();
 	}
 
-	public static void onReload() throws IOException {
-		DNSFilterService instance = INSTANCE;
-		if (instance != null)
-			instance.reload();
-		else
-			throw new IOException("Service instance is null!");
+
+	@Override
+	public void wakeLock() {
+		wakeLock = ((PowerManager) getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "My Tag");
+		wakeLock.acquire();
+	}
+
+	@Override
+	public void releaseWakeLock() {
+		WakeLock wl = wakeLock;
+		if (wl != null)
+			wl.release();
+	}
+
+	@Override
+	public String getWorkDir() {
+		return DNSProxyActivity.WORKPATH+"/";
+	}
+
+	@Override
+	public boolean debug() {
+		return DNSProxyActivity.debug;
 	}
 
 
