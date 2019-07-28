@@ -22,11 +22,13 @@ Contact:i.z@gmx.net
 
 package util;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.FileInputStream;
@@ -213,6 +215,16 @@ public class Utils {
 		dataOut.flush();
 		dataOut.close();
 		return objOut.toByteArray();
+	}
+
+	public static Object deserializeObject(byte[] bytes) throws IOException {
+		ByteArrayInputStream bytesIn = new ByteArrayInputStream(bytes);
+		ObjectInputStream objIn = new ObjectInputStream (bytesIn);
+		try {
+			return objIn.readObject();
+		} catch (ClassNotFoundException e) {
+			throw new IOException(e);
+		}
 	}
 
 	public static String getServerTime() {

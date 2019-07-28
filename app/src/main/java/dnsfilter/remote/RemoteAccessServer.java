@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.Properties;
 
 import dnsfilter.ConfigurationAccess;
+import util.AsyncLogger;
 import util.GroupedLogger;
 import util.Logger;
 import util.LoggerInterface;
@@ -54,8 +55,10 @@ public class RemoteAccessServer implements Runnable {
             if (killed)
                 return;
             killed = true;
-            if (remoteLogger!= null)
-                ((GroupedLogger)Logger.getLogger()).detachLogger(remoteLogger);
+            if (remoteLogger!= null) {
+                remoteLogger.closeLogger();
+                ((GroupedLogger) Logger.getLogger()).detachLogger(remoteLogger);
+            }
 
             closeSocket(socket);
             sessions.remove(this);
@@ -174,7 +177,7 @@ public class RemoteAccessServer implements Runnable {
         }
 
         private void attachStream() throws IOException{
-            remoteLogger = new LoggerInterface() {
+            remoteLogger = new AsyncLogger(new LoggerInterface() {
 
                 public void sendLog(int type, String txt) {
                     try {
@@ -233,7 +236,7 @@ public class RemoteAccessServer implements Runnable {
                 public void closeLogger() {
 
                 }
-            };
+            });
 
             ((GroupedLogger)Logger.getLogger()).attachLogger(remoteLogger);
 
