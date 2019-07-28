@@ -331,7 +331,7 @@ public class RemoteAccessClient extends ConfigurationAccess {
             DataOutputStream out = new DataOutputStream(getConnection().getOutputStream());
             DataInputStream in = new DataInputStream(getConnection().getInputStream());
 
-            out.write(("getAdditionalHosts\n").getBytes());
+            out.write(("getAdditionalHosts()\n").getBytes());
             out.writeInt(limit);
             out.flush();
 

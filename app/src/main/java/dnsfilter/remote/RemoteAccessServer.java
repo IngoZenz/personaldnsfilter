@@ -168,7 +168,7 @@ public class RemoteAccessServer implements Runnable {
                     throw new ConfigurationAccess.ConfigurationAccessException("Unknown action: " + action);
 
             } catch (ConfigurationAccess.ConfigurationAccessException e) {
-                out.write(e.getMessage().getBytes());
+                out.write((e.getMessage().replace("\n", "\t")+"\n").getBytes());
                 out.flush();
             }
         }
@@ -214,7 +214,7 @@ public class RemoteAccessServer implements Runnable {
                 public void logException(Exception e) {
                     StringWriter str = new StringWriter();
                     e.printStackTrace(new PrintWriter(str));
-                    logLine(str.toString());
+                    log(str.toString()+"\n");
                 }
 
                 @Override
