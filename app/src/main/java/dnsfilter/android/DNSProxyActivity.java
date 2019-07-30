@@ -527,7 +527,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 			if (all != 0) {
 				long filterRate = 100*stats[1] / all;
-				Logger.getLogger().message("Block rate: "+filterRate+"% ("+stats[1]+" blocked)!");
+				myLogger.message("Block rate: "+filterRate+"% ("+stats[1]+" blocked)!");
 			}
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
