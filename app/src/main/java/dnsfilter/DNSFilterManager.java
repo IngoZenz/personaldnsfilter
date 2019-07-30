@@ -330,8 +330,12 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			File f = new File(WORKDIR+".");
 			f.mkdir();
 
+			//dnsfilter.con f
 			copyFromAssets("dnsfilter.conf", "dnsfilter.conf");
-			copyFromAssets("additionalHosts.txt", "additionalHosts.txt");
+
+			//additionalHosts.txt
+			if (!new File(WORKDIR+"additionalHosts.txt").exists())
+				copyFromAssets("additionalHosts.txt", "additionalHosts.txt");
 
 			//VERSION.TXT
 			f = new File(WORKDIR+"VERSION.TXT");
@@ -358,6 +362,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			out.write(config);
 			out.flush();
 			out.close();
+			Logger.getLogger().message("Config Changed!\nRestart might be required!");
 			//only update in file system / config instance will be updated with next restart
 		} catch (IOException e) {
 			throw new ConfigurationAccessException(e.getMessage(), e);
@@ -1130,7 +1135,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	private void initEnv() {
 		if (remoteAccessManager == null)
 			try {
-				remoteAccessManager = new RemoteAccessServer(3333);
+				remoteAccessManager = new RemoteAccessServer(3333, "dnsfilter", "dnsfilter");
 			} catch (IOException e) {
 				Logger.getLogger().logException(e);
 			}

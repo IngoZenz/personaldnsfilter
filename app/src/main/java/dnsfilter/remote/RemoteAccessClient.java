@@ -6,8 +6,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Properties;
 
@@ -19,7 +20,10 @@ import util.Utils;
 
 public class RemoteAccessClient extends ConfigurationAccess {
 
-    // Msg Type constants
+   static int CON_TIMEOUT = 5000;
+	
+	
+	// Msg Type constants
     static final int LOG = 1;
     static final int LOG_LN = 2;
     static final int LOG_MSG = 3;
@@ -32,11 +36,14 @@ public class RemoteAccessClient extends ConfigurationAccess {
     private String user;
     private String pwd;
     private Socket ctrlcon;
+    private int ctrlConId = -1;
     private RemoteStream remoteStream;
     private String remote_version;
     private String last_dns="<unknown>";
     private int con_cnt = -1;
     private LoggerInterface connectedLogger;
+
+    boolean valid = true;
 
 
 
@@ -50,8 +57,18 @@ public class RemoteAccessClient extends ConfigurationAccess {
         this.port=port;
         this.user = user;
         this.pwd = pwd;
-        ctrlcon = initConnection();
-        remoteStream = new RemoteStream(initConnection());
+        Object[] conInfo = initConnection();
+        ctrlcon = (Socket) conInfo[1];
+        ctrlConId = (Integer) conInfo[0];
+        remoteStream = new RemoteStream();
+    }
+
+
+    private void connect() throws IOException {
+        Object[] conInfo = initConnection();
+        ctrlcon = (Socket) conInfo[1];
+        ctrlConId = (Integer) conInfo[0];
+        remoteStream = new RemoteStream();
     }
 
     @Override
@@ -59,151 +76,70 @@ public class RemoteAccessClient extends ConfigurationAccess {
         return "REMOTE -> "+host+":"+port;
     }
 
-    private class RemoteStream implements Runnable {
 
-        Socket streamCon;
-        boolean stopped = false;
 
-        public RemoteStream(Socket streamCon) throws IOException {
-            this.streamCon = streamCon;
-            try {
-                streamCon.getOutputStream().write(("attach\n").getBytes());
-                streamCon.getOutputStream().flush();
-                InputStream in = streamCon.getInputStream();
-                String response = Utils.readLineFromStream(streamCon.getInputStream());
-                if (!response.equals("OK")) {
-                    throw new IOException(response);
-                }
-            } catch (IOException e) {
-                connectedLogger.logLine("Remote action attach Remote Stream failed! "+e.getMessage());
-                closeConnection();
-                throw e;
-            }
+    private void closeConnectionReconnect() {
 
-            new Thread(this).start();
-        }
-
-        @Override
-        public void run() {
-            byte[] msg = new byte[2048];
-            try {
-                while (!stopped) {
-                    DataInputStream in = new DataInputStream(streamCon.getInputStream());
-                    int type = in.readShort();
-                    short len = in.readShort();
-                    msg = getBuffer(msg, len, 2048, 1024000);
-
-                    in.readFully(msg, 0, len);
-
-                    switch (type) {
-
-                        case LOG_LN:
-                            connectedLogger.logLine(new String(msg, 0, len));
-                            break;
-                        case LOG:
-                            connectedLogger.log(new String(msg, 0, len));
-                            break;
-                        case LOG_MSG:
-                            connectedLogger.message(new String(msg, 0, len));
-                            break;
-                        case UPD_DNS:
-                            last_dns = new String(msg, 0, len);
-                            break;
-                        case UPD_CON_CNT:
-                            con_cnt = Integer.parseInt(new String(msg, 0, len));
-                            break;
-                        default:
-                            throw new IOException("Unknown message type: " + type);
-                    }
-
-                }
-            } catch (Exception e){
-                if (!stopped) {
-                    connectedLogger.logLine("Exception during RemoteStream read! " + e.toString());
-                    closeConnection();
-                }
-            }
-        }
-
-        private byte[] getBuffer(byte[] msg, int len, int initLen, int maxLen) throws IOException{
-            if (len < initLen && msg.length > initLen)
-                //resize buffer for saving memory
-                return  new byte[initLen];
-
-            else if (len < initLen)
-                return msg; // reuse the buffer
-
-            else if (len > maxLen)
-                throw new IOException("Buffer Overflow: "+len+" bytes!");
-
-            else
-                return new byte[len];
-
-        }
-
-        public void close() {
-            stopped = true;
-            try {
-                if (streamCon!=null) {
-                    streamCon.getOutputStream().write("releaseConfiguration()".getBytes());
-                    streamCon.getOutputStream().flush();
-                }
-            } catch (IOException e) {
-                connectedLogger.logLine("Exception during remote configuration release: "+e.toString());
-            }
-            closeSocket(streamCon);
-        }
-    }
-
-    private void closeSocket(Socket s){
-        if (s == null)
+        if (!valid)
             return;
+
+        releaseConfiguration();
+        Object sync = new Object();
+
+        //wait a second before reconnect
+         synchronized (sync) {
+            try {
+                sync.wait(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         try {
-            s.shutdownOutput();
-            s.shutdownInput();
-            s.close();
-        } catch (IOException e) {
-            //connectedLogger.logLine("Exception during closeConnection(): " + e.toString());
+             connect();
+        } catch (IOException e){
+             connectedLogger.logLine("Reconnect failed:"+e.toString());
+             valid = false;
         }
     }
 
-    private void closeConnection() {
 
-        closeSocket(ctrlcon);
-
-        if (remoteStream != null)
-            remoteStream.close();
-
-        ctrlcon = null;
-        remoteStream = null;
-    }
-
-
-    private Socket initConnection() throws IOException {
+    private Object[] initConnection() throws IOException {
+        Socket con=null;
         try {
-            Socket con = new Socket(host, port);
-            con.getOutputStream().write((DNSFilterManager.VERSIONID+"\n"+user + "\n" + pwd + "\n").getBytes());
+            int id = -1;
+
+            con = new Socket();
+            con.connect(new InetSocketAddress(InetAddress.getByName(host),port), CON_TIMEOUT);
+            con.getOutputStream().write((DNSFilterManager.VERSIONID+"\n"+user + "\n" + pwd + "\nnew_session\n").getBytes());
             con.getOutputStream().flush();
             String response = Utils.readLineFromStream(con.getInputStream());
             if (!response.equals("OK")) {
                 throw new IOException(response);
             }
+            try {
+                id = Integer.parseInt(Utils.readLineFromStream(con.getInputStream()));
+            } catch (Exception e) {
+                throw new IOException(e);
+            }
             remote_version = Utils.readLineFromStream(con.getInputStream());
             last_dns = Utils.readLineFromStream(con.getInputStream());
-            return con;
+            return new Object[] {id, con};
         } catch (IOException e) {
             connectedLogger.logLine("Exception during initConnection(): "+e.toString());
-            closeConnection();
+           if (con != null)
+               Utils.closeSocket(con);
             throw e;
         }
     }
 
+
+
     private Socket getConnection() throws IOException {
-        if (ctrlcon == null) {
-            ctrlcon = initConnection();
-            remoteStream = new RemoteStream(initConnection());
-        }
+        if (!valid)
+            throw new IOException("Not connected!");
+
         return ctrlcon;
+
     }
 
 
@@ -222,7 +158,7 @@ public class RemoteAccessClient extends ConfigurationAccess {
             throw e;
         } catch (IOException e) {
             connectedLogger.logLine("Remote action "+action+" failed! "+e.getMessage());
-            closeConnection();
+            closeConnectionReconnect();
             throw e;
         }
     }
@@ -239,11 +175,12 @@ public class RemoteAccessClient extends ConfigurationAccess {
             if (ctrlcon!=null) {
                 ctrlcon.getOutputStream().write("releaseConfiguration()".getBytes());
                 ctrlcon.getOutputStream().flush();
+                Utils.closeSocket(ctrlcon);
             }
         } catch (IOException e) {
             connectedLogger.logLine("Exception during remote configuration release: "+e.toString());
         }
-        closeSocket(ctrlcon);
+
 
         ctrlcon = null;
         remoteStream = null;
@@ -270,7 +207,7 @@ public class RemoteAccessClient extends ConfigurationAccess {
             throw e;
         } catch (IOException e) {
             connectedLogger.logLine("Remote action getConfig() failed! "+e.getMessage());
-            closeConnection();
+            closeConnectionReconnect();
             throw e;
         }
     }
@@ -294,7 +231,7 @@ public class RemoteAccessClient extends ConfigurationAccess {
             throw e;
         } catch (IOException e) {
             connectedLogger.logLine("Remote action readConfig() failed! "+e.getMessage());
-            closeConnection();
+            closeConnectionReconnect();
             throw e;
         }
     }
@@ -320,7 +257,7 @@ public class RemoteAccessClient extends ConfigurationAccess {
             throw e;
         } catch (IOException e) {
             connectedLogger.logLine("Remote action updateConfig() failed! "+e.getMessage());
-            closeConnection();
+            closeConnectionReconnect();
             throw e;
         }
     }
@@ -347,7 +284,7 @@ public class RemoteAccessClient extends ConfigurationAccess {
             throw e;
         } catch (IOException e) {
             connectedLogger.logLine("Remote action getAdditionalHosts() failed! "+e.getMessage());
-            closeConnection();
+            closeConnectionReconnect();
             throw e;
         }
     }
@@ -373,7 +310,7 @@ public class RemoteAccessClient extends ConfigurationAccess {
             throw e;
         } catch (IOException e) {
             connectedLogger.logLine("Remote action updateAdditionalHosts() failed! "+e.getMessage());
-            closeConnection();
+            closeConnectionReconnect();
             throw e;
         }
     }
@@ -396,7 +333,7 @@ public class RemoteAccessClient extends ConfigurationAccess {
 
         } catch (IOException e) {
             connectedLogger.logLine("Remote action  updateFilter() failed! "+e.getMessage());
-            closeConnection();
+            closeConnectionReconnect();
             throw e;
         }
 
@@ -449,7 +386,7 @@ public class RemoteAccessClient extends ConfigurationAccess {
             throw e;
         } catch (IOException e) {
             connectedLogger.logLine("Remote action  getFilterStatistics() failed! "+e.getMessage());
-            closeConnection();
+            closeConnectionReconnect();
             throw e;
         }
     }
@@ -482,6 +419,109 @@ public class RemoteAccessClient extends ConfigurationAccess {
     @Override
     public void releaseWakeLock() throws IOException {
         triggerAction("releaseWakeLock()");
+    }
+
+    /*****************************/
+    /* Inner class Remote Stream**/
+    /*****************************/
+
+    private class RemoteStream implements Runnable {
+
+        Socket streamCon;
+        int streamConId;
+        boolean stopped = false;
+
+        public RemoteStream() throws IOException {
+            Object[] conInfo = initConnection();
+            this.streamCon = (Socket) conInfo[1];
+            streamConId = (Integer)conInfo[0];
+
+            try {
+                streamCon.getOutputStream().write(("attach\n").getBytes());
+                streamCon.getOutputStream().flush();
+                String response = Utils.readLineFromStream(streamCon.getInputStream());
+                if (!response.equals("OK")) {
+                    throw new IOException(response);
+                }
+            } catch (IOException e) {
+                connectedLogger.logLine("Remote action attach Remote Stream failed! "+e.getMessage());
+                closeConnectionReconnect();
+                throw e;
+            }
+
+            new Thread(this).start();
+        }
+
+        @Override
+        public void run() {
+            byte[] msg = new byte[2048];
+            try {
+                while (!stopped) {
+                    DataInputStream in = new DataInputStream(streamCon.getInputStream());
+                    int type = in.readShort();
+                    short len = in.readShort();
+                    msg = getBuffer(msg, len, 2048, 1024000);
+
+                    in.readFully(msg, 0, len);
+
+                    switch (type) {
+
+                        case LOG_LN:
+                            connectedLogger.logLine(new String(msg, 0, len));
+                            break;
+                        case LOG:
+                            connectedLogger.log(new String(msg, 0, len));
+                            break;
+                        case LOG_MSG:
+                            connectedLogger.message(new String(msg, 0, len));
+                            break;
+                        case UPD_DNS:
+                            last_dns = new String(msg, 0, len);
+                            break;
+                        case UPD_CON_CNT:
+                            con_cnt = Integer.parseInt(new String(msg, 0, len));
+                            break;
+                        default:
+                            throw new IOException("Unknown message type: " + type);
+                    }
+
+                }
+            } catch (Exception e){
+                if (!stopped) {
+                    connectedLogger.logLine("Exception during RemoteStream read! " + e.toString());
+                    closeConnectionReconnect();
+                }
+            }
+        }
+
+        private byte[] getBuffer(byte[] msg, int len, int initLen, int maxLen) throws IOException{
+            if (len < initLen && msg.length > initLen)
+                //resize buffer for saving memory
+                return  new byte[initLen];
+
+            else if (len < initLen)
+                return msg; // reuse the buffer
+
+            else if (len > maxLen)
+                throw new IOException("Buffer Overflow: "+len+" bytes!");
+
+            else
+                return new byte[len];
+
+        }
+
+        public void close() {
+            stopped = true;
+            try {
+                if (streamCon!=null) {
+                    streamCon.getOutputStream().write("releaseConfiguration()".getBytes());
+                    streamCon.getOutputStream().flush();
+                    Utils.closeSocket(streamCon);
+                }
+            } catch (IOException e) {
+                connectedLogger.logLine("Exception during remote configuration release: "+e.toString());
+            }
+        }
     }
 
 }

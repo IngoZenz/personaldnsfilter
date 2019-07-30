@@ -871,7 +871,6 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 			if (changed) {
 				updateConfig(out.toByteArray());
-				Logger.getLogger().message("Config Changed!\nRestart might be required!");
 			}
 
 		} catch (Exception e) {
@@ -879,39 +878,6 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		}
 	}
 
-
-	private boolean advCfgValid(Properties advancedConfigProps) {
-		try {
-			//check filterAutoUpdateURL
-			String urls = advancedConfigProps.getProperty("filterAutoUpdateURL");
-
-			if (urls == null)
-				throw new Exception("'filterAutoUpdateURL' property not defined!");
-
-			StringTokenizer urlTokens = new StringTokenizer(urls, ";");
-
-			int urlCnt = urlTokens.countTokens();
-			for (int i = 0; i < urlCnt; i++) {
-				String urlStr = urlTokens.nextToken().trim();
-				if (!urlStr.equals("")) {
-					new URL(urlStr);
-				}
-			}
-
-			//check reloadIntervalDays
-			try {
-				Integer.parseInt(advancedConfigProps.getProperty("reloadIntervalDays"));
-			} catch (Exception e0) {
-				throw new Exception("'reloadIntervalDays' property not defined correctly!");
-			}
-			return true;
-
-		} catch (Exception e) {
-			Logger.getLogger().logLine("Exception while validating advanced settings:" + e.getMessage());
-			Logger.getLogger().logLine("Advanced settings are invalid - will be reverted!");
-			return false;
-		}
-	}
 
 	@Override
 	public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
@@ -937,35 +903,25 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		if (destination == addFilterBtn) {
 			onCopyFilterFromLogView(true);
 			return;
-		}
-		else if (destination == removeFilterBtn) {
+		} else if (destination == removeFilterBtn) {
 			onCopyFilterFromLogView(false);
 			return;
-		}
-		else if (destination == donate_field) {
+		} else if (destination == donate_field) {
 			handleDonate();
 			return;
-		}
-		else if (destination == dnsField) {
+		} else if (destination == dnsField) {
 			handleDNSConfigDialog();
 			return;
-		}
-
-		else if (destination == scrollLockField) {
+		} else if (destination == scrollLockField) {
 			handleScrollLock();
 			return;
-		}
-
-		else if (destination == backupBtn) {
+		} else if (destination == backupBtn) {
 			doBackup();
 			return;
-		}
-
-		else if (destination == restoreBtn) {
+		} else if (destination == restoreBtn) {
 			doRestore();
 			return;
-		}
-		else if (destination == restoreDefaultsBtn) {
+		} else if (destination == restoreDefaultsBtn) {
 			doRestoreDefaults();
 			return;
 		}
@@ -973,9 +929,12 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 		persistConfig();
 
-		if (destination == remoteCtrlBtn)
+		if (destination == remoteCtrlBtn) {
+			//close advanced settings to force reload from new config
+			advancedConfigCheck.setChecked(false);
+			handleAdvancedConfig();
 			handleRemoteControl();
-
+		}
 		if (destination == startBtn || destination == enableAdFilterCheck)
 			handleRestart();
 		if (destination == stopBtn)
@@ -998,31 +957,38 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	private void handleRemoteControl() {
 
 		if (REMOTE.isLocal()) {
+
 			try {
-				String host = ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_host","");
-				String user = ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_user","");
-				String password = ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_password","");
+				String host = ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_host", "");
+				String user = ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_user", "");
+				String password = ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_password", "");
 				if (host.equals("") || user.equals("") || password.equals(""))
 					throw new IOException("Remote Control not configured");
 
-				int port=3333;
+				int port = 3333;
 				try {
-					port = Integer.parseInt(ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_port","3333"));
+					port = Integer.parseInt(ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_port", "3333"));
 				} catch (Exception e) {
 					throw new IOException("Invalid connect_remote_ctrl_port");
 				}
-			REMOTE = ConfigurationAccess.getRemote(this, host, port, user, password);
-				((GroupedLogger) Logger.getLogger()).detachLogger(this);
+				message("Connecting: " + host + ":" + port);
+
+				REMOTE = ConfigurationAccess.getRemote(myLogger, host, port, user, password);
+				((GroupedLogger) Logger.getLogger()).detachLogger(myLogger);
+				message("CONNECTED TO " + REMOTE);
 
 			} catch (IOException e) {
 				Logger.getLogger().logLine("Remote Connect failed!" + e.toString());
+				message("Remote Connect Failed!");
 				REMOTE = ConfigurationAccess.getLocal();
 			}
-		} else {
+		}
+		else {
 			REMOTE.releaseConfiguration();
 			REMOTE = ConfigurationAccess.getLocal();
 			myLogger = this;
 			((GroupedLogger) Logger.getLogger()).attachLogger(this);
+			message("CONNECTED TO "+REMOTE);
 		}
 		loadAndApplyConfig(false);
 		logLine("====>CONNECTED to "+REMOTE+" <====");

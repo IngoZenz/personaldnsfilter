@@ -48,6 +48,11 @@ public class DNSFilterProxy implements Runnable {
 	private static void initDNS(DNSFilterManager dnsFilterMgr) {
 		try {
 
+			boolean detect = Boolean.parseBoolean(dnsFilterMgr.getConfig().getProperty("detectDNS", "true"));
+			if (detect) {
+				Logger.getLogger().logLine("DNS detection not supported for this device");
+				Logger.getLogger().message("DNS detection not supported - Usin fallback!");
+			}
 			Vector<DNSServer> dnsAdrs = new Vector<DNSServer>();
 			int timeout = Integer.parseInt(dnsFilterMgr.getConfig().getProperty("dnsRequestTimeout", "15000"));
 

@@ -12,6 +12,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
 
@@ -24,30 +25,129 @@ import util.Utils;
 
 public class RemoteAccessServer implements Runnable {
 
+    private static int sessionId=0;
+    String user;
+    String pwd;
+
     boolean stopped = false;
     private ServerSocket server;
-    private HashSet sessions = new HashSet<RemoteSession>();
+    private HashMap sessions = new HashMap<Integer, RemoteSession>();
 
-    public RemoteAccessServer(int port) throws IOException{
+    public RemoteAccessServer(int port, String user, String pwd) throws IOException{
+        this.user=user;
+        this.pwd=pwd;
         server = new ServerSocket(port);
         new Thread (this).start();
     }
 
 
+    private String readStringFromStream(InputStream in, byte[] buf) throws IOException {
+       int r = Utils.readLineBytesFromStream(in, buf,true, false);
+
+       if (r == -1)
+           throw new EOFException("Stream is closed!");
+
+       return new String(buf,0,r).trim();
+    }
+
+    @Override
+    public void run() {
+        while (!stopped) {
+            try {
+                Socket con = server.accept();
+                Logger.getLogger().logLine("New Remote Session from :"+con);
+                try {
+                    InputStream in = con.getInputStream();
+                    byte[] buf = new byte[1024];
+                    String version = readStringFromStream(in, buf);
+                    String user = readStringFromStream(in, buf);
+                    String pwd = readStringFromStream(in, buf);
+                    String option = readStringFromStream(in, buf);
+                    check(version, user, pwd);
+
+                    if (option.equals("new_session")) {
+                        //create and start session
+                        sessionId++;
+                        new RemoteSession(con, sessionId);
+                        OutputStream out = con.getOutputStream();
+                        out.write("OK\n".getBytes());
+                        out.write((sessionId+"\n").getBytes());
+                        out.write((ConfigurationAccess.getLocal().getVersion() + "\n").getBytes());
+                        out.write((ConfigurationAccess.getLocal().getLastDNSAddress() + "\n").getBytes());
+                        out.flush();
+                    }
+                    else if (option.equals("reconnect_session")) {
+                        int id;
+                        try {
+                            id = Integer.parseInt(readStringFromStream(in, buf));
+                        } catch (Exception e) {
+                            throw new IOException(e);
+                        }
+                        RemoteSession session = (RemoteSession) sessions.get(id);
+                        if (session == null)
+                            throw new IOException("Reconnect session not found:"+id);
+                        else {
+                            session.reconnectSession(con);
+                            OutputStream out = con.getOutputStream();
+                            out.write("OK\n".getBytes());
+                            out.flush();
+                        }
+                    }
+                    else throw new IOException("Invalid option: "+option);
+
+                } catch (IOException e) {
+                    con.getOutputStream().write(e.toString().getBytes());
+                    con.getOutputStream().flush();
+                    Utils.closeSocket(con);
+                    throw e;
+                }
+            } catch (IOException e) {
+                Logger.getLogger().logLine("RemoteServerException: "+e.toString());
+            }
+        }
+    }
+
+    private void check(String version, String user, String pwd) throws IOException {
+        if (user.equals(this.user) && pwd.equals(this.pwd))
+            return;
+        else
+            throw new IOException("Logon failed");
+    }
+
+
+    public void stop() {
+        stopped = true;
+        RemoteSession[] remoteSessions = (RemoteSession[]) sessions.values().toArray(new RemoteSession[0]);
+        for (int i = 0; i < remoteSessions.length; i++ )
+            remoteSessions[i].killSession();
+        try {
+            server.close();
+        } catch (IOException e) {
+            Logger.getLogger().logException(e);
+        }
+    }
+
+
+    /*********************************************************/
+    /*********** Inner class RemoteSession *******************/
+    /*********************************************************/
     private class RemoteSession implements Runnable {
 
+        int id;
         Socket socket;
         LoggerInterface remoteLogger;
         boolean killed = false;
+        boolean doReconnect = false;
         DataOutputStream out;
         DataInputStream in;
 
 
-        private RemoteSession(Socket con) throws IOException{
+        private RemoteSession(Socket con, int id) throws IOException{
+            this.id = id;
             this.socket = con;
             out = new DataOutputStream(con.getOutputStream());
             in = new DataInputStream(con.getInputStream());
-            sessions.add(this);
+            sessions.put(id, this);
             new Thread(this).start();
         }
 
@@ -60,8 +160,18 @@ public class RemoteAccessServer implements Runnable {
                 ((GroupedLogger) Logger.getLogger()).detachLogger(remoteLogger);
             }
 
-            closeSocket(socket);
-            sessions.remove(this);
+            Utils.closeSocket(socket);
+            sessions.remove(id);
+
+        }
+
+        public void reconnectSession(Socket con) throws IOException{
+           doReconnect = true;
+           Socket old = this.socket;
+           this.socket = con;
+           out = new DataOutputStream(con.getOutputStream());
+           in = new DataInputStream(con.getInputStream());
+           Utils.closeSocket(old);
         }
 
         @Override
@@ -79,13 +189,19 @@ public class RemoteAccessServer implements Runnable {
                 } catch (ConfigurationAccess.ConfigurationAccessException e) {
                     Logger.getLogger().logLine("RemoteServer Exception processing "+action+"! " + e.toString());
                 } catch (IOException e) {
-                    if (!killed) {
-                        Logger.getLogger().logLine("Exception during RemoteServer Session read! " + e.toString());
-                        killSession();
-                        break;
+                    if (!doReconnect) {
+                        if (!killed) {
+                            Logger.getLogger().logLine("Exception during RemoteServer Session read! " + e.toString());
+                            killSession();
+                            break;
+                        }
+                    } else {
+                        Logger.getLogger().logLine("Reconnected Remote!");
+                        doReconnect=false;
                     }
                 }
             }
+            Logger.getLogger().logLine("Remote Session closed! "+socket);
         }
 
         private void executeAction(String action) throws IOException{
@@ -245,70 +361,6 @@ public class RemoteAccessServer implements Runnable {
         }
     }
 
+    /*********** end of inner class RemoteSession *******************/
 
-    private void closeSocket(Socket s){
-        try {
-            s.shutdownOutput();
-            s.shutdownInput();
-            s.close();
-        } catch (IOException e) {
-            //Logger.getLogger().logLine("Exception during closeConnection(): " + e.toString());
-        }
-    }
-
-    private String readStringFromStream(InputStream in, byte[] buf) throws IOException {
-       int r = Utils.readLineBytesFromStream(in, buf,true, false);
-
-       if (r == -1)
-           throw new EOFException("Stream is closed!");
-
-       return new String(buf,0,r).trim();
-    }
-
-    @Override
-    public void run() {
-        while (!stopped) {
-            try {
-                Socket con = server.accept();
-                try {
-                    InputStream in = con.getInputStream();
-                    byte[] buf = new byte[1024];
-                    String version = readStringFromStream(in, buf);
-                    String user = readStringFromStream(in, buf);
-                    String pwd = readStringFromStream(in, buf);
-                    check(version, user, pwd);
-                    OutputStream out = con.getOutputStream();
-                    out.write("OK\n".getBytes());
-                    out.write((ConfigurationAccess.getLocal().getVersion() + "\n").getBytes());
-                    out.write((ConfigurationAccess.getLocal().getLastDNSAddress() + "\n").getBytes());
-                    out.flush();
-                    //create and start session
-                    new RemoteSession(con);
-                } catch (IOException e) {
-                    con.getOutputStream().write(e.toString().getBytes());
-                    con.getOutputStream().flush();
-                    closeSocket(con);
-                    throw e;
-                }
-            } catch (IOException e) {
-                Logger.getLogger().logLine("RemoteServerException: "+e.toString());
-            }
-        }
-    }
-
-    private void check(String version, String user, String pwd) throws IOException {
-    }
-
-
-    public void stop() {
-        stopped = true;
-        RemoteSession[] remoteSessions = (RemoteSession[]) sessions.toArray(new RemoteSession[0]);
-        for (int i = 0; i < remoteSessions.length; i++ )
-            remoteSessions[i].killSession();
-        try {
-            server.close();
-        } catch (IOException e) {
-            Logger.getLogger().logException(e);
-        }
-    }
 }

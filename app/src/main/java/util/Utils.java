@@ -33,6 +33,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -103,6 +104,25 @@ public class Utils {
 		}
 
 		return ((long) a << 32) | ((long) b & 0xFFFFFFFFL);
+	}
+
+
+	public static void closeSocket(Socket s){
+		try {
+			s.shutdownOutput();
+		} catch (IOException e) {
+			//Logger.getLogger().logLine("Exception during closeConnection(): " + e.toString());
+		}
+		try {
+			s.shutdownInput();
+		} catch (IOException e) {
+			//Logger.getLogger().logLine("Exception during closeConnection(): " + e.toString());
+		}
+		try {
+			s.close();
+		} catch (IOException e) {
+			//Logger.getLogger().logLine("Exception during closeConnection(): " + e.toString());
+		}
 	}
 
 	public static String readLineFromStream(InputStream in, boolean crlf) throws IOException {
