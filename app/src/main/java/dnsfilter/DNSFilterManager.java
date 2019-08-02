@@ -1066,11 +1066,6 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	}
 
 	@Override
-	public void connectLog(LoggerInterface logger) throws IOException {
-		Logger.setLogger(logger);
-	}
-
-	@Override
 	public int openConnectionsCount() {
 		return  DNSResolver.getResolverCount();
 	}
@@ -1197,6 +1192,9 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			config.load(new ByteArrayInputStream(configBytes));
 
 			serverStopped = false;
+
+			if (config.getProperty("androidKeepAwake", "true").equalsIgnoreCase("true"))
+				ExecutionEnvironment.getEnvironment().wakeLock();
 
 			additionalHostsImportTS = config.getProperty("additionalHosts_lastImportTS", "0");
 

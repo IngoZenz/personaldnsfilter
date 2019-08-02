@@ -14,13 +14,17 @@ import java.util.Properties;
 
 import dnsfilter.ConfigurationAccess;
 import dnsfilter.DNSFilterManager;
+import util.Encryption;
 import util.Logger;
 import util.LoggerInterface;
+import util.TimeoutListener;
+import util.TimoutNotificator;
 import util.Utils;
 
-public class RemoteAccessClient extends ConfigurationAccess {
+public class RemoteAccessClient extends ConfigurationAccess implements TimeoutListener {
 
-   static int CON_TIMEOUT = 5000;
+   static int CON_TIMEOUT = 15000;
+   static int READ_TIMEOUT = 15000;
 	
 	
 	// Msg Type constants
@@ -29,6 +33,7 @@ public class RemoteAccessClient extends ConfigurationAccess {
     static final int LOG_MSG = 3;
     static final int UPD_DNS = 4;
     static final int UPD_CON_CNT = 5;
+    static final int HEART_BEAT = 6;
 
 
     private String host;
@@ -36,6 +41,8 @@ public class RemoteAccessClient extends ConfigurationAccess {
     private String user;
     private String pwd;
     private Socket ctrlcon;
+    private InputStream in;
+    private OutputStream out;
     private int ctrlConId = -1;
     private RemoteStream remoteStream;
     private String remote_version;
@@ -43,7 +50,9 @@ public class RemoteAccessClient extends ConfigurationAccess {
     private int con_cnt = -1;
     private LoggerInterface connectedLogger;
 
-    boolean valid = true;
+    boolean valid = false;
+    long timeout = Long.MAX_VALUE; //heartbeat timeout for dead session detection
+    int timeOutCounter = 0;
 
 
 
@@ -53,22 +62,24 @@ public class RemoteAccessClient extends ConfigurationAccess {
             logger = Logger.getLogger();
 
         connectedLogger = logger;
+        Encryption.init_AES(user+pwd);
         this.host=host;
         this.port=port;
         this.user = user;
         this.pwd = pwd;
-        Object[] conInfo = initConnection();
-        ctrlcon = (Socket) conInfo[1];
-        ctrlConId = (Integer) conInfo[0];
-        remoteStream = new RemoteStream();
+        connect();
+        valid = true;
     }
 
 
     private void connect() throws IOException {
         Object[] conInfo = initConnection();
         ctrlcon = (Socket) conInfo[1];
+        in = (InputStream) conInfo[2];
+        out = (OutputStream) conInfo[3];
+        ctrlcon.setSoTimeout(READ_TIMEOUT);
         ctrlConId = (Integer) conInfo[0];
-        remoteStream = new RemoteStream();
+        remoteStream = new RemoteStream(ctrlConId);
     }
 
     @Override
@@ -79,6 +90,8 @@ public class RemoteAccessClient extends ConfigurationAccess {
 
 
     private void closeConnectionReconnect() {
+
+        TimoutNotificator.getInstance().unregister(this);
 
         if (!valid)
             return;
@@ -107,23 +120,26 @@ public class RemoteAccessClient extends ConfigurationAccess {
         Socket con=null;
         try {
             int id = -1;
-
             con = new Socket();
             con.connect(new InetSocketAddress(InetAddress.getByName(host),port), CON_TIMEOUT);
-            con.getOutputStream().write((DNSFilterManager.VERSIONID+"\n"+user + "\n" + pwd + "\nnew_session\n").getBytes());
-            con.getOutputStream().flush();
-            String response = Utils.readLineFromStream(con.getInputStream());
+            con.setSoTimeout(READ_TIMEOUT);
+            OutputStream out = Encryption.getEncryptedOutputStream(con.getOutputStream(), 1024);
+            InputStream in = Encryption.getDecryptedStream(con.getInputStream());
+            out.write((DNSFilterManager.VERSIONID+"\n"+user + "\n" + pwd + "\nnew_session\n").getBytes());
+            out.flush();
+            String response = Utils.readLineFromStream(in);
             if (!response.equals("OK")) {
                 throw new IOException(response);
             }
             try {
-                id = Integer.parseInt(Utils.readLineFromStream(con.getInputStream()));
+                id = Integer.parseInt(Utils.readLineFromStream(in));
             } catch (Exception e) {
                 throw new IOException(e);
             }
-            remote_version = Utils.readLineFromStream(con.getInputStream());
-            last_dns = Utils.readLineFromStream(con.getInputStream());
-            return new Object[] {id, con};
+            remote_version = Utils.readLineFromStream(in);
+            last_dns = Utils.readLineFromStream(in);
+            con.setSoTimeout(0);
+            return new Object[] {id, con, in, out};
         } catch (IOException e) {
             connectedLogger.logLine("Exception during initConnection(): "+e.toString());
            if (con != null)
@@ -134,21 +150,27 @@ public class RemoteAccessClient extends ConfigurationAccess {
 
 
 
-    private Socket getConnection() throws IOException {
+    private InputStream getInputStream() throws IOException {
         if (!valid)
             throw new IOException("Not connected!");
 
-        return ctrlcon;
+        return in;
+    }
 
+    private OutputStream getOutputStream() throws IOException {
+        if (!valid)
+            throw new IOException("Not connected!");
+
+        return out;
     }
 
 
 
     private void triggerAction(String action) throws IOException {
         try {
-            getConnection().getOutputStream().write((action+"\n").getBytes());
-            getConnection().getOutputStream().flush();
-            InputStream in = getConnection().getInputStream();
+            getOutputStream().write((action+"\n").getBytes());
+            getOutputStream().flush();
+            InputStream in = getInputStream();
             String response = Utils.readLineFromStream(in);
             if (!response.equals("OK")) {
                 throw new ConfigurationAccessException(response, null);
@@ -169,6 +191,9 @@ public class RemoteAccessClient extends ConfigurationAccess {
 
     @Override
     public void releaseConfiguration() {
+
+        TimoutNotificator.getInstance().unregister(this);
+
         if (remoteStream != null)
             remoteStream.close();
         try {
@@ -181,7 +206,6 @@ public class RemoteAccessClient extends ConfigurationAccess {
             connectedLogger.logLine("Exception during remote configuration release: "+e.toString());
         }
 
-
         ctrlcon = null;
         remoteStream = null;
     }
@@ -189,9 +213,9 @@ public class RemoteAccessClient extends ConfigurationAccess {
     @Override
     public Properties getConfig() throws IOException {
         try {
-            getConnection().getOutputStream().write("getConfig()\n".getBytes());
-            getConnection().getOutputStream().flush();
-            InputStream in = getConnection().getInputStream();
+            getOutputStream().write("getConfig()\n".getBytes());
+            getOutputStream().flush();
+            InputStream in = getInputStream();
             String response = Utils.readLineFromStream(in);
             if (!response.equals("OK")) {
                 throw new ConfigurationAccessException(response, null);
@@ -215,9 +239,9 @@ public class RemoteAccessClient extends ConfigurationAccess {
     @Override
     public byte[] readConfig() throws IOException {
         try {
-            getConnection().getOutputStream().write("readConfig()\n".getBytes());
-            getConnection().getOutputStream().flush();
-            DataInputStream in = new DataInputStream(getConnection().getInputStream());
+            getOutputStream().write("readConfig()\n".getBytes());
+            getOutputStream().flush();
+            DataInputStream in = new DataInputStream(getInputStream());
             String response = Utils.readLineFromStream(in);
             if (!response.equals("OK")) {
                 throw new ConfigurationAccessException(response, null);
@@ -240,8 +264,8 @@ public class RemoteAccessClient extends ConfigurationAccess {
     @Override
     public void updateConfig(byte[] config) throws IOException {
         try {
-            InputStream in = getConnection().getInputStream();
-            DataOutputStream out = new DataOutputStream(getConnection().getOutputStream());
+            InputStream in = getInputStream();
+            DataOutputStream out = new DataOutputStream(getOutputStream());
 
             out.write("updateConfig()\n".getBytes());
             out.writeInt(config.length);
@@ -265,8 +289,8 @@ public class RemoteAccessClient extends ConfigurationAccess {
     @Override
     public byte[] getAdditionalHosts(int limit) throws IOException {
         try {
-            DataOutputStream out = new DataOutputStream(getConnection().getOutputStream());
-            DataInputStream in = new DataInputStream(getConnection().getInputStream());
+            DataOutputStream out = new DataOutputStream(getOutputStream());
+            DataInputStream in = new DataInputStream(getInputStream());
 
             out.write(("getAdditionalHosts()\n").getBytes());
             out.writeInt(limit);
@@ -293,8 +317,8 @@ public class RemoteAccessClient extends ConfigurationAccess {
     public void updateAdditionalHosts(byte[] bytes) throws IOException {
         try {
 
-            DataOutputStream out = new DataOutputStream(getConnection().getOutputStream());
-            DataInputStream in = new DataInputStream(getConnection().getInputStream());
+            DataOutputStream out = new DataOutputStream(getOutputStream());
+            DataInputStream in = new DataInputStream(getInputStream());
 
             out.write("updateAdditionalHosts()\n".getBytes());
             out.writeInt(bytes.length);
@@ -318,9 +342,8 @@ public class RemoteAccessClient extends ConfigurationAccess {
     @Override
     public void updateFilter(String entries, boolean filter) throws IOException {
         try {
-            Socket con = getConnection();
-            OutputStream out = con.getOutputStream();
-            InputStream in = con.getInputStream();
+            OutputStream out = getOutputStream();
+            InputStream in = getInputStream();
             out.write(("updateFilter()\n"+entries+"\n"+filter+"\n").getBytes());
             out.flush();
             String response = Utils.readLineFromStream(in);
@@ -341,11 +364,6 @@ public class RemoteAccessClient extends ConfigurationAccess {
     @Override
     public String getVersion() throws IOException {
         return remote_version;
-    }
-
-    @Override
-    public void connectLog(LoggerInterface logger) throws IOException {
-        connectedLogger = logger;
     }
 
     @Override
@@ -371,8 +389,8 @@ public class RemoteAccessClient extends ConfigurationAccess {
     @Override
    public long[] getFilterStatistics() throws IOException {
         try {
-            DataOutputStream out = new DataOutputStream(getConnection().getOutputStream());
-            DataInputStream in = new DataInputStream(getConnection().getInputStream());
+            DataOutputStream out = new DataOutputStream(getOutputStream());
+            DataInputStream in = new DataInputStream(getInputStream());
             out.write(("getFilterStatistics()\n").getBytes());
             out.flush();
 
@@ -421,6 +439,38 @@ public class RemoteAccessClient extends ConfigurationAccess {
         triggerAction("releaseWakeLock()");
     }
 
+    private void processHeartBeat() {
+        connectedLogger.message("Heart Beat!");
+        timeOutCounter=0;
+        setTimeout(READ_TIMEOUT);
+    }
+
+
+    private void setTimeout(int timeout) {
+        this.timeout = System.currentTimeMillis()+timeout;
+        TimoutNotificator.getInstance().register(this);
+    }
+
+    @Override
+    public void timeoutNotification() {
+        timeOutCounter++;
+        if (timeOutCounter == 2) {
+            connectedLogger.message("Remote Session is Dead!");
+            connectedLogger.logLine("Remote Session is Dead! - Closing...!");
+            timeOutCounter=0;
+            closeConnectionReconnect();
+        }
+        else {
+            //one more chance
+            setTimeout(READ_TIMEOUT);
+        }
+    }
+
+    @Override
+    public long getTimoutTime() {
+        return timeout;
+    }
+
     /*****************************/
     /* Inner class Remote Stream**/
     /*****************************/
@@ -430,16 +480,20 @@ public class RemoteAccessClient extends ConfigurationAccess {
         Socket streamCon;
         int streamConId;
         boolean stopped = false;
+        DataInputStream in;
+        DataOutputStream out;
 
-        public RemoteStream() throws IOException {
+        public RemoteStream(int ctrlSession) throws IOException {
             Object[] conInfo = initConnection();
             this.streamCon = (Socket) conInfo[1];
+            in = new DataInputStream((InputStream) conInfo[2]);
+            out = new DataOutputStream((OutputStream) conInfo[3]);
             streamConId = (Integer)conInfo[0];
 
             try {
-                streamCon.getOutputStream().write(("attach\n").getBytes());
-                streamCon.getOutputStream().flush();
-                String response = Utils.readLineFromStream(streamCon.getInputStream());
+                out.write(("attach\n"+ctrlSession+"\n").getBytes());
+                out.flush();
+                String response = Utils.readLineFromStream(in);
                 if (!response.equals("OK")) {
                     throw new IOException(response);
                 }
@@ -457,7 +511,6 @@ public class RemoteAccessClient extends ConfigurationAccess {
             byte[] msg = new byte[2048];
             try {
                 while (!stopped) {
-                    DataInputStream in = new DataInputStream(streamCon.getInputStream());
                     int type = in.readShort();
                     short len = in.readShort();
                     msg = getBuffer(msg, len, 2048, 1024000);
@@ -481,6 +534,10 @@ public class RemoteAccessClient extends ConfigurationAccess {
                         case UPD_CON_CNT:
                             con_cnt = Integer.parseInt(new String(msg, 0, len));
                             break;
+                        case HEART_BEAT:
+                            processHeartBeat();
+                            confirmHeartBeat();
+                            break;
                         default:
                             throw new IOException("Unknown message type: " + type);
                     }
@@ -491,6 +548,16 @@ public class RemoteAccessClient extends ConfigurationAccess {
                     connectedLogger.logLine("Exception during RemoteStream read! " + e.toString());
                     closeConnectionReconnect();
                 }
+            }
+        }
+
+        private void confirmHeartBeat() {
+            try {
+                out.write("confirmHeartBeat()\n".getBytes());
+                out.flush();
+            } catch (IOException e) {
+                connectedLogger.logLine("Exception during confirmHeartBeat()! " + e.toString());
+                closeConnectionReconnect();
             }
         }
 
@@ -514,8 +581,8 @@ public class RemoteAccessClient extends ConfigurationAccess {
             stopped = true;
             try {
                 if (streamCon!=null) {
-                    streamCon.getOutputStream().write("releaseConfiguration()".getBytes());
-                    streamCon.getOutputStream().flush();
+                    out.write("releaseConfiguration()".getBytes());
+                    out.flush();
                     Utils.closeSocket(streamCon);
                 }
             } catch (IOException e) {
@@ -523,5 +590,6 @@ public class RemoteAccessClient extends ConfigurationAccess {
             }
         }
     }
+
 
 }

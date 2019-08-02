@@ -9,7 +9,6 @@ import util.LoggerInterface;
 
 public abstract class ConfigurationAccess {
 
-    private static ConfigurationAccess LOCAL;
 
     public static class ConfigurationAccessException extends IOException{
         public ConfigurationAccessException(String msg, IOException cause){
@@ -54,8 +53,6 @@ public abstract class ConfigurationAccess {
     abstract public void updateFilter(String entries, boolean filter) throws IOException ;
 
     abstract public String getVersion() throws IOException;
-
-    abstract public void connectLog(LoggerInterface logger) throws IOException ;
 
     abstract public int openConnectionsCount()  throws IOException;;
 

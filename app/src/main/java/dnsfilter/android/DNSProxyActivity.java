@@ -158,7 +158,8 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	protected static String IN_FILTER_PREF = "X \u0009";
 	protected static String NO_FILTER_PREF = "✓\u0009";
 
-	ConfigurationAccess REMOTE = ConfigurationAccess.getLocal();
+	protected static ConfigurationAccess REMOTE = ConfigurationAccess.getLocal();
+	protected static boolean connectingRemote = false;
 
 	private static class MsgTimeoutListener implements TimeoutListener {
 
@@ -177,8 +178,10 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 		@Override
 		public void timeoutNotification() {
-			activity.setMessage(donate_field_txt, donate_field_color);
-
+			if (REMOTE.isLocal())
+				activity.setMessage(donate_field_txt, donate_field_color);
+			else
+				activity.setMessage(fromHtml("<font color='#F7FB0A'><strong>"+REMOTE+"</strong></font>"), donate_field_color);
 		}
 
 		@Override
@@ -673,8 +676,8 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 					"# IPV6 Addresses with '::' must be in brackets '[IPV6]'!\n" +
 					"# Cloudflare examples below:\n" +
 					"# 1.1.1.1::53::UDP (Default DNS on UDP port 53 / just 1.1.1.1 will work as well)\n" +
-					"# 1.1.1.1::853::DoT (DNS over TLS)\n" +
-					"# 1.1.1.1::443::DoH::https://cloudflare-dns.com/dns-query (DNS over HTTPS)\n\n";
+					"# 1.1.1.1::853::DOT (DNS over TLS)\n" +
+					"# 1.1.1.1::443::DOH::https://cloudflare-dns.com/dns-query (DNS over HTTPS)\n\n";
 			manualDNSView.setText(manualDNS_Help+config.getProperty("fallbackDNS").replace(";", "\n").replace(" ", ""));
 
 			FilterConfig.FilterConfigEntry[] filterEntries = buildFilterEntries(config);
@@ -686,8 +689,6 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			enableAutoStartCheck.setChecked(Boolean.parseBoolean(config.getProperty("AUTOSTART", "false")));
 
 			keepAwakeCheck.setChecked(Boolean.parseBoolean(config.getProperty("androidKeepAwake", "false")));
-			if (keepAwakeCheck.isChecked())
-				remoteWakeLock();
 
 			//set whitelisted Apps into UI
 			appSelector.setSelectedApps(config.getProperty("androidAppWhiteList", ""));
@@ -954,28 +955,57 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		}
 	}
 
+	private void onRemoteConnected(ConfigurationAccess remote){
+		REMOTE=remote;
+		((GroupedLogger) Logger.getLogger()).detachLogger(myLogger);
+		loadAndApplyConfig(false);
+		message("CONNECTED TO " + REMOTE);
+		logLine("====>CONNECTED to "+REMOTE+" <====");
+		connectingRemote=false;
+
+	}
+
 	private void handleRemoteControl() {
 
 		if (REMOTE.isLocal()) {
+			if (connectingRemote)
+				// Connecting in progress!
+				return;
 
 			try {
-				String host = ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_host", "");
-				String user = ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_user", "");
-				String password = ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_password", "");
+				final String host = ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_host", "");
+				final String user = ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_user", "");
+				final String password = ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_password", "");
 				if (host.equals("") || user.equals("") || password.equals(""))
 					throw new IOException("Remote Control not configured");
 
-				int port = 3333;
+				final int port;
 				try {
 					port = Integer.parseInt(ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_port", "3333"));
 				} catch (Exception e) {
 					throw new IOException("Invalid connect_remote_ctrl_port");
 				}
-				message("Connecting: " + host + ":" + port);
 
-				REMOTE = ConfigurationAccess.getRemote(myLogger, host, port, user, password);
-				((GroupedLogger) Logger.getLogger()).detachLogger(myLogger);
-				message("CONNECTED TO " + REMOTE);
+				Runnable asyncConnect = new Runnable() {
+					@Override
+					public void run() {
+						connectingRemote=true;
+						message("Connecting: " + host + ":" + port);
+						MsgTO.setTimeout(150000);
+
+						try {
+							onRemoteConnected(ConfigurationAccess.getRemote(myLogger, host, port, user, password));
+						} catch (IOException e) {
+							Logger.getLogger().logLine("Remote Connect failed!" + e.toString());
+							message("Remote Connect Failed!");
+						} finally {
+							connectingRemote=false;
+						}
+
+					}
+				};
+				new Thread(asyncConnect).start();
+
 
 			} catch (IOException e) {
 				Logger.getLogger().logLine("Remote Connect failed!" + e.toString());
@@ -989,9 +1019,8 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			myLogger = this;
 			((GroupedLogger) Logger.getLogger()).attachLogger(this);
 			message("CONNECTED TO "+REMOTE);
+			logLine("====>CONNECTED to "+REMOTE+" <====");
 		}
-		loadAndApplyConfig(false);
-		logLine("====>CONNECTED to "+REMOTE+" <====");
 	}
 
 

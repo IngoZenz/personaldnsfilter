@@ -136,7 +136,7 @@ public class DNSServer {
 
     @Override
     public String toString() {
-        return "["+address.getAddress().getHostAddress()+"] :: "+address.getPort()+"::"+getProtocolName();
+        return "["+address.getAddress().getHostAddress()+"]::"+address.getPort()+"::"+getProtocolName();
     }
 
     @Override

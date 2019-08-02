@@ -18,9 +18,12 @@ import java.util.Properties;
 
 import dnsfilter.ConfigurationAccess;
 import util.AsyncLogger;
+import util.Encryption;
 import util.GroupedLogger;
 import util.Logger;
 import util.LoggerInterface;
+import util.TimeoutListener;
+import util.TimoutNotificator;
 import util.Utils;
 
 public class RemoteAccessServer implements Runnable {
@@ -33,7 +36,9 @@ public class RemoteAccessServer implements Runnable {
     private ServerSocket server;
     private HashMap sessions = new HashMap<Integer, RemoteSession>();
 
+
     public RemoteAccessServer(int port, String user, String pwd) throws IOException{
+        Encryption.init_AES(user+pwd);
         this.user=user;
         this.pwd=pwd;
         server = new ServerSocket(port);
@@ -55,9 +60,11 @@ public class RemoteAccessServer implements Runnable {
         while (!stopped) {
             try {
                 Socket con = server.accept();
+                InputStream in = Encryption.getDecryptedStream(con.getInputStream());
+                OutputStream out = Encryption.getEncryptedOutputStream(con.getOutputStream(), 1024);
                 Logger.getLogger().logLine("New Remote Session from :"+con);
+
                 try {
-                    InputStream in = con.getInputStream();
                     byte[] buf = new byte[1024];
                     String version = readStringFromStream(in, buf);
                     String user = readStringFromStream(in, buf);
@@ -68,13 +75,12 @@ public class RemoteAccessServer implements Runnable {
                     if (option.equals("new_session")) {
                         //create and start session
                         sessionId++;
-                        new RemoteSession(con, sessionId);
-                        OutputStream out = con.getOutputStream();
                         out.write("OK\n".getBytes());
                         out.write((sessionId+"\n").getBytes());
                         out.write((ConfigurationAccess.getLocal().getVersion() + "\n").getBytes());
                         out.write((ConfigurationAccess.getLocal().getLastDNSAddress() + "\n").getBytes());
                         out.flush();
+                        new RemoteSession(con, in, out, sessionId);
                     }
                     else if (option.equals("reconnect_session")) {
                         int id;
@@ -87,8 +93,7 @@ public class RemoteAccessServer implements Runnable {
                         if (session == null)
                             throw new IOException("Reconnect session not found:"+id);
                         else {
-                            session.reconnectSession(con);
-                            OutputStream out = con.getOutputStream();
+                            session.reconnectSession(con, in, out);
                             out.write("OK\n".getBytes());
                             out.flush();
                         }
@@ -96,8 +101,8 @@ public class RemoteAccessServer implements Runnable {
                     else throw new IOException("Invalid option: "+option);
 
                 } catch (IOException e) {
-                    con.getOutputStream().write(e.toString().getBytes());
-                    con.getOutputStream().flush();
+                    out.write(e.toString().getBytes());
+                    out.flush();
                     Utils.closeSocket(con);
                     throw e;
                 }
@@ -131,9 +136,10 @@ public class RemoteAccessServer implements Runnable {
     /*********************************************************/
     /*********** Inner class RemoteSession *******************/
     /*********************************************************/
-    private class RemoteSession implements Runnable {
+    private class RemoteSession implements Runnable, TimeoutListener {
 
         int id;
+        int connectedSessionId = -1; //connected Control Session in case of RemoteStream session
         Socket socket;
         LoggerInterface remoteLogger;
         boolean killed = false;
@@ -141,12 +147,15 @@ public class RemoteAccessServer implements Runnable {
         DataOutputStream out;
         DataInputStream in;
 
+        long timeout = Long.MAX_VALUE; //heartbeat timeout for dead session detection
+        long lastHeartBeatConfirm = System.currentTimeMillis();//last confirmed heartbeat
 
-        private RemoteSession(Socket con, int id) throws IOException{
+
+        private RemoteSession(Socket con, InputStream in, OutputStream out, int id) throws IOException{
             this.id = id;
             this.socket = con;
-            out = new DataOutputStream(con.getOutputStream());
-            in = new DataInputStream(con.getInputStream());
+            this.out = new DataOutputStream(out);
+            this.in = new DataInputStream(in);
             sessions.put(id, this);
             new Thread(this).start();
         }
@@ -155,6 +164,8 @@ public class RemoteAccessServer implements Runnable {
             if (killed)
                 return;
             killed = true;
+            TimoutNotificator.getInstance().unregister(this);
+
             if (remoteLogger!= null) {
                 remoteLogger.closeLogger();
                 ((GroupedLogger) Logger.getLogger()).detachLogger(remoteLogger);
@@ -163,14 +174,20 @@ public class RemoteAccessServer implements Runnable {
             Utils.closeSocket(socket);
             sessions.remove(id);
 
+            if (connectedSessionId != -1) {
+                //kill also connected Control Session
+                RemoteSession connectedSession = (RemoteSession)sessions.get(connectedSessionId);
+                if (connectedSession != null) //could already have been closed!
+                    connectedSession.killSession();
+            }
         }
 
-        public void reconnectSession(Socket con) throws IOException{
+        public void reconnectSession(Socket con, InputStream in, OutputStream out) throws IOException{
            doReconnect = true;
            Socket old = this.socket;
            this.socket = con;
-           out = new DataOutputStream(con.getOutputStream());
-           in = new DataInputStream(con.getInputStream());
+           this.out = new DataOutputStream(con.getOutputStream());
+           this.in = new DataInputStream(con.getInputStream());
            Utils.closeSocket(old);
         }
 
@@ -185,6 +202,8 @@ public class RemoteAccessServer implements Runnable {
                         attachStream();
                     else if (action.equals("releaseConfiguration()"))
                         killSession();
+                    else if (action.equals("confirmHeartBeat()"))
+                        heartBeatConfirmed();
                     else executeAction(action);
                 } catch (ConfigurationAccess.ConfigurationAccessException e) {
                     Logger.getLogger().logLine("RemoteServer Exception processing "+action+"! " + e.toString());
@@ -293,34 +312,43 @@ public class RemoteAccessServer implements Runnable {
         }
 
         private void attachStream() throws IOException{
+
+            try {
+                //read the ID of the corresponding control session
+                connectedSessionId = Integer.parseInt(Utils.readLineFromStream(in));
+            } catch (Exception e){
+                throw new IOException(e);
+            }
+
             remoteLogger = new AsyncLogger(new LoggerInterface() {
 
                 public void sendLog(int type, String txt) {
-                    try {
+                    synchronized (out) {
+                        try {
 
-                        //info about open connections
-                        out.writeShort(RemoteAccessClient.UPD_CON_CNT);
-                        byte[] msg = (ConfigurationAccess.getLocal().openConnectionsCount()+"").getBytes();
-                        out.writeShort(msg.length);
-                        out.write(msg);
+                            //info about open connections
+                            out.writeShort(RemoteAccessClient.UPD_CON_CNT);
+                            byte[] msg = (ConfigurationAccess.getLocal().openConnectionsCount() + "").getBytes();
+                            out.writeShort(msg.length);
+                            out.write(msg);
 
-                        //last DNS
-                        out.writeShort(RemoteAccessClient.UPD_DNS);
-                        msg = (ConfigurationAccess.getLocal().getLastDNSAddress()).getBytes();
-                        out.writeShort(msg.length);
-                        out.write(msg);
+                            //last DNS
+                            out.writeShort(RemoteAccessClient.UPD_DNS);
+                            msg = (ConfigurationAccess.getLocal().getLastDNSAddress()).getBytes();
+                            out.writeShort(msg.length);
+                            out.write(msg);
 
-                        //the log
-                        msg = txt.getBytes();
-                        out.writeShort(type);
-                        out.writeShort(msg.length);
-                        out.write(msg);
+                            //the log
+                            msg = txt.getBytes();
+                            out.writeShort(type);
+                            out.writeShort(msg.length);
+                            out.write(msg);
+                            out.flush();
 
-                        out.flush();
-
-                    } catch (IOException e) {
-                        killSession();
-                        Logger.getLogger().logLine("Exception during remote logging! "+e.toString());
+                        } catch (IOException e) {
+                            killSession();
+                            Logger.getLogger().logLine("Exception during remote logging! " + e.toString());
+                        }
                     }
                 }
 
@@ -354,10 +382,55 @@ public class RemoteAccessServer implements Runnable {
                 }
             });
 
-            ((GroupedLogger)Logger.getLogger()).attachLogger(remoteLogger);
+            synchronized (out) {
+                ((GroupedLogger) Logger.getLogger()).attachLogger(remoteLogger);
 
-            out.write("OK\n".getBytes());
-            out.flush();
+                out.write("OK\n".getBytes());
+                doHeartBeat(RemoteAccessClient.READ_TIMEOUT);
+                //will also flush!
+            }
+        }
+
+        private void doHeartBeat(int timeout) {
+            try {
+                synchronized (out) {
+                    out.writeShort(RemoteAccessClient.HEART_BEAT);
+                    out.writeShort(0); //0 length message
+                    out.flush();
+                }
+                this.timeout = System.currentTimeMillis() + timeout;
+                //register next beat
+                TimoutNotificator.getInstance().register(this);
+            } catch (IOException e) {
+                Logger.getLogger().logLine("Heartbeat failed! " + e);
+                killSession();
+            }
+        }
+
+        private void heartBeatConfirmed() {
+            lastHeartBeatConfirm = System.currentTimeMillis();
+        }
+
+        private boolean checkLastConfirmedHeartBeat() {
+            long delta = System.currentTimeMillis() - lastHeartBeatConfirm;
+            if (delta > 2*RemoteAccessClient.READ_TIMEOUT) {
+                Logger.getLogger().logLine("Heartbeat Confirmation not received - Dead Session!");
+                killSession();
+
+                return false;
+            }
+            else return true;
+        }
+
+        @Override
+        public void timeoutNotification() {
+            if (checkLastConfirmedHeartBeat())
+                doHeartBeat(RemoteAccessClient.READ_TIMEOUT);
+        }
+
+        @Override
+        public long getTimoutTime() {
+            return timeout;
         }
     }
 
