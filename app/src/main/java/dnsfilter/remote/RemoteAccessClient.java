@@ -198,8 +198,8 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
             remoteStream.close();
         try {
             if (ctrlcon!=null) {
-                ctrlcon.getOutputStream().write("releaseConfiguration()".getBytes());
-                ctrlcon.getOutputStream().flush();
+                out.write("releaseConfiguration()".getBytes());
+                out.flush();
                 Utils.closeSocket(ctrlcon);
             }
         } catch (IOException e) {
