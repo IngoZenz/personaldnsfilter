@@ -24,8 +24,8 @@ public class PaddingCipherOutputStream extends OutputStream {
 			return;
 		
 		lowerOut = new DataOutputStream(underlying);
-		lowerOut.writeInt(Encryption.INIT_BYTES.length);
-		lowerOut.write(Encryption.INIT_BYTES);	
+		lowerOut.writeInt(Encryption.ENCR_INIT_BYTES.length);
+		lowerOut.write(Encryption.ENCR_INIT_BYTES);
 		
 	}
 

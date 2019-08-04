@@ -56,8 +56,8 @@ import util.Utils;
 
 
 public class DNSFilterManager extends ConfigurationAccess  {
-	public static final String VERSION = "1.50.33-dev01";
-	public static final String VERSIONID = "150330000";
+
+	public static final String VERSION = "1503300";
 
 	private static DNSFilterManager INSTANCE;
 
@@ -1062,7 +1062,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 	@Override
 	public String getVersion() {
-		return VERSIONID;
+		return VERSION;
 	}
 
 	@Override
@@ -1128,12 +1128,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	}
 
 	private void initEnv() {
-		if (remoteAccessManager == null)
-			try {
-				remoteAccessManager = new RemoteAccessServer(3333, "dnsfilter", "dnsfilter");
-			} catch (IOException e) {
-				Logger.getLogger().logException(e);
-			}
+
 		debug = false;
 		filterReloadURL = null;
 		filterhostfile = null;
@@ -1193,6 +1188,20 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 			serverStopped = false;
 
+			//start remote Control server if configured and not started already
+			if (remoteAccessManager == null) {
+				try {
+
+					int port = Integer.parseInt(config.getProperty("server_remote_ctrl_port", "-1"));
+					String keyphrase = config.getProperty("server_remote_ctrl_keyphrase", "");
+					if (port != -1)
+						remoteAccessManager = new RemoteAccessServer(port, keyphrase);
+				} catch (Exception e) {
+					Logger.getLogger().logException(e);
+				}
+			}
+
+			//wake lock if configured
 			if (config.getProperty("androidKeepAwake", "true").equalsIgnoreCase("true"))
 				ExecutionEnvironment.getEnvironment().wakeLock();
 

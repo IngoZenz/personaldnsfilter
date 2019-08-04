@@ -38,8 +38,6 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
 
     private String host;
     private int port;
-    private String user;
-    private String pwd;
     private Socket ctrlcon;
     private InputStream in;
     private OutputStream out;
@@ -56,17 +54,15 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
 
 
 
-    public RemoteAccessClient(LoggerInterface logger, String host, int port, String user, String pwd) throws IOException{
+    public RemoteAccessClient(LoggerInterface logger, String host, int port, String keyphrase) throws IOException{
 
         if (logger == null)
             logger = Logger.getLogger();
 
         connectedLogger = logger;
-        Encryption.init_AES(user+pwd);
+        Encryption.init_AES(keyphrase);
         this.host=host;
         this.port=port;
-        this.user = user;
-        this.pwd = pwd;
         connect();
         valid = true;
     }
@@ -125,7 +121,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
             con.setSoTimeout(READ_TIMEOUT);
             OutputStream out = Encryption.getEncryptedOutputStream(con.getOutputStream(), 1024);
             InputStream in = Encryption.getDecryptedStream(con.getInputStream());
-            out.write((DNSFilterManager.VERSIONID+"\n"+user + "\n" + pwd + "\nnew_session\n").getBytes());
+            out.write((DNSFilterManager.VERSION+"\nnew_session\n").getBytes());
             out.flush();
             String response = Utils.readLineFromStream(in);
             if (!response.equals("OK")) {
@@ -138,6 +134,11 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
             }
             remote_version = Utils.readLineFromStream(in);
             last_dns = Utils.readLineFromStream(in);
+            try {
+                con_cnt = Integer.parseInt(Utils.readLineFromStream(in));
+            } catch (Exception e) {
+                throw new IOException(e);
+            }
             con.setSoTimeout(0);
             return new Object[] {id, con, in, out};
         } catch (IOException e) {

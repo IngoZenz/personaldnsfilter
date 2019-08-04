@@ -33,14 +33,15 @@ public class PaddingCipherInputStream extends InputStream {
 			eof=true;
 		}
 		if (!eof) {
-			if (size != Encryption.INIT_BYTES.length)
-				throw new IOException("Protocol Error!");
+			if (size != Encryption.ENCR_INIT_BYTES.length)
+				throw new IOException("Wrong keyphrase!");
 			
 			byte[] next = new byte[size];
 			lowerIn.readFully(next);
 			
-			if (!new String(next).equals(Encryption.INIT_STRING))
-				throw new IOException("Protocol Error!");
+			for (int i = 0; i < next.length; i++)
+				if (next[i] != Encryption.ENCR_INIT_BYTES[i])
+					throw new IOException("Wrong keyphrase!");
 		}
 	}
 

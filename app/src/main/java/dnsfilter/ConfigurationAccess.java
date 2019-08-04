@@ -24,8 +24,8 @@ public abstract class ConfigurationAccess {
         return DNSFilterManager.getInstance();
     }
 
-    static public ConfigurationAccess getRemote(LoggerInterface logger, String host, int port, String usr, String pwd) throws IOException {
-        return new RemoteAccessClient(logger, host, port, usr, pwd);
+    static public ConfigurationAccess getRemote(LoggerInterface logger, String host, int port, String keyphrase) throws IOException {
+        return new RemoteAccessClient(logger, host, port, keyphrase);
     }
 
     @Override

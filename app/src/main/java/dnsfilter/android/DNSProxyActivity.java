@@ -973,15 +973,15 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 				return;
 
 			try {
-				final String host = ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_host", "");
-				final String user = ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_user", "");
-				final String password = ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_password", "");
-				if (host.equals("") || user.equals("") || password.equals(""))
+				final String host = ConfigurationAccess.getLocal().getConfig().getProperty("client_remote_ctrl_host", "");
+				final String keyphrase = ConfigurationAccess.getLocal().getConfig().getProperty("client_remote_ctrl_keyphrase", "");
+
+				if (host.equals("") || keyphrase.equals(""))
 					throw new IOException("Remote Control not configured");
 
 				final int port;
 				try {
-					port = Integer.parseInt(ConfigurationAccess.getLocal().getConfig().getProperty("connect_remote_ctrl_port", "3333"));
+					port = Integer.parseInt(ConfigurationAccess.getLocal().getConfig().getProperty("client_remote_ctrl_port", "3333"));
 				} catch (Exception e) {
 					throw new IOException("Invalid connect_remote_ctrl_port");
 				}
@@ -994,7 +994,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 						MsgTO.setTimeout(150000);
 
 						try {
-							onRemoteConnected(ConfigurationAccess.getRemote(myLogger, host, port, user, password));
+							onRemoteConnected(ConfigurationAccess.getRemote(myLogger, host, port, keyphrase));
 						} catch (IOException e) {
 							Logger.getLogger().logLine("Remote Connect failed!" + e.toString());
 							message("Remote Connect Failed!");

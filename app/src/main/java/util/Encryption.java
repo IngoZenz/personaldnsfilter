@@ -14,8 +14,9 @@ import javax.crypto.spec.SecretKeySpec;
 public class Encryption {
 
     private static byte[] iv = new byte[]{12, -2, 30, 41, 101, -65, 17, -8, -91, 120, -11, 122, 13, -44, 45, 16};
-    public static String INIT_STRING="HbCt830lPn";
-    public static byte[] INIT_BYTES = INIT_STRING.getBytes();
+    
+    public static byte[] INIT_BYTES = new byte[]{45, 7, -8, 45, 6, -65, 89, 5};
+    public static byte[] ENCR_INIT_BYTES;
 
     private static boolean INITIALZED = false;
 
@@ -41,7 +42,9 @@ public class Encryption {
             ecipher.init(Cipher.ENCRYPT_MODE, key, paramSpec);
             dcipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             dcipher.init(Cipher.DECRYPT_MODE, key, paramSpec);
+            Encryption.keyphrase = keyphrase;
             INITIALZED=true;
+            ENCR_INIT_BYTES = encrypt(INIT_BYTES);
         } catch (Exception e) {
             throw new IOException("Encryption can not be initialized:" + e.getMessage());
         }

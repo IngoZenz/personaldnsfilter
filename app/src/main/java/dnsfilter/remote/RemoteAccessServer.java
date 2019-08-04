@@ -29,18 +29,14 @@ import util.Utils;
 public class RemoteAccessServer implements Runnable {
 
     private static int sessionId=0;
-    String user;
-    String pwd;
 
     boolean stopped = false;
     private ServerSocket server;
     private HashMap sessions = new HashMap<Integer, RemoteSession>();
 
 
-    public RemoteAccessServer(int port, String user, String pwd) throws IOException{
-        Encryption.init_AES(user+pwd);
-        this.user=user;
-        this.pwd=pwd;
+    public RemoteAccessServer(int port, String keyphrase) throws IOException{
+        Encryption.init_AES(keyphrase);
         server = new ServerSocket(port);
         new Thread (this).start();
     }
@@ -67,10 +63,7 @@ public class RemoteAccessServer implements Runnable {
                 try {
                     byte[] buf = new byte[1024];
                     String version = readStringFromStream(in, buf);
-                    String user = readStringFromStream(in, buf);
-                    String pwd = readStringFromStream(in, buf);
                     String option = readStringFromStream(in, buf);
-                    check(version, user, pwd);
 
                     if (option.equals("new_session")) {
                         //create and start session
@@ -79,6 +72,7 @@ public class RemoteAccessServer implements Runnable {
                         out.write((sessionId+"\n").getBytes());
                         out.write((ConfigurationAccess.getLocal().getVersion() + "\n").getBytes());
                         out.write((ConfigurationAccess.getLocal().getLastDNSAddress() + "\n").getBytes());
+                        out.write((ConfigurationAccess.getLocal().openConnectionsCount() + "\n").getBytes());
                         out.flush();
                         new RemoteSession(con, in, out, sessionId);
                     }
@@ -110,13 +104,6 @@ public class RemoteAccessServer implements Runnable {
                 Logger.getLogger().logLine("RemoteServerException: "+e.toString());
             }
         }
-    }
-
-    private void check(String version, String user, String pwd) throws IOException {
-        if (user.equals(this.user) && pwd.equals(this.pwd))
-            return;
-        else
-            throw new IOException("Logon failed");
     }
 
 
