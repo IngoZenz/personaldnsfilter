@@ -960,7 +960,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		((GroupedLogger) Logger.getLogger()).detachLogger(myLogger);
 		loadAndApplyConfig(false);
 		message("CONNECTED TO " + REMOTE);
-		logLine("====>CONNECTED to "+REMOTE+" <====");
+		logLine("=>CONNECTED to "+REMOTE+"<=");
 		connectingRemote=false;
 
 	}
@@ -1019,7 +1019,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			myLogger = this;
 			((GroupedLogger) Logger.getLogger()).attachLogger(this);
 			message("CONNECTED TO "+REMOTE);
-			logLine("====>CONNECTED to "+REMOTE+" <====");
+			logLine("=>CONNECTED to "+REMOTE+"<=");
 		}
 	}
 
