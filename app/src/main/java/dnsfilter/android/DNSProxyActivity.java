@@ -667,31 +667,40 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		config = getConfig();
 
 		if (config != null) {
-			debug = Boolean.parseBoolean(config.getProperty("debug", "false"));
+			Runnable uiUpdater = new Runnable() {
+				@Override
+				public void run() {
+					debug = Boolean.parseBoolean(config.getProperty("debug", "false"));
 
-			manualDNSCheck.setChecked(!Boolean.parseBoolean(config.getProperty("detectDNS", "true")));
+					manualDNSCheck.setChecked(!Boolean.parseBoolean(config.getProperty("detectDNS", "true")));
 
-			String manualDNS_Help =
-					"# Format: <IP>::<PORT>::<PROTOCOL>::<URL END POINT>\n"+
-					"# IPV6 Addresses with '::' must be in brackets '[IPV6]'!\n" +
-					"# Cloudflare examples below:\n" +
-					"# 1.1.1.1::53::UDP (Default DNS on UDP port 53 / just 1.1.1.1 will work as well)\n" +
-					"# 1.1.1.1::853::DOT (DNS over TLS)\n" +
-					"# 1.1.1.1::443::DOH::https://cloudflare-dns.com/dns-query (DNS over HTTPS)\n\n";
-			manualDNSView.setText(manualDNS_Help+config.getProperty("fallbackDNS").replace(";", "\n").replace(" ", ""));
+					String manualDNS_Help =
+							"# Format: <IP>::<PORT>::<PROTOCOL>::<URL END POINT>\n"+
+									"# IPV6 Addresses with '::' must be in brackets '[IPV6]'!\n" +
+									"# Cloudflare examples below:\n" +
+									"# 1.1.1.1::53::UDP (Default DNS on UDP port 53 / just 1.1.1.1 will work as well)\n" +
+									"# 1.1.1.1::853::DOT (DNS over TLS)\n" +
+									"# 1.1.1.1::443::DOH::https://cloudflare-dns.com/dns-query (DNS over HTTPS)\n\n";
+					manualDNSView.setText(manualDNS_Help+config.getProperty("fallbackDNS").replace(";", "\n").replace(" ", ""));
 
-			FilterConfig.FilterConfigEntry[] filterEntries = buildFilterEntries(config);
-			filterCfg.setEntries(filterEntries);
+					FilterConfig.FilterConfigEntry[] filterEntries = buildFilterEntries(config);
+					filterCfg.setEntries(filterEntries);
 
-			filterReloadIntervalView.setText(config.getProperty("reloadIntervalDays", "7"));
+					filterReloadIntervalView.setText(config.getProperty("reloadIntervalDays", "7"));
 
-			enableAdFilterCheck.setChecked(config.getProperty("filterHostsFile") != null);
-			enableAutoStartCheck.setChecked(Boolean.parseBoolean(config.getProperty("AUTOSTART", "false")));
+					enableAdFilterCheck.setChecked(config.getProperty("filterHostsFile") != null);
+					enableAutoStartCheck.setChecked(Boolean.parseBoolean(config.getProperty("AUTOSTART", "false")));
 
-			keepAwakeCheck.setChecked(Boolean.parseBoolean(config.getProperty("androidKeepAwake", "false")));
+					keepAwakeCheck.setChecked(Boolean.parseBoolean(config.getProperty("androidKeepAwake", "false")));
 
-			//set whitelisted Apps into UI
-			appSelector.setSelectedApps(config.getProperty("androidAppWhiteList", ""));
+					//set whitelisted Apps into UI
+					appSelector.setSelectedApps(config.getProperty("androidAppWhiteList", ""));
+
+				}
+			};
+
+			runOnUiThread(uiUpdater);
+
 			if (startApp)
 				handleStartWithVPN();
 		}
