@@ -362,6 +362,9 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			out.write(config);
 			out.flush();
 			out.close();
+
+			this.config.load(new ByteArrayInputStream(config));
+
 			Logger.getLogger().message("Config Changed!\nRestart might be required!");
 			//only update in file system / config instance will be updated with next restart
 		} catch (IOException e) {
