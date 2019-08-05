@@ -1018,6 +1018,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			REMOTE = ConfigurationAccess.getLocal();
 			myLogger = this;
 			((GroupedLogger) Logger.getLogger()).attachLogger(this);
+			loadAndApplyConfig(false);
 			message("CONNECTED TO "+REMOTE);
 			logLine("=>CONNECTED to "+REMOTE+"<=");
 		}
