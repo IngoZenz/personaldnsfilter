@@ -696,6 +696,10 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 					//set whitelisted Apps into UI
 					appSelector.setSelectedApps(config.getProperty("androidAppWhiteList", ""));
 
+					if (!REMOTE.isLocal())
+						remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null,getResources().getDrawable(R.drawable.baseline_settings_remote_24px), null);
+					else
+						remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null,getResources().getDrawable(R.drawable.outline_settings_remote_24px), null);
 				}
 			};
 
