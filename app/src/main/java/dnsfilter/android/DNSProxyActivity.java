@@ -670,6 +670,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			Runnable uiUpdater = new Runnable() {
 				@Override
 				public void run() {
+
 					debug = Boolean.parseBoolean(config.getProperty("debug", "false"));
 
 					manualDNSCheck.setChecked(!Boolean.parseBoolean(config.getProperty("detectDNS", "true")));
@@ -1066,8 +1067,13 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		((TextView) findViewById(R.id.backupLog)).setText("");
 		if (advancedConfigCheck.isChecked()) {
 			//App Whitelisting only supported on SDK >= 21
-			if (Build.VERSION.SDK_INT >= 21)
+			if (Build.VERSION.SDK_INT >= 21 && REMOTE.isLocal())
 				appWhiteListCheck.setVisibility(View.VISIBLE);
+			else { //Not supported for remote access currently
+				appWhiteListCheck.setVisibility(View.GONE);
+				appWhiteListCheck.setChecked(false);
+			}
+
 			keepAwakeCheck.setVisibility(View.VISIBLE);
 			editAdditionalHostsCheck.setVisibility(View.VISIBLE);
 			editFilterLoadCheck.setVisibility(View.VISIBLE);

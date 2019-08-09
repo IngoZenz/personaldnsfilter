@@ -526,6 +526,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 						URL url = new URL(urlStr);
 						URLConnection con;
 						con = url.openConnection();
+						con.setRequestProperty("User-Agent", "Mozilla/5.0 ("+System.getProperty("os.name")+"; "+System.getProperty("os.version")+")");
 
 						con.setConnectTimeout(120000);
 						con.setReadTimeout(120000);

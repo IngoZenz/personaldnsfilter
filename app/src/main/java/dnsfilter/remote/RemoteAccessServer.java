@@ -39,6 +39,7 @@ public class RemoteAccessServer implements Runnable {
         Encryption.init_AES(keyphrase);
         server = new ServerSocket(port);
         new Thread (this).start();
+        Logger.getLogger().logLine("Started RemoteAccess Server on port "+port);
     }
 
 
@@ -58,7 +59,6 @@ public class RemoteAccessServer implements Runnable {
                 Socket con = server.accept();
                 InputStream in = Encryption.getDecryptedStream(con.getInputStream());
                 OutputStream out = Encryption.getEncryptedOutputStream(con.getOutputStream(), 1024);
-                Logger.getLogger().logLine("New Remote Session from :"+con);
 
                 try {
                     byte[] buf = new byte[1024];
@@ -144,6 +144,7 @@ public class RemoteAccessServer implements Runnable {
             this.out = new DataOutputStream(out);
             this.in = new DataInputStream(in);
             sessions.put(id, this);
+            Logger.getLogger().logLine("New Remote Session "+id+" from :"+con);
             new Thread(this).start();
         }
 
@@ -207,7 +208,7 @@ public class RemoteAccessServer implements Runnable {
                     }
                 }
             }
-            Logger.getLogger().logLine("Remote Session closed! "+socket);
+            Logger.getLogger().logLine("Remote Session "+id+" closed! "+socket);
         }
 
         private void executeAction(String action) throws IOException{
