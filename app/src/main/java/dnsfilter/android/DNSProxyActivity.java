@@ -363,6 +363,11 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		reloadFilterBtn = (Button) findViewById(R.id.filterReloadBtn);
 		reloadFilterBtn.setOnClickListener(this);
 		remoteCtrlBtn = (Button) findViewById(R.id.remoteCtrlBtn);
+		if (!REMOTE.isLocal())
+			remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null,getResources().getDrawable(R.drawable.baseline_settings_remote_24px), null);
+		else
+			remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null,getResources().getDrawable(R.drawable.outline_settings_remote_24px), null);
+
 		remoteCtrlBtn.setOnClickListener(this);
 		backupBtn = (Button) findViewById(R.id.backupBtn);
 		backupBtn.setOnClickListener(this);

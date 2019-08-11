@@ -64,7 +64,7 @@ public class DNSFilterService extends VpnService  {
 	private static String ADDRESS_IPV4 = "10.0.2.15";
 	private static String ADDRESS_IPV6 = "fdc8:1095:91e1:aaaa:aaaa:aaaa:aaaa:aaa2";
 
-	private static String START_DNSCRYPTPROXY = "dnscrypt-proxy -config /system/etc/dnscrypt-proxy/dnscrypt-proxy.toml";
+	private static String START_DNSCRYPTPROXY = "dnscrypt-proxy";
 	private static String KILL_DNSCRYPTPROXY = "killall dnscrypt-proxy";
 
 	public static DNSFilterManager DNSFILTER = null;
@@ -342,7 +342,7 @@ public class DNSFilterService extends VpnService  {
 				if (manageDNSCryptProxy && !dnsCryptProxyStartTriggered) {
 					try {
 						runOSCommand(true,false, KILL_DNSCRYPTPROXY);
-						runOSCommand(false, true,START_DNSCRYPTPROXY);
+						runOSCommand(false, true,START_DNSCRYPTPROXY+" "+DNSFILTER.getConfig().getProperty("dnsCryptProxyStartOptions",""));
 						dnsCryptProxyStartTriggered = true;
 					} catch (Exception e) {
 						Logger.getLogger().logException(e);

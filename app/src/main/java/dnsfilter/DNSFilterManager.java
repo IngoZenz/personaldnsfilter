@@ -57,9 +57,9 @@ import util.Utils;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1503304";
+	public static final String VERSION = "1503305";
 
-	private static DNSFilterManager INSTANCE;
+	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
 	static public boolean debug;
 	static public String WORKDIR = "";
@@ -73,7 +73,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	private static boolean reloadUrlChanged;
 	private static String additionalHostsImportTS = "0";
 	private static boolean validIndex;
-	private static boolean indexAbort = false;
+	private static boolean aborted = false;
 
 
 	private static LoggerInterface TRAFFIC_LOG;
@@ -93,10 +93,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	protected Properties config = null;
 
 
-	public static synchronized DNSFilterManager getInstance(){
-		if (INSTANCE == null)
-			INSTANCE = new DNSFilterManager();
-
+	public static  DNSFilterManager getInstance(){
 		return INSTANCE;
 	}
 
@@ -127,8 +124,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 		boolean stopRequest = false;
 		boolean running = false;
 
-		public AutoFilterUpdater(Object monitor) {
-			this.monitor = monitor;
+		public AutoFilterUpdater() {
+			this.monitor =INSTANCE;
 		}
 
 		private void waitUntilNextFilterReload() throws InterruptedException {
@@ -141,8 +138,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 		}
 
 		public void stop() {
+			stopRequest = true;
 			synchronized (monitor) {
-				stopRequest = true;
 				monitor.notifyAll();
 				while (running)
 					try {
@@ -178,13 +175,15 @@ public class DNSFilterManager extends ConfigurationAccess  {
 						try {
 							reloading_filter = true;
 							Logger.getLogger().logLine("DNS Filter: Reloading hosts filter ...");
-							updateFilter();
-							validIndex = false;
-							reloadFilter(false);
-							Logger.getLogger().logLine("Reloading hosts filter ... completed!");
+							if (updateFilter()) { // otherwise it was aborted
+								validIndex = false;
+								reloadFilter(false);
+								Logger.getLogger().logLine("Reloading hosts filter ... completed!");
+							}
 							waitTime = filterReloadIntervalDays * 24 * 60 * 60 * 1000;
 							nextReload = System.currentTimeMillis() + waitTime;
 							retry = 0;
+
 						} catch (Exception e) {
 							Logger.getLogger().logException(e);
 							Logger.getLogger().logLine("Cannot update hosts filter file!");
@@ -506,92 +505,105 @@ public class DNSFilterManager extends ConfigurationAccess  {
 		entryCountOut.close();
 	}
 
-	private void updateFilter() throws IOException {
-		try {
-			ExecutionEnvironment.getEnvironment().wakeLock(); //ensure device stays awake until filter update is completed
+	private boolean updateFilter() throws IOException {
+		synchronized (INSTANCE) {
+			try {
+				updatingFilter = true;
+				ExecutionEnvironment.getEnvironment().wakeLock(); //ensure device stays awake until filter update is completed
 
-			OutputStream out = new FileOutputStream(WORKDIR + filterhostfile + ".tmp");
-			out.write((DOWNLOADED_FF_PREFIX+ new Date() + "from URLs: "+  filterReloadURL+"\n").getBytes());
+				OutputStream out = new FileOutputStream(WORKDIR + filterhostfile + ".tmp");
+				out.write((DOWNLOADED_FF_PREFIX + new Date() + "from URLs: " + filterReloadURL + "\n").getBytes());
 
-			StringTokenizer urlTokens = new StringTokenizer(filterReloadURL, ";");
+				StringTokenizer urlTokens = new StringTokenizer(filterReloadURL, ";");
 
-			int urlCnt = urlTokens.countTokens();
-			int count = 0;
-			for (int i = 0; i < urlCnt; i++) {
-				String urlStr = urlTokens.nextToken().trim();
-				int skippedWildcard=0;
-				try {
-					if (!urlStr.equals("")) {
-						Logger.getLogger().message("Connecting: "+urlStr);
-						URL url = new URL(urlStr);
-						URLConnection con;
-						con = url.openConnection();
-						con.setRequestProperty("User-Agent", "Mozilla/5.0 ("+System.getProperty("os.name")+"; "+System.getProperty("os.version")+")");
+				int urlCnt = urlTokens.countTokens();
+				int count = 0;
+				for (int i = 0; i < urlCnt; i++) {
+					String urlStr = urlTokens.nextToken().trim();
+					int skippedWildcard = 0;
+					try {
+						if (!urlStr.equals("")) {
+							Logger.getLogger().message("Connecting: " + urlStr);
+							URL url = new URL(urlStr);
+							URLConnection con;
+							con = url.openConnection();
+							con.setRequestProperty("User-Agent", "Mozilla/5.0 (" + System.getProperty("os.name") + "; " + System.getProperty("os.version") + ")");
 
-						con.setConnectTimeout(120000);
-						con.setReadTimeout(120000);
+							con.setConnectTimeout(120000);
+							con.setReadTimeout(120000);
 
-						InputStream in = new BufferedInputStream(con.getInputStream(),2048);
-						byte[] buf = new byte[2048];
-						int[] r;
+							InputStream in = new BufferedInputStream(con.getInputStream(), 2048);
+							byte[] buf = new byte[2048];
+							int[] r;
 
-						int received = 0;
-						int delta = 100000;
-						while ((r = readHostFileEntry(in,buf))[1] != -1) {
+							int received = 0;
+							int delta = 100000;
+							while ((r = readHostFileEntry(in, buf))[1] != -1 && !aborted) {
 
-							if (r[1] != 0) {
-								String hostEntry = new String(buf, 0, r[1]);
+								if (r[1] != 0) {
+									String hostEntry = new String(buf, 0, r[1]);
 
-								if (hostEntry != null && !hostEntry.equals("localhost")) {
-									String host = hostEntry;
-									if (r[0] == 1) //wildcard
-										skippedWildcard++;
-									else {
-										out.write((host + "\n").getBytes());
-										count++;
+									if (hostEntry != null && !hostEntry.equals("localhost")) {
+										String host = hostEntry;
+										if (r[0] == 1) //wildcard
+											skippedWildcard++;
+										else {
+											out.write((host + "\n").getBytes());
+											count++;
+										}
+									}
+									received = received + r[1];
+									if (received > delta) {
+										Logger.getLogger().message("Bytes received:" + received);
+										delta = delta + 100000;
 									}
 								}
-								received = received + r[1];
-								if (received > delta) {
-									Logger.getLogger().message("Bytes received:" + received);
-									delta = delta + 100000;
-								}
 							}
+							in.close();
+							if (aborted) {
+								Logger.getLogger().logLine("Aborting Filter Update!");
+								Logger.getLogger().message("Filter Update aborted!");
+								out.flush();
+								out.close();
+								return false;
+							}
+							if (skippedWildcard != 0)
+								Logger.getLogger().logLine("WARNING! - " + skippedWildcard + " skipped entrie(s) for " + urlStr + "! Wildcards are only supported in additionalHosts.txt!");
 						}
-						in.close();
-						if (skippedWildcard!=0)
-							Logger.getLogger().logLine("WARNING! - "+skippedWildcard+" skipped entrie(s) for " + urlStr+"! Wildcards are only supported in additionalHosts.txt!");
-
-						// update last loaded URL after successfull update
-						// setting additionalhosts TS = 0 is a hack here - but it enforces that index is recreated
-						updateIndexReloadInfoConfFile(filterReloadURL, "0");
-						reloadUrlChanged = false;
+					} catch (IOException eio) {
+						String msg = "ERROR loading filter: " + urlStr;
+						Logger.getLogger().message(msg);
+						Logger.getLogger().logLine(msg);
+						out.close();
+						throw eio;
 					}
-				} catch (IOException eio) {
-					String msg = "ERROR loading filter: "+urlStr;
-					Logger.getLogger().message(msg);
-					Logger.getLogger().logLine(msg);
-					out.close();
-					throw eio;
+
 				}
+				// update last loaded URL after successfull update
+				// setting additionalhosts TS = 0 is a hack here - but it enforces that index is recreated
+				updateIndexReloadInfoConfFile(filterReloadURL, "0");
+				reloadUrlChanged = false;
+				Logger.getLogger().logLine("Updating filter completed!");
+
+				out.flush();
+				out.close();
+
+				File ffile = new File(WORKDIR + filterhostfile);
+
+				if (!ffile.exists() || ffile.delete()) {
+
+					new File(WORKDIR + filterhostfile + ".tmp").renameTo(new File(WORKDIR + filterhostfile));
+					writeDownloadInfoFile(count, new File(WORKDIR + filterhostfile).lastModified());
+				} else
+					throw new IOException("Renaming downloaded .tmp file to Filter file failed!");
+
+			} finally {
+				ExecutionEnvironment.getEnvironment().releaseWakeLock();
+				updatingFilter = false;
+				INSTANCE.notifyAll();
 			}
-
-			Logger.getLogger().logLine("Updating filter completed!");
-
-			out.flush();
-			out.close();
-
-			File ffile = new File(WORKDIR + filterhostfile);
-
-			if (!ffile.exists() || ffile.delete()) {
-
-				new File(WORKDIR + filterhostfile + ".tmp").renameTo(new File(WORKDIR + filterhostfile));
-				writeDownloadInfoFile(count, new File(WORKDIR + filterhostfile).lastModified());
-			} else throw new IOException("Renaming downloaded .tmp file to Filter file failed!");
-
-		} finally {
-			ExecutionEnvironment.getEnvironment().releaseWakeLock();
 		}
+		return true; //completed
 	}
 
 	public int[] readHostFileEntry(InputStream in, byte[] buf) throws IOException {
@@ -681,28 +693,27 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	}
 
 
-	private static Object INDEXSYNC= new Object();
-	private static boolean indexing = false;
+	private static boolean updatingFilter = false;
 
-	private void abortIndexing() {
-		indexAbort = true;
-		synchronized (INDEXSYNC) {
+	private void abortFilterUpdate() {
+		aborted = true;
+		synchronized (INSTANCE) {
 
-			while (indexing) {
+			while (updatingFilter) {
 				try {
-					INDEXSYNC.wait();
+					INSTANCE.wait();
 				} catch (InterruptedException e) {
 					Logger.getLogger().logException(e);
 				}
 			}
-			indexAbort = false;
+			aborted = false;
 		}
 	}
 
 	private void rebuildIndex() throws IOException {
-		synchronized (INDEXSYNC) {
+		synchronized (INSTANCE) {
 			try {
-				indexing = true;
+				updatingFilter = true;
 
 				Logger.getLogger().logLine("Reading filter file and building index...!");
 				File filterfile = new File(WORKDIR + filterhostfile);
@@ -763,7 +774,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 					skipFFprep = true;
 				}
 
-				while (!indexAbort && (entry != null || fin != addHostIn)) {
+				while (!aborted && (entry != null || fin != addHostIn)) {
 					if (entry == null) {
 						//ready with filter file continue with additionalHosts
 						fin.close();
@@ -781,8 +792,9 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				fin.close();
 				if (fin != addHostIn)
 					addHostIn.close();
-				if (indexAbort) {
-					Logger.getLogger().logLine("Indexing Aborted!");
+				if (aborted) {
+					Logger.getLogger().logLine("Aborting Indexing!");
+					Logger.getLogger().message("Indexing Aborted!");
 					return;
 				}
 
@@ -809,7 +821,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				if (ffDownloaded)
 					fin.readLine(); // skip first comment line
 
-				while (!indexAbort && ((entry = fin.readLine()) != null || fin != addHostIn)) {
+				while (!aborted && ((entry = fin.readLine()) != null || fin != addHostIn)) {
 					if (entry == null) {
 						//ready with filter file continue with additionalHosts
 						fin.close();
@@ -842,7 +854,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				if (fin != addHostIn)
 					addHostIn.close();
 
-				if (indexAbort) {
+				if (aborted) {
 					Logger.getLogger().logLine("Indexing Aborted!");
 					if (filterHostsFileRemoveDuplicates)
 						fout.close();
@@ -890,8 +902,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				additionalHostsImportTS = "" + additionalHosts.lastModified();
 				updateIndexReloadInfoConfFile(filterReloadURL, additionalHostsImportTS); //update last loaded URL and additionalHosts
 			} finally {
-				indexing = false;
-				INDEXSYNC.notifyAll();
+				updatingFilter = false;
+				INSTANCE.notifyAll();
 			}
 		}
 	}
@@ -971,13 +983,13 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 			boolean indexingAborted = false;
 
-			if (indexing) {
-				abortIndexing();
+			if (updatingFilter) {
+				abortFilterUpdate();
 				indexingAborted = true;
 			}
 
 
-			synchronized (INDEXSYNC) {
+			synchronized (INSTANCE) {
 
 				String copyPasteStartSection = "##### AUTOMATIC ENTRIES BELOW! #####";
 				String whitelistSection = "## Whitelisted Entries! ##";
@@ -1054,7 +1066,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				Logger.getLogger().message("Updated " + entriestoChange.size() + " host(s)!");
 
 				if (indexingAborted) {
-					//retrigger aborted indexing
+					//retrigger aborted updatingFilter
 					new Thread(new AsyncIndexBuilder()).start();
 				}
 
@@ -1282,7 +1294,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 				if (filterReloadURL != null) {
 
-					autoFilterUpdater = new AutoFilterUpdater(this);
+					autoFilterUpdater = new AutoFilterUpdater();
 					Thread t = new Thread(autoFilterUpdater);
 					t.setDaemon(true);
 					t.start();
@@ -1298,31 +1310,33 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 
 	@Override
-	public synchronized void stop() throws IOException {
+	public void stop() throws IOException {
 
 		if (serverStopped)
 			return;
 
-		abortIndexing();
+		abortFilterUpdate();
 
-		if (autoFilterUpdater!=null) {
-			autoFilterUpdater.stop();
-			autoFilterUpdater=null;
+		synchronized (this) {
+			if (autoFilterUpdater != null) {
+				autoFilterUpdater.stop();
+				autoFilterUpdater = null;
+			}
+
+			this.notifyAll();
+			if (hostFilter != null)
+				hostFilter.clear();
+
+			DNSResponsePatcher.init(null, null);
+
+			if (TRAFFIC_LOG != null) {
+				TRAFFIC_LOG.closeLogger();
+				Logger.removeLogger("TrafficLogger");
+			}
+
+			serverStopped = true;
+			ExecutionEnvironment.getEnvironment().releaseAllWakeLocks();
 		}
-
-		this.notifyAll();
-		if (hostFilter != null)
-			hostFilter.clear();
-
-		DNSResponsePatcher.init(null,null);
-
-		if (TRAFFIC_LOG != null) {
-			TRAFFIC_LOG.closeLogger();
-			Logger.removeLogger("TrafficLogger");
-		}
-
-		serverStopped = true;
-		ExecutionEnvironment.getEnvironment().releaseAllWakeLocks();
 	}
 
 
