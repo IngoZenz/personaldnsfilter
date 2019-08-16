@@ -550,10 +550,11 @@ public class DNSFilterService extends VpnService  {
 
 	public  void reload() throws IOException {
 		VPNRunner runningVPN = vpnRunner;
+
 		if (runningVPN != null) {
 			vpnRunner.stop();
 		}
-
+		DNSFILTER = DNSFilterManager.getInstance();
 		ParcelFileDescriptor vpnInterface=null;
 		try {
 			vpnInterface = initVPN();

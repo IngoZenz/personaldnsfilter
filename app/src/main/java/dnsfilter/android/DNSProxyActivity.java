@@ -67,7 +67,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -88,7 +87,6 @@ import util.Logger;
 import util.LoggerInterface;
 import util.TimeoutListener;
 import util.TimoutNotificator;
-import util.Utils;
 
 
 public class DNSProxyActivity extends Activity implements ExecutionEnvironmentInterface, OnClickListener, LoggerInterface, TextWatcher, DialogInterface.OnKeyListener, ActionMode.Callback, MenuItem.OnMenuItemClickListener,View.OnTouchListener, View.OnFocusChangeListener {
@@ -158,8 +156,8 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	protected static String IN_FILTER_PREF = "X \u0009";
 	protected static String NO_FILTER_PREF = "✓\u0009";
 
-	protected static ConfigurationAccess REMOTE = ConfigurationAccess.getLocal();
-	protected static boolean connectingRemote = false;
+	protected static ConfigurationAccess CONFIG = ConfigurationAccess.getLocal();
+	protected static boolean switchingConfig = false;
 
 	private static class MsgTimeoutListener implements TimeoutListener {
 
@@ -178,10 +176,10 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 		@Override
 		public void timeoutNotification() {
-			if (REMOTE.isLocal())
+			if (CONFIG.isLocal())
 				activity.setMessage(donate_field_txt, donate_field_color);
 			else
-				activity.setMessage(fromHtml("<font color='#F7FB0A'><strong>"+REMOTE+"</strong></font>"), donate_field_color);
+				activity.setMessage(fromHtml("<font color='#F7FB0A'><strong>"+ CONFIG +"</strong></font>"), donate_field_color);
 		}
 
 		@Override
@@ -270,9 +268,9 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			String connCnt = "-1";
 			String lastDNS = "<unknown>";
 			try {
-				version = REMOTE.getVersion();
-				connCnt = REMOTE.openConnectionsCount()+"";
-				lastDNS= REMOTE.getLastDNSAddress();
+				version = CONFIG.getVersion();
+				connCnt = CONFIG.openConnectionsCount()+"";
+				lastDNS= CONFIG.getLastDNSAddress();
 			} catch (IOException e){
 				addToLogView(e.toString()+"\n");
 			}
@@ -306,8 +304,8 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		String connCnt = "-1";
 
 		try {
-			version = REMOTE.getVersion();
-			connCnt = REMOTE.openConnectionsCount()+"";
+			version = CONFIG.getVersion();
+			connCnt = CONFIG.openConnectionsCount()+"";
 		} catch (IOException e){
 			addToLogView(e.toString()+"\n");
 		}
@@ -363,7 +361,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		reloadFilterBtn = (Button) findViewById(R.id.filterReloadBtn);
 		reloadFilterBtn.setOnClickListener(this);
 		remoteCtrlBtn = (Button) findViewById(R.id.remoteCtrlBtn);
-		if (!REMOTE.isLocal())
+		if (!CONFIG.isLocal())
 			remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null,getResources().getDrawable(R.drawable.baseline_settings_remote_24px), null);
 		else
 			remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null,getResources().getDrawable(R.drawable.outline_settings_remote_24px), null);
@@ -485,7 +483,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		handleAdvancedConfig();
 
 		if (myLogger != null) {
-			if (REMOTE.isLocal()) {
+			if (CONFIG.isLocal()) {
 				((GroupedLogger) Logger.getLogger()).detachLogger(myLogger);
 				((GroupedLogger) Logger.getLogger()).attachLogger(this);
 				myLogger = this;
@@ -512,7 +510,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 	protected Properties getConfig() {
 		try {
-			return REMOTE.getConfig();
+			return CONFIG.getConfig();
 		} catch (Exception e){
 			Logger.getLogger().logException(e);
 			return null;
@@ -522,7 +520,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 
 	protected void updateConfig(byte[] cfg ) throws IOException {
-		REMOTE.updateConfig(cfg);
+		CONFIG.updateConfig(cfg);
 	}
 
 
@@ -530,7 +528,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	protected void showFilterRate() {
 
 		try {
-			long[] stats = REMOTE.getFilterStatistics();
+			long[] stats = CONFIG.getFilterStatistics();
 			long all = stats[0]+stats[1];
 
 			if (all != 0) {
@@ -546,7 +544,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	protected void doBackup() {
 		TextView backupStatusView = findViewById(R.id.backupLog);
 		try {
-			REMOTE.doBackup();
+			CONFIG.doBackup();
 			backupStatusView.setTextColor(Color.parseColor("#23751C"));
 			backupStatusView.setText("Backup Success!");
 		} catch (IOException eio) {
@@ -558,7 +556,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	protected void doRestoreDefaults() {
 		TextView backupStatusView = findViewById(R.id.backupLog);
 		try {
-			REMOTE.doRestoreDefaults();
+			CONFIG.doRestoreDefaults();
 			backupStatusView.setTextColor(Color.parseColor("#23751C"));
 			loadAndApplyConfig(false);
 			backupStatusView.setText("Restore Success!");
@@ -571,7 +569,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	protected void doRestore() {
 		TextView backupStatusView = findViewById(R.id.backupLog);
 		try {
-			REMOTE.doRestore();
+			CONFIG.doRestore();
 			backupStatusView.setTextColor(Color.parseColor("#23751C"));
 			loadAndApplyConfig(false);
 			backupStatusView.setText("Restore Success!");
@@ -587,7 +585,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	protected void loadAdditionalHosts() {
 		int limit= 524288;
 		try {
-			byte[] content = REMOTE.getAdditionalHosts(limit);
+			byte[] content = CONFIG.getAdditionalHosts(limit);
 			if (content == null) {
 				additionalHostsField.setText(ADDITIONAL_HOSTS_TO_LONG);
 				additionalHostsField.setEnabled(false);
@@ -606,7 +604,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		if (!addHostsTxt.equals("") && !addHostsTxt.equals(ADDITIONAL_HOSTS_TO_LONG)) {
 			if (additionalHostsChanged)
 				try {
-					REMOTE.updateAdditionalHosts(addHostsTxt.getBytes());
+					CONFIG.updateAdditionalHosts(addHostsTxt.getBytes());
 				} catch (IOException eio) {
 					Logger.getLogger().logLine("Cannot persistAdditionalHosts!\n" + eio.toString());
 				}
@@ -618,7 +616,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 	protected void handlefilterReload() {
 		try {
-			REMOTE.triggerUpdateFilter();
+			CONFIG.triggerUpdateFilter();
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
 		}
@@ -637,7 +635,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		}
 
 		try {
-			REMOTE.updateFilter(entries.trim(),filter);
+			CONFIG.updateFilter(entries.trim(),filter);
 		} catch (IOException e) {
 			Logger.getLogger().logException(e);
 		}
@@ -702,10 +700,12 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 					//set whitelisted Apps into UI
 					appSelector.setSelectedApps(config.getProperty("androidAppWhiteList", ""));
 
-					if (!REMOTE.isLocal())
+					if (!CONFIG.isLocal())
 						remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null,getResources().getDrawable(R.drawable.baseline_settings_remote_24px), null);
 					else
 						remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null,getResources().getDrawable(R.drawable.outline_settings_remote_24px), null);
+
+					switchingConfig = false;
 				}
 			};
 
@@ -713,7 +713,9 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 			if (startApp)
 				handleStartWithVPN();
-		}
+
+		} else
+			switchingConfig =false;
 	}
 
 	private FilterConfig.FilterConfigEntry[] buildFilterEntries(Properties config) {
@@ -840,7 +842,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			String ln;
 
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(REMOTE.readConfig())));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(CONFIG.readConfig())));
 			while ((ln = reader.readLine()) != null) {
 
 				String lnOld = ln;
@@ -975,21 +977,22 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	}
 
 	private void onRemoteConnected(ConfigurationAccess remote){
-		REMOTE=remote;
+		CONFIG =remote;
 		((GroupedLogger) Logger.getLogger()).detachLogger(myLogger);
 		loadAndApplyConfig(false);
-		message("CONNECTED TO " + REMOTE);
-		logLine("=>CONNECTED to "+REMOTE+"<=");
-		connectingRemote=false;
-
+		message("CONNECTED TO " + CONFIG);
+		logLine("=>CONNECTED to "+ CONFIG +"<=");
 	}
 
 	private void handleRemoteControl() {
 
-		if (REMOTE.isLocal()) {
-			if (connectingRemote)
-				// Connecting in progress!
-				return;
+		if (switchingConfig)
+			// Connecting in progress!
+			return;
+
+		switchingConfig = true;
+
+		if (CONFIG.isLocal()) {
 
 			try {
 				final String host = ConfigurationAccess.getLocal().getConfig().getProperty("client_remote_ctrl_host", "");
@@ -1008,7 +1011,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 				Runnable asyncConnect = new Runnable() {
 					@Override
 					public void run() {
-						connectingRemote=true;
+
 						message("Connecting: " + host + ":" + port);
 						MsgTO.setTimeout(150000);
 
@@ -1017,10 +1020,8 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 						} catch (IOException e) {
 							Logger.getLogger().logLine("Remote Connect failed!" + e.toString());
 							message("Remote Connect Failed!");
-						} finally {
-							connectingRemote=false;
+							switchingConfig = false;
 						}
-
 					}
 				};
 				new Thread(asyncConnect).start();
@@ -1029,17 +1030,18 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			} catch (IOException e) {
 				Logger.getLogger().logLine("Remote Connect failed!" + e.toString());
 				message("Remote Connect Failed!");
-				REMOTE = ConfigurationAccess.getLocal();
+				CONFIG = ConfigurationAccess.getLocal();
+                switchingConfig = false;
 			}
 		}
 		else {
-			REMOTE.releaseConfiguration();
-			REMOTE = ConfigurationAccess.getLocal();
+			CONFIG.releaseConfiguration();
+			CONFIG = ConfigurationAccess.getLocal();
 			myLogger = this;
 			((GroupedLogger) Logger.getLogger()).attachLogger(this);
 			loadAndApplyConfig(false);
-			message("CONNECTED TO "+REMOTE);
-			logLine("=>CONNECTED to "+REMOTE+"<=");
+			message("CONNECTED TO "+ CONFIG);
+			logLine("=>CONNECTED to "+ CONFIG +"<=");
 		}
 	}
 
@@ -1072,7 +1074,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		((TextView) findViewById(R.id.backupLog)).setText("");
 		if (advancedConfigCheck.isChecked()) {
 			//App Whitelisting only supported on SDK >= 21
-			if (Build.VERSION.SDK_INT >= 21 && REMOTE.isLocal())
+			if (Build.VERSION.SDK_INT >= 21 && CONFIG.isLocal())
 				appWhiteListCheck.setVisibility(View.VISIBLE);
 			else { //Not supported for remote access currently
 				appWhiteListCheck.setVisibility(View.GONE);
@@ -1145,12 +1147,16 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	}
 
 	private void handleRestart() {
-		try {
-			REMOTE.restart();
-			loadAndApplyConfig(false);
-		} catch (IOException e)  {
-			Logger.getLogger().logException(e);
-		}
+	    if (CONFIG.isLocal())
+	        handleStartWithVPN();
+	    else {
+            try {
+                CONFIG.restart();
+                loadAndApplyConfig(false);
+            } catch (IOException e) {
+                Logger.getLogger().logException(e);
+            }
+        }
 	}
 
 	protected void handleStartWithVPN() {
@@ -1425,7 +1431,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 	public void remoteWakeLock() {
 		try {
-			REMOTE.wakeLock();
+			CONFIG.wakeLock();
 		} catch (IOException e) {
 			Logger.getLogger().logLine("WakeLock failed! "+e);
 		}
@@ -1433,7 +1439,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 	public void remoteReleaseWakeLock() {
 		try {
-			REMOTE.releaseWakeLock();
+			CONFIG.releaseWakeLock();
 		} catch (IOException e) {
 			Logger.getLogger().logLine("releaseWakeLock failed! " + e);
 		}
