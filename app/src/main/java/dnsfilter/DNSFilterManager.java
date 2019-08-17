@@ -554,7 +554,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 									}
 									received = received + r[1];
 									if (received > delta) {
-										Logger.getLogger().message("Bytes received:" + received);
+										Logger.getLogger().message("Loading Filter - Bytes received:" + received);
 										delta = delta + 100000;
 									}
 								}
