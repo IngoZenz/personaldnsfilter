@@ -185,7 +185,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 							retry = 0;
 
 						} catch (Exception e) {
-							Logger.getLogger().logException(e);
+							//Logger.getLogger().logException(e);
 							Logger.getLogger().logLine("Cannot update hosts filter file!");
 							Logger.getLogger().logLine(e.toString());
 							if (retry < 10) {
