@@ -27,6 +27,20 @@ public class Encryption {
     private static Cipher ecipher = null;
 
 
+    private static String invertStr(String str) {
+
+        StringBuffer strBuf = new StringBuffer() ;
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (Character.isUpperCase(c))
+                strBuf.append((c+"").toLowerCase());
+            else
+                strBuf.append((c+"").toUpperCase());
+        }
+        return strBuf.toString();
+
+    }
+
     public static void init_AES(String keyphrase) throws IOException {
 
         if (Encryption.keyphrase.equals(keyphrase))
@@ -35,7 +49,7 @@ public class Encryption {
         try {
             ByteBuffer buffer = ByteBuffer.wrap(new byte[16]);
             buffer.putLong(Utils.getLongStringHash(keyphrase));
-            buffer.putLong(Utils.getLongStringHash(keyphrase.toLowerCase()));
+            buffer.putLong(Utils.getLongStringHash(invertStr(keyphrase)));
             paramSpec = new IvParameterSpec(iv);
             key = new SecretKeySpec(buffer.array(), "AES");
             ecipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
