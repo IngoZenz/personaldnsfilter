@@ -1394,7 +1394,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 					start--;
 				if (start !=0)
 					start++;
-				while (text.charAt(end) != '\n' && end < text.length()-1)
+				while (end < text.length()-1 && text.charAt(end) != '\n')
 					end++;
 
 				logOutView.setSelection(start, end);
