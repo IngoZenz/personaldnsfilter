@@ -916,6 +916,12 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	@Override
 	public void onClick(View destination) {
 
+		if (switchingConfig ) {
+			advancedConfigCheck.setChecked(false);
+			Logger.getLogger().logLine("Config Switch in progress - Wait!");
+			return;
+		}
+
 		if (destination == logOutView) {
 			findViewById(R.id.copyfromlog).setVisibility(View.GONE);
 			showFilterRate();

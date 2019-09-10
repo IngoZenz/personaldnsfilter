@@ -194,6 +194,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
     public void releaseConfiguration() {
 
         TimoutNotificator.getInstance().unregister(this);
+        valid = false;
 
         if (remoteStream != null)
             remoteStream.close();
@@ -554,8 +555,10 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
 
         private void confirmHeartBeat() {
             try {
-                out.write("confirmHeartBeat()\n".getBytes());
-                out.flush();
+                synchronized(out) {
+                    out.write("confirmHeartBeat()\n".getBytes());
+                    out.flush();
+                }
             } catch (IOException e) {
                 connectedLogger.logLine("Exception during confirmHeartBeat()! " + e.toString());
                 closeConnectionReconnect();
@@ -582,9 +585,11 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
             stopped = true;
             try {
                 if (streamCon!=null) {
-                    out.write("releaseConfiguration()".getBytes());
-                    out.flush();
-                    Utils.closeSocket(streamCon);
+                    synchronized (out) {
+                        out.write("releaseConfiguration()".getBytes());
+                        out.flush();
+                        Utils.closeSocket(streamCon);
+                    }
                 }
             } catch (IOException e) {
                 connectedLogger.logLine("Exception during remote configuration release: "+e.toString());
