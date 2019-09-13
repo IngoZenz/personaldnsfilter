@@ -48,6 +48,7 @@ import android.text.Html;
 import android.text.Spannable;
 import android.text.Spanned;
 import android.text.TextWatcher;
+import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -156,6 +157,11 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	protected static String IN_FILTER_PREF = "X \u0009";
 	protected static String NO_FILTER_PREF = "✓\u0009";
 
+	//log color and format
+	protected static String filterLogFormat;
+	protected static String acceptLogFormat;
+	protected static String normalLogFormat="($CONTENT)";
+
 	protected static ConfigurationAccess CONFIG = ConfigurationAccess.getLocal();
 	protected static boolean switchingConfig = false;
 
@@ -213,18 +219,19 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			if (filterHostLog || okHostLog) {
 
 				if (filterHostLog)
-					logLn = "<font color='#D03D06'>" + logLn + "</font><br>";
+					logLn = filterLogFormat.replace("($CONTENT)",logLn)+"<br>";
 				else
-					logLn = "<font color='#23751C'>" + logLn + "</font><br>";
+					logLn = acceptLogFormat.replace("($CONTENT)",logLn)+"<br>";
 
 				logOutView.append(fromHtml(logLn));
 			} else {
 				String newLn = "\n";
 				if (!logLines.hasMoreElements() && !logStr.endsWith("\n"))
 					newLn = "";
-				logOutView.append(logLn + newLn);
+				//logOutView.append(fromHtml("<font color='#455a64'>" + logLn + "</font>"));
+				logOutView.append(fromHtml(normalLogFormat.replace("($CONTENT)",logLn)));
+				logOutView.append(newLn);
 			}
-
 		}
 	}
 
@@ -673,6 +680,19 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			Runnable uiUpdater = new Runnable() {
 				@Override
 				public void run() {
+
+					//Log formatting
+
+					filterLogFormat = config.getProperty("filterLogFormat", "<font color='#D03D06'>($CONTENT)</font>");
+					acceptLogFormat = config.getProperty("acceptLogFormat", "<font color='#23751C'>($CONTENT)</font>");
+					normalLogFormat = config.getProperty("normalLogFormat","($CONTENT)");
+
+					try {
+						int logSize = Integer.parseInt(config.getProperty("logTextSize", "14"));
+						logOutView.setTextSize(TypedValue.COMPLEX_UNIT_SP, logSize);
+					} catch (Exception e) {
+						Logger.getLogger().logLine("Error in log Text Size setting! "+e.toString());
+					}
 
 					debug = Boolean.parseBoolean(config.getProperty("debug", "false"));
 
