@@ -307,6 +307,30 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		DNSFilterManager.WORKDIR = DNSProxyActivity.WORKPATH.getAbsolutePath() + "/";
 
 		setContentView(R.layout.main);
+
+		//log view init
+		Spannable logTxt = null;
+		float logSize = -1;
+		if (logOutView != null) {
+			logTxt = logOutView.getText();
+			logSize = logOutView.getTextSize();
+		}
+
+		logOutView = (EditText) findViewById(R.id.logOutput);
+		if (logSize != -1)
+			logOutView.setTextSize(TypedValue.COMPLEX_UNIT_PX,logSize);
+
+		if (logTxt != null)
+			logOutView.setText(logTxt);
+		else
+			logOutView.setText(fromHtml("<strong><em>****This is personalDNSfilter V+"+DNSFilterManager.VERSION +"****</em></strong><br><br>"));
+
+		logOutView.setKeyListener(null);
+		logOutView.setCustomSelectionActionModeCallback(this);
+		logOutView.setOnTouchListener(this);
+		logOutView.setOnFocusChangeListener(this);
+		logOutView.setOnClickListener(this);
+
 		String version = "<unknown>";
 		String connCnt = "-1";
 
@@ -399,24 +423,6 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			scrollLockField.setText(SCROLL_PAUSE);
 
 		scrollLockField.setOnClickListener(this);
-
-
-		Spannable logTxt = null;
-		if (logOutView != null)
-			logTxt = logOutView.getText();
-
-		logOutView = (EditText) findViewById(R.id.logOutput);
-
-		if (logTxt != null)
-			logOutView.setText(logTxt);
-		else
-			logOutView.setText(fromHtml("<strong><em>****This is personalDNSfilter V+"+DNSFilterManager.VERSION +"****</em></strong><br><br>"));
-
-		logOutView.setKeyListener(null);
-		logOutView.setCustomSelectionActionModeCallback(this);
-		logOutView.setOnTouchListener(this);
-		logOutView.setOnFocusChangeListener(this);
-		logOutView.setOnClickListener(this);
 
 		uiText = "";
 
