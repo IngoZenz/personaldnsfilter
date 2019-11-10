@@ -87,7 +87,7 @@ public class HugePackedSet implements Set {
 
 	@Override
 	public boolean add(Object obj) {
-		boolean added = subsets[(int) (Math.abs( obj.hashCode()) %  slotCount) ].add(obj);
+		boolean added = subsets[(int) (Math.abs( obj.hashCode() %  slotCount)) ].add(obj);
 		if (added) count ++;
 		return added;
 	}
