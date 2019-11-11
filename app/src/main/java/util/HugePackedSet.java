@@ -66,7 +66,7 @@ public class HugePackedSet implements Set {
 	
 	
 	public void prepareInsert (Object obj) {
-		slotSizes[(Math.abs(obj.hashCode()) %  slotCount) ]++;
+		slotSizes[(Math.abs(obj.hashCode() %  slotCount)) ]++;
 	}
 	
 	
@@ -108,7 +108,7 @@ public class HugePackedSet implements Set {
 
 	@Override
 	public boolean contains(Object obj) {
-		return subsets[ (Math.abs( obj.hashCode()) %  slotCount) ].contains(obj);
+		return subsets[ (Math.abs( obj.hashCode() %  slotCount)) ].contains(obj);
 	}
 
 	@Override
