@@ -110,13 +110,31 @@ public class DNSResponsePatcher {
 				buf.getInt(); // TTL
 				int len = buf.getShort(); // len
 
-				if ((type == 1 || type == 28) && filter) {
-					// replace ip!
-					if (type == 1) // IPV4
-						buf.put(ipv4_localhost);
-					else if (type == 28) // IPV6
-						buf.put(ipv6_localhost);
-				} else
+				boolean filtered = false;
+
+				if ((type == 1 || type == 28)) {
+					if (filter) {
+						filtered = true;
+						// replace ip!
+						if (type == 1) // IPV4
+							buf.put(ipv4_localhost);
+						else if (type == 28) // IPV6
+							buf.put(ipv6_localhost);
+					} else { //check if resolved IP is filtered
+						byte[] answer = new byte[len];
+						buf.get(answer);
+						buf.position(buf.position() - len);
+						String ip = InetAddress.getByAddress(answer).getHostAddress();
+						if (filterIP(ip)) {
+							filtered = true;
+							if (type == 1) // IPV4
+								buf.put(ipv4_localhost);
+							else if (type == 28) // IPV6
+								buf.put(ipv6_localhost);
+						}
+					}
+				}
+				if (!filtered)
 					buf.position(buf.position() + len); // go ahead
 
 				//log answer
@@ -152,7 +170,7 @@ public class DNSResponsePatcher {
 		if (FILTER == null)
 			result = false;
 		else
-			result = FILTER.contains(host);
+			result = FILTER.contains(host.toLowerCase());
 
 		if (result == true)
 			Logger.getLogger().logLine("FILTERED:" + host);
@@ -160,6 +178,26 @@ public class DNSResponsePatcher {
 			Logger.getLogger().logLine("ALLOWED:" + host);
 
 		if (result == false)
+			okCnt++;
+		else
+			filterCnt++;
+
+		return result;
+	}
+
+
+	private static boolean filterIP(String ip) {
+		boolean result;
+
+		if (FILTER == null)
+			result = false;
+		else
+			result = FILTER.contains("%IP%"+ip);
+
+		if (result)
+			Logger.getLogger().logLine("FILTERED:" + ip);
+
+		if (!result)
 			okCnt++;
 		else
 			filterCnt++;

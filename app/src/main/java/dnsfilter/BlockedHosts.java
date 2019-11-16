@@ -301,15 +301,20 @@ public class BlockedHosts implements Set {
 
 		try {
 			lock(0); //shared read lock ==> block Updates of the structure
+			boolean ip = false;
 
 			String hostName = (String) object;
+			if (hostName.startsWith("%IP%")) {
+				ip = true;
+				hostName = hostName.substring(4);
+			}
 			long hosthash = Utils.getLongStringHash(hostName);
 
 			if (okCache.get(hosthash) != null)
 				return false;
 			else if (filterListCache.get(hosthash) != null)
 				return true;
-			else if (contains(hostName, hosthash)) {
+			else if (contains(hostName, hosthash, !ip)) {
 				filterListCache.put(hosthash, NOT_NULL);
 				return true;
 			} else {
@@ -321,7 +326,7 @@ public class BlockedHosts implements Set {
 		}
 	}
 
-	private boolean contains(String hostName, long hosthash) {
+	private boolean contains(String hostName, long hosthash, boolean checkParent) {
 
 		int idx = 0;
 
@@ -338,12 +343,14 @@ public class BlockedHosts implements Set {
 			if (containsPatternMatch(hostName))
 				return true;
 
-			idx = hostName.indexOf('.');
+			if (checkParent) {
+				idx = hostName.indexOf('.');
 
-			if (idx != -1) {
-				hostName = hostName.substring(idx + 1);
-				hosthash = Utils.getLongStringHash(hostName);
-			}
+				if (idx != -1) {
+					hostName = hostName.substring(idx + 1);
+					hosthash = Utils.getLongStringHash(hostName);
+				}
+			} else idx = -1;
 		}
 		return false;
 	}

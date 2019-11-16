@@ -32,6 +32,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.UnknownHostException;
+
+import util.Logger;
 import util.conpool.Connection;
 import util.http.HttpHeader;
 
@@ -39,6 +41,8 @@ public class DNSServer {
 
     protected InetSocketAddress address;
     protected int timeout;
+    private static int bufSize=1024;
+    private static int maxBufSize=10000;
 
     public static final int UDP = 0; //Via UDP
     public static final int TCP = 1; //Via TCP
@@ -74,6 +78,8 @@ public class DNSServer {
     public static DNSServer getInstance(){
         return INSTANCE;
     }
+
+    public static int getBufSize() {return bufSize;}
 
     public DNSServer createDNSServer(int protocol, InetAddress address, int port, int timeout, String endPoint) throws IOException {
         switch (protocol) {
@@ -149,8 +155,16 @@ public class DNSServer {
 
     protected void readResponseFromStream(DataInputStream in, int size, DatagramPacket response) throws IOException {
 
-        if (size > response.getData().length - response.getOffset()) //existing buffer does not fit
-            throw new IOException("Response Buffer to small for response of length "+size);
+        if (size > response.getData().length - response.getOffset()) { //existing buffer does not fit
+            synchronized (this) {
+                if (size < maxBufSize && bufSize < size) { //resize for future requests
+                    bufSize = Math.min(1024*((size / 1024) +1), maxBufSize);
+                    Logger.getLogger().logLine("BUFFER RISIZE:"+bufSize);
+                } else if (size >= maxBufSize ) throw new IOException("Max Response Buffer to small for response of length " + size);
+
+                response.setData(new byte[bufSize],response.getOffset(),bufSize-response.getOffset());
+            }
+        }
         in.readFully(response.getData(), response.getOffset(),size);
         response.setLength(size);
     }

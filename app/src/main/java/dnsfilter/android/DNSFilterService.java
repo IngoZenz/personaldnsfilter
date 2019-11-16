@@ -120,7 +120,7 @@ public class DNSFilterService extends VpnService  {
 			thread = Thread.currentThread();
 			try {
 				while (!stopped) {
-					byte[] data = new byte[1024];
+					byte[] data = new byte[DNSServer.getBufSize()];
 					int length = in.read(data);
 					if (stopped)
 						break;
