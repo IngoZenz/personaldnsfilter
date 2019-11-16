@@ -159,7 +159,7 @@ public class DNSServer {
             synchronized (this) {
                 if (size < maxBufSize && bufSize < size) { //resize for future requests
                     bufSize = Math.min(1024*((size / 1024) +1), maxBufSize);
-                    Logger.getLogger().logLine("BUFFER RISIZE:"+bufSize);
+                    Logger.getLogger().logLine("BUFFER RESIZE:"+bufSize);
                 } else if (size >= maxBufSize ) throw new IOException("Max Response Buffer to small for response of length " + size);
 
                 response.setData(new byte[bufSize],response.getOffset(),bufSize-response.getOffset());
