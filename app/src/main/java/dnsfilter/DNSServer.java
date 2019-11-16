@@ -155,12 +155,12 @@ public class DNSServer {
 
     protected void readResponseFromStream(DataInputStream in, int size, DatagramPacket response) throws IOException {
 
-        if (size > response.getData().length - response.getOffset()) { //existing buffer does not fit
+        if (size + response.getOffset() > response.getData().length) { //existing buffer does not fit
             synchronized (this) {
-                if (size < maxBufSize && bufSize < size) { //resize for future requests
-                    bufSize = Math.min(1024*((size / 1024) +1), maxBufSize);
+                if (size + response.getOffset() < maxBufSize && bufSize < size+response.getOffset()) { //resize for future requests
+                    bufSize = Math.min(1024*(((size +response.getOffset()) / 1024) +1), maxBufSize);
                     Logger.getLogger().logLine("BUFFER RESIZE:"+bufSize);
-                } else if (size >= maxBufSize ) throw new IOException("Max Response Buffer to small for response of length " + size);
+                } else if (size + response.getOffset() >= maxBufSize ) throw new IOException("Max Response Buffer to small for response of length " + size);
 
                 response.setData(new byte[bufSize],response.getOffset(),bufSize-response.getOffset());
             }

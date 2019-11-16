@@ -159,7 +159,7 @@ public class DNSFilterProxy implements Runnable {
 		while (!stopped) {
 			try {
 				byte[] data = new byte[1024];
-				DatagramPacket request = new DatagramPacket(data, 0, 1024);
+				DatagramPacket request = new DatagramPacket(data, 0, DNSServer.getBufSize());
 				receiver.receive(request);
 				new Thread(new DNSResolver(request, receiver)).start();
 			} catch (IOException e) {
