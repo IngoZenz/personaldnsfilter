@@ -156,7 +156,10 @@ public class DNSServer {
     protected void readResponseFromStream(DataInputStream in, int size, DatagramPacket response) throws IOException {
 
         if (size + response.getOffset() > response.getData().length) { //existing buffer does not fit
-            synchronized (this) {
+            synchronized (DNSServer.class) {
+                //Write access to static data, synchronization against the class is needed.
+                //Could be optimized in future by setting the buf size per DNSServer Instance and not static.
+                //However at the time the buffer is created, it is not known what will be the DNSServer used, because it be might be switched.
                 if (size + response.getOffset() < maxBufSize && bufSize < size+response.getOffset()) { //resize for future requests
                     bufSize = Math.min(1024*(((size +response.getOffset()) / 1024) +1), maxBufSize);
                     Logger.getLogger().logLine("BUFFER RESIZE:"+bufSize);
