@@ -541,7 +541,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 							while ((r = readHostFileEntry(in, buf))[1] != -1 && !aborted) {
 
 								if (r[1] != 0) {
-									String hostEntry = new String(buf, 0, r[1]).toLowerCase();
+									String hostEntry = new String(buf, 0, r[1]);
 
 									if (hostEntry != null && !hostEntry.equals("localhost")) {
 										String host = hostEntry;

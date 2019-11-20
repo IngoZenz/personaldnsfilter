@@ -170,7 +170,7 @@ public class DNSResponsePatcher {
 		if (FILTER == null)
 			result = false;
 		else
-			result = FILTER.contains(host.toLowerCase());
+			result = FILTER.contains(host);
 
 		if (result == true)
 			Logger.getLogger().logLine("FILTERED:" + host);

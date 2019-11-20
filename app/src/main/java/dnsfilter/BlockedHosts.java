@@ -194,7 +194,7 @@ public class BlockedHosts implements Set {
 
 	public void prepareInsert(String host) {
 		if (host.indexOf("*") == -1) //patterns are handled differently
-			blockedHostsHashes.prepareInsert(Utils.getLongStringHash(host));
+			blockedHostsHashes.prepareInsert(Utils.getLongStringHash(host.toLowerCase()));
 	}
 
 	public void finalPrepare() {
@@ -215,7 +215,7 @@ public class BlockedHosts implements Set {
 
 
 	public void clearCache(String host) {
-		long hostHash = Utils.getLongStringHash((String) host);
+		long hostHash = Utils.getLongStringHash((String) host.toLowerCase());
 		okCache.remove(hostHash);
 		filterListCache.remove(hostHash);
 	}
@@ -227,7 +227,7 @@ public class BlockedHosts implements Set {
 			if (((String) host).indexOf("*") != -1)
 				throw new IOException("Wildcard not supported for update:" + host);
 
-			long hostHash = Utils.getLongStringHash((String) host);
+			long hostHash = Utils.getLongStringHash((String) ((String) host).toLowerCase());
 			okCache.remove(hostHash);
 			filterListCache.remove(hostHash);
 
@@ -241,9 +241,9 @@ public class BlockedHosts implements Set {
 	@Override
 	public boolean add(Object host) {
 		if (((String) host).indexOf("*") == -1)
-			return blockedHostsHashes.add(Utils.getLongStringHash((String) host));
+			return blockedHostsHashes.add(Utils.getLongStringHash((String) ((String) host).toLowerCase()));
 		else { //Pattern
-			getInitializedPatternStruct().addElement( ((String)host).trim().split("\\*", -1));
+			getInitializedPatternStruct().addElement( ((String)host).trim().toLowerCase().split("\\*", -1));
 			return true;
 		}
 	}
@@ -303,7 +303,7 @@ public class BlockedHosts implements Set {
 			lock(0); //shared read lock ==> block Updates of the structure
 			boolean ip = false;
 
-			String hostName = (String) object;
+			String hostName = ((String) object).toLowerCase();
 			if (hostName.startsWith("%IP%")) {
 				ip = true;
 				hostName = hostName.substring(4);
