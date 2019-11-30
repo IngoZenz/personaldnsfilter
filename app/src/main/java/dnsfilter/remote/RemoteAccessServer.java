@@ -211,7 +211,7 @@ public class RemoteAccessServer implements Runnable {
             Logger.getLogger().logLine("Remote Session "+id+" closed! "+socket);
         }
 
-        private void executeAction(String action) throws IOException{
+        private void executeAction(String action) throws IOException {
 
             try {
 
@@ -271,11 +271,11 @@ public class RemoteAccessServer implements Runnable {
                     out.write("OK\n".getBytes());
                     out.flush();
                 } else if (action.equals("doBackup()")) {
-                    ConfigurationAccess.getLocal().doBackup();
+                    ConfigurationAccess.getLocal().doBackup(Utils.readLineFromStream(in));
                     out.write("OK\n".getBytes());
                     out.flush();
                 } else if (action.equals("doRestore()")) {
-                    ConfigurationAccess.getLocal().doRestore();
+                    ConfigurationAccess.getLocal().doRestore(Utils.readLineFromStream(in));
                     out.write("OK\n".getBytes());
                     out.flush();
                 } else if (action.equals("doRestoreDefaults()")) {
@@ -290,11 +290,19 @@ public class RemoteAccessServer implements Runnable {
                     ConfigurationAccess.getLocal().releaseWakeLock();
                     out.write("OK\n".getBytes());
                     out.flush();
+                } else if (action.equals("getAvailableBackups()")) {
+                    String[] result = ConfigurationAccess.getLocal().getAvailableBackups();
+                    out.write("OK\n".getBytes());
+                    out.write((result.length+"\n").getBytes());
+                    for (int i = 0; i < result.length; i++)
+                        out.write((result[i]+"\n").getBytes());
+
+                    out.flush();
                 } else
                     throw new ConfigurationAccess.ConfigurationAccessException("Unknown action: " + action);
 
             } catch (ConfigurationAccess.ConfigurationAccessException e) {
-                out.write((e.getMessage().replace("\n", "\t")+"\n").getBytes());
+                out.write((e.getMessage().replace("\n", "\t") + "\n").getBytes());
                 out.flush();
             }
         }

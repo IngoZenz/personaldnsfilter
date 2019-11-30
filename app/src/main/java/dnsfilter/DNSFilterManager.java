@@ -38,6 +38,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -45,6 +47,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.Vector;
 
 import dnsfilter.remote.RemoteAccessServer;
 import util.ExecutionEnvironment;
@@ -57,7 +60,7 @@ import util.Utils;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1503402";
+	public static final String VERSION = "1503403";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -421,11 +424,30 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	}
 
 	@Override
-	public void doBackup() throws IOException {
+	public String[] getAvailableBackups() throws IOException {
+		File file = new File(WORKDIR+"backup");
+		String[] names = new String[0];
+		if (file.exists())
+			names = file.list();
+
+		ArrayList<String> result = new ArrayList<String>();
+
+		for(String name : names)
+		{
+			if (new File(WORKDIR+"backup/" + name).isDirectory())
+				result.add(name);
+		}
+		Collections.sort(result);
+		return (String[]) result.toArray(new String[0]);
+	}
+
+
+	@Override
+	public void doBackup(String name) throws IOException {
 		try {
-			copyLocalFile("dnsfilter.conf", "backup/dnsfilter.conf");
-			copyLocalFile("additionalHosts.txt", "backup/additionalHosts.txt");
-			copyLocalFile("VERSION.TXT", "backup/VERSION.TXT");
+			copyLocalFile("dnsfilter.conf", "backup/"+name+"/dnsfilter.conf");
+			copyLocalFile("additionalHosts.txt", "backup/"+name+"/additionalHosts.txt");
+			copyLocalFile("VERSION.TXT", "backup/"+name+"/VERSION.TXT");
 		} catch (IOException e) {
 			throw new ConfigurationAccessException(e.getMessage(), e);
 		}
@@ -464,16 +486,16 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	}
 
 	@Override
-	public void doRestore() throws IOException {
+	public void doRestore(String name) throws IOException {
 
 		try {
 			if (!canStop())
 				throw new IOException("Cannot stop! Pending Operation!");
 
 			stop();
-			copyLocalFile("backup/dnsfilter.conf", "dnsfilter.conf");
-			copyLocalFile("backup/additionalHosts.txt", "additionalHosts.txt");
-			copyLocalFile("backup/VERSION.TXT", "VERSION.TXT");
+			copyLocalFile("backup/"+name+"/dnsfilter.conf", "dnsfilter.conf");
+			copyLocalFile("backup/"+name+"/additionalHosts.txt", "additionalHosts.txt");
+			copyLocalFile("backup/"+name+"/VERSION.TXT", "VERSION.TXT");
 
 			//cleanup hostsfile and index in order to force reload
 			String filterHostFile = null;

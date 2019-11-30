@@ -64,13 +64,15 @@ public abstract class ConfigurationAccess {
 
     abstract public long[] getFilterStatistics() throws IOException;
 
-    abstract public void triggerUpdateFilter()  throws IOException;;
+    abstract public void triggerUpdateFilter()  throws IOException;
 
-    abstract public void doBackup() throws IOException ;
+    abstract public String[] getAvailableBackups() throws IOException;
+
+    abstract public void doBackup(String name) throws IOException ;
 
     abstract public void doRestoreDefaults() throws IOException;
 
-    abstract public void doRestore()throws IOException;
+    abstract public void doRestore(String name) throws IOException;
 
     abstract public void wakeLock() throws IOException;
 

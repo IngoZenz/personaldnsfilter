@@ -75,6 +75,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.Stack;
 import java.util.StringTokenizer;
@@ -108,9 +110,12 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	protected static Button backupBtn;
 	protected static Button restoreBtn;
 	protected static Button restoreDefaultsBtn;
+	protected static Button backupDnBtn;
+	protected static Button backupUpBtn;
 	protected static TextView addFilterBtn;
 	protected static TextView removeFilterBtn;
 	protected static CheckBox appWhiteListCheck;
+	protected static boolean appWhitelistingEnabled;
 	protected static ScrollView appWhiteListScroll;
 	protected static AppSelectorView appSelector;
 	protected static CheckBox keepAwakeCheck;
@@ -132,6 +137,8 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	protected static Spanned donate_field_txt = fromHtml("<strong>Want to support us? Feel free to <a href='https://www.paypal.me/iZenz'>DONATE</a></strong>!");
 	protected static MenuItem add_filter;
 	protected static MenuItem remove_filter;
+	protected static String[] availableBackups;
+	protected static int selectedBackup;
 
 
 	protected static boolean additionalHostsChanged = false;
@@ -404,6 +411,10 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		restoreBtn.setOnClickListener(this);
 		restoreDefaultsBtn = (Button) findViewById(R.id.RestoreDefaultBtn);
 		restoreDefaultsBtn.setOnClickListener(this);
+		backupDnBtn = (Button) findViewById(R.id.BackupIdDn);
+		backupDnBtn.setOnClickListener(this);
+		backupUpBtn = (Button) findViewById(R.id.BackupIdUp);
+		backupUpBtn.setOnClickListener(this);
 		addFilterBtn = (TextView) findViewById(R.id.addFilterBtn);
 		addFilterBtn.setOnClickListener(this);
 		removeFilterBtn = (TextView) findViewById(R.id.removeFilterBtn);
@@ -493,7 +504,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 		findViewById(R.id.copyfromlog).setVisibility(View.GONE);
 
-		handleAdvancedConfig();
+		handleAdvancedConfig(null);
 
 		if (myLogger != null) {
 			if (CONFIG.isLocal()) {
@@ -553,11 +564,56 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		}
 	}
 
+	private String getBackupSubFolder() {
+		String subFolder = ".";
+		String txt = ((TextView) findViewById(R.id.BackupId)).getText().toString();
+		if (selectedBackup != -1 || !txt.equals("<default>")) {
+			if (selectedBackup!=-1)
+				subFolder = availableBackups[selectedBackup];
+
+			if (!txt.equals(subFolder)) {
+				//edited name
+
+				//Check if in List
+				for (int i = 0; i < availableBackups.length; i++)
+					if (txt.equals(availableBackups[i])) {
+						selectedBackup = i;
+						return txt;
+					}
+
+				//new entry => add to list
+				ArrayList<String> list = new ArrayList<String>();
+				for (int i = 0; i < availableBackups.length; i++)
+					list.add(availableBackups[i]);
+
+				list.add(txt);
+
+				Collections.sort(list);
+				availableBackups = list.toArray(new String[list.size()]);
+
+				for (int i = 0; i < availableBackups.length; i++)
+					if (txt.equals(availableBackups[i])) {
+						selectedBackup = i;
+						return txt;
+
+					}
+
+				//something wrong
+				Logger.getLogger().logException(new Exception("Something is wrong!"));
+				return txt;
+			}
+			else return txt;
+		}
+		else return ".";
+	}
+
+
 
 	protected void doBackup() {
+
 		TextView backupStatusView = findViewById(R.id.backupLog);
 		try {
-			CONFIG.doBackup();
+			CONFIG.doBackup(getBackupSubFolder());
 			backupStatusView.setTextColor(Color.parseColor("#23751C"));
 			backupStatusView.setText("Backup Success!");
 		} catch (IOException eio) {
@@ -582,7 +638,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	protected void doRestore() {
 		TextView backupStatusView = findViewById(R.id.backupLog);
 		try {
-			CONFIG.doRestore();
+			CONFIG.doRestore(getBackupSubFolder());
 			backupStatusView.setTextColor(Color.parseColor("#23751C"));
 			loadAndApplyConfig(false);
 			backupStatusView.setText("Restore Success!");
@@ -978,6 +1034,9 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		} else if (destination == restoreDefaultsBtn) {
 			doRestoreDefaults();
 			return;
+		} else if (destination == backupDnBtn || destination == backupUpBtn) {
+			handleBackUpIdChange(destination == backupUpBtn);
+			return;
 		}
 
 
@@ -986,7 +1045,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		if (destination == remoteCtrlBtn) {
 			//close advanced settings to force reload from new config
 			advancedConfigCheck.setChecked(false);
-			handleAdvancedConfig();
+			handleAdvancedConfig(null);
 			handleRemoteControl();
 		}
 		if (destination == startBtn || destination == enableAdFilterCheck)
@@ -997,8 +1056,9 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			handlefilterReload();
 
 		if (destination == advancedConfigCheck || destination == editAdditionalHostsCheck || destination == editFilterLoadCheck || destination == appWhiteListCheck || destination == backupRestoreCheck) {
-			handleAdvancedConfig();
+			handleAdvancedConfig((CheckBox)destination);
 		}
+
 		if (destination == keepAwakeCheck) {
 			if (keepAwakeCheck.isChecked()) {
 				remoteWakeLock();
@@ -1006,6 +1066,22 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 				remoteReleaseWakeLock();
 			}
 		}
+	}
+
+	private void handleBackUpIdChange(boolean up) {
+		if (up && selectedBackup==availableBackups.length-1)
+			selectedBackup = -1;
+		else if (!up && selectedBackup == -1)
+			selectedBackup = availableBackups.length-1;
+		else if (up)
+			selectedBackup++;
+		else if (!up)
+			selectedBackup--;
+		String txt = "<default>";
+		if (selectedBackup != -1)
+			txt = availableBackups[selectedBackup];
+
+		((TextView)findViewById(R.id.BackupId)).setText(txt);
 	}
 
 	private void onRemoteConnected(ConfigurationAccess remote){
@@ -1102,15 +1178,18 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		}
 	}
 
-	private void handleAdvancedConfig() {
+	private void handleAdvancedConfig(CheckBox dest) {
 		((TextView) findViewById(R.id.backupLog)).setText("");
 		if (advancedConfigCheck.isChecked()) {
 			//App Whitelisting only supported on SDK >= 21
-			if (Build.VERSION.SDK_INT >= 21 && CONFIG.isLocal())
+			if (Build.VERSION.SDK_INT >= 21 && CONFIG.isLocal()) {
 				appWhiteListCheck.setVisibility(View.VISIBLE);
+				appWhitelistingEnabled=true;
+			}
 			else { //Not supported for remote access currently
 				appWhiteListCheck.setVisibility(View.GONE);
 				appWhiteListCheck.setChecked(false);
+				appWhitelistingEnabled=false;
 			}
 
 			keepAwakeCheck.setVisibility(View.VISIBLE);
@@ -1118,8 +1197,47 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			editFilterLoadCheck.setVisibility(View.VISIBLE);
 			backupRestoreCheck.setVisibility(View.VISIBLE);
 
+			if (dest != advancedConfigCheck && dest != null) {
+
+				if (dest.isChecked()) {
+					keepAwakeCheck.setVisibility(View.GONE);
+					if (dest != editAdditionalHostsCheck) {
+						editAdditionalHostsCheck.setChecked(false);
+						editAdditionalHostsCheck.setVisibility(View.GONE);
+					}
+					if (dest != editFilterLoadCheck) {
+						editFilterLoadCheck.setChecked(false);
+						editFilterLoadCheck.setVisibility(View.GONE);
+					}
+					if (dest != appWhiteListCheck) {
+						appWhiteListCheck.setChecked(false);
+						appWhiteListCheck.setVisibility(View.GONE);
+					}
+					if (dest != backupRestoreCheck) {
+						backupRestoreCheck.setChecked(false);
+						backupRestoreCheck.setVisibility(View.GONE);
+					}
+				} else {
+					keepAwakeCheck.setVisibility(View.VISIBLE);
+					editAdditionalHostsCheck.setVisibility(View.VISIBLE);
+					editFilterLoadCheck.setVisibility(View.VISIBLE);
+					if (appWhitelistingEnabled) appWhiteListCheck.setVisibility(View.VISIBLE);
+					backupRestoreCheck.setVisibility(View.VISIBLE);
+				}
+			}
+
 			if (backupRestoreCheck.isChecked()) {
 				findViewById(R.id.backupRestoreView).setVisibility(View.VISIBLE);
+				try {
+					availableBackups=CONFIG.getAvailableBackups();
+					selectedBackup = -1;
+					((TextView)findViewById(R.id.BackupId)).setText("<default>");
+				} catch (IOException e) {
+					Logger.getLogger().logException(e);
+					backupRestoreCheck.setChecked(false);
+					findViewById(R.id.backupRestoreView).setVisibility(View.GONE);
+				}
+
 			} else {
 				findViewById(R.id.backupRestoreView).setVisibility(View.GONE);
 			}
@@ -1153,13 +1271,17 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			filterCfg.clear();
 			findViewById(R.id.addHostsScroll).setVisibility(View.GONE);
 			appWhiteListCheck.setVisibility(View.GONE);
+			appWhiteListCheck.setChecked(false);
 			appWhiteListScroll.setVisibility(View.GONE);
 			appSelector.clear();
 			findViewById(R.id.backupRestoreView).setVisibility(View.GONE);
 			keepAwakeCheck.setVisibility(View.GONE);
 			editAdditionalHostsCheck.setVisibility(View.GONE);
+			editAdditionalHostsCheck.setChecked(false);
 			editFilterLoadCheck.setVisibility(View.GONE);
+			editFilterLoadCheck.setChecked(false);
 			backupRestoreCheck.setVisibility(View.GONE);
+			backupRestoreCheck.setChecked(false);
 			editAdditionalHostsCheck.setChecked(false);
 			additionalHostsField.setText("");
 			additionalHostsChanged = false;

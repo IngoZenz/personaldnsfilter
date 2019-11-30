@@ -167,9 +167,13 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
 
 
 
-    private void triggerAction(String action) throws IOException {
+    private void triggerAction(String action, String paramStr) throws IOException {
         try {
             getOutputStream().write((action+"\n").getBytes());
+
+            if (paramStr != null)
+                getOutputStream().write((paramStr+"\n").getBytes());
+
             getOutputStream().flush();
             InputStream in = getInputStream();
             String response = Utils.readLineFromStream(in);
@@ -380,12 +384,12 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
 
     @Override
     public void restart() throws IOException {
-       triggerAction("restart()");
+       triggerAction("restart()", null);
     }
 
     @Override
     public void stop() throws IOException {
-        triggerAction("stop()");
+        triggerAction("stop()", null);
     }
 
     @Override
@@ -413,32 +417,67 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
 
     @Override
     public void triggerUpdateFilter() throws IOException {
-        triggerAction("triggerUpdateFilter()");
+        triggerAction("triggerUpdateFilter()", null);
     }
 
     @Override
-    public void doBackup() throws IOException {
-        triggerAction("doBackup()");
+    public void doBackup(String name) throws IOException {
+        triggerAction("doBackup()", name);
     }
+
+    @Override
+    public String[] getAvailableBackups() throws IOException {
+        try {
+            DataOutputStream out = new DataOutputStream(getOutputStream());
+            DataInputStream in = new DataInputStream(getInputStream());
+            out.write(("getAvailableBackups()\n").getBytes());
+            out.flush();
+
+            String response = Utils.readLineFromStream(in);
+            if (!response.equals("OK")) {
+                throw new ConfigurationAccessException(response, null);
+            }
+            try {
+                int cnt = Integer.parseInt(Utils.readLineFromStream(in));
+                String[] result = new String[cnt];
+                for (int i = 0; i < cnt; i++)
+                    result[i]=Utils.readLineFromStream(in);
+
+                return result;
+
+            } catch (Exception e) {
+                throw new IOException (e);
+            }
+        } catch (ConfigurationAccessException e) {
+            connectedLogger.logLine("Remote action failed! "+e.getMessage());
+            throw e;
+        } catch (IOException e) {
+            connectedLogger.logLine("Remote action  getFilterStatistics() failed! "+e.getMessage());
+            closeConnectionReconnect();
+            throw e;
+        }
+    }
+
+
 
     @Override
     public void doRestoreDefaults() throws IOException {
-        triggerAction("doRestoreDefaults()");
+        triggerAction("doRestoreDefaults()", null);
     }
 
     @Override
-    public void doRestore() throws IOException{
-        triggerAction("doRestore()");
+    public void doRestore(String name) throws IOException{
+        triggerAction("doRestore()", name);
     }
 
     @Override
     public void wakeLock() throws IOException {
-        triggerAction("wakeLock()");
+        triggerAction("wakeLock()", null);
     }
 
     @Override
     public void releaseWakeLock() throws IOException {
-        triggerAction("releaseWakeLock()");
+        triggerAction("releaseWakeLock()", null);
     }
 
     private void processHeartBeat() {
