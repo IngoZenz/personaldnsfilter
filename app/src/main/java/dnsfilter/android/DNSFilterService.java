@@ -23,6 +23,7 @@
 package dnsfilter.android;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -30,6 +31,10 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.LinkProperties;
+import android.net.Network;
+import android.net.NetworkInfo;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
@@ -44,6 +49,9 @@ import java.lang.reflect.Method;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -180,6 +188,49 @@ public class DNSFilterService extends VpnService  {
 	}
 
 
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
+	private static String[] getDNSviaConnectivityManager() {
+
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
+			return new String[0];
+
+		HashSet<String> result = new HashSet<String>();
+		ConnectivityManager connectivityManager = (ConnectivityManager) INSTANCE.getSystemService(CONNECTIVITY_SERVICE);
+		for (Network network : connectivityManager.getAllNetworks()) {
+			NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
+			if (networkInfo.isConnected()) {
+				LinkProperties linkProperties = connectivityManager.getLinkProperties(network);
+				List<InetAddress> dnsList = linkProperties.getDnsServers();
+				for (int i = 0; i <dnsList.size(); i++)
+					result.add(dnsList.get(i).getHostAddress());
+
+			}
+		}
+		return result.toArray(new String[result.size()]);
+	}
+
+
+	private static String[] getDNSviaSysProps() {
+
+		try {
+			HashSet<String> result = new HashSet<String>();
+			Class<?> SystemProperties = Class.forName("android.os.SystemProperties");
+			Method method = SystemProperties.getMethod("get", new Class[]{String.class});
+
+			for (String name : new String[]{"net.dns1", "net.dns2", "net.dns3", "net.dns4"}) {
+				String value = (String) method.invoke(null, name);
+				if (value != null && !value.equals("")) {
+					result.add(value);
+				}
+			}
+			return result.toArray(new String[result.size()]);
+
+		} catch (Exception e) {
+			Logger.getLogger().logException(e);
+			return new String[0];
+		}
+
+	}
 
 	public static void detectDNSServers() {
 
@@ -206,17 +257,28 @@ public class DNSFilterService extends VpnService  {
 
 			if (DNSProxyActivity.debug)
 				Logger.getLogger().logLine("Detecting DNS Servers...");
+
 			Vector<DNSServer> dnsAdrs = new Vector<DNSServer>();
 
 			if (detect) {
-				try {
-					Class<?> SystemProperties = Class.forName("android.os.SystemProperties");
-					Method method = SystemProperties.getMethod("get", new Class[]{String.class});
 
-					for (String name : new String[]{"net.dns1", "net.dns2", "net.dns3", "net.dns4",}) {
-						String value = (String) method.invoke(null, name);
+				String[] dnsServers = getDNSviaConnectivityManager();
+
+				if (dnsServers.length == 0) {
+					if (DNSProxyActivity.debug)
+						Logger.getLogger().logLine("Fallback DNS detection via SystemProperties");
+
+					dnsServers = getDNSviaSysProps();
+
+				} else if (DNSProxyActivity.debug)
+					Logger.getLogger().logLine("DNS detection via ConnectivityManager");
+
+				try {
+					for (int i = 0; i < dnsServers.length; i++) {
+						String value = dnsServers[i];
 						if (value != null && !value.equals("")) {
-							if (DNSProxyActivity.debug) Logger.getLogger().logLine("DNS:" + value);
+							if (DNSProxyActivity.debug)
+								Logger.getLogger().logLine("DNS:" + value);
 							if (!value.equals(VIRTUALDNS_IPV4) && !value.equals(VIRTUALDNS_IPV6))
 								dnsAdrs.add(DNSServer.getInstance().createDNSServer(DNSServer.UDP, InetAddress.getByName(value), 53, 15000, null));
 						}
