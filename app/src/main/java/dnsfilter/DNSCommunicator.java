@@ -99,7 +99,8 @@ public class DNSCommunicator {
 			//DNSServer.getInstance().createDNSServer(DNSServer.UDP,dns,53,TIMEOUT, null).resolve(request, response);
 			dns.resolve(request, response);
 		} catch (IOException eio) {
-			switchDNSServer(dns);
+			if (ExecutionEnvironment.getEnvironment().hasNetwork())
+				switchDNSServer(dns);
 			//Logger.getLogger().logException(eio);
 			throw eio;
 		}

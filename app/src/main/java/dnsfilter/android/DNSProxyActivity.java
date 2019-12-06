@@ -33,6 +33,8 @@ import android.content.res.AssetManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.VpnService;
 import android.net.wifi.WifiManager;
@@ -1664,6 +1666,13 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	public InputStream getAsset(String path) throws IOException {
 		AssetManager assetManager = this.getAssets();
 		return(assetManager.open(path));
+	}
+
+	@Override
+	public boolean hasNetwork() {
+		ConnectivityManager conMan= (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo ni = conMan.getActiveNetworkInfo();
+		return ni != null && ni.isConnected();
 	}
 
 

@@ -77,4 +77,9 @@ package util;
 		 throw new IOException("Not supported!");
 	 }
 
+	 @Override
+	 public boolean hasNetwork() {
+		 return true;
+	 }
+
  }

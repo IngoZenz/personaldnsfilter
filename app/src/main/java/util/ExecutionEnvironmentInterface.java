@@ -34,4 +34,5 @@ package util;
 	public boolean debug();
 	public void onReload()  throws IOException;
 	public InputStream getAsset(String path) throws IOException;
+	public boolean hasNetwork();
 }

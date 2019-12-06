@@ -138,6 +138,8 @@ public class DNSResolver implements Runnable {
 			IO_ERROR=false;
 
 		} catch (IOException e) {
+			if (!ExecutionEnvironment.getEnvironment().hasNetwork())
+				Logger.getLogger().message("No Network!");
 			String msg = e.getMessage();
 			if (e.getMessage()==null)
 				msg = e.toString();
