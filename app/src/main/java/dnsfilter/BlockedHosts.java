@@ -314,7 +314,7 @@ public class BlockedHosts implements Set {
 				return false;
 			else if (filterListCache.get(hosthash) != null)
 				return true;
-			else if (contains(hostName, hosthash, !ip)) {
+			else if (contains(hostName, hosthash, !ip, !ip)) {
 				filterListCache.put(hosthash, NOT_NULL);
 				return true;
 			} else {
@@ -326,7 +326,7 @@ public class BlockedHosts implements Set {
 		}
 	}
 
-	private boolean contains(String hostName, long hosthash, boolean checkParent) {
+	private boolean contains(String hostName, long hosthash, boolean checkParent, boolean checkPattern) {
 
 		int idx = 0;
 
@@ -340,7 +340,7 @@ public class BlockedHosts implements Set {
 			if (blockedHostsHashes.contains(hosthash))
 				return true;
 
-			if (containsPatternMatch(hostName))
+			if (checkPattern && containsPatternMatch(hostName))
 				return true;
 
 			if (checkParent) {
