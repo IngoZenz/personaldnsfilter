@@ -287,8 +287,12 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	}
 
 	private byte[] mergeAndPersistConfig(byte[] currentConfigBytes) throws IOException {
+		String currentCfgStr = new String(currentConfigBytes);
+		boolean filterDisabled = currentCfgStr.indexOf("\n#!!!filterHostsFile =")!=-1;
+		if (filterDisabled)
+			currentCfgStr = currentCfgStr.replace("\n#!!!filterHostsFile =", "\nfilterHostsFile =");
 		Properties currentConfig = new Properties();
-		currentConfig.load(new ByteArrayInputStream(currentConfigBytes));
+		currentConfig.load(new ByteArrayInputStream(currentCfgStr.getBytes()));
 		String[] currentKeys = currentConfig.keySet().toArray(new String[0]);
 		BufferedReader defCfgReader = new BufferedReader(new InputStreamReader(ExecutionEnvironment.getEnvironment().getAsset("dnsfilter.conf")));
 		File mergedConfig = new File(WORKDIR+"dnsfilter.conf");
@@ -296,8 +300,12 @@ public class DNSFilterManager extends ConfigurationAccess  {
 		String ln = "";
 		while ((ln = defCfgReader.readLine()) != null) {
 			for (int i = 0; i < currentKeys.length; i++)
-				if (ln.startsWith(currentKeys[i] + " ="))
-					ln = currentKeys[i] + " = " + currentConfig.getProperty(currentKeys[i], "");
+				if (ln.startsWith(currentKeys[i] + " =")) {
+					if (currentKeys[i].equals("filterHostsFile") && filterDisabled)
+						ln = "#!!!filterHostsFile" + " = " + currentConfig.getProperty(currentKeys[i], "");
+					else
+						ln = currentKeys[i] + " = " + currentConfig.getProperty(currentKeys[i], "");
+				}
 
 			mergedout.write((ln + "\r\n").getBytes());
 		}
