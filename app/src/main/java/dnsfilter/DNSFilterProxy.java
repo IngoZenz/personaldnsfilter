@@ -149,6 +149,14 @@ public class DNSFilterProxy implements Runnable {
 
 	@Override
 	public void run() {
+		int max_resolvers;
+		try {
+			max_resolvers  = Integer.parseInt(DNSFilterManager.getInstance().getConfig().getProperty("maxResolverCount", "100"));
+		} catch (Exception e) {
+			Logger.getLogger().logLine("Exception:Cannot get maxResolverCount configuration!");
+			Logger.getLogger().logException(e);
+			return;
+		}
 		try {
 			receiver = new DatagramSocket(port);
 		} catch (IOException eio) {
@@ -161,7 +169,12 @@ public class DNSFilterProxy implements Runnable {
 				byte[] data = new byte[1024];
 				DatagramPacket request = new DatagramPacket(data, 0, DNSServer.getBufSize());
 				receiver.receive(request);
-				new Thread(new DNSResolver(request, receiver)).start();
+
+				if (DNSResolver.getResolverCount()>max_resolvers) {
+					Logger.getLogger().message("Max Resolver Count reached: "+max_resolvers);
+				}
+				else new Thread(new DNSResolver(request, receiver)).start();
+
 			} catch (IOException e) {
 				if (!stopped)
 					Logger.getLogger().logLine("Exception:" + e.getMessage());

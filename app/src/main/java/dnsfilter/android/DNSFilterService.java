@@ -127,11 +127,18 @@ public class DNSFilterService extends VpnService  {
 			Logger.getLogger().logLine("VPN Runner Thread "+id+" started!");
 			thread = Thread.currentThread();
 			try {
+				int max_resolvers  = Integer.parseInt(DNSFilterManager.getInstance().getConfig().getProperty("maxResolverCount", "100"));;
 				while (!stopped) {
 					byte[] data = new byte[DNSServer.getBufSize()];
 					int length = in.read(data);
 					if (stopped)
 						break;
+
+					boolean skip = false;
+					if (DNSResolver.getResolverCount()>max_resolvers) {
+						Logger.getLogger().message("Max Resolver Count reached: "+max_resolvers);
+						skip = true;
+					}
 
 					if (length > 0) {
 						try {
@@ -164,7 +171,8 @@ public class DNSFilterService extends VpnService  {
 								if (parsedPacket.checkCheckSum() != 0)
 									throw new IOException("UDP packet Checksum Error!");
 
-								new Thread(new DNSResolver(parsedPacket, out)).start();
+								if (!skip)
+									new Thread(new DNSResolver(parsedPacket, out)).start();
 							}
 						} catch (IOException e) {
 							Logger.getLogger().logLine("IOEXCEPTION: " + e.toString());
