@@ -767,7 +767,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 									"# IPV6 Addresses with '::' must be in brackets '[IPV6]'!\n" +
 									"# Cloudflare examples below:\n" +
 									"# 1.1.1.1::53::UDP (Default DNS on UDP port 53 / just 1.1.1.1 will work as well)\n" +
-									"# 1.1.1.1::853::DOT (DNS over TLS)\n" +
+									"# 1.1.1.1::853::DOT::cloudflare-dns.com (DNS over TLS)\n" +
 									"# 1.1.1.1::443::DOH::https://cloudflare-dns.com/dns-query (DNS over HTTPS)\n\n";
 					manualDNSView.setText(manualDNS_Help+config.getProperty("fallbackDNS").replace(";", "\n").replace(" ", ""));
 
