@@ -90,6 +90,21 @@ public class DNSFilterService extends VpnService  {
 	boolean dnsCryptProxyStartTriggered = false;
 	PendingIntent pendingIntent;
 
+	private static boolean supportsIPVersion(int version) throws Exception {
+		/*Enumeration<NetworkInterface> nifs = NetworkInterface.getNetworkInterfaces();
+		while (nifs.hasMoreElements()) {
+			final Iterator<InterfaceAddress> nifAddresses = nifs.nextElement().getInterfaceAddresses().iterator();
+			while (nifAddresses.hasNext()) {
+				final InetAddress ip = nifAddresses.next().getAddress();
+				if ((version == 6 && ip instanceof Inet6Address) || (version == 4 && ip instanceof Inet4Address)) {
+					Logger.getLogger().logLine("IPV"+version+" supported:"+ip);
+					return true;
+				}
+			}
+		}
+		return false;*/
+		return DNSFilterManager.getInstance().getConfig().getProperty("ipVersionSupport", "4, 6").indexOf(""+version)!=-1;
+	}
 
 	class VPNRunner implements Runnable {
 
@@ -323,8 +338,13 @@ public class DNSFilterService extends VpnService  {
 		Builder builder = new Builder();
 
 		builder.setSession("DNS Filter");
-		builder.addAddress(ADDRESS_IPV4, 24).addDnsServer(VIRTUALDNS_IPV4).addRoute(VIRTUALDNS_IPV4, 32);
-		builder.addAddress(ADDRESS_IPV6, 48).addDnsServer(VIRTUALDNS_IPV6).addRoute(VIRTUALDNS_IPV6, 128);
+
+		if (supportsIPVersion(4))
+			builder.addAddress(ADDRESS_IPV4, 24).addDnsServer(VIRTUALDNS_IPV4).addRoute(VIRTUALDNS_IPV4, 32);
+
+		if (supportsIPVersion(6))
+			builder.addAddress(ADDRESS_IPV6, 48).addDnsServer(VIRTUALDNS_IPV6).addRoute(VIRTUALDNS_IPV6, 128);
+
 
 		// add additional IPs to route e.g. for handling application like
 		// google chrome bypassing the DNS via own DNS servers
