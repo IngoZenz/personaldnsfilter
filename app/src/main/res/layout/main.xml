@@ -45,18 +45,6 @@
             android:textColor="#424242"
             android:drawableRight="@drawable/twotone_edit_24px"/>
 
-        <Button
-            android:id="@+id/remoteCtrlBtn"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:padding="2dp"
-            android:layout_marginRight="15dp"
-            android:layout_alignParentRight="true"
-            android:background="@drawable/custom_button"
-            android:drawableLeft="@drawable/outline_settings_remote_24px"
-            android:gravity="center"
-            android:textColor="#424242">
-        </Button>
 
     </RelativeLayout>
 
@@ -66,16 +54,36 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <dnsfilter.android.PaddedCheckBox
-            android:id="@+id/advancedConfigCheck"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:id="@+id/relLayout2"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
-            android:layout_marginTop="0dp"
-            android:button="@drawable/custom_checkbox"
-            android:checked="false"
-            android:text="@string/EnableConfigCheckBox"
-            android:textColor="#424242" />
+            android:paddingTop="0dp">
+
+            <dnsfilter.android.PaddedCheckBox
+                android:id="@+id/advancedConfigCheck"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginTop="0dp"
+                android:button="@drawable/custom_checkbox"
+                android:checked="false"
+                android:text="@string/EnableConfigCheckBox"
+                android:textColor="#424242" />
+
+            <Button
+                android:id="@+id/remoteCtrlBtn"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="15dp"
+                android:background="@drawable/custom_button"
+                android:drawableLeft="@drawable/outline_settings_remote_24px"
+                android:gravity="center"
+                android:padding="2dp"
+                android:textColor="#424242"></Button>
+
+        </RelativeLayout>
 
         <dnsfilter.android.PaddedCheckBox
             android:id="@+id/editFilterLoad"

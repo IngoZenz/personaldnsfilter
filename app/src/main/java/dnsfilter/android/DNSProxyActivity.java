@@ -1094,6 +1094,8 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		logLine("=>CONNECTED to "+ CONFIG +"<=");
 	}
 
+
+
 	private void handleRemoteControl() {
 
 		if (switchingConfig)
@@ -1108,8 +1110,13 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 				final String host = ConfigurationAccess.getLocal().getConfig().getProperty("client_remote_ctrl_host", "");
 				final String keyphrase = ConfigurationAccess.getLocal().getConfig().getProperty("client_remote_ctrl_keyphrase", "");
 
+				if (host.equals("127.0.0.1"))
+					if(ConfigurationAccess.getLocal().getConfig().getProperty("server_remote_ctrl_port", "-1").equals("-1")) {
+						throw new IOException("Remote Control not configured!");
+					}
+
 				if (host.equals("") || keyphrase.equals(""))
-					throw new IOException("Remote Control not configured");
+					throw new IOException("Remote Control not configured!");
 
 				final int port;
 				try {
@@ -1136,10 +1143,8 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 				};
 				new Thread(asyncConnect).start();
 
-
 			} catch (IOException e) {
-				Logger.getLogger().logLine("Remote Connect failed!" + e.toString());
-				message("Remote Connect Failed!");
+				message(e.getMessage());
 				CONFIG = ConfigurationAccess.getLocal();
                 switchingConfig = false;
 			}
