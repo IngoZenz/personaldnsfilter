@@ -1110,12 +1110,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 				final String host = ConfigurationAccess.getLocal().getConfig().getProperty("client_remote_ctrl_host", "");
 				final String keyphrase = ConfigurationAccess.getLocal().getConfig().getProperty("client_remote_ctrl_keyphrase", "");
 
-				if (host.equals("127.0.0.1"))
-					if(ConfigurationAccess.getLocal().getConfig().getProperty("server_remote_ctrl_port", "-1").equals("-1")) {
-						throw new IOException("Remote Control not configured!");
-					}
-
-				if (host.equals("") || keyphrase.equals(""))
+				if (host.equals("") || host.equals("0.0.0.0") || keyphrase.equals(""))
 					throw new IOException("Remote Control not configured!");
 
 				final int port;
