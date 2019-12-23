@@ -64,7 +64,6 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
         this.host=host;
         this.port=port;
         connect();
-        valid = true;
     }
 
 
@@ -76,6 +75,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
         ctrlcon.setSoTimeout(READ_TIMEOUT);
         ctrlConId = (Integer) conInfo[0];
         remoteStream = new RemoteStream(ctrlConId);
+        valid = true;
     }
 
     @Override
@@ -202,16 +202,16 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
 
         if (remoteStream != null)
             remoteStream.close();
-        try {
-            if (ctrlcon!=null) {
+
+        if (ctrlcon != null) {
+            try {
                 out.write("releaseConfiguration()".getBytes());
                 out.flush();
+            } catch (IOException e) {
+                connectedLogger.logLine("Exception during remote configuration release: " + e.toString());
                 Utils.closeSocket(ctrlcon);
             }
-        } catch (IOException e) {
-            connectedLogger.logLine("Exception during remote configuration release: "+e.toString());
         }
-
         ctrlcon = null;
         remoteStream = null;
     }
@@ -622,19 +622,21 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
 
         public void close() {
             stopped = true;
-            try {
-                if (streamCon!=null) {
-                    synchronized (out) {
+
+            if (streamCon != null) {
+                synchronized (out) {
+                    try {
                         out.write("releaseConfiguration()".getBytes());
                         out.flush();
-                        Utils.closeSocket(streamCon);
+                    } catch (IOException e) {
+                        connectedLogger.logLine("Exception during remote configuration release: " + e.toString());
                     }
+                    Utils.closeSocket(streamCon);
                 }
-            } catch (IOException e) {
-                connectedLogger.logLine("Exception during remote configuration release: "+e.toString());
             }
         }
     }
+
 
 
 }
