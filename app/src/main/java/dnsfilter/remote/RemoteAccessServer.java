@@ -379,7 +379,13 @@ public class RemoteAccessServer implements Runnable {
             });
 
             synchronized (out) {
-                ((GroupedLogger) Logger.getLogger()).attachLogger(remoteLogger);
+                try {
+                    ((GroupedLogger) Logger.getLogger()).attachLogger(remoteLogger);
+                } catch (ClassCastException cce) {
+                    //need GroupedLogger!
+                    GroupedLogger logger = new GroupedLogger(new LoggerInterface[] {Logger.getLogger(), remoteLogger});
+                    Logger.setLogger(logger);
+                }
 
                 out.write("OK\n".getBytes());
                 doHeartBeat(RemoteAccessClient.READ_TIMEOUT);
