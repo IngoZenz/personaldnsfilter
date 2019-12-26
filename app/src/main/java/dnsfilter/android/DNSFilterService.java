@@ -212,6 +212,19 @@ public class DNSFilterService extends VpnService  {
 
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
+	private static Network[] getConnectedNetworks(ConnectivityManager conMan, int type) {
+		ArrayList<Network> nwList = new ArrayList<Network>();
+		Network[] nw = conMan.getAllNetworks();
+		for (int i = 0; i < nw.length;i++) {
+			NetworkInfo ni = conMan.getNetworkInfo(nw[i]);
+			if ((ni.getType() == type || type == -1) && ni.isConnected())
+				nwList.add(nw[i]);
+		}
+		return nwList.toArray(new Network[nwList.size()]);
+	}
+
+
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private static String[] getDNSviaConnectivityManager() {
 
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
@@ -219,15 +232,17 @@ public class DNSFilterService extends VpnService  {
 
 		HashSet<String> result = new HashSet<String>();
 		ConnectivityManager connectivityManager = (ConnectivityManager) INSTANCE.getSystemService(CONNECTIVITY_SERVICE);
-		for (Network network : connectivityManager.getAllNetworks()) {
+		Network[] networks = getConnectedNetworks(connectivityManager, ConnectivityManager.TYPE_WIFI); //prefer WiFi
+		if (networks.length == 0)
+			networks = getConnectedNetworks(connectivityManager, -1); //fallback all networks
+		for (Network network : networks) {
 			NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
-			if (networkInfo.isConnected()) {
-				LinkProperties linkProperties = connectivityManager.getLinkProperties(network);
-				List<InetAddress> dnsList = linkProperties.getDnsServers();
-				for (int i = 0; i <dnsList.size(); i++)
-					result.add(dnsList.get(i).getHostAddress());
 
-			}
+			LinkProperties linkProperties = connectivityManager.getLinkProperties(network);
+			List<InetAddress> dnsList = linkProperties.getDnsServers();
+			for (int i = 0; i < dnsList.size(); i++)
+				result.add(dnsList.get(i).getHostAddress());
+
 		}
 		return result.toArray(new String[result.size()]);
 	}
