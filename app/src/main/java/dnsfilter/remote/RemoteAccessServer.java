@@ -247,7 +247,7 @@ public class RemoteAccessServer implements Runnable {
                     out.write("OK\n".getBytes());
                     out.flush();
                 } else if (action.equals("updateFilter()")) {
-                    String entries = Utils.readLineFromStream(in);
+                    String entries = Utils.readLineFromStream(in).replace(";","\n");
                     boolean filter = Boolean.parseBoolean(Utils.readLineFromStream(in));
                     ConfigurationAccess.getLocal().updateFilter(entries, filter);
                     out.write("OK\n".getBytes());

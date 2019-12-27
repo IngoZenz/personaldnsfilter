@@ -350,7 +350,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
         try {
             OutputStream out = getOutputStream();
             InputStream in = getInputStream();
-            out.write(("updateFilter()\n"+entries+"\n"+filter+"\n").getBytes());
+            out.write(("updateFilter()\n"+entries.replace("\n",";")+"\n"+filter+"\n").getBytes());
             out.flush();
             String response = Utils.readLineFromStream(in);
             if (!response.equals("OK")) {
