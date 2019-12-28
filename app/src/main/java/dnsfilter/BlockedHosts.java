@@ -36,8 +36,10 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 
+import util.ExecutionEnvironment;
 import util.HugePackedSet;
 import util.LRUCache;
+import util.Logger;
 import util.ObjectPackagingManager;
 import util.Utils;
 
@@ -76,6 +78,10 @@ public class BlockedHosts implements Set {
 	public BlockedHosts(int maxCountEstimate, int okCacheSize, int filterListCacheSize, Hashtable hostsFilterOverRule) {
 		okCache = new LRUCache(okCacheSize);
 		filterListCache = new LRUCache(filterListCacheSize);
+
+		if (ExecutionEnvironment.getEnvironment().debug())
+			Logger.getLogger().logLine("CACHE SIZE:"+okCacheSize+", "+filterListCacheSize);
+
 		this.hostsFilterOverRule = hostsFilterOverRule;
 
 		int slots = maxCountEstimate / 6000;
@@ -90,6 +96,10 @@ public class BlockedHosts implements Set {
 		this.blockedPatterns = blockedPatterns;
 		okCache = new LRUCache(okCacheSize);
 		filterListCache = new LRUCache(filterListCacheSize);
+
+		if (ExecutionEnvironment.getEnvironment().debug())
+			Logger.getLogger().logLine("CACHE SIZE:"+okCacheSize+", "+filterListCacheSize);
+
 		this.hostsFilterOverRule = hostsFilterOverRule;
 	}
 

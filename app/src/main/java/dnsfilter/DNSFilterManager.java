@@ -60,7 +60,7 @@ import util.Utils;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1503405-dev05";
+	public static final String VERSION = "1503405-dev06";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -1247,6 +1247,14 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				}
 			}
 
+			try {
+				okCacheSize = Integer.parseInt(config.getProperty("allowedHostsCacheSize", "1000").trim());
+				filterListCacheSize = Integer.parseInt(config.getProperty("filterHostsCacheSize", "1000").trim());
+			} catch (NumberFormatException nfe) {
+				Logger.getLogger().logLine("Cannot parse cache size configuration!");
+				throw new IOException(nfe);
+			}
+
 			//wake lock if configured
 			if (config.getProperty("androidKeepAwake", "true").equalsIgnoreCase("true"))
 				ExecutionEnvironment.getEnvironment().wakeLock();
@@ -1270,7 +1278,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 			} catch (NumberFormatException nfe) {
 				Logger.getLogger().logLine("Cannot parse log configuration!");
-				throw nfe;
+				throw new IOException(nfe);
 			}
 
 			debug = Boolean.parseBoolean(config.getProperty("debug", "false"));
