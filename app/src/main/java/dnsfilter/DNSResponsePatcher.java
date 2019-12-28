@@ -42,6 +42,7 @@ public class DNSResponsePatcher {
 
 	private static long okCnt=0;
 	private static long filterCnt=0;
+	private static boolean checkIP = false;
 
 
 	static {
@@ -59,6 +60,11 @@ public class DNSResponsePatcher {
 		TRAFFIC_LOG = trafficLogger;
 		okCnt=0;
 		filterCnt=0;
+		try {
+			checkIP = Boolean.parseBoolean(ConfigurationAccess.getLocal().getConfig().getProperty("checkResolvedIP","false"));
+		} catch (IOException e) {
+			Logger.getLogger().logException(e);
+		}
 	}
 
 	public static long getFilterCount() {
@@ -120,7 +126,7 @@ public class DNSResponsePatcher {
 							buf.put(ipv4_localhost);
 						else if (type == 28) // IPV6
 							buf.put(ipv6_localhost);
-					} else { //check if resolved IP is filtered
+					} else if (checkIP){ //check if resolved IP is filtered
 						byte[] answer = new byte[len];
 						buf.get(answer);
 						buf.position(buf.position() - len);

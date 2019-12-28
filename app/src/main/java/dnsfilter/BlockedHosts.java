@@ -314,7 +314,7 @@ public class BlockedHosts implements Set {
 			boolean ip = false;
 
 			String hostName = ((String) object).toLowerCase();
-			if (hostName.startsWith("%IP%")) {
+			if (hostName.startsWith("%ip%")) {
 				ip = true;
 				hostName = hostName.substring(4);
 			}
