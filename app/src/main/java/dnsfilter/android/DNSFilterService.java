@@ -217,7 +217,7 @@ public class DNSFilterService extends VpnService  {
 		Network[] nw = conMan.getAllNetworks();
 		for (int i = 0; i < nw.length;i++) {
 			NetworkInfo ni = conMan.getNetworkInfo(nw[i]);
-			if ((ni.getType() == type || type == -1) && ni.isConnected())
+			if (ni != null && (ni.getType() == type || type == -1) && ni.isConnected())
 				nwList.add(nw[i]);
 		}
 		return nwList.toArray(new Network[nwList.size()]);
