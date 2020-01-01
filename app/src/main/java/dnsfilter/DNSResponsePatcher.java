@@ -119,6 +119,7 @@ public class DNSResponsePatcher {
 				boolean filtered = false;
 
 				if ((type == 1 || type == 28)) {
+					filter = filter || filter(host);  //Handle CNAME Cloaking!
 					if (filter) {
 						filtered = true;
 						// replace ip!
