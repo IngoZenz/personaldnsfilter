@@ -43,6 +43,7 @@ public class DNSResponsePatcher {
 	private static long okCnt=0;
 	private static long filterCnt=0;
 	private static boolean checkIP = false;
+	private static boolean checkCNAME = true;
 
 
 	static {
@@ -62,6 +63,7 @@ public class DNSResponsePatcher {
 		filterCnt=0;
 		try {
 			checkIP = Boolean.parseBoolean(ConfigurationAccess.getLocal().getConfig().getProperty("checkResolvedIP","false"));
+			checkCNAME = Boolean.parseBoolean(ConfigurationAccess.getLocal().getConfig().getProperty("checkCNAME","false"));
 		} catch (IOException e) {
 			Logger.getLogger().logException(e);
 		}
@@ -119,7 +121,10 @@ public class DNSResponsePatcher {
 				boolean filtered = false;
 
 				if ((type == 1 || type == 28)) {
-					filter = filter || filter(host);  //Handle CNAME Cloaking!
+					if (!filter && checkCNAME && !host.equals(queryHost)) { //avoid duplicate checking same hosts
+						filter = filter || filter(host);  //Handle CNAME Cloaking!
+						queryHost = host;
+					}
 					if (filter) {
 						filtered = true;
 						// replace ip!
