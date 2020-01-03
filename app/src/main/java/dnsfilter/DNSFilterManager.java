@@ -60,7 +60,7 @@ import util.Utils;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1503501-dev03";
+	public static final String VERSION = "1503600";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -554,15 +554,20 @@ public class DNSFilterManager extends ConfigurationAccess  {
 					try {
 						if (!urlStr.equals("")) {
 							Logger.getLogger().message("Connecting: " + urlStr);
-							URL url = new URL(urlStr);
-							URLConnection con;
-							con = url.openConnection();
-							con.setRequestProperty("User-Agent", "Mozilla/5.0 (" + System.getProperty("os.name") + "; " + System.getProperty("os.version") + ")");
 
-							con.setConnectTimeout(120000);
-							con.setReadTimeout(120000);
+							InputStream in;
+							if (!urlStr.startsWith("file://")) {
+								URL url = new URL(urlStr);
+								URLConnection con;
+								con = url.openConnection();
+								con.setRequestProperty("User-Agent", "Mozilla/5.0 (" + System.getProperty("os.name") + "; " + System.getProperty("os.version") + ")");
 
-							InputStream in = new BufferedInputStream(con.getInputStream(), 2048);
+								con.setConnectTimeout(120000);
+								con.setReadTimeout(120000);
+
+								in = new BufferedInputStream(con.getInputStream(), 2048);
+							} else
+								in = new FileInputStream(urlStr.substring(7));
 							byte[] buf = new byte[2048];
 							int[] r;
 

@@ -14,6 +14,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.view.View.OnClickListener;
 
+import java.io.File;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.TreeMap;
@@ -336,14 +338,27 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 
 	private void validateContent(View[] cells) throws Exception{
 		try {
-			URL url = new URL(((TextView) cells[3]).getText().toString());
-			String shortTxt = ((TextView) cells[2]).getText().toString().trim();
-			if (shortTxt.equals(NEW_ITEM) || shortTxt.equals(""))
-				((TextView) cells[2]).setText(url.getHost());
+			String urlStr = ((TextView) cells[3]).getText().toString();
+			if (!urlStr.startsWith("file://")) {
+				URL url = new URL(urlStr);
+				String shortTxt = ((TextView) cells[2]).getText().toString().trim();
+				if (shortTxt.equals(NEW_ITEM) || shortTxt.equals(""))
+					((TextView) cells[2]).setText(url.getHost());
 
-			String category = ((TextView) cells[1]).getText().toString().trim();
-			if (category.equals(NEW_ITEM) || category.equals(""))
-				((TextView) cells[1]).setText(url.getHost());
+				String category = ((TextView) cells[1]).getText().toString().trim();
+				if (category.equals(NEW_ITEM) || category.equals(""))
+					((TextView) cells[1]).setText(url.getHost());
+			} else {
+				File f = new File(urlStr.substring(7));
+				String shortTxt = ((TextView) cells[2]).getText().toString().trim();
+				if (shortTxt.equals(NEW_ITEM) || shortTxt.equals(""))
+					((TextView) cells[2]).setText(f.getName());
+
+				String category = ((TextView) cells[1]).getText().toString().trim();
+				if (category.equals(NEW_ITEM) || category.equals(""))
+					((TextView) cells[1]).setText(f.getName());
+
+			}
 
 		} catch (MalformedURLException e) {
 			throw e;
