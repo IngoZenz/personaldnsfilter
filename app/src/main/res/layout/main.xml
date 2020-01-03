@@ -505,6 +505,16 @@
 
         </LinearLayout>
 
+        <dnsfilter.android.PaddedCheckBox
+            android:id="@+id/cloakProtectCheck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="25dp"
+            android:layout_marginTop="0dp"
+            android:button="@drawable/custom_checkbox"
+            android:checked="false"
+            android:text="CNAME Cloaking Protection (aggressive)"
+            android:textColor="#424242" />
 
         <dnsfilter.android.PaddedCheckBox
             android:id="@+id/keepAwakeCheck"

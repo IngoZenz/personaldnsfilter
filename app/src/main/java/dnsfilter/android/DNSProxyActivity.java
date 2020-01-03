@@ -123,6 +123,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	protected static CheckBox keepAwakeCheck;
 	protected static CheckBox enableAutoStartCheck;
 	protected static CheckBox enableAdFilterCheck;
+	protected static CheckBox enableCloakProtectCheck;
 	protected static EditText filterReloadIntervalView;
 	protected static FilterConfig filterCfg;
 	protected static EditText additionalHostsField;
@@ -473,6 +474,11 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		keepAwakeCheck.setChecked(checked);
 		keepAwakeCheck.setOnClickListener(this);
 
+		checked = enableCloakProtectCheck != null && enableCloakProtectCheck.isChecked();
+		enableCloakProtectCheck = (CheckBox) findViewById(R.id.cloakProtectCheck);
+		enableCloakProtectCheck.setChecked(checked);
+		enableCloakProtectCheck.setOnClickListener(this);
+
 		checked = advancedConfigCheck != null && advancedConfigCheck.isChecked();
 		advancedConfigCheck = (CheckBox) findViewById(R.id.advancedConfigCheck);
 		advancedConfigCheck.setChecked(checked);
@@ -779,6 +785,8 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 					enableAdFilterCheck.setChecked(config.getProperty("filterHostsFile") != null);
 					enableAutoStartCheck.setChecked(Boolean.parseBoolean(config.getProperty("AUTOSTART", "false")));
 
+					enableCloakProtectCheck.setChecked(Boolean.parseBoolean(config.getProperty("checkCNAME", "true")));
+
 					keepAwakeCheck.setChecked(Boolean.parseBoolean(config.getProperty("androidKeepAwake", "false")));
 
 					//set whitelisted Apps into UI
@@ -956,6 +964,9 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 				else if (ln.trim().startsWith("androidAppWhiteList"))
 					ln = "androidAppWhiteList = " + appSelector.getSelectedAppPackages();
+
+				else if (ln.trim().startsWith("checkCNAME"))
+					ln = "checkCNAME = " + enableCloakProtectCheck.isChecked();
 
 				else if (ln.trim().startsWith("androidKeepAwake"))
 					ln = "androidKeepAwake = " + keepAwakeCheck.isChecked();
@@ -1195,6 +1206,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			}
 
 			keepAwakeCheck.setVisibility(View.VISIBLE);
+			enableCloakProtectCheck.setVisibility(View.VISIBLE);
 			editAdditionalHostsCheck.setVisibility(View.VISIBLE);
 			editFilterLoadCheck.setVisibility(View.VISIBLE);
 			backupRestoreCheck.setVisibility(View.VISIBLE);
@@ -1203,6 +1215,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 				if (dest.isChecked()) {
 					keepAwakeCheck.setVisibility(View.GONE);
+					enableCloakProtectCheck.setVisibility(View.GONE);
 					if (dest != editAdditionalHostsCheck) {
 						editAdditionalHostsCheck.setChecked(false);
 						editAdditionalHostsCheck.setVisibility(View.GONE);
@@ -1221,6 +1234,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 					}
 				} else {
 					keepAwakeCheck.setVisibility(View.VISIBLE);
+					enableCloakProtectCheck.setVisibility(View.VISIBLE);
 					editAdditionalHostsCheck.setVisibility(View.VISIBLE);
 					editFilterLoadCheck.setVisibility(View.VISIBLE);
 					if (appWhitelistingEnabled) appWhiteListCheck.setVisibility(View.VISIBLE);
@@ -1278,6 +1292,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			appSelector.clear();
 			findViewById(R.id.backupRestoreView).setVisibility(View.GONE);
 			keepAwakeCheck.setVisibility(View.GONE);
+			enableCloakProtectCheck.setVisibility(View.GONE);
 			editAdditionalHostsCheck.setVisibility(View.GONE);
 			editAdditionalHostsCheck.setChecked(false);
 			editFilterLoadCheck.setVisibility(View.GONE);
