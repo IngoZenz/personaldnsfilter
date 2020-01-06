@@ -70,6 +70,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -79,6 +80,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Properties;
 import java.util.Stack;
 import java.util.StringTokenizer;
@@ -301,241 +303,261 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-
-		StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().build());
-
-		super.onCreate(savedInstanceState);
-		ExecutionEnvironment.setEnvironment(this);
-
-		MsgTO.setActivity(this);
-
-		if (getIntent().getBooleanExtra("SHOULD_FINISH", false)) {
-			finish();
-			System.exit(0);
-		}
-
-		DNSFilterManager.WORKDIR = DNSProxyActivity.WORKPATH.getAbsolutePath() + "/";
-
-		setContentView(R.layout.main);
-
-		//log view init
-		Spannable logTxt = null;
-		float logSize = -1;
-		if (logOutView != null) {
-			logTxt = logOutView.getText();
-			logSize = logOutView.getTextSize();
-		}
-
-		logOutView = (EditText) findViewById(R.id.logOutput);
-		if (logSize != -1)
-			logOutView.setTextSize(TypedValue.COMPLEX_UNIT_PX,logSize);
-
-		if (logTxt != null)
-			logOutView.setText(logTxt);
-		else
-			logOutView.setText(fromHtml("<strong><em>****This is personalDNSfilter V+"+DNSFilterManager.VERSION +"****</em></strong><br><br>"));
-
-		logOutView.setKeyListener(null);
-		logOutView.setCustomSelectionActionModeCallback(this);
-		logOutView.setOnTouchListener(this);
-		logOutView.setOnFocusChangeListener(this);
-		logOutView.setOnClickListener(this);
-
-		String version = "<unknown>";
-		String connCnt = "-1";
-
 		try {
-			version = CONFIG.getVersion();
-			connCnt = CONFIG.openConnectionsCount()+"";
-		} catch (IOException e){
-			addToLogView(e.toString()+"\n");
-		}
-		setTitle("personalDNSfilter V" + version + " (Connections:" + connCnt + ")");
 
-		FilterConfig.FilterConfigEntry[] cfgEntries = null;
-		String filterCategory = null;
-		if (filterCfg != null) {
-			cfgEntries = filterCfg.getFilterEntries();
-			filterCategory = filterCfg.getCurrentCategory();
-			filterCfg.clear(); //clean references etc
-		}
+			StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().build());
 
-		Button categoryUp = ((Button) findViewById(R.id.CategoryUp));
-		Button categoryDn = ((Button) findViewById(R.id.CategoryDown));
-		TextView categoryField = ((TextView) findViewById(R.id.categoryFilter));
+			super.onCreate(savedInstanceState);
+			ExecutionEnvironment.setEnvironment(this);
+
+			MsgTO.setActivity(this);
+
+			if (getIntent().getBooleanExtra("SHOULD_FINISH", false)) {
+				finish();
+				System.exit(0);
+			}
+
+			DNSFilterManager.WORKDIR = DNSProxyActivity.WORKPATH.getAbsolutePath() + "/";
+
+			setContentView(R.layout.main);
+
+			//log view init
+			Spannable logTxt = null;
+			float logSize = -1;
+			if (logOutView != null) {
+				logTxt = logOutView.getText();
+				logSize = logOutView.getTextSize();
+			}
+
+			logOutView = (EditText) findViewById(R.id.logOutput);
+			if (logSize != -1)
+				logOutView.setTextSize(TypedValue.COMPLEX_UNIT_PX, logSize);
+
+			if (logTxt != null)
+				logOutView.setText(logTxt);
+			else
+				logOutView.setText(fromHtml("<strong><em>****This is personalDNSfilter V+" + DNSFilterManager.VERSION + "****</em></strong><br><br>"));
+
+			logOutView.setKeyListener(null);
+			logOutView.setCustomSelectionActionModeCallback(this);
+			logOutView.setOnTouchListener(this);
+			logOutView.setOnFocusChangeListener(this);
+			logOutView.setOnClickListener(this);
+
+			String version = "<unknown>";
+			String connCnt = "-1";
+
+			try {
+				version = CONFIG.getVersion();
+				connCnt = CONFIG.openConnectionsCount() + "";
+			} catch (IOException e) {
+				addToLogView(e.toString() + "\n");
+			}
+			setTitle("personalDNSfilter V" + version + " (Connections:" + connCnt + ")");
+
+			FilterConfig.FilterConfigEntry[] cfgEntries = null;
+			String filterCategory = null;
+			if (filterCfg != null) {
+				cfgEntries = filterCfg.getFilterEntries();
+				filterCategory = filterCfg.getCurrentCategory();
+				filterCfg.clear(); //clean references etc
+			}
+
+			Button categoryUp = ((Button) findViewById(R.id.CategoryUp));
+			Button categoryDn = ((Button) findViewById(R.id.CategoryDown));
+			TextView categoryField = ((TextView) findViewById(R.id.categoryFilter));
 
 
-		filterCfg = new FilterConfig((TableLayout) findViewById(R.id.filtercfgtable), categoryUp, categoryDn, categoryField);
-		if (cfgEntries != null) {
-			filterCfg.setEntries(cfgEntries);
-			filterCfg.setCurrentCategory(filterCategory);
-		}
+			filterCfg = new FilterConfig((TableLayout) findViewById(R.id.filtercfgtable), categoryUp, categoryDn, categoryField);
+			if (cfgEntries != null) {
+				filterCfg.setEntries(cfgEntries);
+				filterCfg.setCurrentCategory(filterCategory);
+			}
 
-		String uiText = "";
-		if (filterReloadIntervalView != null)
-			uiText = filterReloadIntervalView.getText().toString();
-		filterReloadIntervalView = (EditText) findViewById(R.id.filterloadinterval);
-		filterReloadIntervalView.setText(uiText);
+			String uiText = "";
+			if (filterReloadIntervalView != null)
+				uiText = filterReloadIntervalView.getText().toString();
+			filterReloadIntervalView = (EditText) findViewById(R.id.filterloadinterval);
+			filterReloadIntervalView.setText(uiText);
 
-		uiText = "";
+			uiText = "";
 
-		advDNSConfigDia = new Dialog(DNSProxyActivity.this, R.style.Theme_dialog_TitleBar);
-		advDNSConfigDia.setContentView(R.layout.dnsconfigdialog);
-		advDNSConfigDia.setTitle(getResources().getString(R.string.dnsCfgConfigDialogTitle));
-		advDNSConfigDia.setOnKeyListener(this);
+			advDNSConfigDia = new Dialog(DNSProxyActivity.this, R.style.Theme_dialog_TitleBar);
+			advDNSConfigDia.setContentView(R.layout.dnsconfigdialog);
+			advDNSConfigDia.setTitle(getResources().getString(R.string.dnsCfgConfigDialogTitle));
+			advDNSConfigDia.setOnKeyListener(this);
 
-		boolean checked = manualDNSCheck != null && manualDNSCheck.isChecked();
+			boolean checked = manualDNSCheck != null && manualDNSCheck.isChecked();
 
-		manualDNSCheck = (CheckBox) advDNSConfigDia.findViewById(R.id.manualDNSCheck);
-		manualDNSCheck.setChecked(checked);
+			manualDNSCheck = (CheckBox) advDNSConfigDia.findViewById(R.id.manualDNSCheck);
+			manualDNSCheck.setChecked(checked);
 
-		if (manualDNSView != null)
-			uiText = manualDNSView.getText().toString();
+			if (manualDNSView != null)
+				uiText = manualDNSView.getText().toString();
 
-		manualDNSView = (EditText) advDNSConfigDia.findViewById(R.id.manualDNS);
-		manualDNSView.setText(uiText);
+			manualDNSView = (EditText) advDNSConfigDia.findViewById(R.id.manualDNS);
+			manualDNSView.setText(uiText);
 
-		startBtn = (Button) findViewById(R.id.startBtn);
-		startBtn.setOnClickListener(this);
-		stopBtn = (Button) findViewById(R.id.stopBtn);
-		stopBtn.setOnClickListener(this);
-		reloadFilterBtn = (Button) findViewById(R.id.filterReloadBtn);
-		reloadFilterBtn.setOnClickListener(this);
-		remoteCtrlBtn = (Button) findViewById(R.id.remoteCtrlBtn);
-		if (!CONFIG.isLocal())
-			remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null,getResources().getDrawable(R.drawable.baseline_settings_remote_24px), null);
-		else
-			remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null,getResources().getDrawable(R.drawable.outline_settings_remote_24px), null);
+			startBtn = (Button) findViewById(R.id.startBtn);
+			startBtn.setOnClickListener(this);
+			stopBtn = (Button) findViewById(R.id.stopBtn);
+			stopBtn.setOnClickListener(this);
+			reloadFilterBtn = (Button) findViewById(R.id.filterReloadBtn);
+			reloadFilterBtn.setOnClickListener(this);
+			remoteCtrlBtn = (Button) findViewById(R.id.remoteCtrlBtn);
+			if (!CONFIG.isLocal())
+				remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null, getResources().getDrawable(R.drawable.baseline_settings_remote_24px), null);
+			else
+				remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null, getResources().getDrawable(R.drawable.outline_settings_remote_24px), null);
 
-		remoteCtrlBtn.setOnClickListener(this);
-		backupBtn = (Button) findViewById(R.id.backupBtn);
-		backupBtn.setOnClickListener(this);
-		restoreBtn = (Button) findViewById(R.id.RestoreBackupBtn);
-		restoreBtn.setOnClickListener(this);
-		restoreDefaultsBtn = (Button) findViewById(R.id.RestoreDefaultBtn);
-		restoreDefaultsBtn.setOnClickListener(this);
-		backupDnBtn = (Button) findViewById(R.id.BackupIdDn);
-		backupDnBtn.setOnClickListener(this);
-		backupUpBtn = (Button) findViewById(R.id.BackupIdUp);
-		backupUpBtn.setOnClickListener(this);
-		addFilterBtn = (TextView) findViewById(R.id.addFilterBtn);
-		addFilterBtn.setOnClickListener(this);
-		removeFilterBtn = (TextView) findViewById(R.id.removeFilterBtn);
-		removeFilterBtn.setOnClickListener(this);
-		donate_field = (TextView)findViewById(R.id.donate);
-		donate_field.setText(donate_field_txt);
-		donate_field.setOnClickListener(this);
+			remoteCtrlBtn.setOnClickListener(this);
+			backupBtn = (Button) findViewById(R.id.backupBtn);
+			backupBtn.setOnClickListener(this);
+			restoreBtn = (Button) findViewById(R.id.RestoreBackupBtn);
+			restoreBtn.setOnClickListener(this);
+			restoreDefaultsBtn = (Button) findViewById(R.id.RestoreDefaultBtn);
+			restoreDefaultsBtn.setOnClickListener(this);
+			backupDnBtn = (Button) findViewById(R.id.BackupIdDn);
+			backupDnBtn.setOnClickListener(this);
+			backupUpBtn = (Button) findViewById(R.id.BackupIdUp);
+			backupUpBtn.setOnClickListener(this);
+			addFilterBtn = (TextView) findViewById(R.id.addFilterBtn);
+			addFilterBtn.setOnClickListener(this);
+			removeFilterBtn = (TextView) findViewById(R.id.removeFilterBtn);
+			removeFilterBtn.setOnClickListener(this);
+			donate_field = (TextView) findViewById(R.id.donate);
+			donate_field.setText(donate_field_txt);
+			donate_field.setOnClickListener(this);
 
-		Drawable background = donate_field.getBackground();
-		if (background instanceof ColorDrawable)
-			donate_field_color = ((ColorDrawable) background).getColor();
+			Drawable background = donate_field.getBackground();
+			if (background instanceof ColorDrawable)
+				donate_field_color = ((ColorDrawable) background).getColor();
 
-		scrollLockField = (TextView) findViewById(R.id.scrolllock);
-		if (scroll_locked)
-			scrollLockField.setText(SCROLL_CONTINUE);
-		else
-			scrollLockField.setText(SCROLL_PAUSE);
+			scrollLockField = (TextView) findViewById(R.id.scrolllock);
+			if (scroll_locked)
+				scrollLockField.setText(SCROLL_CONTINUE);
+			else
+				scrollLockField.setText(SCROLL_PAUSE);
 
-		scrollLockField.setOnClickListener(this);
+			scrollLockField.setOnClickListener(this);
 
-		uiText = "";
+			uiText = "";
 
-		scrollView = (ScrollView) findViewById(R.id.ScrollView01);
+			scrollView = (ScrollView) findViewById(R.id.ScrollView01);
 
-		if (dnsField != null)
-			uiText = dnsField.getText().toString();
-		dnsField = (TextView) findViewById(R.id.dnsField);
-		dnsField.setText(uiText);
-		dnsField.setEnabled(true);
-		dnsField.setOnClickListener(this);
+			if (dnsField != null)
+				uiText = dnsField.getText().toString();
+			dnsField = (TextView) findViewById(R.id.dnsField);
+			dnsField.setText(uiText);
+			dnsField.setEnabled(true);
+			dnsField.setOnClickListener(this);
 
-		checked = enableAdFilterCheck != null && enableAdFilterCheck.isChecked();
-		enableAdFilterCheck = (CheckBox) findViewById(R.id.enableAddFilter);
-		enableAdFilterCheck.setChecked(checked);
-		enableAdFilterCheck.setOnClickListener(this);
+			checked = enableAdFilterCheck != null && enableAdFilterCheck.isChecked();
+			enableAdFilterCheck = (CheckBox) findViewById(R.id.enableAddFilter);
+			enableAdFilterCheck.setChecked(checked);
+			enableAdFilterCheck.setOnClickListener(this);
 
-		checked = enableAutoStartCheck != null && enableAutoStartCheck.isChecked();
-		enableAutoStartCheck = (CheckBox) findViewById(R.id.enableAutoStart);
-		enableAutoStartCheck.setChecked(checked);
-		enableAutoStartCheck.setOnClickListener(this);
+			checked = enableAutoStartCheck != null && enableAutoStartCheck.isChecked();
+			enableAutoStartCheck = (CheckBox) findViewById(R.id.enableAutoStart);
+			enableAutoStartCheck.setChecked(checked);
+			enableAutoStartCheck.setOnClickListener(this);
 
-		checked = backupRestoreCheck != null && backupRestoreCheck.isChecked();
-		backupRestoreCheck = (CheckBox) findViewById(R.id.backupRestoreChk);
-		backupRestoreCheck.setChecked(checked);
-		backupRestoreCheck.setOnClickListener(this);
+			checked = backupRestoreCheck != null && backupRestoreCheck.isChecked();
+			backupRestoreCheck = (CheckBox) findViewById(R.id.backupRestoreChk);
+			backupRestoreCheck.setChecked(checked);
+			backupRestoreCheck.setOnClickListener(this);
 
-		checked = appWhiteListCheck != null && appWhiteListCheck.isChecked();
-		appWhiteListCheck = (CheckBox) findViewById(R.id.appWhitelist);
-		appWhiteListCheck.setChecked(checked);
-		appWhiteListCheck.setOnClickListener(this);
+			checked = appWhiteListCheck != null && appWhiteListCheck.isChecked();
+			appWhiteListCheck = (CheckBox) findViewById(R.id.appWhitelist);
+			appWhiteListCheck.setChecked(checked);
+			appWhiteListCheck.setOnClickListener(this);
 
-		checked = keepAwakeCheck != null && keepAwakeCheck.isChecked();
-		keepAwakeCheck = (CheckBox) findViewById(R.id.keepAwakeCheck);
-		keepAwakeCheck.setChecked(checked);
-		keepAwakeCheck.setOnClickListener(this);
+			checked = keepAwakeCheck != null && keepAwakeCheck.isChecked();
+			keepAwakeCheck = (CheckBox) findViewById(R.id.keepAwakeCheck);
+			keepAwakeCheck.setChecked(checked);
+			keepAwakeCheck.setOnClickListener(this);
 
-		checked = enableCloakProtectCheck != null && enableCloakProtectCheck.isChecked();
-		enableCloakProtectCheck = (CheckBox) findViewById(R.id.cloakProtectCheck);
-		enableCloakProtectCheck.setChecked(checked);
-		enableCloakProtectCheck.setOnClickListener(this);
+			checked = enableCloakProtectCheck != null && enableCloakProtectCheck.isChecked();
+			enableCloakProtectCheck = (CheckBox) findViewById(R.id.cloakProtectCheck);
+			enableCloakProtectCheck.setChecked(checked);
+			enableCloakProtectCheck.setOnClickListener(this);
 
-		checked = advancedConfigCheck != null && advancedConfigCheck.isChecked();
-		advancedConfigCheck = (CheckBox) findViewById(R.id.advancedConfigCheck);
-		advancedConfigCheck.setChecked(checked);
-		advancedConfigCheck.setOnClickListener(this);
+			checked = advancedConfigCheck != null && advancedConfigCheck.isChecked();
+			advancedConfigCheck = (CheckBox) findViewById(R.id.advancedConfigCheck);
+			advancedConfigCheck.setChecked(checked);
+			advancedConfigCheck.setOnClickListener(this);
 
-		checked = editFilterLoadCheck != null && editFilterLoadCheck.isChecked();
-		editFilterLoadCheck = (CheckBox) findViewById(R.id.editFilterLoad);
-		editFilterLoadCheck.setChecked(checked);
-		editFilterLoadCheck.setOnClickListener(this);
+			checked = editFilterLoadCheck != null && editFilterLoadCheck.isChecked();
+			editFilterLoadCheck = (CheckBox) findViewById(R.id.editFilterLoad);
+			editFilterLoadCheck.setChecked(checked);
+			editFilterLoadCheck.setOnClickListener(this);
 
-		checked = editAdditionalHostsCheck != null && editAdditionalHostsCheck.isChecked();
-		editAdditionalHostsCheck = (CheckBox) findViewById(R.id.editAdditionalHosts);
-		editAdditionalHostsCheck.setChecked(checked);
-		editAdditionalHostsCheck.setOnClickListener(this);
+			checked = editAdditionalHostsCheck != null && editAdditionalHostsCheck.isChecked();
+			editAdditionalHostsCheck = (CheckBox) findViewById(R.id.editAdditionalHosts);
+			editAdditionalHostsCheck.setChecked(checked);
+			editAdditionalHostsCheck.setOnClickListener(this);
 
-		appWhiteListScroll = (ScrollView) findViewById(R.id.appWhiteListScroll);
-		String whitelistedApps = "";
-		if (appSelector != null) {
-			appSelector.clear();
-			whitelistedApps = appSelector.getSelectedAppPackages();
-		}
-		appSelector = findViewById(R.id.appSelector);
-		appSelector.setSelectedApps(whitelistedApps);
+			appWhiteListScroll = (ScrollView) findViewById(R.id.appWhiteListScroll);
+			String whitelistedApps = "";
+			if (appSelector != null) {
+				appSelector.clear();
+				whitelistedApps = appSelector.getSelectedAppPackages();
+			}
+			appSelector = findViewById(R.id.appSelector);
+			appSelector.setSelectedApps(whitelistedApps);
 
-		if (additionalHostsField != null)
-			uiText = additionalHostsField.getText().toString();
+			if (additionalHostsField != null)
+				uiText = additionalHostsField.getText().toString();
 
-		additionalHostsField = (EditText) findViewById(R.id.additionalHostsField);
-		additionalHostsField.setText(uiText);
-		additionalHostsField.addTextChangedListener(this);
+			additionalHostsField = (EditText) findViewById(R.id.additionalHostsField);
+			additionalHostsField.setText(uiText);
+			additionalHostsField.addTextChangedListener(this);
 
-		findViewById(R.id.copyfromlog).setVisibility(View.GONE);
+			findViewById(R.id.copyfromlog).setVisibility(View.GONE);
 
-		handleAdvancedConfig(null);
+			handleAdvancedConfig(null);
 
-		if (myLogger != null) {
-			if (CONFIG.isLocal()) {
-				((GroupedLogger) Logger.getLogger()).detachLogger(myLogger);
-				((GroupedLogger) Logger.getLogger()).attachLogger(this);
+			if (myLogger != null) {
+				if (CONFIG.isLocal()) {
+					((GroupedLogger) Logger.getLogger()).detachLogger(myLogger);
+					((GroupedLogger) Logger.getLogger()).attachLogger(this);
+					myLogger = this;
+				}
+			} else {
+				Logger.setLogger(new GroupedLogger(new LoggerInterface[]{this}));
 				myLogger = this;
 			}
-		} else {
-			Logger.setLogger(new GroupedLogger(new LoggerInterface[]{this}));
-			myLogger = this;
-		}
 
-		boolean storagePermission = true;
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-				storagePermission=false;
-				requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1);
-				Logger.getLogger().logLine("Need Storage Permissions to start!");
+			boolean storagePermission = true;
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+					storagePermission = false;
+					requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+					Logger.getLogger().logLine("Need Storage Permissions to start!");
+				}
 			}
-		}
 
-		if (appStart && storagePermission) {
-			initAppAndStartup();
+			if (appStart && storagePermission) {
+				initAppAndStartup();
+			}
+
+		} catch (Exception e){
+			dump(e);
+			throw new RuntimeException(e);
+		}
+	}
+
+	private void dump(Exception e) {
+		StringWriter str = new StringWriter();
+		e.printStackTrace(new PrintWriter(str));
+		try {
+			FileOutputStream dump = new FileOutputStream(WORKPATH+"/dump-"+System.currentTimeMillis()+".txt");
+			dump.write(("TIME: "+new Date()+"\nVERSION: "+DNSFilterManager.VERSION+"\n\n").getBytes());
+			dump.write(str.toString().getBytes());
+			dump.flush();
+			dump.close();
+		} catch (Exception e1) {
+			e1.printStackTrace();
 		}
 	}
 
