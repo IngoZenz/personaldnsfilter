@@ -29,6 +29,8 @@ import java.util.Properties;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.VpnService;
+import android.os.Build;
 import android.os.Environment;
 
 public class BootUpReceiver extends BroadcastReceiver {
@@ -37,10 +39,17 @@ public class BootUpReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		Properties config;
 		if ((config = getConfig()) != null && Boolean.parseBoolean(config.getProperty("AUTOSTART", "false"))) {
-			DNSProxyActivity.BOOT_START = true;
-			Intent i = new Intent(context, DNSProxyActivity.class);
-			i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			context.startActivity(i);
+
+			if (Build.VERSION.SDK_INT >= 29) {
+				Intent i = new Intent(context, DNSFilterService.class);
+				VpnService.prepare(context);
+				context.startForegroundService(i);
+			} else {
+				DNSProxyActivity.BOOT_START = true;
+				Intent i = new Intent(context, DNSProxyActivity.class);
+				i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				context.startActivity(i);
+			}
 		}
 	}
 
