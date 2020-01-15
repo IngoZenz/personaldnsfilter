@@ -38,7 +38,6 @@ import android.net.NetworkInfo;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
-import android.os.PowerManager.WakeLock;
 
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
@@ -80,7 +79,11 @@ public class DNSFilterService extends VpnService  {
 	private static DNSFilterService INSTANCE = null;
 
 	private static boolean JUST_STARTED = false;
+
 	private static boolean DNS_PROXY_PORT_IS_REDIRECTED = false;
+
+	private static boolean dnsProxyMode = false;
+	private static boolean vpnDisabled = false;
 
 	private static int startCounter = 0;
 
@@ -422,8 +425,6 @@ public class DNSFilterService extends VpnService  {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		INSTANCE = this;
 
-		registerReceiver(ConnectionChangeReceiver.getInstance(), new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
-
 		if (DNSFILTER != null) {
 			Logger.getLogger().logLine("DNS Filter already running!");
 		} else {
@@ -432,10 +433,16 @@ public class DNSFilterService extends VpnService  {
 				DNSFILTER = DNSFilterManager.getInstance();
 				DNSFILTER.init();
 				JUST_STARTED = true; //used in detectDNSServers to ensure eventually changed static DNS Servers config is taken
+
+				dnsProxyMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("dnsProxyOnAndroid", "false"));
+				vpnDisabled = dnsProxyMode;
+
+				registerReceiver(ConnectionChangeReceiver.getInstance(), new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
+
 				detectDNSServers();
 
 				//start DNS Proxy Mode if configured 
-				if (Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("dnsProxyOnAndroid", "false"))) {
+				if (dnsProxyMode) {
 					setUpPortRedir();
 					DNSFILTERPROXY = new DNSFilterProxy(5300);
 					new Thread(DNSFILTERPROXY).start();
@@ -466,13 +473,20 @@ public class DNSFilterService extends VpnService  {
 			pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 			Notification noti;
 
-			// Initialize and start VPN Mode
-			ParcelFileDescriptor vpnInterface = initVPN();
+			// Initialize and start VPN Mode if not disabled
 
-			if (vpnInterface != null) {
-				vpnRunner = new  VPNRunner(++startCounter, vpnInterface);
-				new Thread(vpnRunner).start();
-			} else Logger.getLogger().logLine("Error! Cannot get VPN Interface! Try restart!");
+			if (!vpnDisabled) {
+				ParcelFileDescriptor vpnInterface = initVPN();
+
+				if (vpnInterface != null) {
+					vpnRunner = new VPNRunner(++startCounter, vpnInterface);
+					new Thread(vpnRunner).start();
+				} else Logger.getLogger().logLine("Error! Cannot get VPN Interface! Try restart!");
+			} else if (dnsProxyMode){
+				// IP Rules for setting local DNS Server
+				runOSCommand(false, "sysctl -w net.ipv4.conf.all.route_localnet=1");
+				runOSCommand(false, "iptables -t nat -I OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:5300");
+			}
 
 
 			if (android.os.Build.VERSION.SDK_INT >= 16) {
@@ -615,6 +629,11 @@ public class DNSFilterService extends VpnService  {
 			if (DNSFILTERPROXY != null) {
 				DNSFILTERPROXY.stop();
 				DNSFILTERPROXY = null;
+				if (vpnDisabled) {
+					//remove IP Rule for redirecting dns traffic to localhost
+					runOSCommand(false, "sysctl -w net.ipv4.conf.all.route_localnet=0");
+					runOSCommand(false, "iptables -t nat -D OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:5300");
+				}
 				Logger.getLogger().logLine("DNSFilterProxy Mode stopped!");
 			}
 			if (DNSFILTER != null) {

@@ -1363,10 +1363,13 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		SERVICE = null;
 
 		try {
-			Intent intent = VpnService.prepare(this.getApplicationContext());
+			boolean vpnDisabled = Boolean.parseBoolean(CONFIG.getConfig().getProperty("dnsProxyOnAndroid", "false"));
+			Intent intent = null;
+			if (!vpnDisabled)
+				intent = VpnService.prepare(this.getApplicationContext());
 			if (intent != null) {
 				startActivityForResult(intent, 0);
-			} else { //already prepared
+			} else { //already prepared or vpn disabled
 				startVPN();
 			}
 		} catch (NullPointerException e) { // NullPointer might occur on Android 4.4 when vpn already initialized
@@ -1375,6 +1378,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
 		}
+
 	}
 
 	private void startVPN() {
