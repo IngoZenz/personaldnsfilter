@@ -826,7 +826,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			runOnUiThread(uiUpdater);
 
 			if (startApp)
-				handleStartWithVPN();
+				startup();
 
 		} else
 			switchingConfig =false;
@@ -1341,7 +1341,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 
 	private void handleRestart() {
 	    if (CONFIG.isLocal())
-	        handleStartWithVPN();
+	        startup();
 	    else {
             try {
                 CONFIG.restart();
@@ -1352,7 +1352,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
         }
 	}
 
-	protected void handleStartWithVPN() {
+	protected void startup() {
 
 		if (!DNSFilterService.stop(false))
 			return;
@@ -1363,25 +1363,25 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 		SERVICE = null;
 
 		try {
-			boolean vpnDisabled = Boolean.parseBoolean(CONFIG.getConfig().getProperty("dnsProxyOnAndroid", "false"));
+			boolean vpnDisabled = Boolean.parseBoolean(CONFIG.getConfig().getProperty("disableVPNOnAndroid", "false"));
 			Intent intent = null;
 			if (!vpnDisabled)
 				intent = VpnService.prepare(this.getApplicationContext());
 			if (intent != null) {
 				startActivityForResult(intent, 0);
 			} else { //already prepared or vpn disabled
-				startVPN();
+				startSvc();
 			}
 		} catch (NullPointerException e) { // NullPointer might occur on Android 4.4 when vpn already initialized
 			Logger.getLogger().logLine("Seems we are on Android 4.4 or older!");
-			startVPN(); // assume it is ok!
+			startSvc(); // assume it is ok!
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
 		}
 
 	}
 
-	private void startVPN() {
+	private void startSvc() {
 		if (SERVICE == null)
 			SERVICE = new Intent(this, DNSFilterService.class);
 
@@ -1392,7 +1392,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		if (requestCode == 0 && resultCode == Activity.RESULT_OK) {
-			startVPN();
+			startSvc();
 		} else if (requestCode == 0 && resultCode != Activity.RESULT_OK) {
 			Logger.getLogger().logLine("VPN Dialog not accepted!\r\nPress Restart to display Dialog again!");
 		}

@@ -38,6 +38,7 @@ import android.net.NetworkInfo;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
+import android.text.format.Formatter;
 
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
@@ -45,10 +46,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -84,6 +88,7 @@ public class DNSFilterService extends VpnService  {
 
 	private static boolean dnsProxyMode = false;
 	private static boolean vpnDisabled = false;
+	protected static DNSReqForwarder dnsReqForwarder = new DNSReqForwarder();
 
 	private static int startCounter = 0;
 
@@ -92,6 +97,66 @@ public class DNSFilterService extends VpnService  {
 	boolean manageDNSCryptProxy = false;
 	boolean dnsCryptProxyStartTriggered = false;
 	PendingIntent pendingIntent;
+
+
+
+	protected static class DNSReqForwarder {
+		//used in case vpn mode is disabled for forwaring dns requests to local dns proxy
+
+		String forwardip = null;
+
+		public String getALocalIpAddress() throws IOException {
+
+			String ip = null;
+
+			NetworkInterface nif = null;
+
+			Enumeration allNifs = NetworkInterface.getNetworkInterfaces();
+			while (allNifs.hasMoreElements()) {
+				nif = (NetworkInterface) allNifs.nextElement();
+
+				Enumeration ips = nif.getInetAddresses();
+				while (ips.hasMoreElements()) {
+					InetAddress adr = (InetAddress) ips.nextElement();
+					if (!adr.isLoopbackAddress() && adr instanceof Inet4Address) {
+						String ipStr = adr.getHostAddress();
+						if (nif.getName().startsWith("tun"))
+							return ipStr; //prefer vpn interface in order to work together with real VPN
+						else if (ip == null)
+							ip = ipStr;
+					}
+				}
+			}
+			return ip;
+		}
+
+
+		public synchronized void updateForward() {
+			try {
+				String ip = getALocalIpAddress();
+				if (ip !=null &&!ip.equals(forwardip)){
+					clearForward();
+					runOSCommand(false, "iptables -t nat -I OUTPUT -p udp --dport 53 -j DNAT --to-destination " + ip + ":5300");
+					forwardip = ip;
+				}
+			} catch (Exception e) {
+				Logger.getLogger().logLine(e.getMessage());
+			}
+		}
+
+		public synchronized void clearForward() {
+			if (forwardip == null)
+				return;
+
+			try {
+				runOSCommand(false, "iptables -t nat -D OUTPUT -p udp --dport 53 -j DNAT --to-destination "+forwardip+":5300");
+				forwardip = null;
+			} catch (Exception e) {
+				Logger.getLogger().logLine(e.getMessage());
+			}
+		}
+
+	}
 
 	private static boolean supportsIPVersion(int version) throws Exception {
 		/*Enumeration<NetworkInterface> nifs = NetworkInterface.getNetworkInterfaces();
@@ -213,7 +278,6 @@ public class DNSFilterService extends VpnService  {
 
 	}
 
-
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private static Network[] getConnectedNetworks(ConnectivityManager conMan, int type) {
 		ArrayList<Network> nwList = new ArrayList<Network>();
@@ -273,6 +337,12 @@ public class DNSFilterService extends VpnService  {
 
 	}
 
+	public static void possibleNetworkChange() {
+		detectDNSServers();
+		if (vpnDisabled && dnsProxyMode)
+			dnsReqForwarder.updateForward();
+	}
+
 	public static void detectDNSServers() {
 
 		try {
@@ -301,7 +371,7 @@ public class DNSFilterService extends VpnService  {
 
 			Vector<DNSServer> dnsAdrs = new Vector<DNSServer>();
 
-			if (detect) {
+			if (detect && !(vpnDisabled && dnsProxyMode) ) {
 
 				String[] dnsServers = getDNSviaConnectivityManager();
 
@@ -329,16 +399,21 @@ public class DNSFilterService extends VpnService  {
 				}
 			}
 			if (dnsAdrs.isEmpty()) { //fallback
+				if (detect && vpnDisabled && dnsProxyMode)
+					Logger.getLogger().message("DNS Detection not possible in Proxy Mode!");
 				StringTokenizer fallbackDNS = new StringTokenizer(dnsFilterMgr.getConfig().getProperty("fallbackDNS", ""), ";");
 				int cnt = fallbackDNS.countTokens();
 				for (int i = 0; i < cnt; i++) {
 					String dnsEntry = fallbackDNS.nextToken().trim();
 					if (DNSProxyActivity.debug) Logger.getLogger().logLine("DNS:" + dnsEntry);
 					try {
+						DNSServer dnsServer = DNSServer.getInstance().createDNSServer(dnsEntry, timeout);
+						if (vpnDisabled && dnsProxyMode && dnsServer.getPort() == 53)
+							throw new IOException("Port 53 not allowed when running in Proxy Mode! Use Dot or DoH!");
 						dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry, timeout));
 					} catch (Exception e) {
 						Logger.getLogger().logLine("Cannot create DNS Server for " + dnsEntry + "!\n" + e.toString());
-						Logger.getLogger().message("Invalid DNS Server entry: '" + dnsEntry);
+						Logger.getLogger().message("Invalid DNS Server entry: '" + dnsEntry+"'");
 					}
 				}
 			}
@@ -435,7 +510,7 @@ public class DNSFilterService extends VpnService  {
 				JUST_STARTED = true; //used in detectDNSServers to ensure eventually changed static DNS Servers config is taken
 
 				dnsProxyMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("dnsProxyOnAndroid", "false"));
-				vpnDisabled = dnsProxyMode;
+				vpnDisabled = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("disableVPNOnAndroid", "false"));
 
 				registerReceiver(ConnectionChangeReceiver.getInstance(), new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
 
@@ -482,10 +557,6 @@ public class DNSFilterService extends VpnService  {
 					vpnRunner = new VPNRunner(++startCounter, vpnInterface);
 					new Thread(vpnRunner).start();
 				} else Logger.getLogger().logLine("Error! Cannot get VPN Interface! Try restart!");
-			} else if (dnsProxyMode){
-				// IP Rules for setting local DNS Server
-				runOSCommand(false, "sysctl -w net.ipv4.conf.all.route_localnet=1");
-				runOSCommand(false, "iptables -t nat -I OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:5300");
 			}
 
 
@@ -539,7 +610,7 @@ public class DNSFilterService extends VpnService  {
 	}
 
 
-	private void runOSCommand(boolean ignoreError, String command) throws Exception {
+	private static void runOSCommand(boolean ignoreError, String command) throws Exception {
 
 		Logger.getLogger().logLine("Exec '"+command+"' !");
 
@@ -572,7 +643,7 @@ public class DNSFilterService extends VpnService  {
 			throw new Exception ("Error in process execution: "+exitVal);
 	}
 
-	private void runOSCommand(final boolean ignoreError, boolean async, final String command) throws Exception {
+	private static void runOSCommand(final boolean ignoreError, boolean async, final String command) throws Exception {
 
 		if (!async)
 			runOSCommand(ignoreError, command);
@@ -606,21 +677,27 @@ public class DNSFilterService extends VpnService  {
 	@Override
 	public void onDestroy() {
 		Logger.getLogger().logLine("destroyed");
-		stopVPN();
-		try {
-			unregisterReceiver(ConnectionChangeReceiver.getInstance());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		shutdown();
 		super.onDestroy();
 	}
 
-	private boolean stopVPN() {
+	private boolean shutdown() {
 		try {
 			if (DNSFILTER != null && !DNSFILTER.canStop()) {
 				Logger.getLogger().logLine("Cannot stop - pending operation!");
 				return false;
 			}
+
+			try {
+				unregisterReceiver(ConnectionChangeReceiver.getInstance());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			if (vpnDisabled && dnsProxyMode) {
+				dnsReqForwarder.clearForward();
+			}
+
 			VPNRunner runningVPN = vpnRunner;
 			if (runningVPN != null) {
 				vpnRunner.stop();
@@ -629,11 +706,6 @@ public class DNSFilterService extends VpnService  {
 			if (DNSFILTERPROXY != null) {
 				DNSFILTERPROXY.stop();
 				DNSFILTERPROXY = null;
-				if (vpnDisabled) {
-					//remove IP Rule for redirecting dns traffic to localhost
-					runOSCommand(false, "sysctl -w net.ipv4.conf.all.route_localnet=0");
-					runOSCommand(false, "iptables -t nat -D OUTPUT -p udp --dport 53 -j DNAT --to-destination 127.0.0.1:5300");
-				}
 				Logger.getLogger().logLine("DNSFilterProxy Mode stopped!");
 			}
 			if (DNSFILTER != null) {
@@ -663,7 +735,7 @@ public class DNSFilterService extends VpnService  {
 				} catch (Exception e) {
 					Logger.getLogger().logException(e);
 				}
-			if (instance.stopVPN()) {
+			if (instance.shutdown()) {
 				INSTANCE= null;
 				return true;
 			} else

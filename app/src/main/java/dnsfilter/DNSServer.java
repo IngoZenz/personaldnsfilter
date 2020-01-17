@@ -137,6 +137,10 @@ public class DNSServer {
         return address.getAddress();
     }
 
+    public int getPort() {
+        return address.getPort();
+    }
+
     public String getProtocolName(){return "";}
 
 
