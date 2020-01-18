@@ -745,27 +745,29 @@ public class DNSFilterService extends VpnService  {
 
 
 	public  void reload() throws IOException {
-		VPNRunner runningVPN = vpnRunner;
+		if (!vpnDisabled) {
+			VPNRunner runningVPN = vpnRunner;
 
-		if (runningVPN != null) {
-			vpnRunner.stop();
-		}
-		DNSFILTER = DNSFilterManager.getInstance();
-		ParcelFileDescriptor vpnInterface=null;
-		try {
-			vpnInterface = initVPN();
-		} catch (Exception e){
-			throw new IOException("Cannot initialize VPN!",e);
-		}
+			if (runningVPN != null) {
+				vpnRunner.stop();
+			}
+			DNSFILTER = DNSFilterManager.getInstance();
+			ParcelFileDescriptor vpnInterface = null;
+			try {
+				vpnInterface = initVPN();
+			} catch (Exception e) {
+				throw new IOException("Cannot initialize VPN!", e);
+			}
 
-		if (vpnInterface != null) {
-			vpnRunner = new  VPNRunner(++startCounter, vpnInterface);
-			new Thread(vpnRunner).start();
+			if (vpnInterface != null) {
+				vpnRunner = new VPNRunner(++startCounter, vpnInterface);
+				new Thread(vpnRunner).start();
 
-			JUST_STARTED = true; //used in detectDNSServers to ensure eventually changed static DNS Servers config is taken
-			detectDNSServers();
+
+			} else throw new IOException("Error! Cannot get VPN Interface! Try restart!");
 		}
-		else throw new IOException("Error! Cannot get VPN Interface! Try restart!");
+		JUST_STARTED = true; //used in detectDNSServers to ensure eventually changed static DNS Servers config is taken
+		detectDNSServers();
 	}
 
 	public static void onReload() throws IOException {
