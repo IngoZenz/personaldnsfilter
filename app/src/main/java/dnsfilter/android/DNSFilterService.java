@@ -392,7 +392,7 @@ public class DNSFilterService extends VpnService  {
 							if (DNSProxyActivity.debug)
 								Logger.getLogger().logLine("DNS:" + value);
 							if (!value.equals(VIRTUALDNS_IPV4) && !value.equals(VIRTUALDNS_IPV6))
-								dnsAdrs.add(DNSServer.getInstance().createDNSServer(DNSServer.UDP, InetAddress.getByName(value), 53, 15000, null));
+								dnsAdrs.add(DNSServer.getInstance().createDNSServer(DNSServer.UDP, InetAddress.getByName(value), 53, timeout, null));
 						}
 					}
 				} catch (Exception e) {
