@@ -166,7 +166,7 @@ public class DNSFilterProxy implements Runnable {
 		Logger.getLogger().logLine("DNSFilterProxy running on port " + port + "!");
 		while (!stopped) {
 			try {
-				byte[] data = new byte[1024];
+				byte[] data = new byte[DNSServer.getBufSize()];
 				DatagramPacket request = new DatagramPacket(data, 0, DNSServer.getBufSize());
 				receiver.receive(request);
 
