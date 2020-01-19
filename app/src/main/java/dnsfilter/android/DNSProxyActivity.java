@@ -25,25 +25,17 @@ package dnsfilter.android;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.VpnService;
-import android.net.wifi.WifiManager;
-import android.net.wifi.WifiManager.WifiLock;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.PowerManager;
-import android.os.PowerManager.WakeLock;
 import android.os.StrictMode;
 import android.text.Editable;
 import android.text.Html;
@@ -72,7 +64,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -82,13 +73,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Properties;
-import java.util.Stack;
 import java.util.StringTokenizer;
 
 import dnsfilter.ConfigurationAccess;
 import dnsfilter.DNSFilterManager;
 import util.ExecutionEnvironment;
-import util.ExecutionEnvironmentInterface;
 import util.GroupedLogger;
 import util.Logger;
 import util.LoggerInterface;
@@ -96,7 +85,7 @@ import util.TimeoutListener;
 import util.TimoutNotificator;
 
 
-public class DNSProxyActivity extends Activity implements ExecutionEnvironmentInterface, OnClickListener, LoggerInterface, TextWatcher, DialogInterface.OnKeyListener, ActionMode.Callback, MenuItem.OnMenuItemClickListener,View.OnTouchListener, View.OnFocusChangeListener {
+public class DNSProxyActivity extends Activity implements OnClickListener, LoggerInterface, TextWatcher, DialogInterface.OnKeyListener, ActionMode.Callback, MenuItem.OnMenuItemClickListener,View.OnTouchListener, View.OnFocusChangeListener {
 
 
 	protected static boolean BOOT_START = false;
@@ -156,8 +145,6 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	protected static File WORKPATH = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter");
 
 	protected static String ADDITIONAL_HOSTS_TO_LONG = "additionalHosts.txt too long to edit here!\nSize Limit: 512 KB!\nUse other editor!";
-
-	protected static Stack wakeLooks = new Stack();
 
 	protected static Intent SERVICE = null;
 	protected static Properties config = null;
@@ -308,7 +295,7 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 			StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().build());
 
 			super.onCreate(savedInstanceState);
-			ExecutionEnvironment.setEnvironment(this);
+			AndroidEnvironment.initEnvironment(this);
 
 			MsgTO.setActivity(this);
 
@@ -1643,78 +1630,6 @@ public class DNSProxyActivity extends Activity implements ExecutionEnvironmentIn
 	}
 
 
-
-	@Override
-	public void wakeLock(){
-		WifiLock wifiLock = ((WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL, "personalHttpProxy");
-		wifiLock.acquire();
-		WakeLock wakeLock = ((PowerManager) getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "personalHttpProxy");
-		wakeLock.acquire();
-		wakeLooks.push(new Object[]{wifiLock, wakeLock});
-		Logger.getLogger().logLine("Aquired WIFI lock and partial wake lock!");
-	}
-
-	@Override
-	public void releaseWakeLock() {
-		Object[] locks;
-		try {
-			locks = (Object[]) wakeLooks.pop();
-		} catch (Exception e) {
-			Logger.getLogger().logException(e);
-			return;
-		}
-		WifiLock wifiLock = (WifiLock) locks[0];
-		WakeLock wakeLock = (WakeLock) locks[1];
-		wifiLock.release();
-		wakeLock.release();
-		Logger.getLogger().logLine("Released WIFI lock and partial wake lock!");
-	}
-
-	@Override
-	public void releaseAllWakeLocks() {
-		Object[] locks;
-		while (!wakeLooks.isEmpty()) {
-			try {
-				locks = (Object[]) wakeLooks.pop();
-			} catch (Exception e) {
-				Logger.getLogger().logException(e);
-				return;
-			}
-			WifiLock wifiLock = (WifiLock) locks[0];
-			WakeLock wakeLock = (WakeLock) locks[1];
-			wifiLock.release();
-			wakeLock.release();
-			Logger.getLogger().logLine("Released WIFI lock and partial wake lock!");
-		}
-	}
-
-	@Override
-	public String getWorkDir() {
-		return DNSProxyActivity.WORKPATH+"/";
-	}
-
-	@Override
-	public boolean debug() {
-		return DNSProxyActivity.debug;
-	}
-
-	@Override
-	public void onReload() throws IOException {
-		DNSFilterService.onReload();
-	}
-
-	@Override
-	public InputStream getAsset(String path) throws IOException {
-		AssetManager assetManager = this.getAssets();
-		return(assetManager.open(path));
-	}
-
-	@Override
-	public boolean hasNetwork() {
-		ConnectivityManager conMan= (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo ni = conMan.getActiveNetworkInfo();
-		return ni != null && ni.isConnected();
-	}
 
 
 }
