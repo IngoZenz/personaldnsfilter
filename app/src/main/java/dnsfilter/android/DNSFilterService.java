@@ -88,6 +88,7 @@ public class DNSFilterService extends VpnService  {
 
 	private static boolean dnsProxyMode = false;
 	private static boolean vpnDisabled = false;
+	private static boolean is_running = false;
 	protected static DNSReqForwarder dnsReqForwarder = new DNSReqForwarder();
 
 	private static int startCounter = 0;
@@ -537,6 +538,8 @@ public class DNSFilterService extends VpnService  {
 					}
 				}
 
+				is_running = true;
+
 			} catch (Exception e) {
 				DNSFILTER = null;
 				Logger.getLogger().logException(e);
@@ -683,6 +686,8 @@ public class DNSFilterService extends VpnService  {
 	}
 
 	private boolean shutdown() {
+		if (!is_running)
+			return true;
 		try {
 			if (DNSFILTER != null && !DNSFILTER.canStop()) {
 				Logger.getLogger().logLine("Cannot stop - pending operation!");
@@ -719,6 +724,8 @@ public class DNSFilterService extends VpnService  {
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
 			return false;
+		} finally {
+			is_running=false;
 		}
 	}
 
@@ -746,6 +753,9 @@ public class DNSFilterService extends VpnService  {
 
 
 	public  void reload() throws IOException {
+		//only for reloading VPN and dns servers
+		//DNS Proxy and dnscrypt proxy are handled seperated
+
 		if (!vpnDisabled) {
 			VPNRunner runningVPN = vpnRunner;
 
