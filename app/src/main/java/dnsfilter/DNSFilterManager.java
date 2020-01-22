@@ -47,11 +47,9 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 import dnsfilter.remote.RemoteAccessServer;
 import util.ExecutionEnvironment;
-
 import util.FileLogger;
 import util.Logger;
 import util.LoggerInterface;
@@ -60,7 +58,7 @@ import util.Utils;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1503602-dev04";
+	public static final String VERSION = "1503700";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
