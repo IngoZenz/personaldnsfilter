@@ -1,4 +1,4 @@
-/* 
+/*
  PersonalDNSFilter 1.5
  Copyright (C) 2017 Ingo Zenz
 
@@ -17,7 +17,7 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
  Find the latest version at http://www.zenz-solutions.de/personaldnsfilter
- Contact:i.z@gmx.net 
+ Contact:i.z@gmx.net
  */
 
 package dnsfilter.android;
@@ -41,10 +41,12 @@ import android.os.ParcelFileDescriptor;
 import android.text.format.Formatter;
 
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -65,7 +67,9 @@ import dnsfilter.DNSResolver;
 import dnsfilter.DNSServer;
 import ip.IPPacket;
 import ip.UDPPacket;
+import util.ExecutionEnvironment;
 import util.Logger;
+import util.Utils;
 
 
 public class DNSFilterService extends VpnService  {
@@ -105,6 +109,7 @@ public class DNSFilterService extends VpnService  {
 		//used in case vpn mode is disabled for forwaring dns requests to local dns proxy
 
 		String forwardip = null;
+		String ipFilePath = ExecutionEnvironment.getEnvironment().getWorkDir()+"forward_ip";
 
 		public String getALocalIpAddress() throws IOException {
 
@@ -132,6 +137,29 @@ public class DNSFilterService extends VpnService  {
 		}
 
 
+		public void clean() {
+			File f = new File(ipFilePath);
+			try {
+				if (f.exists()) {
+					InputStream in = new FileInputStream(f);
+					String ip = new String(Utils.readFully(in, 100));
+					in.close();
+
+					if (!f.delete()){
+						throw(new IOException("Cannot delete "+ipFilePath));
+					}
+
+					Logger.getLogger().logLine("Cleaning up a previous redirect from previous not correctly terminated execution!");
+					runOSCommand(false, "iptables -t nat -D OUTPUT -p udp --dport 53 -j DNAT --to-destination "+ip+":5300");
+
+				}
+			} catch (Exception e) {
+				Logger.getLogger().logLine(e.toString());
+			}
+
+		}
+
+
 		public synchronized void updateForward() {
 			try {
 				String ip = getALocalIpAddress();
@@ -139,6 +167,10 @@ public class DNSFilterService extends VpnService  {
 					clearForward();
 					runOSCommand(false, "iptables -t nat -I OUTPUT -p udp --dport 53 -j DNAT --to-destination " + ip + ":5300");
 					forwardip = ip;
+					FileOutputStream ipFile = new FileOutputStream(ipFilePath);
+					ipFile.write(ip.getBytes());
+					ipFile.flush();
+					ipFile.close();
 				}
 			} catch (Exception e) {
 				Logger.getLogger().logLine(e.getMessage());
@@ -152,6 +184,9 @@ public class DNSFilterService extends VpnService  {
 			try {
 				runOSCommand(false, "iptables -t nat -D OUTPUT -p udp --dport 53 -j DNAT --to-destination "+forwardip+":5300");
 				forwardip = null;
+				if (!new File(ipFilePath).delete()){
+					throw (new IOException("Cannot delete "+ipFilePath));
+				}
 			} catch (Exception e) {
 				Logger.getLogger().logLine(e.getMessage());
 			}
@@ -506,6 +541,7 @@ public class DNSFilterService extends VpnService  {
 			Logger.getLogger().logLine("DNS Filter already running!");
 		} else {
 			try {
+
 				DNSFilterManager.WORKDIR = DNSProxyActivity.WORKPATH.getAbsolutePath() + "/";
 				DNSFILTER = DNSFilterManager.getInstance();
 				DNSFILTER.init();
@@ -514,11 +550,16 @@ public class DNSFilterService extends VpnService  {
 				dnsProxyMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("dnsProxyOnAndroid", "false"));
 				vpnDisabled = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("disableVPNOnAndroid", "false"));
 
+				if (vpnDisabled && dnsProxyMode) {
+					dnsReqForwarder.clean(); //cleanup possible hangig iprules after a crash
+					dnsReqForwarder.updateForward();
+				}
+
 				registerReceiver(ConnectionChangeReceiver.getInstance(), new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
 
 				detectDNSServers();
 
-				//start DNS Proxy Mode if configured 
+				//start DNS Proxy Mode if configured
 				if (dnsProxyMode) {
 					setUpPortRedir();
 					DNSFILTERPROXY = new DNSFilterProxy(5300);

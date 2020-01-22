@@ -1,4 +1,4 @@
-/* 
+/*
  PersonalDNSFilter 1.5
  Copyright (C) 2017 Ingo Zenz
 
@@ -17,7 +17,7 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
  Find the latest version at http://www.zenz-solutions.de/personaldnsfilter
- Contact:i.z@gmx.net 
+ Contact:i.z@gmx.net
  */
 
 package dnsfilter;
@@ -60,7 +60,7 @@ import util.Utils;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1503602-dev03";
+	public static final String VERSION = "1503602-dev04";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -945,7 +945,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 	private void reloadFilter(boolean async) throws IOException {
 		try {
-			ExecutionEnvironment.getEnvironment().wakeLock(); //ensure device stays awake until filter reload is completed		
+			ExecutionEnvironment.getEnvironment().wakeLock(); //ensure device stays awake until filter reload is completed
 
 			File filterfile = new File(WORKDIR + filterhostfile);
 			File downloadInfoFile = new File(WORKDIR + filterhostfile + ".DLD_CNT");
@@ -1266,7 +1266,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 			additionalHostsImportTS = config.getProperty("additionalHosts_lastImportTS", "0");
 
-			//Init traffic Logger			
+			//Init traffic Logger
 			try {
 
 				if (config.getProperty("enableTrafficLog", "true").equalsIgnoreCase("true")) {
