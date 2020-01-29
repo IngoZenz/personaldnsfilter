@@ -2,7 +2,9 @@
 # Format: 1 host name per line (sample below).
 # Wildcard Character "*" can be used for host blocking.
 # Host name and all sub domains will be blocked.
+# You do not need any special character preceding host name
 
+sample.blocking.com
 
 # In order to white list a specific host, add a
 # "!" prefix in front of the host name.
