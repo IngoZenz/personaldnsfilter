@@ -3,11 +3,15 @@
 # Wildcard Character "*" can be used for host blocking.
 # Host name and all sub domains will be blocked.
 
-sample4711.justasample.com
-sample4712.justasample.com
 
 # In order to white list a specific host, add a
 # "!" prefix in front of the host name.
 # Whitelisting does NOT support wildcards "*"
+# v.w-x.co is for the Weather Channel app to load videos
+# graph.facebook.com is for messenger
+# graph.instagram.com is for instagram to load
 
 !whitelistsample.justasample.com
+!v.w-x.co
+!graph.facebook.com
+!graph.instagram.com
