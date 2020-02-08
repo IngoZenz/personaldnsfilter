@@ -112,8 +112,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected static ScrollView appWhiteListScroll;
 	protected static AppSelectorView appSelector;
 	protected static CheckBox keepAwakeCheck;
-	protected static CheckBox enableAutoStartCheck;
 	protected static CheckBox enableAdFilterCheck;
+	protected static CheckBox proxyModeCheck;
+	protected static CheckBox enableAutoStartCheck;
+	protected static CheckBox rootModeCheck;
 	protected static CheckBox enableCloakProtectCheck;
 	protected static EditText filterReloadIntervalView;
 	protected static FilterConfig filterCfg;
@@ -430,7 +432,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 			uiText = "";
 
-			scrollView = (ScrollView) findViewById(R.id.ScrollView01);
+			scrollView = (ScrollView) findViewById(R.id.logScroll);
 
 			if (dnsField != null)
 				uiText = dnsField.getText().toString();
@@ -463,6 +465,16 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			keepAwakeCheck = (CheckBox) findViewById(R.id.keepAwakeCheck);
 			keepAwakeCheck.setChecked(checked);
 			keepAwakeCheck.setOnClickListener(this);
+
+			checked = proxyModeCheck != null && proxyModeCheck.isChecked();
+			proxyModeCheck = (CheckBox) findViewById(R.id.proxyModeCheck);
+			proxyModeCheck.setChecked(checked);
+			proxyModeCheck.setOnClickListener(this);
+
+			checked = rootModeCheck != null && rootModeCheck.isChecked();
+			rootModeCheck = (CheckBox) findViewById(R.id.rootModeCheck);
+			rootModeCheck.setChecked(checked);
+			rootModeCheck.setOnClickListener(this);
 
 			checked = enableCloakProtectCheck != null && enableCloakProtectCheck.isChecked();
 			enableCloakProtectCheck = (CheckBox) findViewById(R.id.cloakProtectCheck);
@@ -798,6 +810,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 					keepAwakeCheck.setChecked(Boolean.parseBoolean(config.getProperty("androidKeepAwake", "false")));
 
+					proxyModeCheck.setChecked(Boolean.parseBoolean(config.getProperty("dnsProxyOnAndroid", "false")));
+
+					rootModeCheck.setChecked(Boolean.parseBoolean(config.getProperty("rootModeOnAndroid", "false")));
+
 					//set whitelisted Apps into UI
 					appSelector.setSelectedApps(config.getProperty("androidAppWhiteList", ""));
 
@@ -979,6 +995,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 				else if (ln.trim().startsWith("androidKeepAwake"))
 					ln = "androidKeepAwake = " + keepAwakeCheck.isChecked();
+
+				else if (ln.trim().startsWith("dnsProxyOnAndroid"))
+					ln = "dnsProxyOnAndroid = " + proxyModeCheck.isChecked();
+
+				else if (ln.trim().startsWith("rootModeOnAndroid"))
+					ln = "rootModeOnAndroid = " + rootModeCheck.isChecked();
 
 				else if (ln.trim().startsWith("#!!!filterHostsFile") && filterAds)
 					ln = ln.replace("#!!!filterHostsFile", "filterHostsFile");
@@ -1200,9 +1222,21 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}
 	}
 
+	private void setVisibilityForAdvCfg(int v){
+		enableAdFilterCheck.setVisibility(v);
+		enableAutoStartCheck.setVisibility(v);
+		findViewById(R.id.logScroll).setVisibility(v);
+		findViewById(R.id.scrolllock).setVisibility(v);
+		/*reloadFilterBtn.setVisibility(v);
+		startBtn.setVisibility(v);
+		stopBtn.setVisibility(v);*/
+	}
+
 	private void handleAdvancedConfig(CheckBox dest) {
+
 		((TextView) findViewById(R.id.backupLog)).setText("");
 		if (advancedConfigCheck.isChecked()) {
+			setVisibilityForAdvCfg(View.GONE);
 			//App Whitelisting only supported on SDK >= 21
 			if (Build.VERSION.SDK_INT >= 21 && CONFIG.isLocal()) {
 				appWhiteListCheck.setVisibility(View.VISIBLE);
@@ -1215,6 +1249,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			}
 
 			keepAwakeCheck.setVisibility(View.VISIBLE);
+			proxyModeCheck.setVisibility(View.VISIBLE);
+			rootModeCheck.setVisibility(View.VISIBLE);
 			enableCloakProtectCheck.setVisibility(View.VISIBLE);
 			editAdditionalHostsCheck.setVisibility(View.VISIBLE);
 			editFilterLoadCheck.setVisibility(View.VISIBLE);
@@ -1224,6 +1260,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 				if (dest.isChecked()) {
 					keepAwakeCheck.setVisibility(View.GONE);
+					proxyModeCheck.setVisibility(View.GONE);
+					rootModeCheck.setVisibility(View.GONE);
 					enableCloakProtectCheck.setVisibility(View.GONE);
 					if (dest != editAdditionalHostsCheck) {
 						editAdditionalHostsCheck.setChecked(false);
@@ -1243,6 +1281,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 					}
 				} else {
 					keepAwakeCheck.setVisibility(View.VISIBLE);
+					proxyModeCheck.setVisibility(View.VISIBLE);
+					rootModeCheck.setVisibility(View.VISIBLE);
 					enableCloakProtectCheck.setVisibility(View.VISIBLE);
 					editAdditionalHostsCheck.setVisibility(View.VISIBLE);
 					editFilterLoadCheck.setVisibility(View.VISIBLE);
@@ -1292,6 +1332,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				findViewById(R.id.addHostsScroll).setVisibility(View.GONE);
 			}
 		} else {
+			setVisibilityForAdvCfg(View.VISIBLE);
 			findViewById(R.id.filtercfgview).setVisibility(View.GONE);
 			filterCfg.clear();
 			findViewById(R.id.addHostsScroll).setVisibility(View.GONE);
@@ -1301,6 +1342,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			appSelector.clear();
 			findViewById(R.id.backupRestoreView).setVisibility(View.GONE);
 			keepAwakeCheck.setVisibility(View.GONE);
+			proxyModeCheck.setVisibility(View.GONE);
+			rootModeCheck.setVisibility(View.GONE);
 			enableCloakProtectCheck.setVisibility(View.GONE);
 			editAdditionalHostsCheck.setVisibility(View.GONE);
 			editAdditionalHostsCheck.setChecked(false);

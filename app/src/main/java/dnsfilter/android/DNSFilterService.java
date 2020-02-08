@@ -91,7 +91,7 @@ public class DNSFilterService extends VpnService  {
 	private static boolean DNS_PROXY_PORT_IS_REDIRECTED = false;
 
 	private static boolean dnsProxyMode = false;
-	private static boolean vpnDisabled = false;
+	private static boolean rootMode = false;
 	private static boolean is_running = false;
 	protected static DNSReqForwarder dnsReqForwarder = new DNSReqForwarder();
 
@@ -375,7 +375,7 @@ public class DNSFilterService extends VpnService  {
 
 	public static void possibleNetworkChange() {
 		detectDNSServers();
-		if (vpnDisabled && dnsProxyMode)
+		if (rootMode)
 			dnsReqForwarder.updateForward();
 	}
 
@@ -407,7 +407,7 @@ public class DNSFilterService extends VpnService  {
 
 			Vector<DNSServer> dnsAdrs = new Vector<DNSServer>();
 
-			if (detect && !(vpnDisabled && dnsProxyMode) ) {
+			if (detect && !(rootMode) ) {
 
 				String[] dnsServers = getDNSviaConnectivityManager();
 
@@ -435,8 +435,8 @@ public class DNSFilterService extends VpnService  {
 				}
 			}
 			if (dnsAdrs.isEmpty()) { //fallback
-				if (detect && vpnDisabled && dnsProxyMode)
-					Logger.getLogger().message("DNS Detection not possible in Proxy Mode!");
+				if (detect && rootMode)
+					Logger.getLogger().message("DNS Detection not possible in rootMode!");
 				StringTokenizer fallbackDNS = new StringTokenizer(dnsFilterMgr.getConfig().getProperty("fallbackDNS", ""), ";");
 				int cnt = fallbackDNS.countTokens();
 				for (int i = 0; i < cnt; i++) {
@@ -444,8 +444,8 @@ public class DNSFilterService extends VpnService  {
 					if (DNSProxyActivity.debug) Logger.getLogger().logLine("DNS:" + dnsEntry);
 					try {
 						DNSServer dnsServer = DNSServer.getInstance().createDNSServer(dnsEntry, timeout);
-						if (vpnDisabled && dnsProxyMode && dnsServer.getPort() == 53)
-							throw new IOException("Port 53 not allowed when running in Proxy Mode! Use Dot or DoH!");
+						if (rootMode && dnsServer.getPort() == 53)
+							throw new IOException("Port 53 not allowed when running in Root Mode! Use Dot or DoH!");
 						dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry, timeout));
 					} catch (Exception e) {
 						Logger.getLogger().logLine("Cannot create DNS Server for " + dnsEntry + "!\n" + e.toString());
@@ -548,9 +548,14 @@ public class DNSFilterService extends VpnService  {
 				JUST_STARTED = true; //used in detectDNSServers to ensure eventually changed static DNS Servers config is taken
 
 				dnsProxyMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("dnsProxyOnAndroid", "false"));
-				vpnDisabled = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("disableVPNOnAndroid", "false"));
+				rootMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("rootModeOnAndroid", "false"));
 
-				if (vpnDisabled && dnsProxyMode) {
+				if (rootMode && !dnsProxyMode) {
+					rootMode = false;
+					Logger.getLogger().logLine("WARNING! Root Mode only possible in combination with DNS Proxy Mode!");
+				}
+
+				if (rootMode) {
 					dnsReqForwarder.clean(); //cleanup possible hangig iprules after a crash
 					dnsReqForwarder.updateForward();
 				}
@@ -561,7 +566,8 @@ public class DNSFilterService extends VpnService  {
 
 				//start DNS Proxy Mode if configured
 				if (dnsProxyMode) {
-					setUpPortRedir();
+					if (rootMode)
+						setUpPortRedir();
 					DNSFILTERPROXY = new DNSFilterProxy(5300);
 					new Thread(DNSFILTERPROXY).start();
 				}
@@ -595,7 +601,7 @@ public class DNSFilterService extends VpnService  {
 
 			// Initialize and start VPN Mode if not disabled
 
-			if (!vpnDisabled) {
+			if (!dnsProxyMode) {
 				ParcelFileDescriptor vpnInterface = initVPN();
 
 				if (vpnInterface != null) {
@@ -741,7 +747,7 @@ public class DNSFilterService extends VpnService  {
 				e.printStackTrace();
 			}
 
-			if (vpnDisabled && dnsProxyMode) {
+			if (rootMode) {
 				dnsReqForwarder.clearForward();
 			}
 
@@ -797,7 +803,7 @@ public class DNSFilterService extends VpnService  {
 		//only for reloading VPN and dns servers
 		//DNS Proxy and dnscrypt proxy are handled seperated
 
-		if (!vpnDisabled) {
+		if (!dnsProxyMode) {
 			VPNRunner runningVPN = vpnRunner;
 
 			if (runningVPN != null) {

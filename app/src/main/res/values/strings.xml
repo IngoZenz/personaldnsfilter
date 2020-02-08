@@ -31,5 +31,7 @@
   <string name="editFilterDialogTitle">Edit Filter</string>
   <string name="addFilter">"Add Filter"</string>
   <string name="removeFilter">"Remove Filter"</string>
+  <string name="proxyModeCheckBox">DNS Proxy Mode without local VPN</string>
+  <string name="rootModeCheckBox">Root Mode without local VPN</string>
 
 </resources>

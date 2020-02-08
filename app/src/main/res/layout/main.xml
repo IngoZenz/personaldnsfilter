@@ -517,6 +517,28 @@
             android:textColor="#424242" />
 
         <dnsfilter.android.PaddedCheckBox
+            android:id="@+id/proxyModeCheck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="25dp"
+            android:layout_marginTop="0dp"
+            android:button="@drawable/custom_checkbox"
+            android:checked="false"
+            android:text="@string/proxyModeCheckBox"
+            android:textColor="#424242" />
+
+        <dnsfilter.android.PaddedCheckBox
+            android:id="@+id/rootModeCheck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="25dp"
+            android:layout_marginTop="0dp"
+            android:button="@drawable/custom_checkbox"
+            android:checked="false"
+            android:text="@string/rootModeCheckBox"
+            android:textColor="#424242" />
+
+        <dnsfilter.android.PaddedCheckBox
             android:id="@+id/keepAwakeCheck"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -665,7 +687,7 @@
         </LinearLayout>
 
     <ScrollView
-        android:id="@+id/ScrollView01"
+        android:id="@+id/logScroll"
         android:layout_width="fill_parent"
         android:scrollbarThumbVertical="@drawable/scroll_bar"
         android:scrollbarSize="5dp"
