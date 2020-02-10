@@ -1067,7 +1067,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			handleDonate();
 			return;
 		} else if (destination == helpBtn) {
-			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.zenz-home.com/personaldnsfilter/help/help.html"));
+			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.zenz-home.com/personaldnsfilter/help/help.php"));
 			startActivity(browserIntent);
 			return;
 		} else if (destination == dnsField) {
