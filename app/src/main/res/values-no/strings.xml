@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">Rediger filter</string>
     <string name="addFilter">Legg filter</string>
     <string name="removeFilter">Fjern filter</string>
+    <string name="proxyModeCheckBox">DNS-proxy-modus uten lokal VPN</string>
+  <string name="rootModeCheckBox">Rotmodus uten lokal VPN</string>
 </resources>

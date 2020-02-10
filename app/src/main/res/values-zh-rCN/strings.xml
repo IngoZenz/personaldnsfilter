@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">编辑过滤器</string>
     <string name="addFilter">添加过滤器</string>
     <string name="removeFilter">删除过滤器</string>
+    <string name="proxyModeCheckBox">没有本地VPN的DNS代理模式</string>
+  <string name="rootModeCheckBox">没有本地VPN的根模式</string>
 </resources>

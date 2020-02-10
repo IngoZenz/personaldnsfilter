@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">Редактировать фильтр</string>
     <string name="addFilter">Добавить фильтр</string>
     <string name="removeFilter">Удалить фильтр</string>
+    <string name="proxyModeCheckBox">Режим DNS Proxy без локальной VPN</string>
+  <string name="rootModeCheckBox">Root Mode без локального VPN</string>
 </resources>

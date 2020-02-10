@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">Επεξεργασία φίλτρου</string>
     <string name="addFilter">Προσθέστε φίλτρο</string>
     <string name="removeFilter">Καταργήστε το φίλτρο</string>
+    <string name="proxyModeCheckBox">Λειτουργία διακομιστή μεσολάβησης DNS χωρίς τοπικό VPN</string>
+  <string name="rootModeCheckBox">Λειτουργία ρίζας χωρίς τοπικό VPN</string>
 </resources>

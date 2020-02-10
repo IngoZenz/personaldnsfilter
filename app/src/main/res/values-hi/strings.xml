@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">फ़िल्टर संपादित करें</string>
     <string name="addFilter">फ़िल्टर जोड़ें</string>
     <string name="removeFilter">फ़िल्टर निकालें</string>
+    <string name="proxyModeCheckBox">DNS प्रॉक्सी मोड स्थानीय वीपीएन के बिना</string>
+  <string name="rootModeCheckBox">स्थानीय वीपीएन के बिना रूट मोड</string>
 </resources>

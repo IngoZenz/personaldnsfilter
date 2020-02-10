@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">Szűrő szerkesztése</string>
     <string name="addFilter">Szűrő hozzáadása</string>
     <string name="removeFilter">Szűrő eltávolítása</string>
+    <string name="proxyModeCheckBox">DNS proxy mód helyi VPN nélkül</string>
+  <string name="rootModeCheckBox">Gyökér mód helyi VPN nélkül</string>
 </resources>

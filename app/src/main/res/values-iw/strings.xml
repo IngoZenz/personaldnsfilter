@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">ערוך מסנן</string>
   <string name="addFilter">"הוסף מסנן"</string>
   <string name="removeFilter">"הסר מסנן"</string>
+    <string name="proxyModeCheckBox">מצב פרוקסי DNS ללא VPN מקומי</string>
+  <string name="rootModeCheckBox">מצב שורש ללא VPN מקומי</string>
 </resources>

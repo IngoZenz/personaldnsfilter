@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">Editați filtrul</string>
     <string name="addFilter">Adăugați filtrul</string>
     <string name="removeFilter">Eliminați filtrul</string>
+    <string name="proxyModeCheckBox">Modul proxy DNS fără VPN local</string>
+  <string name="rootModeCheckBox">Modul Root fără VPN local</string>
 </resources>

@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">Редагувати фільтр</string>
     <string name="addFilter">Додати фільтр</string>
     <string name="removeFilter">Видалити фільтр</string>
+    <string name="proxyModeCheckBox">Режим проксі DNS без локальної VPN</string>
+  <string name="rootModeCheckBox">Root Mode без локальної VPN</string>
 </resources>

@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">Muokkaa suodatinta</string>
     <string name="addFilter">Lisää suodatin</string>
     <string name="removeFilter">Poista suodatin</string>
+    <string name="proxyModeCheckBox">DNS-välityspalvelintila ilman paikallista VPN: tä</string>
+  <string name="rootModeCheckBox">Juuritila ilman paikallista VPN: tä</string>
 </resources>

@@ -94,6 +94,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected Button stopBtn;
 	protected Button reloadFilterBtn;
 	protected Button remoteCtrlBtn;
+	protected Button helpBtn;
 	protected static EditText logOutView;
 	protected static TextView dnsField;
 	protected static CheckBox advancedConfigCheck;
@@ -393,6 +394,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			stopBtn.setOnClickListener(this);
 			reloadFilterBtn = (Button) findViewById(R.id.filterReloadBtn);
 			reloadFilterBtn.setOnClickListener(this);
+			helpBtn = (Button) findViewById(R.id.helpBtn);
+			helpBtn.setOnClickListener(this);
 			remoteCtrlBtn = (Button) findViewById(R.id.remoteCtrlBtn);
 			if (!CONFIG.isLocal())
 				remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null, getResources().getDrawable(R.drawable.baseline_settings_remote_24px), null);
@@ -1062,6 +1065,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			return;
 		} else if (destination == donate_field) {
 			handleDonate();
+			return;
+		} else if (destination == helpBtn) {
+			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.zenz-home.com/personaldnsfilter/help/help.html"));
+			startActivity(browserIntent);
 			return;
 		} else if (destination == dnsField) {
 			handleDNSConfigDialog();

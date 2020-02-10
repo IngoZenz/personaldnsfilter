@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">Upravit filtr</string>
     <string name="addFilter">Přidat filtr</string>
     <string name="removeFilter">Odstraňte filtr</string>
+    <string name="proxyModeCheckBox">Režim proxy DNS bez místní VPN</string>
+  <string name="rootModeCheckBox">Kořenový režim bez místní VPN</string>
 </resources>

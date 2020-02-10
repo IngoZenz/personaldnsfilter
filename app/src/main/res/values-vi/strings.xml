@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">Chỉnh sửa bộ lọc</string>
     <string name="addFilter">Thêm bộ lọc</string>
     <string name="removeFilter">Xóa bộ lọc</string>
+    <string name="proxyModeCheckBox">Chế độ proxy DNS không có VPN cục bộ</string>
+  <string name="rootModeCheckBox">Chế độ root không có VPN cục bộ</string>
 </resources>

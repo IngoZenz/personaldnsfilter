@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">Uredi filtar</string>
     <string name="addFilter">Dodaj filtar</string>
     <string name="removeFilter">Ukloni filtar</string>
+    <string name="proxyModeCheckBox">DNS proxy način rada bez lokalne VPN</string>
+  <string name="rootModeCheckBox">Korijenski način rada bez lokalnog VPN-a</string>
 </resources>

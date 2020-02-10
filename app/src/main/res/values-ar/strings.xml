@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">تحرير مرشح</string>
     <string name="addFilter">إضافة مرشح</string>
     <string name="removeFilter">إزالة مرشح</string>
+    <string name="proxyModeCheckBox">وضع وكيل DNS دون VPN المحلية</string>
+  <string name="rootModeCheckBox">وضع الجذر دون VPN المحلية</string>
 </resources>

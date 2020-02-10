@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">Уреди филтар</string>
     <string name="addFilter">Додај филтер</string>
     <string name="removeFilter">Уклони филтар</string>
+    <string name="proxyModeCheckBox">ДНС проки режим без локалног ВПН-а</string>
+  <string name="rootModeCheckBox">Роот мод без локалног ВПН-а</string>
 </resources>

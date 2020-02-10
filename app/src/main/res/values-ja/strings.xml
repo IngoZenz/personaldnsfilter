@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">フィルタを編集</string>
     <string name="addFilter">フィルタを追加</string>
     <string name="removeFilter">フィルタを削除</string>
+    <string name="proxyModeCheckBox">ローカルVPNなしのDNSプロキシモード</string>
+  <string name="rootModeCheckBox">ローカルVPNなしのルートモード</string>
 </resources>

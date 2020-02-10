@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">필터 편집</string>
     <string name="addFilter">필터 추가</string>
     <string name="removeFilter">필터 제거</string>
+    <string name="proxyModeCheckBox">로컬 VPN이없는 DNS 프록시 모드</string>
+  <string name="rootModeCheckBox">로컬 VPN이없는 루트 모드</string>
 </resources>

@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">Editar filtro</string>
     <string name="addFilter">Adicionar filtro</string>
     <string name="removeFilter">Remover filtro</string>
+    <string name="proxyModeCheckBox">Modo de proxy DNS sem VPN local</string>
+  <string name="rootModeCheckBox">Modo Raiz sem VPN local</string>
 </resources>

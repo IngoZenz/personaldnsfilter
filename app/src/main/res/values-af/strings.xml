@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">Wysig filter</string>
     <string name="addFilter">Voeg filter by</string>
     <string name="removeFilter">Verwyder filter</string>
+    <string name="proxyModeCheckBox">DNS-instaanbediener sonder plaaslike VPN</string>
+  <string name="rootModeCheckBox">Wortelmodus sonder plaaslike Skynprivaatnetwerk</string>
 </resources>

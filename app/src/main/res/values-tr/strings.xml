@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">Filtreyi Düzenle</string>
     <string name="addFilter">Filtre ekle</string>
     <string name="removeFilter">Filtreyi Kaldır</string>
+    <string name="proxyModeCheckBox">Yerel VPN\'siz DNS Proxy Modu</string>
+  <string name="rootModeCheckBox">Yerel VPN\'siz Kök Modu</string>
 </resources>

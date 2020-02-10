@@ -71,18 +71,38 @@
                 android:text="@string/EnableConfigCheckBox"
                 android:textColor="#424242" />
 
+            <LinearLayout
+                android:id="@+id/linearLayout5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:orientation="horizontal">
+
             <Button
                 android:id="@+id/remoteCtrlBtn"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:layout_alignParentRight="true"
-                android:layout_marginRight="15dp"
+                android:layout_marginRight="10dp"
                 android:background="@drawable/custom_button"
                 android:drawableLeft="@drawable/outline_settings_remote_24px"
                 android:gravity="center"
                 android:padding="2dp"
                 android:textColor="#424242"></Button>
 
+
+            <Button
+                android:id="@+id/helpBtn"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginRight="15dp"
+                android:text="?"
+                android:textSize="16dp"
+                android:textStyle="bold"
+                android:background="@drawable/custom_button"
+                android:gravity="center"
+                android:padding="2dp"
+                android:textColor="#424242"></Button>
+            </LinearLayout>
         </RelativeLayout>
 
         <dnsfilter.android.PaddedCheckBox

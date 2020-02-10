@@ -28,4 +28,6 @@
   <string name="editFilterDialogTitle">Bewerk filter</string>
     <string name="addFilter">Filter toevoegen</string>
     <string name="removeFilter">Verwijder filter</string>
+    <string name="proxyModeCheckBox">DNS-proxymodus zonder lokale VPN</string>
+  <string name="rootModeCheckBox">Root-modus zonder lokale VPN</string>
 </resources>
