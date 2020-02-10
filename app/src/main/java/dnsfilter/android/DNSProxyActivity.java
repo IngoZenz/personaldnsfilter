@@ -1083,6 +1083,15 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			return;
 		}
 
+		if (destination == rootModeCheck && rootModeCheck.isChecked() && !proxyModeCheck.isChecked()) {
+			proxyModeCheck.setChecked(true);
+			Logger.getLogger().logLine("Enabled also DNS Proxy Mode as required by Root Mode!");
+		}
+
+		if (destination == proxyModeCheck && !proxyModeCheck.isChecked() && rootModeCheck.isChecked()) {
+			rootModeCheck.setChecked(false);
+			Logger.getLogger().logLine("Disabled also Root Mode as it requires DNS Proxy Mode!");
+		}
 
 		persistConfig();
 
@@ -1225,11 +1234,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private void setVisibilityForAdvCfg(int v){
 		enableAdFilterCheck.setVisibility(v);
 		enableAutoStartCheck.setVisibility(v);
-		findViewById(R.id.logScroll).setVisibility(v);
+		//findViewById(R.id.logScroll).setVisibility(v);
 		findViewById(R.id.scrolllock).setVisibility(v);
-		/*reloadFilterBtn.setVisibility(v);
+		reloadFilterBtn.setVisibility(v);
 		startBtn.setVisibility(v);
-		stopBtn.setVisibility(v);*/
+		stopBtn.setVisibility(v);
 	}
 
 	private void handleAdvancedConfig(CheckBox dest) {
@@ -1393,7 +1402,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		SERVICE = null;
 
 		try {
-			boolean vpnDisabled = Boolean.parseBoolean(CONFIG.getConfig().getProperty("disableVPNOnAndroid", "false"));
+			boolean vpnDisabled = Boolean.parseBoolean(getConfig().getProperty("dnsProxyOnAndroid", "false"));
 			Intent intent = null;
 			if (!vpnDisabled)
 				intent = VpnService.prepare(this.getApplicationContext());
