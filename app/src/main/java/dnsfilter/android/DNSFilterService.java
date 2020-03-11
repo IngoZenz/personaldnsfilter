@@ -40,6 +40,7 @@ import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.text.format.Formatter;
 
+import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -60,6 +61,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import dnsfilter.ConfigurationAccess;
 import dnsfilter.DNSCommunicator;
 import dnsfilter.DNSFilterManager;
 import dnsfilter.DNSFilterProxy;
@@ -102,7 +104,7 @@ public class DNSFilterService extends VpnService  {
 	boolean manageDNSCryptProxy = false;
 	boolean dnsCryptProxyStartTriggered = false;
 	PendingIntent pendingIntent;
-
+	private int mtu;
 
 
 	protected static class DNSReqForwarder {
@@ -245,11 +247,13 @@ public class DNSFilterService extends VpnService  {
 		public void run() {
 			Logger.getLogger().logLine("VPN Runner Thread "+id+" started!");
 			thread = Thread.currentThread();
+
 			try {
 				int max_resolvers  = Integer.parseInt(DNSFilterManager.getInstance().getConfig().getProperty("maxResolverCount", "100"));;
 				while (!stopped) {
 					byte[] data = new byte[DNSServer.getBufSize()];
 					int length = in.read(data);
+				
 					if (stopped)
 						break;
 
@@ -464,6 +468,8 @@ public class DNSFilterService extends VpnService  {
 
 	private ParcelFileDescriptor initVPN() throws Exception {
 
+		mtu = Integer.parseInt(ConfigurationAccess.getLocal().getConfig().getProperty("MTU","3000"));
+
 		Builder builder = new Builder();
 
 		builder.setSession("DNS Filter");
@@ -527,6 +533,8 @@ public class DNSFilterService extends VpnService  {
 			Logger.getLogger().logLine("Using Blocking Mode!");
 			blocking = true;
 		}
+
+		builder.setMtu(mtu);
 
 		return builder.setConfigureIntent(pendingIntent).establish();
 	}
