@@ -42,8 +42,7 @@ public class DNSServer {
     protected InetSocketAddress address;
     protected int timeout;
     private static int bufSize=1024;
-    private static int maxBufSize=10000;
-
+    private static int maxBufSize= -1; //will be initialized on request
     public static final int UDP = 0; //Via UDP
     public static final int TCP = 1; //Via TCP
     public static final int DOT = 2; // DNS over TLS
@@ -164,6 +163,17 @@ public class DNSServer {
                 //Write access to static data, synchronization against the class is needed.
                 //Could be optimized in future by setting the buf size per DNSServer Instance and not static.
                 //However at the time the buffer is created, it is not known what will be the DNSServer used, because it be might be switched.
+                if (maxBufSize == -1) {
+                    //load maxBufSize config
+                    try {
+                        maxBufSize = Integer.parseInt(ConfigurationAccess.getLocal().getConfig().getProperty("MTU","3000"));
+                    } catch (IOException eio) {
+                        throw eio;
+                    } catch (Exception e){
+                        throw new IOException(e);
+                    }
+                }
+
                 if (size + response.getOffset() < maxBufSize && bufSize < size+response.getOffset()) { //resize for future requests
                     bufSize = Math.min(1024*(((size +response.getOffset()) / 1024) +1), maxBufSize);
                     Logger.getLogger().logLine("BUFFER RESIZE:"+bufSize);
