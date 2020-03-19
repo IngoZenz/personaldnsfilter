@@ -565,7 +565,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 								in = new BufferedInputStream(con.getInputStream(), 2048);
 							} else
-								in = new FileInputStream(urlStr.substring(7));
+								in = new BufferedInputStream(new FileInputStream(urlStr.substring(7)),2048);
 							byte[] buf = new byte[2048];
 							int[] r;
 
