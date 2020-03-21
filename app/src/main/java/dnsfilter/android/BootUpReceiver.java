@@ -40,7 +40,7 @@ public class BootUpReceiver extends BroadcastReceiver {
 		Properties config;
 		if ((config = getConfig()) != null && Boolean.parseBoolean(config.getProperty("AUTOSTART", "false"))) {
 
-			if (Build.VERSION.SDK_INT >= 29) {
+			if (Build.VERSION.SDK_INT >= 28) {
 				Intent i = new Intent(context, DNSFilterService.class);
 				VpnService.prepare(context);
 				context.startForegroundService(i);
