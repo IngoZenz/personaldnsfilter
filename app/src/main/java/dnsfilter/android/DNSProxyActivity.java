@@ -1409,7 +1409,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		SERVICE = null;
 
 		try {
-			boolean vpnDisabled = Boolean.parseBoolean(getConfig().getProperty("dnsProxyOnAndroid", "false"));
+			boolean vpnInAdditionToProxyMode = Boolean.parseBoolean(getConfig().getProperty("vpnInAdditionToProxyMode", "false"));
+			boolean vpnDisabled = !vpnInAdditionToProxyMode || Boolean.parseBoolean(getConfig().getProperty("dnsProxyOnAndroid", "false"));
 			Intent intent = null;
 			if (!vpnDisabled)
 				intent = VpnService.prepare(this.getApplicationContext());

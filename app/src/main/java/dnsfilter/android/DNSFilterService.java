@@ -94,6 +94,7 @@ public class DNSFilterService extends VpnService  {
 
 	private static boolean dnsProxyMode = false;
 	private static boolean rootMode = false;
+	private static boolean vpnInAdditionToProxyMode = false;
 	private static boolean is_running = false;
 	protected static DNSReqForwarder dnsReqForwarder = new DNSReqForwarder();
 
@@ -557,6 +558,7 @@ public class DNSFilterService extends VpnService  {
 
 				dnsProxyMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("dnsProxyOnAndroid", "false"));
 				rootMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("rootModeOnAndroid", "false"));
+				vpnInAdditionToProxyMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("vpnInAdditionToProxyMode", "false"));
 
 				if (rootMode && !dnsProxyMode) {
 					rootMode = false;
@@ -609,7 +611,7 @@ public class DNSFilterService extends VpnService  {
 
 			// Initialize and start VPN Mode if not disabled
 
-			if (!dnsProxyMode) {
+			if (!dnsProxyMode || vpnInAdditionToProxyMode) {
 				ParcelFileDescriptor vpnInterface = initVPN();
 
 				if (vpnInterface != null) {
@@ -811,7 +813,7 @@ public class DNSFilterService extends VpnService  {
 		//only for reloading VPN and dns servers
 		//DNS Proxy and dnscrypt proxy are handled seperated
 
-		if (!dnsProxyMode) {
+		if (!dnsProxyMode || vpnInAdditionToProxyMode) {
 			VPNRunner runningVPN = vpnRunner;
 
 			if (runningVPN != null) {
