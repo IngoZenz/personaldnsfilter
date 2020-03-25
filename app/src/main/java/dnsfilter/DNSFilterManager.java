@@ -58,7 +58,7 @@ import util.Utils;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1503900-dev03";
+	public static final String VERSION = "1503900-dev04";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -1221,15 +1221,15 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 
 	public void init() throws IOException {
-		initEnv();
-
 
 		try {
-			Logger.getLogger().logLine("***Initializing PersonalDNSFilter Version " + VERSION + "!***");
-			Logger.getLogger().logLine("Using Directory: "+WORKDIR);
-
 			if (!serverStopped)
 				throw new IllegalStateException("Cannot start! Already running!");
+
+			initEnv();
+
+			Logger.getLogger().logLine("***Initializing PersonalDNSFilter Version " + VERSION + "!***");
+			Logger.getLogger().logLine("Using Directory: "+WORKDIR);
 
 			byte[] configBytes = readConfig();
 			config = new Properties();

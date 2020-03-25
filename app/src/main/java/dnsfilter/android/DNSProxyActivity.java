@@ -149,7 +149,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	protected static String ADDITIONAL_HOSTS_TO_LONG = "additionalHosts.txt too long to edit here!\nSize Limit: 512 KB!\nUse other editor!";
 
-	protected static Intent SERVICE = null;
 	protected static Properties config = null;
 	protected static boolean debug = false;
 
@@ -1241,7 +1240,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	private void setVisibilityForAdvCfg(int v){
 		enableAdFilterCheck.setVisibility(v);
 		enableAutoStartCheck.setVisibility(v);
-		//findViewById(R.id.logScroll).setVisibility(v);
 		findViewById(R.id.scrolllock).setVisibility(v);
 		reloadFilterBtn.setVisibility(v);
 		startBtn.setVisibility(v);
@@ -1264,13 +1262,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				appWhitelistingEnabled=false;
 			}
 
-			keepAwakeCheck.setVisibility(View.VISIBLE);
-			proxyModeCheck.setVisibility(View.VISIBLE);
-			rootModeCheck.setVisibility(View.VISIBLE);
-			enableCloakProtectCheck.setVisibility(View.VISIBLE);
-			editAdditionalHostsCheck.setVisibility(View.VISIBLE);
-			editFilterLoadCheck.setVisibility(View.VISIBLE);
-			backupRestoreCheck.setVisibility(View.VISIBLE);
+			findViewById(R.id.advSettingsScroll).setVisibility(View.VISIBLE);
 
 			if (dest != advancedConfigCheck && dest != null) {
 
@@ -1352,20 +1344,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			findViewById(R.id.filtercfgview).setVisibility(View.GONE);
 			filterCfg.clear();
 			findViewById(R.id.addHostsScroll).setVisibility(View.GONE);
-			appWhiteListCheck.setVisibility(View.GONE);
+			findViewById(R.id.advSettingsScroll).setVisibility(View.GONE);
 			appWhiteListCheck.setChecked(false);
-			appWhiteListScroll.setVisibility(View.GONE);
 			appSelector.clear();
 			findViewById(R.id.backupRestoreView).setVisibility(View.GONE);
-			keepAwakeCheck.setVisibility(View.GONE);
-			proxyModeCheck.setVisibility(View.GONE);
-			rootModeCheck.setVisibility(View.GONE);
-			enableCloakProtectCheck.setVisibility(View.GONE);
-			editAdditionalHostsCheck.setVisibility(View.GONE);
 			editAdditionalHostsCheck.setChecked(false);
-			editFilterLoadCheck.setVisibility(View.GONE);
 			editFilterLoadCheck.setChecked(false);
-			backupRestoreCheck.setVisibility(View.GONE);
 			backupRestoreCheck.setChecked(false);
 			editAdditionalHostsCheck.setChecked(false);
 			additionalHostsField.setText("");
@@ -1374,11 +1358,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	}
 
 	protected synchronized void handleExitApp() {
-		if (SERVICE != null) {
-			DNSFilterService.stop(true);
-			stopService(SERVICE);
-		}
-
+		DNSFilterService.stop(true);
 		Intent intent = new Intent(this, DNSProxyActivity.class);
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 		intent.putExtra("SHOULD_FINISH", true);
@@ -1386,8 +1366,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	}
 
 	private void handleRestart() {
-	    if (CONFIG.isLocal())
-	        startup();
+	    if (CONFIG.isLocal()) {
+
+			if (!DNSFilterService.stop(false))
+				return;
+
+			startup();
+		}
 	    else {
             try {
                 CONFIG.restart();
@@ -1400,13 +1385,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	protected void startup() {
 
-		if (!DNSFilterService.stop(false))
+		if (DNSFilterService.SERVICE != null) {
+			Logger.getLogger().logLine("DNSFilterService is running!");
+			Logger.getLogger().message("Attached already running Service!");
 			return;
-
-		if (SERVICE != null) {
-			stopService(SERVICE);
 		}
-		SERVICE = null;
 
 		try {
 			boolean vpnInAdditionToProxyMode = Boolean.parseBoolean(getConfig().getProperty("vpnInAdditionToProxyMode", "false"));
@@ -1429,10 +1412,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	}
 
 	private void startSvc() {
-		if (SERVICE == null)
-			SERVICE = new Intent(this, DNSFilterService.class);
-
-		startService(SERVICE);
+		startService(new Intent(this, DNSFilterService.class));
 	}
 
 	@Override

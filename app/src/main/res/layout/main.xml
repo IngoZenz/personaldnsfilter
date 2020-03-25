@@ -105,17 +105,110 @@
             </LinearLayout>
         </RelativeLayout>
 
+        <ScrollView
+            android:id="@+id/advSettingsScroll"
+            android:scrollbarThumbVertical="@drawable/scroll_bar"
+            android:scrollbarSize="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginTop="3dp"
+            android:background="#eceff1">
+         <LinearLayout
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:orientation="vertical">
         <dnsfilter.android.PaddedCheckBox
             android:id="@+id/editFilterLoad"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="25dp"
+            android:layout_marginLeft="10dp"
             android:layout_marginTop="0dp"
             android:button="@drawable/custom_checkbox"
             android:checked="false"
             android:text="@string/editFilterLoadCheckBox"
             android:textColor="#424242" />
 
+        <dnsfilter.android.PaddedCheckBox
+            android:id="@+id/editAdditionalHosts"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="0dp"
+            android:button="@drawable/custom_checkbox"
+            android:checked="false"
+            android:text="@string/editAdditionalHostsCheckBox"
+            android:textColor="#424242" />
+
+        <dnsfilter.android.PaddedCheckBox
+            android:id="@+id/appWhitelist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="0dp"
+            android:button="@drawable/custom_checkbox"
+            android:checked="false"
+            android:text="@string/appWhitelistCheckBox"
+            android:textColor="#424242" />
+
+        <dnsfilter.android.PaddedCheckBox
+            android:id="@+id/backupRestoreChk"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="0dp"
+            android:button="@drawable/custom_checkbox"
+            android:checked="true"
+            android:text="@string/cfgBackupRestore"
+            android:textColor="#424242" />
+
+        <dnsfilter.android.PaddedCheckBox
+            android:id="@+id/cloakProtectCheck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="0dp"
+            android:button="@drawable/custom_checkbox"
+            android:checked="false"
+            android:text="CNAME Cloaking Protection (aggressive)"
+            android:textColor="#424242" />
+
+        <dnsfilter.android.PaddedCheckBox
+            android:id="@+id/proxyModeCheck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="0dp"
+            android:button="@drawable/custom_checkbox"
+            android:checked="false"
+            android:text="@string/proxyModeCheckBox"
+            android:textColor="#424242" />
+
+        <dnsfilter.android.PaddedCheckBox
+            android:id="@+id/rootModeCheck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="0dp"
+            android:button="@drawable/custom_checkbox"
+            android:checked="false"
+            android:text="@string/rootModeCheckBox"
+            android:textColor="#424242" />
+
+        <dnsfilter.android.PaddedCheckBox
+            android:id="@+id/keepAwakeCheck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="0dp"
+            android:button="@drawable/custom_checkbox"
+            android:checked="false"
+            android:text="@string/keepAwakeCheckBox"
+            android:textColor="#424242" />
+         </LinearLayout>
+    </ScrollView>
         <LinearLayout
             android:id="@+id/filtercfgview"
             android:layout_width="match_parent"
@@ -284,16 +377,87 @@
         </LinearLayout>
 
         <dnsfilter.android.PaddedCheckBox
-            android:id="@+id/editAdditionalHosts"
+            android:id="@+id/enableAddFilter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="25dp"
+            android:layout_marginLeft="15dp"
             android:layout_marginTop="0dp"
             android:button="@drawable/custom_checkbox"
-            android:checked="false"
-            android:text="@string/editAdditionalHostsCheckBox"
+            android:checked="true"
+            android:text="@string/EnableAdfilter"
             android:textColor="#424242" />
 
+        <dnsfilter.android.PaddedCheckBox
+            android:id="@+id/enableAutoStart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="0dp"
+            android:button="@drawable/custom_checkbox"
+            android:checked="true"
+            android:text="@string/EnableAutoStart"
+            android:textColor="#424242" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:weightSum="1">
+
+        <Button
+            android:id="@+id/filterReloadBtn"
+            android:textAllCaps="true"
+            android:layout_width="wrap_content"
+            android:elevation="2.3dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/custom_button"
+            android:padding="10dp"
+            android:text="@string/filterReloadBtnLabel"
+            android:textColor="#FFFFFF"
+            android:fontFamily="sans-serif-medium"
+            android:textSize="11sp"
+            android:textStyle="bold"/>
+
+
+        <Button
+            android:id="@+id/startBtn"
+            android:textAllCaps="true"
+            android:elevation="2.3dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/custom_button"
+            android:padding="10dp"
+            android:text="@string/startBtnLabel"
+            android:textColor="#FFFFFF"
+            android:fontFamily="sans-serif-medium"
+            android:textSize="11sp"
+            android:textStyle="bold"/>
+
+        <Button
+            android:id="@+id/stopBtn"
+            android:textAllCaps="true"
+            android:elevation="2.3dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/custom_button"
+            android:padding="10dp"
+            android:text="@string/stopBtnLabel"
+            android:textColor="#FFFFFF"
+            android:fontFamily="sans-serif-medium"
+            android:textSize="11sp"
+            android:textStyle="bold"/>
+
+    </LinearLayout>
         <ScrollView
             android:id="@+id/addHostsScroll"
             android:scrollbarThumbVertical="@drawable/scroll_bar"
@@ -326,17 +490,6 @@
             </HorizontalScrollView>
         </ScrollView>
 
-        <dnsfilter.android.PaddedCheckBox
-            android:id="@+id/appWhitelist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="25dp"
-            android:layout_marginTop="0dp"
-            android:button="@drawable/custom_checkbox"
-            android:checked="false"
-            android:text="@string/appWhitelistCheckBox"
-            android:textColor="#424242" />
-
         <ScrollView
             android:id="@+id/appWhiteListScroll"
             android:scrollbarThumbVertical="@drawable/scroll_bar"
@@ -357,17 +510,6 @@
                 android:layout_marginLeft="10dp"
                 android:orientation="vertical" />
         </ScrollView>
-
-        <dnsfilter.android.PaddedCheckBox
-            android:id="@+id/backupRestoreChk"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="25dp"
-            android:layout_marginTop="0dp"
-            android:button="@drawable/custom_checkbox"
-            android:checked="true"
-            android:text="@string/cfgBackupRestore"
-            android:textColor="#424242" />
 
         <LinearLayout
             android:id="@+id/backupRestoreView"
@@ -524,133 +666,6 @@
                 android:textSize="14sp" />
 
         </LinearLayout>
-
-        <dnsfilter.android.PaddedCheckBox
-            android:id="@+id/cloakProtectCheck"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="25dp"
-            android:layout_marginTop="0dp"
-            android:button="@drawable/custom_checkbox"
-            android:checked="false"
-            android:text="CNAME Cloaking Protection (aggressive)"
-            android:textColor="#424242" />
-
-        <dnsfilter.android.PaddedCheckBox
-            android:id="@+id/proxyModeCheck"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="25dp"
-            android:layout_marginTop="0dp"
-            android:button="@drawable/custom_checkbox"
-            android:checked="false"
-            android:text="@string/proxyModeCheckBox"
-            android:textColor="#424242" />
-
-        <dnsfilter.android.PaddedCheckBox
-            android:id="@+id/rootModeCheck"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="25dp"
-            android:layout_marginTop="0dp"
-            android:button="@drawable/custom_checkbox"
-            android:checked="false"
-            android:text="@string/rootModeCheckBox"
-            android:textColor="#424242" />
-
-        <dnsfilter.android.PaddedCheckBox
-            android:id="@+id/keepAwakeCheck"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="25dp"
-            android:layout_marginTop="0dp"
-            android:button="@drawable/custom_checkbox"
-            android:checked="false"
-            android:text="@string/keepAwakeCheckBox"
-            android:textColor="#424242" />
-
-        <dnsfilter.android.PaddedCheckBox
-            android:id="@+id/enableAddFilter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
-            android:layout_marginTop="0dp"
-            android:button="@drawable/custom_checkbox"
-            android:checked="true"
-            android:text="@string/EnableAdfilter"
-            android:textColor="#424242" />
-
-        <dnsfilter.android.PaddedCheckBox
-            android:id="@+id/enableAutoStart"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
-            android:layout_marginTop="0dp"
-            android:button="@drawable/custom_checkbox"
-            android:checked="true"
-            android:text="@string/EnableAutoStart"
-            android:textColor="#424242" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linearLayout2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:weightSum="1">
-
-        <Button
-            android:id="@+id/filterReloadBtn"
-            android:textAllCaps="true"
-            android:layout_width="wrap_content"
-            android:elevation="2.3dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="4dp"
-            android:background="@drawable/custom_button"
-            android:padding="10dp"
-            android:text="@string/filterReloadBtnLabel"
-            android:textColor="#FFFFFF"
-            android:fontFamily="sans-serif-medium"
-            android:textSize="11sp"
-            android:textStyle="bold"/>
-
-
-        <Button
-            android:id="@+id/startBtn"
-            android:textAllCaps="true"
-            android:elevation="2.3dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="4dp"
-            android:background="@drawable/custom_button"
-            android:padding="10dp"
-            android:text="@string/startBtnLabel"
-            android:textColor="#FFFFFF"
-            android:fontFamily="sans-serif-medium"
-            android:textSize="11sp"
-            android:textStyle="bold"/>
-
-        <Button
-            android:id="@+id/stopBtn"
-            android:textAllCaps="true"
-            android:elevation="2.3dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="4dp"
-            android:background="@drawable/custom_button"
-            android:padding="10dp"
-            android:text="@string/stopBtnLabel"
-            android:textColor="#FFFFFF"
-            android:fontFamily="sans-serif-medium"
-            android:textSize="11sp"
-            android:textStyle="bold"/>
-
-    </LinearLayout>
 
     <TextView
         android:id="@+id/scrolllock"

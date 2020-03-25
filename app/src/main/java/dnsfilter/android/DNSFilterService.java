@@ -81,6 +81,8 @@ public class DNSFilterService extends VpnService  {
 	private static String ADDRESS_IPV4 = "10.0.2.15";
 	private static String ADDRESS_IPV6 = "fdc8:1095:91e1:aaaa:aaaa:aaaa:aaaa:aaa2";
 
+	protected static Intent SERVICE=null;
+
 	private static String START_DNSCRYPTPROXY = "dnscrypt-proxy";
 	private static String KILL_DNSCRYPTPROXY = "killall dnscrypt-proxy";
 
@@ -545,6 +547,7 @@ public class DNSFilterService extends VpnService  {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		AndroidEnvironment.initEnvironment(this);
 		INSTANCE = this;
+		SERVICE = intent;
 
 		if (DNSFILTER != null) {
 			Logger.getLogger().logLine("DNS Filter already running!");
@@ -776,13 +779,14 @@ public class DNSFilterService extends VpnService  {
 				DNSFILTER = null;
 				Logger.getLogger().logLine("DNSFilter stopped!");
 			}
+			stopService(SERVICE);
+			SERVICE = null;
+			is_running = false;
 			Thread.sleep(200);
 			return true;
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
 			return false;
-		} finally {
-			is_running=false;
 		}
 	}
 
@@ -793,7 +797,7 @@ public class DNSFilterService extends VpnService  {
 		if (instance == null)
 			return true;
 		else {
-			if (instance.manageDNSCryptProxy)
+			if (instance.manageDNSCryptProxy && appExit)
 				try {
 					instance.runOSCommand(false, KILL_DNSCRYPTPROXY);
 					instance.dnsCryptProxyStartTriggered = false;
@@ -803,8 +807,9 @@ public class DNSFilterService extends VpnService  {
 			if (instance.shutdown()) {
 				INSTANCE= null;
 				return true;
-			} else
+			} else {
 				return false;
+			}
 		}
 	}
 
