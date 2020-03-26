@@ -6,6 +6,7 @@ import java.util.TreeSet;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
@@ -14,6 +15,7 @@ import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.widget.TextView;
 
 
 public class AppSelectorView extends LinearLayout {
@@ -77,6 +79,19 @@ public class AppSelectorView extends LinearLayout {
 				return;
 
 			try {
+
+				//set 'Loading apps...' info
+				final TextView infoText = new TextView(getContext());
+				infoText.setTextColor(Color.BLACK);
+				infoText.setText("Loading Apps...");
+
+				post(new Runnable() {
+					@Override
+					public void run() {
+						addView(infoText);
+					}
+				});
+
 				if (iconSize == 0) {
 					try {
 						Drawable icon = pm.getApplicationIcon("dnsfilter.android");
@@ -100,6 +115,14 @@ public class AppSelectorView extends LinearLayout {
 					entry.setText(packages[i].loadLabel(pm) + "\n" + packages[i].packageName);
 					sortedWrappers.add(new ComparableAppInfoWrapper(packages[i], entry));
 				}
+
+				//remove 'Loading apps...' info
+				post(new Runnable() {
+					@Override
+					public void run() {
+						removeView(infoText);
+					}
+				});
 
 				wrappers = sortedWrappers.toArray(new ComparableAppInfoWrapper[0]);
 
