@@ -1264,6 +1264,14 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 			findViewById(R.id.advSettingsScroll).setVisibility(View.VISIBLE);
 
+			keepAwakeCheck.setVisibility(View.VISIBLE);
+			proxyModeCheck.setVisibility(View.VISIBLE);
+			rootModeCheck.setVisibility(View.VISIBLE);
+			enableCloakProtectCheck.setVisibility(View.VISIBLE);
+			editAdditionalHostsCheck.setVisibility(View.VISIBLE);
+			editFilterLoadCheck.setVisibility(View.VISIBLE);
+			backupRestoreCheck.setVisibility(View.VISIBLE);
+
 			if (dest != advancedConfigCheck && dest != null) {
 
 				if (dest.isChecked()) {
