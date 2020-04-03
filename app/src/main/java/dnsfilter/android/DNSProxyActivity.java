@@ -1272,6 +1272,15 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			editFilterLoadCheck.setVisibility(View.VISIBLE);
 			backupRestoreCheck.setVisibility(View.VISIBLE);
 
+			if (dest == null) {
+				if (editAdditionalHostsCheck.isChecked())
+					dest = editAdditionalHostsCheck;
+				else if (editFilterLoadCheck.isChecked())
+					dest = editFilterLoadCheck;
+				else if (backupRestoreCheck.isChecked())
+					dest = backupRestoreCheck;
+			}
+
 			if (dest != advancedConfigCheck && dest != null) {
 
 				if (dest.isChecked()) {
