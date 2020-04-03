@@ -1279,6 +1279,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 					dest = editFilterLoadCheck;
 				else if (backupRestoreCheck.isChecked())
 					dest = backupRestoreCheck;
+				else if (appWhiteListCheck.isChecked())
+					dest = appWhiteListCheck;
 			}
 
 			if (dest != advancedConfigCheck && dest != null) {
