@@ -580,7 +580,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 
 
-	protected void showFilterRate() {
+	protected void showFilterRate(boolean asMessage) {
 
 		try {
 			long[] stats = CONFIG.getFilterStatistics();
@@ -588,7 +588,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 			if (all != 0) {
 				long filterRate = 100*stats[1] / all;
-				myLogger.message("Block rate: "+filterRate+"% ("+stats[1]+" blocked)!");
+				if (asMessage)
+					myLogger.message("Block rate: "+filterRate+"% ("+stats[1]+" blocked)!");
+				else
+					myLogger.logLine("Block rate: "+filterRate+"% ("+stats[1]+" blocked)!");
 			}
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
@@ -1052,7 +1055,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		if (destination == logOutView) {
 			findViewById(R.id.copyfromlog).setVisibility(View.GONE);
-			showFilterRate();
+			showFilterRate(true);
 			return;
 		}
 
@@ -1406,7 +1409,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		if (DNSFilterService.SERVICE != null) {
 			Logger.getLogger().logLine("DNSFilterService is running!");
-			Logger.getLogger().message("Attached already running Service!");
+			Logger.getLogger().logLine("Filter Statistic since last restart:");
+			showFilterRate(false);
+			//Logger.getLogger().message("Attached already running Service!");
 			return;
 		}
 
