@@ -47,6 +47,8 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.InflaterInputStream;
 
 import dnsfilter.remote.RemoteAccessServer;
 import util.ExecutionEnvironment;
@@ -566,12 +568,25 @@ public class DNSFilterManager extends ConfigurationAccess  {
 								URL url = new URL(urlStr);
 								URLConnection con;
 								con = url.openConnection();
+								con.setRequestProperty("Accept-Encoding", "gzip, deflate");
 								con.setRequestProperty("User-Agent", "Mozilla/5.0 (" + System.getProperty("os.name") + "; " + System.getProperty("os.version") + ")");
 
 								con.setConnectTimeout(120000);
 								con.setReadTimeout(120000);
 
-								in = new BufferedInputStream(con.getInputStream(), 2048);
+								String contentencoding = con.getContentEncoding();
+
+								if ("gzip".equals(contentencoding))
+									in = new BufferedInputStream(new GZIPInputStream(con.getInputStream()), 2048);
+								else if ("deflate".equals(contentencoding))
+									in = new BufferedInputStream(new InflaterInputStream(con.getInputStream()), 2048);
+								else {
+									con = url.openConnection();
+									con.setRequestProperty("User-Agent", "Mozilla/5.0 (" + System.getProperty("os.name") + "; " + System.getProperty("os.version") + ")");
+									con.setConnectTimeout(120000);
+									con.setReadTimeout(120000);
+									in = new BufferedInputStream(con.getInputStream(), 2048);
+								}
 							} else
 								in = new BufferedInputStream(new FileInputStream(urlStr.substring(7)),2048);
 							byte[] buf = new byte[2048];
