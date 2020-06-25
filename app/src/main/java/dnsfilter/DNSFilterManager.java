@@ -567,7 +567,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 							if (!urlStr.startsWith("file://")) {
 								URL url = new URL(urlStr);
 								URLConnection con = url.openConnection();
-								con.setRequestProperty("User-Agent", "Mozilla/5.0 (" + System.getProperty("os.name") + "; " + System.getProperty("os.version") + ")");
+								
 								con.setConnectTimeout(120000);
 								con.setReadTimeout(120000);
 								con.setRequestProperty("Accept-Encoding", "gzip, deflate");
