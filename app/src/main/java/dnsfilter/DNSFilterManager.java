@@ -570,20 +570,22 @@ public class DNSFilterManager extends ConfigurationAccess  {
 								
 								con.setConnectTimeout(120000);
 								con.setReadTimeout(120000);
-								con.setRequestProperty("Accept-Encoding", "gzip, deflate");
+								con.setRequestProperty("Accept-Encoding", "gzip, deflate, identity");
 								con.setRequestProperty("User-Agent", "Mozilla/5.0 (" + System.getProperty("os.name") + "; " + System.getProperty("os.version") + ")");
 
 								String contentencoding = con.getContentEncoding();
+								Logger.getLogger().logLine(contentencoding);
 
 								if ("gzip".equals(contentencoding))
 									in = new BufferedInputStream(new GZIPInputStream(con.getInputStream()), 2048);
 								else if ("deflate".equals(contentencoding))
 									in = new BufferedInputStream(new InflaterInputStream(con.getInputStream()), 2048);
-								else {
+								else if (contentencoding == null || "identity".equals(contentencoding))
 									in = new BufferedInputStream(con.getInputStream(), 2048);
-								}
+								else throw new IOException("ContentEncoding not supported:"+contentencoding);
 							} else
 								in = new BufferedInputStream(new FileInputStream(urlStr.substring(7)),2048);
+
 							byte[] buf = new byte[2048];
 							int[] r;
 
