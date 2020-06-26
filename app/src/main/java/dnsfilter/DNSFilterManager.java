@@ -574,8 +574,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 								con.setRequestProperty("User-Agent", "Mozilla/5.0 (" + System.getProperty("os.name") + "; " + System.getProperty("os.version") + ")");
 
 								String contentencoding = con.getContentEncoding();
-								Logger.getLogger().logLine(contentencoding);
-
+								
 								if ("gzip".equals(contentencoding))
 									in = new BufferedInputStream(new GZIPInputStream(con.getInputStream()), 2048);
 								else if ("deflate".equals(contentencoding))
