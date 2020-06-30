@@ -1248,7 +1248,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			initEnv();
 
 			Logger.getLogger().logLine("***Initializing PersonalDNSFilter Version " + VERSION + "!***");
-			Logger.getLogger().logLine("Using Directory: "+WORKDIR);
+			Logger.getLogger().logLine("Using Directory: " + System.getProperty("user.dir"));
 
 			byte[] configBytes = readConfig();
 			config = new Properties();
