@@ -61,7 +61,7 @@ package util;
 	
 	@Override
 	public String getWorkDir() {
-		return "./";		
+		return System.getProperty("user.dir")+"/";
 	}
 
 	@Override

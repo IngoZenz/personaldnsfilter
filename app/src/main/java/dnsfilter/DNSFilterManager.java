@@ -472,7 +472,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	private void copyFromAssets(String from, String to) throws IOException {
 
 		InputStream defIn = ExecutionEnvironment.getEnvironment().getAsset(from);
-		File toFile = new File(("./"+WORKDIR + to));
+		File toFile = new File((WORKDIR + to));
 		toFile.getParentFile().mkdirs();
 		FileOutputStream out = new FileOutputStream(toFile);
 		Utils.copyFully(defIn, out, true);

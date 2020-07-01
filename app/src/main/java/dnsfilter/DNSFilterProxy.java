@@ -138,6 +138,7 @@ public class DNSFilterProxy implements Runnable {
 
 		Logger.setLogger(new GroupedLogger(new LoggerInterface[] {new StandaloneLogger()}));
 		ExecutionEnvironment.setEnvironment(new StandaloneEnvironment());
+		DNSFilterManager.WORKDIR = ExecutionEnvironment.getEnvironment().getWorkDir();
 		
 		DNSFilterManager filtermgr = DNSFilterManager.getInstance();
 	
