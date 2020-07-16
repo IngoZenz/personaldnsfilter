@@ -144,7 +144,8 @@ public class DNSFilterProxy implements Runnable {
 	
 		filtermgr.init();
 		initDNS(filtermgr);
-		DNSFilterProxy runner = new DNSFilterProxy(53);
+		int port = Integer.parseInt(DNSFilterManager.getInstance().getConfig().getProperty("dnsProxyPortNonAndroid","53"));
+		DNSFilterProxy runner = new DNSFilterProxy(port);
 		runner.run();
 	}
 
