@@ -26,7 +26,6 @@ package dnsfilter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
-import java.util.HashSet;
 import java.util.Set;
 
 import util.Logger;
@@ -37,8 +36,8 @@ public class DNSResponsePatcher {
 	private static Set FILTER = null;
 	private static LoggerInterface TRAFFIC_LOG = null;
 
-	private static byte[] ipv4_localhost;
-	private static byte[] ipv6_localhost;
+	private static byte[] ipv4_blocked;
+	private static byte[] ipv6_blocked;
 
 	private static long okCnt=0;
 	private static long filterCnt=0;
@@ -48,8 +47,8 @@ public class DNSResponsePatcher {
 
 	static {
 		try {
-			ipv4_localhost = InetAddress.getByName("127.0.0.1").getAddress();
-			ipv6_localhost = InetAddress.getByName("::1").getAddress();
+			ipv4_blocked = InetAddress.getByName(ConfigurationAccess.getLocal().getConfig().getProperty("ipV4BlockedHost","127.0.0.1")).getAddress();
+			ipv6_blocked = InetAddress.getByName(ConfigurationAccess.getLocal().getConfig().getProperty("ipV6BlockedHost","::1")).getAddress();
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
 		}
@@ -129,9 +128,9 @@ public class DNSResponsePatcher {
 						filtered = true;
 						// replace ip!
 						if (type == 1) // IPV4
-							buf.put(ipv4_localhost);
+							buf.put(ipv4_blocked);
 						else if (type == 28) // IPV6
-							buf.put(ipv6_localhost);
+							buf.put(ipv6_blocked);
 					} else if (checkIP){ //check if resolved IP is filtered
 						byte[] answer = new byte[len];
 						buf.get(answer);
@@ -140,9 +139,9 @@ public class DNSResponsePatcher {
 						if (filterIP(ip)) {
 							filtered = true;
 							if (type == 1) // IPV4
-								buf.put(ipv4_localhost);
+								buf.put(ipv4_blocked);
 							else if (type == 28) // IPV6
-								buf.put(ipv6_localhost);
+								buf.put(ipv6_blocked);
 						}
 					}
 				}

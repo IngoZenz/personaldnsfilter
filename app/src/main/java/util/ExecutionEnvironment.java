@@ -22,6 +22,7 @@
 
 package util;
 
+ import java.io.File;
  import java.io.IOException;
  import java.io.InputStream;
 
@@ -61,7 +62,7 @@ package util;
 	
 	@Override
 	public String getWorkDir() {
-		return "./";		
+		return System.getProperty("user.dir")+ File.separator;
 	}
 
 	@Override

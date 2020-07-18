@@ -138,12 +138,14 @@ public class DNSFilterProxy implements Runnable {
 
 		Logger.setLogger(new GroupedLogger(new LoggerInterface[] {new StandaloneLogger()}));
 		ExecutionEnvironment.setEnvironment(new StandaloneEnvironment());
+		DNSFilterManager.WORKDIR = ExecutionEnvironment.getEnvironment().getWorkDir();
 		
 		DNSFilterManager filtermgr = DNSFilterManager.getInstance();
 	
 		filtermgr.init();
 		initDNS(filtermgr);
-		DNSFilterProxy runner = new DNSFilterProxy(53);
+		int port = Integer.parseInt(DNSFilterManager.getInstance().getConfig().getProperty("dnsProxyPortNonAndroid","53"));
+		DNSFilterProxy runner = new DNSFilterProxy(port);
 		runner.run();
 	}
 

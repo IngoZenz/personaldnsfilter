@@ -155,7 +155,8 @@ public class DNSFilterService extends VpnService  {
 					}
 
 					Logger.getLogger().logLine("Cleaning up a previous redirect from previous not correctly terminated execution!");
-					runOSCommand(false, "iptables -t nat -D OUTPUT -p udp --dport 53 -j DNAT --to-destination "+ip+":5300");
+					runOSCommand(true, "iptables -t nat -D OUTPUT -p udp --dport 53 -j DNAT --to-destination "+ip+":5300");
+					runOSCommand(true, "ip6tables -D OUTPUT -p tcp --destination-port 53 -j DROP");
 
 				}
 			} catch (Exception e) {
@@ -171,6 +172,8 @@ public class DNSFilterService extends VpnService  {
 				if (ip !=null &&!ip.equals(forwardip)){
 					clearForward();
 					runOSCommand(false, "iptables -t nat -I OUTPUT -p udp --dport 53 -j DNAT --to-destination " + ip + ":5300");
+					//nat in general not available for IP6 => drop IP6 DNS requests!
+					runOSCommand(true, "ip6tables -A OUTPUT -p tcp --destination-port 53 -j DROP");
 					forwardip = ip;
 					FileOutputStream ipFile = new FileOutputStream(ipFilePath);
 					ipFile.write(ip.getBytes());
@@ -188,6 +191,7 @@ public class DNSFilterService extends VpnService  {
 
 			try {
 				runOSCommand(false, "iptables -t nat -D OUTPUT -p udp --dport 53 -j DNAT --to-destination "+forwardip+":5300");
+				runOSCommand(true, "ip6tables -D OUTPUT -p tcp --destination-port 53 -j DROP");
 				forwardip = null;
 				if (!new File(ipFilePath).delete()){
 					throw (new IOException("Cannot delete "+ipFilePath));

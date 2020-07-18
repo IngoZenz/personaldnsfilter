@@ -47,6 +47,8 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.InflaterInputStream;
 
 import dnsfilter.remote.RemoteAccessServer;
 import util.ExecutionEnvironment;
@@ -58,7 +60,7 @@ import util.Utils;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1504000";
+	public static final String VERSION = "1504100";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -470,7 +472,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	private void copyFromAssets(String from, String to) throws IOException {
 
 		InputStream defIn = ExecutionEnvironment.getEnvironment().getAsset(from);
-		File toFile = new File(("./"+WORKDIR + to));
+		File toFile = new File((WORKDIR + to));
 		toFile.getParentFile().mkdirs();
 		FileOutputStream out = new FileOutputStream(toFile);
 		Utils.copyFully(defIn, out, true);
@@ -564,16 +566,25 @@ public class DNSFilterManager extends ConfigurationAccess  {
 							InputStream in;
 							if (!urlStr.startsWith("file://")) {
 								URL url = new URL(urlStr);
-								URLConnection con;
-								con = url.openConnection();
-								con.setRequestProperty("User-Agent", "Mozilla/5.0 (" + System.getProperty("os.name") + "; " + System.getProperty("os.version") + ")");
-
+								URLConnection con = url.openConnection();
+								
 								con.setConnectTimeout(120000);
 								con.setReadTimeout(120000);
+								con.setRequestProperty("Accept-Encoding", "gzip, deflate, identity");
+								con.setRequestProperty("User-Agent", "Mozilla/5.0 (" + System.getProperty("os.name") + "; " + System.getProperty("os.version") + ")");
 
-								in = new BufferedInputStream(con.getInputStream(), 2048);
+								String contentencoding = con.getContentEncoding();
+								
+								if ("gzip".equals(contentencoding))
+									in = new BufferedInputStream(new GZIPInputStream(con.getInputStream()), 2048);
+								else if ("deflate".equals(contentencoding))
+									in = new BufferedInputStream(new InflaterInputStream(con.getInputStream()), 2048);
+								else if (contentencoding == null || "identity".equals(contentencoding))
+									in = new BufferedInputStream(con.getInputStream(), 2048);
+								else throw new IOException("ContentEncoding not supported:"+contentencoding);
 							} else
 								in = new BufferedInputStream(new FileInputStream(urlStr.substring(7)),2048);
+
 							byte[] buf = new byte[2048];
 							int[] r;
 
