@@ -86,11 +86,14 @@ public class DNSResolver implements Runnable {
 		// we can reuse the request data array
 		DatagramPacket response = new DatagramPacket(packetData, offs, packetData.length - offs);
 
-		//forward request to DNS and receive response
-		DNSCommunicator.getInstance().requestDNS(request, response);
+		byte[] buf = DNSResponsePatcher.patchResponse(clientID, response.getData(), offs, true);
+		if(!DNSResponsePatcher.filtered()) {
+			//forward request to DNS and receive response
+			DNSCommunicator.getInstance().requestDNS(request, response);
 
-		// patch the response by applying filter			
-		byte[] buf = DNSResponsePatcher.patchResponse(clientID, response.getData(), offs);
+			// patch the response by applying filter			
+			buf = DNSResponsePatcher.patchResponse(clientID, response.getData(), offs, false);
+		}
 
 		//create  UDP Header and update source and destination IP and port			
 		UDPPacket udp = UDPPacket.createUDPPacket(buf, ipOffs, hdrLen + response.getLength(), version);
@@ -113,11 +116,14 @@ public class DNSResolver implements Runnable {
 		byte[] data = dataGramRequest.getData();
 		DatagramPacket response = new DatagramPacket(data, dataGramRequest.getOffset(), data.length - dataGramRequest.getOffset());
 
-		//forward request to DNS and receive response
-		DNSCommunicator.getInstance().requestDNS(dataGramRequest, response);
+		DNSResponsePatcher.patchResponse(sourceAdr.toString(), response.getData(), response.getOffset(), true);
+		if(!DNSResponsePatcher.filtered()) {
+			//forward request to DNS and receive response
+			DNSCommunicator.getInstance().requestDNS(dataGramRequest, response);
 
-		// patch the response by applying filter			
-		DNSResponsePatcher.patchResponse(sourceAdr.toString(), response.getData(), response.getOffset());
+			// patch the response by applying filter			
+			DNSResponsePatcher.patchResponse(sourceAdr.toString(), response.getData(), response.getOffset(), false);
+		}
 
 		//finally return the response to the request source
 		response.setSocketAddress(sourceAdr);
