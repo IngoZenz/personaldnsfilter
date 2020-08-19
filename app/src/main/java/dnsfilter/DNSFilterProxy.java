@@ -31,6 +31,7 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import util.ExecutionEnvironment;
+import util.FilteringLogger;
 import util.GroupedLogger;
 import util.Logger;
 import util.LoggerInterface;
@@ -136,7 +137,7 @@ public class DNSFilterProxy implements Runnable {
 
 		}
 
-		Logger.setLogger(new GroupedLogger(new LoggerInterface[] {new StandaloneLogger()}));
+		Logger.setLogger(new GroupedLogger(new LoggerInterface[] {new FilteringLogger(new StandaloneLogger())}));
 		ExecutionEnvironment.setEnvironment(new StandaloneEnvironment());
 		DNSFilterManager.WORKDIR = ExecutionEnvironment.getEnvironment().getWorkDir();
 		

@@ -78,6 +78,7 @@ import java.util.StringTokenizer;
 import dnsfilter.ConfigurationAccess;
 import dnsfilter.DNSFilterManager;
 import util.ExecutionEnvironment;
+import util.FilteringLogger;
 import util.GroupedLogger;
 import util.Logger;
 import util.LoggerInterface;
@@ -521,12 +522,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			if (myLogger != null) {
 				if (CONFIG.isLocal()) {
 					((GroupedLogger) Logger.getLogger()).detachLogger(myLogger);
-					((GroupedLogger) Logger.getLogger()).attachLogger(this);
-					myLogger = this;
+					myLogger = new FilteringLogger(this);
+					((GroupedLogger) Logger.getLogger()).attachLogger(myLogger);
 				}
 			} else {
-				Logger.setLogger(new GroupedLogger(new LoggerInterface[]{this}));
-				myLogger = this;
+				myLogger = new FilteringLogger(this);
+				Logger.setLogger(new GroupedLogger(new LoggerInterface[]{myLogger}));
 			}
 
 			boolean storagePermission = true;
@@ -1207,8 +1208,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		else {
 			CONFIG.releaseConfiguration();
 			CONFIG = ConfigurationAccess.getLocal();
-			myLogger = this;
-			((GroupedLogger) Logger.getLogger()).attachLogger(this);
+			((GroupedLogger) Logger.getLogger()).attachLogger(myLogger);
 			loadAndApplyConfig(false);
 			message("CONNECTED TO "+ CONFIG);
 			logLine("=>CONNECTED to "+ CONFIG +"<=");
