@@ -15,10 +15,16 @@ public class FilteringLogger implements LoggerInterface {
 		this.nestedLogger = nestedLogger;
 	}
 
+	public void setNestedLogger(LoggerInterface nestedLogger) {
+		this.nestedLogger = nestedLogger;
+	}
+
 	private boolean repeatingLog(String logStr){
-		long current = System.currentTimeMillis();
+
 		long lastLogged = 0;
+
 		synchronized (lastLogs) {
+			long current = System.currentTimeMillis();
 
 			//check when last Logged
 			Long entry = lastLogs.get(logStr);

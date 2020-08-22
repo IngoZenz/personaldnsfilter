@@ -521,9 +521,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 			if (myLogger != null) {
 				if (CONFIG.isLocal()) {
-					((GroupedLogger) Logger.getLogger()).detachLogger(myLogger);
+					/*(((GroupedLogger) Logger.getLogger()).detachLogger(myLogger);
 					myLogger = new FilteringLogger(this);
-					((GroupedLogger) Logger.getLogger()).attachLogger(myLogger);
+					((GroupedLogger) Logger.getLogger()).attachLogger(myLogger);)*/
+					((FilteringLogger)myLogger).setNestedLogger(this);
 				}
 			} else {
 				myLogger = new FilteringLogger(this);
