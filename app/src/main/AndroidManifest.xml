@@ -18,11 +18,11 @@
     <application
         android:usesCleartextTraffic="true"
         android:icon="@drawable/icon"
-        android:label="@string/app_name"
+        android:label="personalDNSfilter"
         android:theme="@style/Theme.phttpp.TitleBar" >
         <activity
             android:name="dnsfilter.android.DNSProxyActivity"
-            android:label="@string/app_name" >
+            android:label="personalDNSfilter" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -30,7 +30,7 @@
         </activity>
         <service
             android:name="dnsfilter.android.DNSFilterService"
-            android:label="DNSFilterService"
+            android:label="personalDNSFilterService"
             android:permission="android.permission.BIND_VPN_SERVICE" >
             <intent-filter>
                 <action android:name="android.net.VpnService" />
