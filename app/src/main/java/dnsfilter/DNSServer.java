@@ -212,7 +212,7 @@ public class DNSServer {
 
     private static DatagramPacket getRandomRequest() {
         int random = (int) Math.abs(Math.random()*Integer.MAX_VALUE);
-        byte[] request = buildDNSRequest(new String[]{"www",""+random,"org"});
+        byte[] request = buildDNSRequest(new String[]{"www","t"+random,"org"});
         return new DatagramPacket(request,request.length);
     }
 
