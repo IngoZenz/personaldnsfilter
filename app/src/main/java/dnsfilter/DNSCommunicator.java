@@ -47,6 +47,7 @@ public class DNSCommunicator {
 		if (hasChanged(newDNSServers, dnsServers)) {
 			dnsServers = newDNSServers;
 			if (dnsServers.length > 0) {
+				curDNS = 0;
 				setFastestDNSFromServers();
 				lastDNS = dnsServers[curDNS].toString();
 			} else {
@@ -138,9 +139,8 @@ public class DNSCommunicator {
 							e.printStackTrace();
 						}
 					}
-
-					Logger.getLogger().logLine("Selected DNS: ("+dnsServers[curDNS].lastPerformance+"ms)"+dnsServers[curDNS]);
-
+					if (curDNS != -1)
+						Logger.getLogger().logLine("Selected DNS: ("+dnsServers[curDNS].lastPerformance+"ms) "+dnsServers[curDNS]);
 				}
 			}
 
