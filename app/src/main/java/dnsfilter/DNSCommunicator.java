@@ -47,8 +47,8 @@ public class DNSCommunicator {
 		if (hasChanged(newDNSServers, dnsServers)) {
 			dnsServers = newDNSServers;
 			if (dnsServers.length > 0) {
-				lastDNS = dnsServers[0].toString();
-				curDNS = 0;
+				setFastestDNSFromServers();
+				lastDNS = dnsServers[curDNS].toString();
 			} else {
 				lastDNS = "";
 				curDNS = -1;
@@ -70,9 +70,89 @@ public class DNSCommunicator {
 		return false;
 	}
 
+
+	private synchronized void setFastestDNSFromServers() {
+		new Thread(new Runnable() {
+
+			boolean ready = false;
+			boolean go = false;
+			Object monitor = new Object();
+			int cnt = 0;
+
+			public void terminated(boolean found) {
+				synchronized (monitor) {
+					cnt++;
+					if (found || cnt == dnsServers.length) {
+						ready = true;
+						monitor.notifyAll();
+					}
+				}
+			}
+
+			@Override
+			public void run() {
+				for (int i = 0; i < dnsServers.length; i++) {
+					final int finalI = i;
+					new Thread(new Runnable() {
+						DNSServer dnsServer = dnsServers[finalI];
+						int dnsIdx = finalI;
+						@Override
+						public void run() {
+							synchronized (monitor) {
+								while (!go) {
+									try {
+										monitor.wait();
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+									}
+								}
+							}
+							try {
+								long result = dnsServer.testDNS(5);
+								Logger.getLogger().logLine(dnsServer+": "+result+"ms");
+								synchronized (monitor) {
+									if (!ready) {
+										curDNS = dnsIdx;
+										terminated(true);
+									}
+								}
+							} catch (IOException eio) {
+								Logger.getLogger().logLine(dnsServer+": "+eio.getMessage());
+								terminated(false);
+							}
+
+						}
+					}).start();
+				}
+
+
+				synchronized (monitor){
+
+					go = true;
+					monitor.notifyAll();
+
+					while (!ready) {
+						try {
+							monitor.wait();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+
+					Logger.getLogger().logLine("Selected DNS: ("+dnsServers[curDNS].lastPerformance+"ms)"+dnsServers[curDNS]);
+
+				}
+			}
+
+
+
+		}).run();
+	}
+
 	private synchronized void switchDNSServer(DNSServer current) throws IOException {
 		if (current == getCurrentDNS()) {  //might have been switched by other thread already
-			curDNS = (curDNS + 1) % dnsServers.length;
+			//curDNS = (curDNS + 1) % dnsServers.length;
+			setFastestDNSFromServers();
 			if (ExecutionEnvironment.getEnvironment().debug())
 				Logger.getLogger().logLine("Switched DNS Server to:" + getCurrentDNS().getAddress().getHostAddress());
 		}

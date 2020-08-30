@@ -31,7 +31,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 
 import util.Logger;
 import util.conpool.Connection;
@@ -41,6 +41,7 @@ public class DNSServer {
 
     protected InetSocketAddress address;
     protected int timeout;
+    protected long lastPerformance = -1;
     private static int bufSize=1024;
     private static int maxBufSize= -1; //will be initialized on request
     public static final int UDP = 0; //Via UDP
@@ -187,6 +188,62 @@ public class DNSServer {
     }
 
     public void resolve(DatagramPacket request, DatagramPacket response) throws IOException {}
+
+    public int getLastPerformance() {
+        return (int) lastPerformance;
+    }
+
+    public long testDNS(int noOfTimes) throws IOException {
+        DatagramPacket response = new DatagramPacket(new byte[bufSize],0, bufSize);
+
+        //1st request without counting as after this connection is pooled
+        DatagramPacket request = getRandomRequest();
+        resolve(request, response);
+
+        //Now start counting
+        long millis = System.currentTimeMillis();
+        for (int i = 0; i < noOfTimes; i++){
+            request = getRandomRequest();
+            resolve(request, response);
+        }
+        lastPerformance = System.currentTimeMillis()-millis;
+        return lastPerformance;
+    }
+
+    private static DatagramPacket getRandomRequest() {
+        int random = (int) Math.abs(Math.random()*Integer.MAX_VALUE);
+        byte[] request = buildDNSRequest(new String[]{"www",""+random,"org"});
+        return new DatagramPacket(request,request.length);
+    }
+
+    private static byte[] buildDNSRequest(String[] domainChain){
+
+        int bufLen = 17;
+        for (int i = 0; i < domainChain.length; i++)
+            bufLen = bufLen+domainChain[i].length()+1;
+
+        byte[] buf = new byte[bufLen];
+        ByteBuffer byteBuffer = ByteBuffer.wrap(buf);
+        byteBuffer.putShort((short) 0); //id 0
+        byteBuffer.putShort((short) 256); // flags => only recursive desired set
+        byteBuffer.putShort((short)1); // Questions:1
+        byteBuffer.putShort((short)0); // Answers:0
+        byteBuffer.putShort((short)0); // Auth:0
+        byteBuffer.putShort((short)0); // Additional:0
+
+        //set request
+        for (int i = 0; i < domainChain.length; i++) {
+            byteBuffer.put((byte)(domainChain[i].length() & 0xFF));
+            byteBuffer.put(domainChain[i].getBytes());
+        }
+        byteBuffer.put((byte)0);
+
+        byteBuffer.putShort((short)1); // Q-Type:1
+        byteBuffer.putShort((short)1); // Q-Class:1
+
+        return buf;
+    }
+
 
 
 }
