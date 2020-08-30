@@ -200,13 +200,17 @@ public class DNSServer {
         DatagramPacket request = getRandomRequest();
         resolve(request, response);
 
-        //Now start counting
+        //Prepare
+        DatagramPacket[] requests = new DatagramPacket[noOfTimes];
+        for (int i = 0; i < noOfTimes; i++)
+            requests[i] = getRandomRequest();
+
+        //Now start meaurement
         long millis = System.currentTimeMillis();
-        for (int i = 0; i < noOfTimes; i++){
-            request = getRandomRequest();
-            resolve(request, response);
+        for (int i = 0; i < noOfTimes; i++) {
+            resolve(requests[i], response);
         }
-        lastPerformance = System.currentTimeMillis()-millis;
+        lastPerformance = (System.currentTimeMillis()-millis) / noOfTimes;
         return lastPerformance;
     }
 

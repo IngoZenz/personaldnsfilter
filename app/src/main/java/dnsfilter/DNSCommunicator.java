@@ -121,7 +121,6 @@ public class DNSCommunicator {
 								Logger.getLogger().logLine(dnsServer+": "+eio.getMessage());
 								terminated(false);
 							}
-
 						}
 					}).start();
 				}
