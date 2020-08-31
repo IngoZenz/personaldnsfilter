@@ -467,6 +467,10 @@ public class DNSFilterService extends VpnService  {
 			DNSCommunicator.getInstance().setDNSServers(dnsAdrs.toArray(new DNSServer[dnsAdrs.size()]));
 
 		} catch (IOException e) {
+			Logger.getLogger().logLine("!!!DNS Server initialization failed!!!");
+			Logger.getLogger().logLine(e.toString());
+			Logger.getLogger().message(e.getMessage());
+		} catch (Exception e) {
 			Logger.getLogger().logException(e);
 		}
 	}

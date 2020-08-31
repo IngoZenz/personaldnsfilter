@@ -106,8 +106,18 @@ public class Utils {
 		return ((long) a << 32) | ((long) b & 0xFFFFFFFFL);
 	}
 
+	public static boolean arrayEqual(Object[] a1, Object[]a2){
+		if (a1.length != a2.length)
+			return false;
 
-	public static void closeSocket(Socket s){
+		for (int i = 0; i < a1.length; i++)
+			if (!a1[i].equals(a2[i]))
+				return false;
+
+			return true;
+	}
+
+		public static void closeSocket(Socket s){
 		try {
 			s.shutdownOutput();
 		} catch (IOException e) {

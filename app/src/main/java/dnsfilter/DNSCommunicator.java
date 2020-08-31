@@ -28,6 +28,7 @@ import java.net.InetAddress;
 
 import util.ExecutionEnvironment;
 import util.Logger;
+import util.Utils;
 
 public class DNSCommunicator {
 
@@ -43,13 +44,17 @@ public class DNSCommunicator {
 		return INSTANCE;
 	}
 
-	public synchronized void setDNSServers(DNSServer[] newDNSServers) {
+	public synchronized void setDNSServers(DNSServer[] newDNSServers) throws IOException {
+
+		if (newDNSServers.length > 20)
+			throw new IOException ("To many DNS Servers configured - Max 20!");
+
 		if (hasChanged(newDNSServers, dnsServers)) {
 			dnsServers = newDNSServers;
 			if (dnsServers.length > 0) {
 				curDNS = 0;
-				setFastestDNSFromServers();
 				lastDNS = dnsServers[curDNS].toString();
+				setFastestDNSFromServers(true);
 			} else {
 				lastDNS = "";
 				curDNS = -1;
@@ -60,19 +65,22 @@ public class DNSCommunicator {
 	}
 
 	private boolean hasChanged(DNSServer[] newDNS, DNSServer[] curDNS) {
-
-		if (newDNS.length != curDNS.length)
-			return true;
-
-		for (int i = 0; i < newDNS.length; i++)
-			if (!newDNS[i].equals(curDNS[i]))
-				return true;
-
-		return false;
+		return !Utils.arrayEqual(newDNS,curDNS);
 	}
 
 
-	private synchronized void setFastestDNSFromServers() {
+	private void setFastestDNSFromServers(final boolean acceptCurrent) {
+		final DNSServer[] dnsServersCopy;
+		final int[] curDNSCopy = new int[1];
+
+		synchronized (this) {
+			curDNSCopy[0] = curDNS;
+			dnsServersCopy = new DNSServer[this.dnsServers.length];
+			for (int i = 0; i < this.dnsServers.length; i++)
+				dnsServersCopy[i]= this.dnsServers[i];
+		}
+
+
 		new Thread(new Runnable() {
 
 			boolean ready = false;
@@ -83,7 +91,7 @@ public class DNSCommunicator {
 			public void terminated(boolean found) {
 				synchronized (monitor) {
 					cnt++;
-					if (found || cnt == dnsServers.length) {
+					if (found || cnt == dnsServersCopy.length) {
 						ready = true;
 						monitor.notifyAll();
 					}
@@ -92,10 +100,13 @@ public class DNSCommunicator {
 
 			@Override
 			public void run() {
-				for (int i = 0; i < dnsServers.length; i++) {
+
+				//Prepare Test Thread per DNS Server
+
+				for (int i = 0; i < dnsServersCopy.length; i++) {
 					final int finalI = i;
 					new Thread(new Runnable() {
-						DNSServer dnsServer = dnsServers[finalI];
+						DNSServer dnsServer = dnsServersCopy[finalI];
 						int dnsIdx = finalI;
 						@Override
 						public void run() {
@@ -113,8 +124,13 @@ public class DNSCommunicator {
 								Logger.getLogger().logLine(dnsServer+": "+result+"ms");
 								synchronized (monitor) {
 									if (!ready) {
-										curDNS = dnsIdx;
-										terminated(true);
+										if (acceptCurrent || dnsIdx != curDNSCopy[0]) {
+											curDNSCopy[0] = dnsIdx;
+											terminated(true);
+										} else {
+											Logger.getLogger().logLine(dnsServer+" already set! Preferring different one!");
+											terminated(false);
+										}
 									}
 								}
 							} catch (IOException eio) {
@@ -128,8 +144,12 @@ public class DNSCommunicator {
 
 				synchronized (monitor){
 
+					// Trigger the Test Threads to start testing
+
 					go = true;
 					monitor.notifyAll();
+
+					// Wait for the first successfull Thread to finish
 
 					while (!ready) {
 						try {
@@ -138,20 +158,29 @@ public class DNSCommunicator {
 							e.printStackTrace();
 						}
 					}
-					if (curDNS != -1)
-						Logger.getLogger().logLine("Selected DNS: ("+dnsServers[curDNS].lastPerformance+"ms) "+dnsServers[curDNS]);
+
+					// Take over result in case no other DNS Serverlist change was in between
+					synchronized (this) {
+
+						if (Utils.arrayEqual(dnsServersCopy, dnsServers)) {
+
+							curDNS = curDNSCopy[0];
+
+							if (curDNS != -1) {
+								Logger.getLogger().logLine("Selected DNS: (" + dnsServersCopy[curDNS].lastPerformance + "ms) " + dnsServersCopy[curDNS]);
+								lastDNS = dnsServers[curDNS].toString();
+							}
+						}
+					}
 				}
 			}
-
-
-
-		}).run();
+		}).start();
 	}
 
 	private synchronized void switchDNSServer(DNSServer current) throws IOException {
 		if (current == getCurrentDNS()) {  //might have been switched by other thread already
 			//curDNS = (curDNS + 1) % dnsServers.length;
-			setFastestDNSFromServers();
+			setFastestDNSFromServers(false);
 			if (ExecutionEnvironment.getEnvironment().debug())
 				Logger.getLogger().logLine("Switched DNS Server to:" + getCurrentDNS().getAddress().getHostAddress());
 		}

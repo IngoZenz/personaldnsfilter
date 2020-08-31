@@ -196,7 +196,7 @@ public class DNSServer {
     public long testDNS(int noOfTimes) throws IOException {
         DatagramPacket response = new DatagramPacket(new byte[bufSize],0, bufSize);
 
-        //1st request without counting as after this connection is pooled
+        //1st request without counting as after 1st request connection is pooled
         DatagramPacket request = getRandomRequest();
         resolve(request, response);
 
@@ -205,11 +205,13 @@ public class DNSServer {
         for (int i = 0; i < noOfTimes; i++)
             requests[i] = getRandomRequest();
 
-        //Now start meaurement
+        //Now start measurement
         long millis = System.currentTimeMillis();
+
         for (int i = 0; i < noOfTimes; i++) {
             resolve(requests[i], response);
         }
+
         lastPerformance = (System.currentTimeMillis()-millis) / noOfTimes;
         return lastPerformance;
     }
@@ -223,6 +225,7 @@ public class DNSServer {
     private static byte[] buildDNSRequest(String[] domainChain){
 
         int bufLen = 17;
+
         for (int i = 0; i < domainChain.length; i++)
             bufLen = bufLen+domainChain[i].length()+1;
 
@@ -235,13 +238,14 @@ public class DNSServer {
         byteBuffer.putShort((short)0); // Auth:0
         byteBuffer.putShort((short)0); // Additional:0
 
-        //set request
+        //set request host
         for (int i = 0; i < domainChain.length; i++) {
             byteBuffer.put((byte)(domainChain[i].length() & 0xFF));
             byteBuffer.put(domainChain[i].getBytes());
         }
         byteBuffer.put((byte)0);
 
+        //Query type and class
         byteBuffer.putShort((short)1); // Q-Type:1
         byteBuffer.putShort((short)1); // Q-Class:1
 
