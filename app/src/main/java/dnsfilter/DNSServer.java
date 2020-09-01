@@ -258,6 +258,8 @@ public class DNSServer {
 
 class UDP extends DNSServer {
 
+    private static int UDP_RETRY_CNT = 10;
+
     protected UDP(InetAddress address, int port, int timeout) {
         super(address, port, timeout);
     }
@@ -268,18 +270,25 @@ class UDP extends DNSServer {
     @Override
     public void resolve(DatagramPacket request, DatagramPacket response) throws IOException {
         DatagramSocket socket = new DatagramSocket();
+
         try {
             request.setSocketAddress(address);
-            socket.setSoTimeout(timeout);
-            try {
-                socket.send(request);
-            } catch (IOException eio) {
-                throw new IOException("Cannot reach " + address + "!" + eio.getMessage());
-            }
-            try {
-                socket.receive(response);
-            } catch (IOException eio) {
-                throw new IOException("No DNS Response from " + address);
+            socket.setSoTimeout(timeout/UDP_RETRY_CNT );
+            int retry = 0;
+            while (retry < UDP_RETRY_CNT ) {
+                try {
+                    socket.send(request);
+                } catch (IOException eio) {
+                    throw new IOException("Cannot reach " + address + "!" + eio.getMessage());
+                }
+                try {
+                    socket.receive(response);
+                    return;
+                } catch (IOException eio) {
+                    retry++;
+                    if (retry == UDP_RETRY_CNT )
+                        throw new IOException("No DNS Response from " + address);
+                }
             }
         } finally {
             socket.close();
