@@ -38,16 +38,13 @@ import android.net.NetworkInfo;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
-import android.text.format.Formatter;
 
-import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -90,8 +87,6 @@ public class DNSFilterService extends VpnService  {
 	public static DNSFilterProxy DNSFILTERPROXY = null;
 	private static DNSFilterService INSTANCE = null;
 
-	private static boolean JUST_STARTED = false;
-
 	private static boolean DNS_PROXY_PORT_IS_REDIRECTED = false;
 
 	private static boolean dnsProxyMode = false;
@@ -110,11 +105,14 @@ public class DNSFilterService extends VpnService  {
 	private int mtu;
 
 
+
 	protected static class DNSReqForwarder {
 		//used in case vpn mode is disabled for forwaring dns requests to local dns proxy
 
 		String forwardip = null;
 		String ipFilePath = ExecutionEnvironment.getEnvironment().getWorkDir()+"forward_ip";
+
+
 
 		public String getALocalIpAddress() throws IOException {
 
@@ -140,6 +138,7 @@ public class DNSFilterService extends VpnService  {
 			}
 			return ip;
 		}
+
 
 
 		public void clean() {
@@ -384,13 +383,46 @@ public class DNSFilterService extends VpnService  {
 
 	}
 
-	public static void possibleNetworkChange() {
-		detectDNSServers();
-		if (rootMode)
-			dnsReqForwarder.updateForward();
+
+	private static String[] getDNSServers() throws IOException {
+
+		if (DNSProxyActivity.debug)
+			Logger.getLogger().logLine("Detecting DNS Servers...");
+
+		String[] dnsServers = getDNSviaConnectivityManager();
+
+		if (dnsServers.length == 0) {
+			if (DNSProxyActivity.debug)
+				Logger.getLogger().logLine("Fallback DNS detection via SystemProperties");
+
+			dnsServers = getDNSviaSysProps();
+
+		} else if (DNSProxyActivity.debug)
+			Logger.getLogger().logLine("DNS detection via ConnectivityManager");
+
+		return dnsServers;
 	}
 
-	public static void detectDNSServers() {
+	static String[] lastDNSServers = new String[0];
+
+	public static void possibleNetworkChange(boolean force) throws IOException {
+		if (ExecutionEnvironment.getEnvironment().hasNetwork()) {
+
+			String[] dnsServers = getDNSServers();
+
+			boolean chnagedIPs = !Utils.arrayEqual(lastDNSServers, dnsServers);
+
+			if (force || chnagedIPs) {
+
+				lastDNSServers = dnsServers;
+				handleDNSServerChange(dnsServers);
+				if (rootMode)
+					dnsReqForwarder.updateForward();
+			}
+		}
+	}
+
+	public static void handleDNSServerChange(String [] foundDNSServers) {
 
 		try {
 			DNSFilterManager dnsFilterMgr = DNSFILTER;
@@ -408,28 +440,11 @@ public class DNSFilterService extends VpnService  {
 				Logger.getLogger().logException(e);
 			}
 
-			if (!detect && !JUST_STARTED)
-				return;  //only static DNS server config already loaded
-
-			JUST_STARTED = false;
-
-			if (DNSProxyActivity.debug)
-				Logger.getLogger().logLine("Detecting DNS Servers...");
-
 			Vector<DNSServer> dnsAdrs = new Vector<DNSServer>();
 
 			if (detect && !(rootMode) ) {
 
-				String[] dnsServers = getDNSviaConnectivityManager();
-
-				if (dnsServers.length == 0) {
-					if (DNSProxyActivity.debug)
-						Logger.getLogger().logLine("Fallback DNS detection via SystemProperties");
-
-					dnsServers = getDNSviaSysProps();
-
-				} else if (DNSProxyActivity.debug)
-					Logger.getLogger().logLine("DNS detection via ConnectivityManager");
+				String[] dnsServers = foundDNSServers;
 
 				try {
 					for (int i = 0; i < dnsServers.length; i++) {
@@ -565,8 +580,6 @@ public class DNSFilterService extends VpnService  {
 				DNSFilterManager.WORKDIR = DNSProxyActivity.WORKPATH.getAbsolutePath() + "/";
 				DNSFILTER = DNSFilterManager.getInstance();
 				DNSFILTER.init();
-				JUST_STARTED = true; //used in detectDNSServers to ensure eventually changed static DNS Servers config is taken
-
 				dnsProxyMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("dnsProxyOnAndroid", "false"));
 				rootMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("rootModeOnAndroid", "false"));
 				vpnInAdditionToProxyMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("vpnInAdditionToProxyMode", "false"));
@@ -583,7 +596,7 @@ public class DNSFilterService extends VpnService  {
 
 				registerReceiver(ConnectionChangeReceiver.getInstance(), new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
 
-				detectDNSServers();
+				possibleNetworkChange(true); // in order to trigger dns detection
 
 				//start DNS Proxy Mode if configured
 				if (dnsProxyMode) {
@@ -847,8 +860,7 @@ public class DNSFilterService extends VpnService  {
 
 			} else throw new IOException("Error! Cannot get VPN Interface! Try restart!");
 		}
-		JUST_STARTED = true; //used in detectDNSServers to ensure eventually changed static DNS Servers config is taken
-		detectDNSServers();
+		possibleNetworkChange(true); // trigger dns detection
 	}
 
 	public static void onReload() throws IOException {

@@ -798,11 +798,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 					String manualDNS_Help =
 							"# Format: <IP>::<PORT>::<PROTOCOL>::<URL END POINT>\n"+
-									"# IPV6 Addresses with '::' must be in brackets '[IPV6]'!\n" +
-									"# Cloudflare examples below:\n" +
-									"# 1.1.1.1::53::UDP (Default DNS on UDP port 53 / just 1.1.1.1 will work as well)\n" +
-									"# 1.1.1.1::853::DOT::cloudflare-dns.com (DNS over TLS, domain name is optional)\n" +
-									"# 1.1.1.1::443::DOH::https://cloudflare-dns.com/dns-query (DNS over HTTPS)\n\n";
+									"# IPV6 Addresses with '::' must be in brackets '[IPV6]'!\n\n" +
+                                    "# The default list contains following entries:\n" +
+									"# adguard1 (UDP); adguard2 (UDP); uncensoreddns.org (Dot); libredns.gr (DoT); libredns.gr (DoH);  nixnet.services Luxembourg (DoT); nixnet.services Las Vegas(DoT); nixnet.services New York(DoT)\n\n";
+
 					manualDNSView.setText(manualDNS_Help+config.getProperty("fallbackDNS").replace(";", "\n").replace(" ", ""));
 
 					FilterConfig.FilterConfigEntry[] filterEntries = buildFilterEntries(config);
