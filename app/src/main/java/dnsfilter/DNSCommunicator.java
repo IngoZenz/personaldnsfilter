@@ -71,7 +71,7 @@ public class DNSCommunicator {
 		synchronized (this) {
 			try {
 				File dnsPerfFile= new File(ExecutionEnvironment.getEnvironment().getWorkDir()+"dnsperf.info");
-				if (dnsPerfFile.delete()) {
+				if (!dnsPerfFile.exists() || dnsPerfFile.delete()) {
 					dnsPerfOut[0] = new FileOutputStream(dnsPerfFile);
 					dnsPerfOut[0].write(("#DNS Response Times\r\n#Started: " + new Date() + "\r\n\r\n").getBytes());
 				} else
@@ -120,7 +120,8 @@ public class DNSCommunicator {
 
 						public void writeDNSPerfInfo(String txt) {
 							try {
-								dnsPerfOut[0].write(txt.getBytes());
+								if (dnsPerfOut[0]!=null)
+									dnsPerfOut[0].write(txt.getBytes());
 							} catch (IOException eio) {
 								Logger.getLogger().logLine("Can't write dnsperf.info file!\n"+eio);
 							}
