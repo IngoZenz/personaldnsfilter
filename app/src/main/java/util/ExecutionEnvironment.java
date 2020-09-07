@@ -83,4 +83,9 @@ package util;
 		 return true;
 	 }
 
+	 @Override
+	 public boolean protectSocket(Object socket, int type) {
+		return true;
+	 }
+
  }

@@ -56,7 +56,7 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
     public void wakeLock(){
         WifiManager.WifiLock wifiLock = ((WifiManager) ctx.getApplicationContext().getSystemService(Context.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL, "personalHttpProxy");
         wifiLock.acquire();
-        PowerManager.WakeLock wakeLock = ((PowerManager) ctx.getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "personalHttpProxy");
+        PowerManager.WakeLock wakeLock = ((PowerManager) ctx.getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "personalDNSfilter:wakelock");
         wakeLock.acquire();
         wakeLooks.push(new Object[]{wifiLock, wakeLock});
         Logger.getLogger().logLine("Aquired WIFI lock and partial wake lock!");
@@ -122,6 +122,11 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
         ConnectivityManager conMan= (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo ni = conMan.getActiveNetworkInfo();
         return ni != null && ni.isConnected();
+    }
+
+    @Override
+    public boolean protectSocket(Object socket, int type) {
+        return DNSFilterService.protectSocket(socket, type);
     }
 
 }

@@ -166,6 +166,7 @@ public class DNSFilterProxy implements Runnable {
 		}
 		try {
 			receiver = new DatagramSocket(port);
+			ExecutionEnvironment.getEnvironment().protectSocket(receiver, 1);
 		} catch (IOException eio) {
 			Logger.getLogger().logLine("Exception:Cannot open DNS port " + port + "!" + eio.getMessage());
 			return;

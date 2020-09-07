@@ -35,4 +35,5 @@ package util;
 	public void onReload()  throws IOException;
 	public InputStream getAsset(String path) throws IOException;
 	public boolean hasNetwork();
+	public boolean protectSocket(Object socket, int type);
 }

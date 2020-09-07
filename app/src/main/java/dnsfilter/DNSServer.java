@@ -21,6 +21,8 @@ package dnsfilter;
    Contact:i.z@gmx.net
  */
 
+import android.os.Environment;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -33,6 +35,7 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.nio.ByteBuffer;
 
+import util.ExecutionEnvironment;
 import util.Logger;
 import util.conpool.Connection;
 import util.http.HttpHeader;
@@ -270,6 +273,7 @@ class UDP extends DNSServer {
     @Override
     public void resolve(DatagramPacket request, DatagramPacket response) throws IOException {
         DatagramSocket socket = new DatagramSocket();
+        ExecutionEnvironment.getEnvironment().protectSocket(socket,1);
 
         try {
             request.setSocketAddress(address);

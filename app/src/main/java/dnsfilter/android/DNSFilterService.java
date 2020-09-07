@@ -46,10 +46,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.net.DatagramSocket;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -202,6 +204,23 @@ public class DNSFilterService extends VpnService  {
 
 	}
 
+	protected static boolean protectSocket(Object socket, int type){
+
+		DNSFilterService instance = INSTANCE;
+
+		if (!is_running || instance.vpnRunner == null)
+			return true; //no vpn running
+
+
+		if (type == 0)
+			return instance.protect((Socket) socket);
+		if (type == 1)
+			return instance.protect((DatagramSocket) socket);
+
+		return false;
+	}
+
+
 	private static boolean supportsIPVersion(int version) throws Exception {
 		/*Enumeration<NetworkInterface> nifs = NetworkInterface.getNetworkInterfaces();
 		while (nifs.hasMoreElements()) {
@@ -343,18 +362,24 @@ public class DNSFilterService extends VpnService  {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
 			return new String[0];
 
+		DNSFilterService instance = INSTANCE; //avoid NullPointer during heavy use of  start stop operations
+		if (instance == null)
+			return new String[0];
+
 		HashSet<String> result = new HashSet<String>();
-		ConnectivityManager connectivityManager = (ConnectivityManager) INSTANCE.getSystemService(CONNECTIVITY_SERVICE);
+		ConnectivityManager connectivityManager = (ConnectivityManager) instance.getSystemService(CONNECTIVITY_SERVICE);
 		Network[] networks = getConnectedNetworks(connectivityManager, ConnectivityManager.TYPE_WIFI); //prefer WiFi
 		if (networks.length == 0)
 			networks = getConnectedNetworks(connectivityManager, -1); //fallback all networks
 		for (Network network : networks) {
-			NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
 
 			LinkProperties linkProperties = connectivityManager.getLinkProperties(network);
 			List<InetAddress> dnsList = linkProperties.getDnsServers();
-			for (int i = 0; i < dnsList.size(); i++)
-				result.add(dnsList.get(i).getHostAddress());
+			for (int i = 0; i < dnsList.size(); i++) {
+				String adr = dnsList.get(i).getHostAddress();
+				if (!adr.equals(VIRTUALDNS_IPV4) && !adr.equals(VIRTUALDNS_IPV6))
+					result.add(adr);
+			}
 
 		}
 		return result.toArray(new String[result.size()]);
@@ -370,7 +395,7 @@ public class DNSFilterService extends VpnService  {
 
 			for (String name : new String[]{"net.dns1", "net.dns2", "net.dns3", "net.dns4"}) {
 				String value = (String) method.invoke(null, name);
-				if (value != null && !value.equals("")) {
+				if (value != null && !value.equals("") && !value.equals(VIRTUALDNS_IPV4) && !value.equals(VIRTUALDNS_IPV6)) {
 					result.add(value);
 				}
 			}
@@ -419,6 +444,8 @@ public class DNSFilterService extends VpnService  {
 				if (rootMode)
 					dnsReqForwarder.updateForward();
 			}
+			if (chnagedIPs && INSTANCE != null && INSTANCE.vpnRunner!=null)
+				INSTANCE.restartVPN();
 		}
 	}
 
@@ -498,7 +525,7 @@ public class DNSFilterService extends VpnService  {
 
 		Builder builder = new Builder();
 
-		builder.setSession("DNS Filter");
+		builder.setSession("personalDNSFilter");
 
 		if (supportsIPVersion(4))
 			builder.addAddress(ADDRESS_IPV4, 24).addDnsServer(VIRTUALDNS_IPV4).addRoute(VIRTUALDNS_IPV4, 32);
@@ -509,29 +536,43 @@ public class DNSFilterService extends VpnService  {
 
 		// add additional IPs to route e.g. for handling application like
 		// google chrome bypassing the DNS via own DNS servers
-		StringTokenizer additionalRouteIps = new StringTokenizer(DNSFILTER.getConfig().getProperty("routeIPs", ""), ";");
-		int cnt = additionalRouteIps.countTokens();
-		if (cnt != 0 && Build.VERSION.SDK_INT < 21) {
-			cnt = 0;
-			Logger.getLogger().logLine("WARNING!: Setting 'routeIPs' not supported for Android version below 5.01!\n Setting ignored!");
-		}
+		String routes = DNSFILTER.getConfig().getProperty("routeIPs", "");
+		if (!routes.trim().equals(""))
+			routes = routes+"; ";
+
+		// add routes for detected DNS in order handle misbehaving google chrome
+		String[] dnsServers = getDNSServers();
+		for (int i = 0; i < dnsServers.length; i++)
+			routes = routes+dnsServers[i]+"; ";
+
+		Logger.getLogger().logLine("Adding Routes:" + routes);
+
+		StringTokenizer routeIPs = new StringTokenizer(routes, ";");
+
+		int cnt = routeIPs.countTokens();
+
 		for (int i = 0; i < cnt; i++) {
-			String value = additionalRouteIps.nextToken().trim();
-			Logger.getLogger().logLine("Additional route IP:" + value);
-			try {
-				InetAddress adr = InetAddress.getByName(value);
-				int prefix = 32;
-				if (adr instanceof Inet6Address)
-					prefix = 128;
-				builder.addRoute(InetAddress.getByName(value), prefix);
-			} catch (UnknownHostException e) {
-				Logger.getLogger().logException(e);
+			String value = routeIPs.nextToken().trim();
+			if (!value.equals("")) {
+				try {
+					InetAddress adr = InetAddress.getByName(value);
+					int prefix;
+					if (adr instanceof Inet4Address && supportsIPVersion(4)) {
+						prefix = 32;
+						builder.addRoute(InetAddress.getByName(value), prefix);
+					} else if (adr instanceof Inet6Address && supportsIPVersion(6)) {
+						prefix = 128;
+						builder.addRoute(InetAddress.getByName(value), prefix);
+					}
+				} catch (UnknownHostException e) {
+					Logger.getLogger().logException(e);
+				}
 			}
 		}
 
 		// this app itself should bypass VPN in order to prevent endless recursion
-		if (Build.VERSION.SDK_INT >= 21)
-			builder.addDisallowedApplication("dnsfilter.android");
+		/*if (Build.VERSION.SDK_INT >= 21)
+			builder.addDisallowedApplication("dnsfilter.android");*/
 
 		//apply app whitelist
 		StringTokenizer appWhiteList = new StringTokenizer(DNSFILTER.getConfig().getProperty("androidAppWhiteList", ""), ",");
@@ -786,8 +827,9 @@ public class DNSFilterService extends VpnService  {
 			}
 
 			VPNRunner runningVPN = vpnRunner;
+			vpnRunner = null;
 			if (runningVPN != null) {
-				vpnRunner.stop();
+				runningVPN.stop();
 			}
 			//stop eventually running proxy mode
 			if (DNSFILTERPROXY != null) {
@@ -835,30 +877,38 @@ public class DNSFilterService extends VpnService  {
 	}
 
 
+	private void restartVPN() throws IOException {
+
+		VPNRunner runningVPN = vpnRunner;
+
+		vpnRunner = null;
+
+		if (runningVPN != null) {
+			runningVPN.stop();
+		}
+		DNSFILTER = DNSFilterManager.getInstance();
+		ParcelFileDescriptor vpnInterface = null;
+		try {
+			vpnInterface = initVPN();
+		} catch (Exception e) {
+			throw new IOException("Cannot initialize VPN!", e);
+		}
+
+		if (vpnInterface != null) {
+			vpnRunner = new VPNRunner(++startCounter, vpnInterface);
+			new Thread(vpnRunner).start();
+
+
+		} else throw new IOException("Error! Cannot get VPN Interface! Try restart!");
+	}
+
+
 	public  void reload() throws IOException {
 		//only for reloading VPN and dns servers
 		//DNS Proxy and dnscrypt proxy are handled seperated
 
 		if (!dnsProxyMode || vpnInAdditionToProxyMode) {
-			VPNRunner runningVPN = vpnRunner;
-
-			if (runningVPN != null) {
-				vpnRunner.stop();
-			}
-			DNSFILTER = DNSFilterManager.getInstance();
-			ParcelFileDescriptor vpnInterface = null;
-			try {
-				vpnInterface = initVPN();
-			} catch (Exception e) {
-				throw new IOException("Cannot initialize VPN!", e);
-			}
-
-			if (vpnInterface != null) {
-				vpnRunner = new VPNRunner(++startCounter, vpnInterface);
-				new Thread(vpnRunner).start();
-
-
-			} else throw new IOException("Error! Cannot get VPN Interface! Try restart!");
+			restartVPN();
 		}
 		possibleNetworkChange(true); // trigger dns detection
 	}

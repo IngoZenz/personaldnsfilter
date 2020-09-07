@@ -29,6 +29,7 @@ import java.net.Proxy;
 import java.net.Socket;
 import java.net.SocketAddress;
 
+import util.ExecutionEnvironment;
 import util.http.HttpHeader;
 
 public class HttpProxy extends Proxy {
@@ -49,7 +50,7 @@ public class HttpProxy extends Proxy {
 		this.authString= authString;	
 	}
 
-	public Socket openTunnel(InetSocketAddress adr,  int conTimeout) throws IOException {
+	public Socket openTunnel(InetSocketAddress adr,  int conTimeout, boolean protect) throws IOException {
 		
 		String host;
 		
@@ -69,6 +70,10 @@ public class HttpProxy extends Proxy {
 		InetSocketAddress conAdr = new InetSocketAddress(InetAddress.getByAddress(adr.getHostName(), proxyAdr.getAddress().getAddress()), proxyAdr.getPort());
 		
 		Socket proxyCon = new Socket();
+
+		if (protect)
+			ExecutionEnvironment.getEnvironment().protectSocket(proxyCon,0);
+
 		proxyCon.connect(conAdr, conTimeout);
 		proxyCon.setSoTimeout(conTimeout);
 		proxyCon.getOutputStream().write(request.getBytes());
@@ -83,6 +88,10 @@ public class HttpProxy extends Proxy {
 		}
 		proxyCon.setSoTimeout(0); 
 		return proxyCon;		
+	}
+
+	public Socket openTunnel(InetSocketAddress adr,  int conTimeout) throws IOException {
+		return openTunnel(adr, conTimeout, false);
 	}
 
 }

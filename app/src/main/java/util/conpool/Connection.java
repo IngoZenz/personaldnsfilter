@@ -201,12 +201,13 @@ public class Connection implements TimeoutListener {
 			conTimeout= 0;
 		
 		if (proxy == Proxy.NO_PROXY) {
-			socket = new Socket();	
+			socket = new Socket();
+			ExecutionEnvironment.getEnvironment().protectSocket(socket,0);
 			socket.connect(sadr,conTimeout);
 		} else {
 			if (! (proxy instanceof HttpProxy))
 				throw new IOException ("Only "+HttpProxy.class.getName() +" supported for creating connection over tunnel!");
-			socket = ((HttpProxy) proxy).openTunnel(sadr, conTimeout);				
+			socket = ((HttpProxy) proxy).openTunnel(sadr, conTimeout, true);
 		}
 		//Logger.getLogger().logLine("NEW CONNECTION TO:"+socket);
 		if (ssl) {
