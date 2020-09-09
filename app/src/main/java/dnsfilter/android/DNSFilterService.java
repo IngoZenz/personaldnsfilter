@@ -94,6 +94,7 @@ public class DNSFilterService extends VpnService  {
 	private static boolean dnsProxyMode = false;
 	private static boolean rootMode = false;
 	private static boolean vpnInAdditionToProxyMode = false;
+	private static boolean routeDNS = false;
 	private static boolean is_running = false;
 	protected static DNSReqForwarder dnsReqForwarder = new DNSReqForwarder();
 
@@ -444,7 +445,7 @@ public class DNSFilterService extends VpnService  {
 				if (rootMode)
 					dnsReqForwarder.updateForward();
 			}
-			if (chnagedIPs && INSTANCE != null && INSTANCE.vpnRunner!=null)
+			if (routeDNS && chnagedIPs && INSTANCE != null && INSTANCE.vpnRunner!=null)
 				INSTANCE.restartVPN();
 		}
 	}
@@ -522,6 +523,7 @@ public class DNSFilterService extends VpnService  {
 	private ParcelFileDescriptor initVPN() throws Exception {
 
 		mtu = Integer.parseInt(ConfigurationAccess.getLocal().getConfig().getProperty("MTU","3000"));
+		routeDNS = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("routeDNS", "true"));
 
 		Builder builder = new Builder();
 
@@ -541,11 +543,15 @@ public class DNSFilterService extends VpnService  {
 			routes = routes+"; ";
 
 		// add routes for detected DNS in order handle misbehaving google chrome
-		String[] dnsServers = getDNSServers();
-		for (int i = 0; i < dnsServers.length; i++)
-			routes = routes+dnsServers[i]+"; ";
 
-		Logger.getLogger().logLine("Adding Routes:" + routes);
+		if (routeDNS) {
+			String[] dnsServers = getDNSServers();
+			for (int i = 0; i < dnsServers.length; i++)
+				routes = routes + dnsServers[i] + "; ";
+		}
+
+		if (!routes.trim().equals("") && !routes.trim().equals(";"))
+			Logger.getLogger().logLine("Adding Routes:" + routes);
 
 		StringTokenizer routeIPs = new StringTokenizer(routes, ";");
 
