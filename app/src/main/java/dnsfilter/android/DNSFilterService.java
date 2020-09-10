@@ -245,19 +245,23 @@ public class DNSFilterService extends VpnService  {
 		FileOutputStream out = null;
 		Thread thread = null;
 		boolean stopped = false;
+		boolean explicitOperation = false;
 		int id;
 
 
-		private VPNRunner(int id, ParcelFileDescriptor vpnInterface){
+		private VPNRunner(int id, ParcelFileDescriptor vpnInterface, boolean explicitStart){
+			explicitOperation=explicitStart;
 			this.id=id;
 			this.vpnInterface= vpnInterface;
 			in = new FileInputStream(vpnInterface.getFileDescriptor());
 			out = new FileOutputStream(vpnInterface.getFileDescriptor());
-			Logger.getLogger().logLine("VPN Connected!");
+			if (explicitStart)
+				Logger.getLogger().logLine("VPN Connected!");
 		}
 
-		private void stop() {
+		private void stop(boolean explicitStop) {
 			stopped = true;
+			this.explicitOperation = explicitStop;
 			try {
 				in.close();
 				out.close();
@@ -271,7 +275,8 @@ public class DNSFilterService extends VpnService  {
 
 		@Override
 		public void run() {
-			Logger.getLogger().logLine("VPN Runner Thread "+id+" started!");
+			if (explicitOperation || DNSProxyActivity.debug)
+				Logger.getLogger().logLine("VPN Runner Thread "+id+" started!");
 			thread = Thread.currentThread();
 
 			try {
@@ -339,7 +344,8 @@ public class DNSFilterService extends VpnService  {
 				}
 			}
 
-			Logger.getLogger().logLine("VPN Runner Thread "+id+" terminated!");
+			if (explicitOperation || DNSProxyActivity.debug)
+				Logger.getLogger().logLine("VPN Runner Thread "+id+" terminated!");
 		}
 
 	}
@@ -441,12 +447,14 @@ public class DNSFilterService extends VpnService  {
 			if (force || chnagedIPs) {
 
 				lastDNSServers = dnsServers;
+				// in case a list of configured dns servers is used and not the detected ones,
+				// we still call this in order to trigger fastest server selection after network change
 				handleDNSServerChange(dnsServers);
 				if (rootMode)
 					dnsReqForwarder.updateForward();
 			}
 			if (routeDNS && chnagedIPs && INSTANCE != null && INSTANCE.vpnRunner!=null)
-				INSTANCE.restartVPN();
+				INSTANCE.restartVPN(false);
 		}
 	}
 
@@ -520,7 +528,7 @@ public class DNSFilterService extends VpnService  {
 
 
 
-	private ParcelFileDescriptor initVPN() throws Exception {
+	private ParcelFileDescriptor initVPN(boolean explicitOp) throws Exception {
 
 		mtu = Integer.parseInt(ConfigurationAccess.getLocal().getConfig().getProperty("MTU","3000"));
 		routeDNS = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("routeDNS", "true"));
@@ -585,7 +593,8 @@ public class DNSFilterService extends VpnService  {
 		cnt = appWhiteList.countTokens();
 		if (cnt != 0 && Build.VERSION.SDK_INT < 21) {
 			cnt = 0;
-			Logger.getLogger().logLine("WARNING!: Application whitelisting not supported for Android version below 5.01!\n Setting ignored!");
+			if (explicitOp)
+				Logger.getLogger().logLine("WARNING!: Application whitelisting not supported for Android version below 5.01!\n Setting ignored!");
 		}
 		for (int i = 0; i < cnt; i++) {
 			excludeApp(appWhiteList.nextToken().trim(), builder);
@@ -593,7 +602,8 @@ public class DNSFilterService extends VpnService  {
 
 		// Android 7/8 has an issue with VPN in combination with some google apps - bypass the filter
 		if (Build.VERSION.SDK_INT >= 24 && Build.VERSION.SDK_INT <= 27) { // Android 7/8
-			Logger.getLogger().logLine("Running on SDK" + Build.VERSION.SDK_INT);
+			if (explicitOp)
+				Logger.getLogger().logLine("Running on SDK" + Build.VERSION.SDK_INT);
 			excludeApp("com.android.vending", builder); //white list play store
 			excludeApp("com.google.android.apps.docs", builder); //white list google drive
 			excludeApp("com.google.android.apps.photos", builder); //white list google photos
@@ -603,7 +613,8 @@ public class DNSFilterService extends VpnService  {
 
 		if (Build.VERSION.SDK_INT >= 21) {
 			builder.setBlocking(true);
-			Logger.getLogger().logLine("Using Blocking Mode!");
+			if (explicitOp)
+				Logger.getLogger().logLine("Using Blocking Mode!");
 			blocking = true;
 		}
 
@@ -683,10 +694,10 @@ public class DNSFilterService extends VpnService  {
 			// Initialize and start VPN Mode if not disabled
 
 			if (!dnsProxyMode || vpnInAdditionToProxyMode) {
-				ParcelFileDescriptor vpnInterface = initVPN();
+				ParcelFileDescriptor vpnInterface = initVPN(true);
 
 				if (vpnInterface != null) {
-					vpnRunner = new VPNRunner(++startCounter, vpnInterface);
+					vpnRunner = new VPNRunner(++startCounter, vpnInterface, true);
 					new Thread(vpnRunner).start();
 				} else Logger.getLogger().logLine("Error! Cannot get VPN Interface! Try restart!");
 			}
@@ -835,7 +846,7 @@ public class DNSFilterService extends VpnService  {
 			VPNRunner runningVPN = vpnRunner;
 			vpnRunner = null;
 			if (runningVPN != null) {
-				runningVPN.stop();
+				runningVPN.stop(true);
 			}
 			//stop eventually running proxy mode
 			if (DNSFILTERPROXY != null) {
@@ -883,25 +894,25 @@ public class DNSFilterService extends VpnService  {
 	}
 
 
-	private void restartVPN() throws IOException {
+	private void restartVPN(boolean explicitOp) throws IOException {
 
 		VPNRunner runningVPN = vpnRunner;
 
 		vpnRunner = null;
 
 		if (runningVPN != null) {
-			runningVPN.stop();
+			runningVPN.stop(explicitOp);
 		}
 		DNSFILTER = DNSFilterManager.getInstance();
 		ParcelFileDescriptor vpnInterface = null;
 		try {
-			vpnInterface = initVPN();
+			vpnInterface = initVPN(explicitOp);
 		} catch (Exception e) {
 			throw new IOException("Cannot initialize VPN!", e);
 		}
 
 		if (vpnInterface != null) {
-			vpnRunner = new VPNRunner(++startCounter, vpnInterface);
+			vpnRunner = new VPNRunner(++startCounter, vpnInterface, explicitOp);
 			new Thread(vpnRunner).start();
 
 
@@ -914,7 +925,7 @@ public class DNSFilterService extends VpnService  {
 		//DNS Proxy and dnscrypt proxy are handled seperated
 
 		if (!dnsProxyMode || vpnInAdditionToProxyMode) {
-			restartVPN();
+			restartVPN(true);
 		}
 		possibleNetworkChange(true); // trigger dns detection
 	}
