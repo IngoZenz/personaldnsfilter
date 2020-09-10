@@ -3,20 +3,28 @@ package util;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FilteringLogger implements LoggerInterface {
+public class SuppressRepeatingsLogger implements LoggerInterface {
 	LoggerInterface nestedLogger;
-	private String lastLog="";
-	private HashMap<String,Long> lastLogs = new HashMap<String, Long>();
-	private long timeRepeat = 2000;
+	private String lastLog = "";
+	private HashMap<String, Long> lastLogs = new HashMap<String, Long>();
+	private long timeRepeat = 0;
 	private long lastCleanup = 0;
-	
-	
-	public FilteringLogger(LoggerInterface nestedLogger) {
+
+
+	public SuppressRepeatingsLogger(LoggerInterface nestedLogger) {
 		this.nestedLogger = nestedLogger;
 	}
 
 	public void setNestedLogger(LoggerInterface nestedLogger) {
 		this.nestedLogger = nestedLogger;
+	}
+
+	public LoggerInterface getNestedLogger() {
+		return nestedLogger;
+	}
+
+	public void setSuppressTime(long suppressTime) {
+		timeRepeat = suppressTime;
 	}
 
 	private boolean repeatingLog(String logStr){

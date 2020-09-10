@@ -77,8 +77,7 @@ import java.util.StringTokenizer;
 
 import dnsfilter.ConfigurationAccess;
 import dnsfilter.DNSFilterManager;
-import util.ExecutionEnvironment;
-import util.FilteringLogger;
+import util.SuppressRepeatingsLogger;
 import util.GroupedLogger;
 import util.Logger;
 import util.LoggerInterface;
@@ -140,7 +139,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 
 	protected static boolean additionalHostsChanged = false;
-	protected static LoggerInterface myLogger;
+	protected static SuppressRepeatingsLogger myLogger;
 
 	protected ScrollView scrollView = null;
 
@@ -522,12 +521,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			if (myLogger != null) {
 				if (CONFIG.isLocal()) {
 					/*(((GroupedLogger) Logger.getLogger()).detachLogger(myLogger);
-					myLogger = new FilteringLogger(this);
+					myLogger = new SuppressRepeatingsLogger(this);
 					((GroupedLogger) Logger.getLogger()).attachLogger(myLogger);)*/
-					((FilteringLogger)myLogger).setNestedLogger(this);
+					((SuppressRepeatingsLogger)myLogger).setNestedLogger(this);
 				}
 			} else {
-				myLogger = new FilteringLogger(this);
+				myLogger = new SuppressRepeatingsLogger(this);
 				Logger.setLogger(new GroupedLogger(new LoggerInterface[]{myLogger}));
 			}
 
@@ -1189,7 +1188,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 						MsgTO.setTimeout(150000);
 
 						try {
-							onRemoteConnected(ConfigurationAccess.getRemote(myLogger, host, port, keyphrase));
+							onRemoteConnected(ConfigurationAccess.getRemote(myLogger.getNestedLogger(), host, port, keyphrase));
 						} catch (IOException e) {
 							Logger.getLogger().logLine("Remote Connect failed!" + e.toString());
 							message("Remote Connect Failed!");
@@ -1416,6 +1415,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}
 
 		try {
+			long repeatingLogSuppressTime = Long.parseLong(getConfig().getProperty("repeatingLogSuppressTime", "1000"));
+			myLogger.setSuppressTime(repeatingLogSuppressTime);
 			boolean vpnInAdditionToProxyMode = Boolean.parseBoolean(getConfig().getProperty("vpnInAdditionToProxyMode", "false"));
 			boolean vpnDisabled = !vpnInAdditionToProxyMode && Boolean.parseBoolean(getConfig().getProperty("dnsProxyOnAndroid", "false"));
 			Intent intent = null;

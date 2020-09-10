@@ -31,7 +31,7 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import util.ExecutionEnvironment;
-import util.FilteringLogger;
+import util.SuppressRepeatingsLogger;
 import util.GroupedLogger;
 import util.Logger;
 import util.LoggerInterface;
@@ -141,16 +141,23 @@ public class DNSFilterProxy implements Runnable {
 
 		}
 
-		Logger.setLogger(new GroupedLogger(new LoggerInterface[] {new FilteringLogger(new StandaloneLogger())}));
+
+		SuppressRepeatingsLogger myLogger = new SuppressRepeatingsLogger(new StandaloneLogger());
+		Logger.setLogger(new GroupedLogger(new LoggerInterface[] {myLogger}));
 		ExecutionEnvironment.setEnvironment(new StandaloneEnvironment());
 		DNSFilterManager.WORKDIR = ExecutionEnvironment.getEnvironment().getWorkDir();
 		
 		DNSFilterManager filtermgr = DNSFilterManager.getInstance();
-	
 		filtermgr.init();
+
+		long repeatingLogSuppressTime = Long.parseLong(DNSFilterManager.getInstance().getConfig().getProperty("repeatingLogSuppressTime", "1000"));
+		myLogger.setSuppressTime(repeatingLogSuppressTime);
+
 		initDNS(filtermgr);
+
 		int port = Integer.parseInt(DNSFilterManager.getInstance().getConfig().getProperty("dnsProxyPortNonAndroid","53"));
 		DNSFilterProxy runner = new DNSFilterProxy(port);
+
 		runner.run();
 	}
 
