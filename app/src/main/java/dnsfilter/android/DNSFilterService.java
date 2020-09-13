@@ -440,6 +440,9 @@ public class DNSFilterService extends VpnService  {
 	public static void possibleNetworkChange(boolean force) throws IOException {
 		if (ExecutionEnvironment.getEnvironment().hasNetwork()) {
 
+			if (rootMode)
+				dnsReqForwarder.updateForward();
+
 			String[] dnsServers = getDNSServers();
 
 			boolean chnagedIPs = !Utils.arrayEqual(lastDNSServers, dnsServers);
@@ -450,8 +453,6 @@ public class DNSFilterService extends VpnService  {
 				// in case a list of configured dns servers is used and not the detected ones,
 				// we still call this in order to trigger fastest server selection after network change
 				handleDNSServerChange(dnsServers);
-				if (rootMode)
-					dnsReqForwarder.updateForward();
 			}
 			if (routeDNS && chnagedIPs && INSTANCE != null && INSTANCE.vpnRunner!=null)
 				INSTANCE.restartVPN(false);
