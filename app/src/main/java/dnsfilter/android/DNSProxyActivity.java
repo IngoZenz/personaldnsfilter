@@ -24,6 +24,7 @@ package dnsfilter.android;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -39,6 +40,7 @@ import android.os.Environment;
 import android.os.StrictMode;
 import android.text.Editable;
 import android.text.Html;
+import android.text.InputType;
 import android.text.Spannable;
 import android.text.Spanned;
 import android.text.TextWatcher;
@@ -165,6 +167,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	protected static ConfigurationAccess CONFIG = ConfigurationAccess.getLocal();
 	protected static boolean switchingConfig = false;
+
+	protected static boolean CHECKING_PASSCODE_DIAG = false;
 
 	private static class MsgTimeoutListener implements TimeoutListener {
 
@@ -546,6 +550,49 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		} catch (Exception e){
 			dump(e);
 			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		checkPasscode();
+	}
+
+	private void checkPasscode() {
+
+		if (CHECKING_PASSCODE_DIAG)
+			return; //avoid double checkign after resume
+
+		try {
+			final String code = CONFIG.getConfig().getProperty("passcode", "").trim();
+
+			if (code.equals(""))
+				return;
+
+			AlertDialog.Builder builder = new AlertDialog.Builder(this).setCancelable(false);
+			builder.setTitle("Passcode required!");
+			final EditText input = new EditText(this);
+			input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+			builder.setView(input);
+
+			builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					CHECKING_PASSCODE_DIAG = false;
+					String inputcode = input.getText().toString();
+					if (!inputcode.equals(code)) {
+						message("Wrong passcode!");
+						checkPasscode();
+					}
+				}
+			});
+
+			CHECKING_PASSCODE_DIAG = true;
+			builder.show();
+
+		} catch (IOException eio) {
+			logException(eio);
 		}
 	}
 
@@ -1189,6 +1236,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 						try {
 							onRemoteConnected(ConfigurationAccess.getRemote(myLogger.getNestedLogger(), host, port, keyphrase));
+							checkPasscode();
 						} catch (IOException e) {
 							Logger.getLogger().logLine("Remote Connect failed!" + e.toString());
 							message("Remote Connect Failed!");
@@ -1211,6 +1259,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			loadAndApplyConfig(false);
 			message("CONNECTED TO "+ CONFIG);
 			logLine("=>CONNECTED to "+ CONFIG +"<=");
+			checkPasscode();
 		}
 	}
 
