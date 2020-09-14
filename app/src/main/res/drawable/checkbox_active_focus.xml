@@ -9,7 +9,7 @@
 				android:height="22dp"/>
 			<stroke
 				android:width="2dp"
-				android:color="#00BCD4">
+				android:color="#69f0ae">
 			</stroke>
 			<!-- fake background -->
 			<solid
@@ -27,7 +27,7 @@
 			<shape android:shape="line">
 				<stroke
 					android:width="2dp"
-					android:color="#00BCD4" />
+					android:color="#69f0ae" />
 				<size android:height="2dp" />
 			</shape>
 		</rotate>
@@ -41,12 +41,9 @@
 			<shape android:shape="line">
 				<stroke
 					android:width="2dp"
-					android:color="#00BCD4" />
+					android:color="#69f0ae" />
 				<size android:height="2dp" />
 			</shape>
 		</rotate>
 	</item>
 </layer-list>
-
-
-
