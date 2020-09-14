@@ -445,7 +445,7 @@ public class DNSFilterService extends VpnService  {
 
 			String[] dnsServers = getDNSServers();
 
-			boolean chnagedIPs = !Utils.arrayEqual(lastDNSServers, dnsServers);
+			boolean chnagedIPs = (dnsServers.length != 0)  && !Utils.arrayEqual(lastDNSServers, dnsServers);
 
 			if (force || chnagedIPs) {
 
@@ -718,7 +718,8 @@ public class DNSFilterService extends VpnService  {
 						.setContentIntent(pendingIntent)
 						.build();
 			} else {
-				noti = new Notification(R.drawable.icon, "DNSFilter is running!",0);
+				;//noti = new Notification(R.drawable.icon, "DNSFilter is running!",0);
+				return START_STICKY;
 			}
 
 			startForeground(1, noti);
