@@ -9,7 +9,7 @@
 				android:height="22dp"/>
 			<stroke
 				android:width="2dp"
-				android:color="#90a4ae">
+				android:color="#69f0ae">
 			</stroke>
 			<!-- fake background -->
 			<solid
@@ -17,5 +17,4 @@
 			</solid>
 		</shape>
 	</item>
-
 </layer-list>
