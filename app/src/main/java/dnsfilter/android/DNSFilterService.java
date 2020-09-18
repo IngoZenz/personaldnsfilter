@@ -532,7 +532,7 @@ public class DNSFilterService extends VpnService  {
 	private ParcelFileDescriptor initVPN(boolean explicitOp) throws Exception {
 
 		mtu = Integer.parseInt(ConfigurationAccess.getLocal().getConfig().getProperty("MTU","3000"));
-		routeDNS = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("routeDNS", "true"));
+		routeDNS = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("routeUnderlyingDNS", "false"));
 
 		Builder builder = new Builder();
 
