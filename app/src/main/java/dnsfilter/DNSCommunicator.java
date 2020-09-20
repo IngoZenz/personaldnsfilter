@@ -37,6 +37,7 @@ public class DNSCommunicator {
 
 	private static int TIMEOUT = 12000;
 	DNSServer[] dnsServers = new DNSServer[0];
+	DNSServer[] currentCheckingDNServers;
 	int curDNS = -1;
 	String lastDNS = "";
 
@@ -68,8 +69,12 @@ public class DNSCommunicator {
 		final int[] curDNSCopy = new int[1];
 		final FileOutputStream[] dnsPerfOut = new FileOutputStream[1];
 
-		synchronized (this) {
+		synchronized (INSTANCE) {
 			try {
+
+				if (currentCheckingDNServers != null && Utils.arrayEqual(currentCheckingDNServers, this.dnsServers))
+					return; // already triggered!
+
 				File dnsPerfFile= new File(ExecutionEnvironment.getEnvironment().getWorkDir()+"dnsperf.info");
 				if (!dnsPerfFile.exists() || dnsPerfFile.delete()) {
 					dnsPerfOut[0] = new FileOutputStream(dnsPerfFile);
@@ -83,6 +88,8 @@ public class DNSCommunicator {
 			dnsServersCopy = new DNSServer[this.dnsServers.length];
 			for (int i = 0; i < this.dnsServers.length; i++)
 				dnsServersCopy[i]= this.dnsServers[i];
+
+			currentCheckingDNServers = dnsServersCopy;
 		}
 
 
@@ -183,9 +190,11 @@ public class DNSCommunicator {
 					}
 
 					// Take over result in case no other DNS Serverlist change was in between
-					synchronized (this) {
+					synchronized (INSTANCE) {
 
 						if (Utils.arrayEqual(dnsServersCopy, dnsServers)) {
+
+							currentCheckingDNServers = null;
 
 							curDNS = curDNSCopy[0];
 
