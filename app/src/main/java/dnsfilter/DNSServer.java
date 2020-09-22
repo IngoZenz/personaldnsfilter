@@ -199,10 +199,6 @@ public class DNSServer {
     public long testDNS(int noOfTimes) throws IOException {
         DatagramPacket response = new DatagramPacket(new byte[bufSize],0, bufSize);
 
-        //1st request without counting as after 1st request connection is pooled
-        DatagramPacket request = getRandomRequest();
-        resolve(request, response);
-
         //Prepare
         DatagramPacket[] requests = new DatagramPacket[noOfTimes];
         for (int i = 0; i < noOfTimes; i++)
@@ -215,8 +211,9 @@ public class DNSServer {
             resolve(requests[i], response);
         }
 
-        lastPerformance = (System.currentTimeMillis()-millis) / noOfTimes;
-        return lastPerformance;
+        long perf = (System.currentTimeMillis()-millis) / noOfTimes;
+        lastPerformance = perf;
+        return perf;
     }
 
     private static DatagramPacket getRandomRequest() {
