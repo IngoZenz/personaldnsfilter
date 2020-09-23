@@ -21,8 +21,6 @@ package dnsfilter;
    Contact:i.z@gmx.net
  */
 
-import android.os.Environment;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
