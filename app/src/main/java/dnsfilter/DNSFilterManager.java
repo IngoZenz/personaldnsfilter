@@ -159,9 +159,15 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 			synchronized (monitor) {
 
-				try {
-					running = true;
+				running = true;
 
+				try {
+					monitor.wait(1000); //give it some time to get started before downloading filters,etc...
+				} catch (InterruptedException e) {
+					Logger.getLogger().logException(e);
+				}
+
+				try {
 					int retry = 0;
 					long waitTime;
 
