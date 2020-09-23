@@ -70,6 +70,10 @@ public class DNSCommunicator {
 		final FileOutputStream[] dnsPerfOut = new FileOutputStream[1];
 
 		synchronized (INSTANCE) {
+			if (dnsServers.length == 1) {
+				curDNS = 0;
+				return; //no alternative!
+			}
 			try {
 
 				if (currentCheckingDNServers != null && Utils.arrayEqual(currentCheckingDNServers, this.dnsServers))
