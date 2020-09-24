@@ -564,6 +564,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		if (CHECKING_PASSCODE_DIAG)
 			return; //avoid double checkign after resume
 
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+				return; // No storage permissions yet => do not check here - Dirty workarround - we need to improve here!
+			}
+		}
 		try {
 			final String code = CONFIG.getConfig().getProperty("passcode", "").trim();
 

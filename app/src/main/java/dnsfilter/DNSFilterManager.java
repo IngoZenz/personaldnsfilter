@@ -60,7 +60,7 @@ import util.Utils;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1504200";
+	public static final String VERSION = "1504203";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -244,6 +244,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			return config;
 		} catch (IOException e) {
 			Logger.getLogger().logException(e);
+			e.printStackTrace();
 			return null;
 		}
 	}
