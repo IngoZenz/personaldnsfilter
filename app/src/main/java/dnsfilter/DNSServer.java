@@ -31,7 +31,9 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.HashSet;
 
 import util.ExecutionEnvironment;
 import util.Logger;
@@ -54,6 +56,11 @@ public class DNSServer {
 
     static {
         Connection.setPoolTimeoutSeconds(30);
+    }
+    
+    public static void invalidateOpenConnections() {
+        Connection.invalidate(); //invalidate all pooled TCP connections
+        dnsfilter.UDP.invalidateAllUDPSessions();
     }
 
     public static int getProtoFromString(String s) throws IOException{
@@ -257,9 +264,21 @@ public class DNSServer {
 class UDP extends DNSServer {
 
     private static int UDP_RETRY_CNT = 10;
+    private static HashSet  sessions = new HashSet<DatagramSocket>();
 
     protected UDP(InetAddress address, int port, int timeout) {
         super(address, port, timeout);
+    }
+    
+    public static void invalidateAllUDPSessions() {
+        DatagramSocket[] sessionSocks;
+        synchronized (sessions) {
+            sessionSocks = (DatagramSocket[]) sessions.toArray(new DatagramSocket[sessions.size()]);
+            sessions.clear();
+        }
+        for (int i = 0; i < sessionSocks.length; i++) {
+            sessionSocks[i].close();
+        }
     }
 
     @Override
@@ -268,6 +287,9 @@ class UDP extends DNSServer {
     @Override
     public void resolve(DatagramPacket request, DatagramPacket response) throws IOException {
         DatagramSocket socket = new DatagramSocket();
+        synchronized (sessions) {
+            sessions.add(socket);
+        }
         ExecutionEnvironment.getEnvironment().protectSocket(socket,1);
 
         try {
@@ -284,12 +306,19 @@ class UDP extends DNSServer {
                     socket.receive(response);
                     return;
                 } catch (IOException eio) {
+                    synchronized (sessions) {
+                        if (!sessions.contains(socket))
+                            throw new IOException("Sessions are closed due to network chnage!");
+                    }
                     retry++;
                     if (retry == UDP_RETRY_CNT )
                         throw new IOException("No DNS Response from " + address);
                 }
             }
         } finally {
+            synchronized (sessions) {
+                sessions.remove(socket);
+            }
             socket.close();
         }
     }

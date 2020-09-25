@@ -22,6 +22,7 @@
 
 package dnsfilter.android;
 
+import dnsfilter.DNSServer;
 import util.ExecutionEnvironment;
 import util.Logger;
 
@@ -40,6 +41,7 @@ public class ConnectionChangeReceiver extends BroadcastReceiver implements Runna
 	@Override
 	public synchronized void onReceive(Context context, Intent intent) {
 
+		DNSServer.invalidateOpenConnections();
 		try {
 			if (ExecutionEnvironment.getEnvironment().debug())
 				Logger.getLogger().logLine("Received Network Connection Event: " + intent.getAction());
