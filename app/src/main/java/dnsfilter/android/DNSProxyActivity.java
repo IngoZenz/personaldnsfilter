@@ -575,7 +575,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			if (code.equals(""))
 				return;
 
-			AlertDialog.Builder builder = new AlertDialog.Builder(this).setCancelable(false);
+			final AlertDialog.Builder builder = new AlertDialog.Builder(this).setCancelable(false);
 			builder.setTitle("Passcode required!");
 			final EditText input = new EditText(this);
 			input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
@@ -594,7 +594,14 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			});
 
 			CHECKING_PASSCODE_DIAG = true;
-			builder.show();
+
+			Runnable ui = new Runnable() {
+				@Override
+				public void run() {
+					builder.show();
+				}
+			};
+			runOnUiThread(ui);
 
 		} catch (IOException eio) {
 			logException(eio);
