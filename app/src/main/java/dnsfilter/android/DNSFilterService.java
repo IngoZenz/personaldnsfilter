@@ -132,7 +132,7 @@ public class DNSFilterService extends VpnService  {
 					InetAddress adr = (InetAddress) ips.nextElement();
 					if (!adr.isLoopbackAddress() && adr instanceof Inet4Address) {
 						String ipStr = adr.getHostAddress();
-						if (nif.getName().startsWith("tun"))
+						if (nif.getName().startsWith("tun") && nif.isUp())
 							return ipStr; //prefer vpn interface in order to work together with real VPN
 						else if (ip == null)
 							ip = ipStr;
