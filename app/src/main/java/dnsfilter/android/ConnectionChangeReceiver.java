@@ -40,8 +40,8 @@ public class ConnectionChangeReceiver extends BroadcastReceiver implements Runna
 
 	@Override
 	public synchronized void onReceive(Context context, Intent intent) {
-
-		DNSServer.invalidateOpenConnections();
+		// needs more testing
+		// DNSServer.invalidateOpenConnections();
 		try {
 			if (ExecutionEnvironment.getEnvironment().debug())
 				Logger.getLogger().logLine("Received Network Connection Event: " + intent.getAction());
