@@ -131,9 +131,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected static String SCROLL_PAUSE = "II  ";
 	protected static String SCROLL_CONTINUE = ">>  ";
 	protected static boolean scroll_locked = false;
-	protected static TextView donate_field;
-	protected static int donate_field_color = Color.TRANSPARENT;
-	protected static Spanned donate_field_txt = fromHtml("<strong>Want to support us? Feel free to <a href='https://www.paypal.me/iZenz'>DONATE</a></strong>!");
+	protected static TextView link_field;
+	protected static int link_field_color = Color.TRANSPARENT;
+	protected static String link_field_txt = "";
 	protected static MenuItem add_filter;
 	protected static MenuItem remove_filter;
 	protected static String[] availableBackups;
@@ -188,9 +188,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		@Override
 		public void timeoutNotification() {
 			if (CONFIG.isLocal())
-				activity.setMessage(donate_field_txt, donate_field_color);
+				activity.setMessage(fromHtml(link_field_txt), link_field_color);
 			else
-				activity.setMessage(fromHtml("<font color='#F7FB0A'><strong>"+ CONFIG +"</strong></font>"), donate_field_color);
+				activity.setMessage(fromHtml("<font color='#F7FB0A'><strong>"+ CONFIG +"</strong></font>"), link_field_color);
 		}
 
 		@Override
@@ -420,13 +420,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			addFilterBtn.setOnClickListener(this);
 			removeFilterBtn = (TextView) findViewById(R.id.removeFilterBtn);
 			removeFilterBtn.setOnClickListener(this);
-			donate_field = (TextView) findViewById(R.id.donate);
-			donate_field.setText(donate_field_txt);
-			donate_field.setOnClickListener(this);
+			link_field = (TextView) findViewById(R.id.link_field);
+			link_field.setText(fromHtml(link_field_txt));
+			link_field.setOnClickListener(this);
 
-			Drawable background = donate_field.getBackground();
+			Drawable background = link_field.getBackground();
 			if (background instanceof ColorDrawable)
-				donate_field_color = ((ColorDrawable) background).getColor();
+				link_field_color = ((ColorDrawable) background).getColor();
 
 			scrollLockField = (TextView) findViewById(R.id.scrolllock);
 			if (scroll_locked)
@@ -833,12 +833,16 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		config = getConfig();
 
 		if (config != null) {
+
 			Runnable uiUpdater = new Runnable() {
 				@Override
 				public void run() {
 
-					//Log formatting
+					//Link field
+					link_field_txt = config.getProperty("footerLinkText","");
+					link_field.setText(fromHtml(link_field_txt));
 
+					//Log formatting
 					filterLogFormat = config.getProperty("filterLogFormat", "<font color='#D03D06'>($CONTENT)</font>");
 					acceptLogFormat = config.getProperty("acceptLogFormat", "<font color='#23751C'>($CONTENT)</font>");
 					normalLogFormat = config.getProperty("normalLogFormat","($CONTENT)");
@@ -1124,8 +1128,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		} else if (destination == removeFilterBtn) {
 			onCopyFilterFromLogView(false);
 			return;
-		} else if (destination == donate_field) {
-			handleDonate();
+		} else if (destination == link_field) {
+			handleFooterClick();
 			return;
 		} else if (destination == helpBtn) {
 			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.zenz-home.com/personaldnsfilter/help/help.php"));
@@ -1276,9 +1280,20 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	}
 
 
-	private void handleDonate() {
-		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.paypal.me/IZenz"));
-		startActivity(browserIntent);
+	private void handleFooterClick() {
+		String linkTxt = link_field_txt;
+		String link = "";
+		int linkStart = linkTxt.indexOf("a href='");
+		if (linkStart!=-1){
+			linkTxt = linkTxt.substring(linkStart+8);
+			int linkEnd = linkTxt.indexOf("'>");
+			if (linkEnd != -1)
+				link = linkTxt.substring(0,linkEnd);
+		}
+		if (!link.equals("")) {
+			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
+			startActivity(browserIntent);
+		}
 	}
 
 
@@ -1541,8 +1556,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 			@Override
 			public void run() {
-				donate_field.setBackgroundColor(backgroundColor);
-				donate_field.setText(msg);
+				link_field.setBackgroundColor(backgroundColor);
+				link_field.setText(msg);
 			}
 		});
 	}
