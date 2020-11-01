@@ -9,29 +9,29 @@
   <string name="EnableConfigCheckBox">Advanced settings</string>
   <string name="editFilterLoadCheckBox">Configure filter update</string>
   <string name="editAdditionalHostsCheckBox">Configure additional hosts</string>
-  <string name="appWhitelistCheckBox">App Whitelist</string>
+  <string name="appWhitelistCheckBox">App whitelist</string>
   <string name="keepAwakeCheckBox">Prevent device sleep</string>
   <string name="EnableAutoStart">Autostart</string>
   <string name="EnableAdfilter">Enable blocking</string>
   <string name="dnsLabel">DNS:</string>
-  <string name="manualDNSCheck">Disable DNS Server Discovery - Manual DNS Servers below:</string>
-  <string name="dnsCfgConfigDialogTitle">DNS Server Configuration</string>
-  <string name="filterUpdateDays">Filter Update Interval in Days:</string>
+  <string name="manualDNSCheck">Disable DNS server discovery - manual DNS servers below:</string>
+  <string name="dnsCfgConfigDialogTitle">DNS server configuration</string>
+  <string name="filterUpdateDays">Filter update interval in days:</string>
   <string name="active">Active</string>
-  <string name="shortText">Short Text</string>
+  <string name="shortText">Short text</string>
   <string name="URL" translatable="false">URL</string>
-  <string name="cfgBackupRestore">Backup and Restore</string>
-  <string name="backupConfig">Backup Configuration</string>
-  <string name="restoreBackup">Restore Backup</string>
-  <string name="restoreDefault">Restore Default Configuration</string>
+  <string name="cfgBackupRestore">Backup and restore</string>
+  <string name="backupConfig">Backup configuration</string>
+  <string name="restoreBackup">Restore backup</string>
+  <string name="restoreDefault">Restore default configuration</string>
   <string name="category">Category</string>
   <string name="name">Name</string>
-  <string name="left" translatable="false"><![CDATA[<]]></string>
-  <string name="right" translatable="false"><![CDATA[>]]></string>
-  <string name="editFilterDialogTitle">Edit Filter</string>
-  <string name="addFilter">"Add Filter"</string>
-  <string name="removeFilter">"Remove Filter"</string>
-  <string name="proxyModeCheckBox">DNS Proxy Mode without local VPN</string>
-  <string name="rootModeCheckBox">Root Mode without local VPN</string>
+  <string name="left" translatable="false"><![CDATA[◄]]></string>
+  <string name="right" translatable="false"><![CDATA[►]]></string>
+  <string name="editFilterDialogTitle">Edit filter</string>
+  <string name="addFilter">"Add filter"</string>
+  <string name="removeFilter">"Remove filter"</string>
+  <string name="proxyModeCheckBox">DNS proxy mode without local VPN</string>
+  <string name="rootModeCheckBox">Root mode without local VPN</string>
 
 </resources>

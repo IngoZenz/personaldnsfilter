@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
+    android:background="#000000"
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:animateLayoutChanges="true"
@@ -28,7 +28,7 @@
             android:layout_marginTop="10dp"
             android:layout_centerVertical="true"
             android:text="@string/dnsLabel"
-            android:textColor="#424242" />
+            android:textColor="#FFFFFF" />
 
         <TextView
             android:id="@+id/dnsField"
@@ -39,10 +39,10 @@
             android:layout_centerVertical="true"
             android:layout_toRightOf="@+id/textView1"
             android:layout_weight="0"
-            android:background="#eceff1"
+            android:background="#373737"
             android:maxLength="64"
             android:padding="10dp"
-            android:textColor="#424242"
+            android:textColor="#FFFFFF"
             android:drawableRight="@drawable/twotone_edit_24px"/>
 
 
@@ -69,7 +69,7 @@
                 android:button="@drawable/custom_checkbox"
                 android:checked="false"
                 android:text="@string/EnableConfigCheckBox"
-                android:textColor="#424242" />
+                android:textColor="#FFFFFF" />
 
             <LinearLayout
                 android:id="@+id/linearLayout5"
@@ -87,7 +87,7 @@
                 android:drawableLeft="@drawable/outline_settings_remote_24px"
                 android:gravity="center"
                 android:padding="2dp"
-                android:textColor="#424242"></Button>
+                android:textColor="#FFFFFF"></Button>
 
 
             <Button
@@ -115,7 +115,7 @@
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:layout_marginTop="3dp"
-            android:background="#eceff1">
+            android:background="#000000">
          <LinearLayout
              android:layout_width="wrap_content"
              android:layout_height="wrap_content"
@@ -129,7 +129,7 @@
             android:button="@drawable/custom_checkbox"
             android:checked="false"
             android:text="@string/editFilterLoadCheckBox"
-            android:textColor="#424242" />
+            android:textColor="#FFFFFF" />
 
         <dnsfilter.android.PaddedCheckBox
             android:id="@+id/editAdditionalHosts"
@@ -140,7 +140,7 @@
             android:button="@drawable/custom_checkbox"
             android:checked="false"
             android:text="@string/editAdditionalHostsCheckBox"
-            android:textColor="#424242" />
+            android:textColor="#FFFFFF" />
 
         <dnsfilter.android.PaddedCheckBox
             android:id="@+id/appWhitelist"
@@ -151,7 +151,7 @@
             android:button="@drawable/custom_checkbox"
             android:checked="false"
             android:text="@string/appWhitelistCheckBox"
-            android:textColor="#424242" />
+            android:textColor="#FFFFFF" />
 
         <dnsfilter.android.PaddedCheckBox
             android:id="@+id/backupRestoreChk"
@@ -160,9 +160,9 @@
             android:layout_marginLeft="10dp"
             android:layout_marginTop="0dp"
             android:button="@drawable/custom_checkbox"
-            android:checked="true"
+            android:checked="false"
             android:text="@string/cfgBackupRestore"
-            android:textColor="#424242" />
+            android:textColor="#FFFFFF" />
 
         <dnsfilter.android.PaddedCheckBox
             android:id="@+id/cloakProtectCheck"
@@ -173,7 +173,7 @@
             android:button="@drawable/custom_checkbox"
             android:checked="false"
             android:text="CNAME Cloaking Protection (aggressive)"
-            android:textColor="#424242" />
+            android:textColor="#FFFFFF" />
 
         <dnsfilter.android.PaddedCheckBox
             android:id="@+id/proxyModeCheck"
@@ -184,7 +184,7 @@
             android:button="@drawable/custom_checkbox"
             android:checked="false"
             android:text="@string/proxyModeCheckBox"
-            android:textColor="#424242" />
+            android:textColor="#FFFFFF" />
 
         <dnsfilter.android.PaddedCheckBox
             android:id="@+id/rootModeCheck"
@@ -195,7 +195,7 @@
             android:button="@drawable/custom_checkbox"
             android:checked="false"
             android:text="@string/rootModeCheckBox"
-            android:textColor="#424242" />
+            android:textColor="#FFFFFF" />
 
         <dnsfilter.android.PaddedCheckBox
             android:id="@+id/keepAwakeCheck"
@@ -206,7 +206,7 @@
             android:button="@drawable/custom_checkbox"
             android:checked="false"
             android:text="@string/keepAwakeCheckBox"
-            android:textColor="#424242" />
+            android:textColor="#FFFFFF" />
          </LinearLayout>
     </ScrollView>
         <LinearLayout
@@ -217,7 +217,7 @@
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:layout_marginTop="3dp"
-            android:background="#eceff1"
+            android:background="#000000"
             android:orientation="vertical"
             android:paddingBottom="15dp">
 
@@ -232,7 +232,7 @@
                     android:layout_marginTop="15dp"
                     android:paddingRight="7dp"
                     android:text="@string/filterUpdateDays"
-                    android:textColor="#424242"
+                    android:textColor="#FFFFFF"
                     android:textSize="14dp" />
 
                 <EditText
@@ -240,11 +240,11 @@
                     android:layout_width="42dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="15dp"
-                    android:background="#cfd8dc"
+                    android:background="#000000"
                     android:gravity="center"
                     android:inputType="number"
                     android:text="14"
-                    android:textColor="#424242"
+                    android:textColor="#FFFFFF"
                     android:textSize="14dp" />
             </LinearLayout>
 
@@ -261,7 +261,7 @@
                     android:layout_marginTop="5dp"
                     android:paddingRight="7dp"
                     android:text="@string/category"
-                    android:textColor="#424242"
+                    android:textColor="#FFFFFF"
                     android:textSize="14dp" />
 
                 <Button
@@ -272,8 +272,8 @@
                     android:elevation="2.3dp"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="0dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginBottom="4dp"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginBottom="3dp"
                     android:background="@drawable/custom_button"
                     android:padding="3dp"
                     android:text="@string/left"
@@ -287,11 +287,11 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
-                    android:background="#cfd8dc"
+                    android:background="#212121"
                     android:gravity="center"
                     android:inputType="number"
                     android:text="All Active"
-                    android:textColor="#424242"
+                    android:textColor="#FFFFFF"
                     android:textSize="14dp" />
                 <Button
                     android:id="@+id/CategoryUp"
@@ -301,10 +301,10 @@
                     android:elevation="2.3dp"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="0dp"
-                    android:layout_marginTop="5dp"
+                    android:layout_marginTop="6dp"
                     android:layout_marginBottom="3dp"
                     android:background="@drawable/custom_button"
-                    android:padding="4dp"
+                    android:padding="3dp"
                     android:text="@string/right"
                     android:textColor="#FFFFFF"
                     android:fontFamily="sans-serif-medium"
@@ -333,7 +333,7 @@
                             android:layout_weight=".1"
                             android:paddingLeft="0dp"
                             android:text="@string/active"
-                            android:textColor="#424242"
+                            android:textColor="#FFFFFF"
                             android:textSize="14dp"
                             android:textStyle="bold" />
 
@@ -345,7 +345,7 @@
                             android:layout_weight=".3"
                             android:paddingLeft="10dp"
                             android:text="@string/name"
-                            android:textColor="#424242"
+                            android:textColor="#FFFFFF"
                             android:textSize="14dp"
                             android:textStyle="bold" />
 
@@ -355,7 +355,7 @@
                             android:layout_weight=".6"
                             android:paddingLeft="10dp"
                             android:text="@string/URL"
-                            android:textColor="#424242"
+                            android:textColor="#FFFFFF"
                             android:textSize="14dp"
                             android:textStyle="bold" />
 
@@ -368,7 +368,7 @@
                             android:layout_weight="0"
                             android:gravity="center"
                             android:drawableLeft="@drawable/twotone_edit_24px"
-                            android:textColor="#424242"
+                            android:textColor="#FFFFFF"
                             android:textSize="14sp"
                             android:textStyle="bold" />
                     </TableRow>
@@ -385,7 +385,7 @@
             android:button="@drawable/custom_checkbox"
             android:checked="true"
             android:text="@string/EnableAdfilter"
-            android:textColor="#424242" />
+            android:textColor="#FFFFFF" />
 
         <dnsfilter.android.PaddedCheckBox
             android:id="@+id/enableAutoStart"
@@ -396,7 +396,7 @@
             android:button="@drawable/custom_checkbox"
             android:checked="true"
             android:text="@string/EnableAutoStart"
-            android:textColor="#424242" />
+            android:textColor="#FFFFFF" />
     </LinearLayout>
 
     <LinearLayout
@@ -473,7 +473,7 @@
                 android:id="@+id/scrollView2"
                 android:scrollbarThumbHorizontal="@drawable/scroll_bar"
                 android:scrollbarSize="5dp"
-                android:background="#eceff1"
+                android:background="#171717"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="0dp">
@@ -485,7 +485,7 @@
                     android:layout_height="wrap_content"
                     android:inputType="textMultiLine|textNoSuggestions"
                     android:padding="10dp"
-                    android:textColor="#424242"
+                    android:textColor="#FFFFFF"
                     android:textSize="14sp" />
             </HorizontalScrollView>
         </ScrollView>
@@ -500,7 +500,7 @@
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:layout_marginTop="3dp"
-            android:background="#eceff1"
+            android:background="#000000"
             android:visibility="gone">
 
             <dnsfilter.android.AppSelectorView
@@ -519,7 +519,7 @@
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:layout_marginTop="3dp"
-            android:background="#eceff1"
+            android:background="#000000"
             android:orientation="vertical">
 
             <LinearLayout
@@ -529,7 +529,7 @@
                 android:layout_marginLeft="15dp"
                 android:layout_marginRight="15dp"
                 android:layout_marginTop="15dp"
-                android:background="#eceff1"
+                android:background="#000000"
                 android:orientation="vertical">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -544,7 +544,7 @@
                         android:layout_marginTop="5dp"
                         android:paddingRight="7dp"
                         android:text="ID"
-                        android:textColor="#424242"
+                        android:textColor="#FFFFFF"
                         android:textSize="14dp" />
 
                     <Button
@@ -570,10 +570,10 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
-                        android:background="#cfd8dc"
+                        android:background="#212121"
                         android:gravity="center"
                         android:text="."
-                        android:textColor="#424242"
+                        android:textColor="#FFFFFF"
                         android:textSize="14dp" />
                     <Button
                         android:id="@+id/BackupIdUp"
@@ -661,8 +661,8 @@
                 android:layout_marginLeft="0dp"
                 android:layout_marginRight="0dp"
                 android:layout_marginTop="0dp"
-                android:background="#FFFFFF"
-                android:textColor="#424242"
+                android:background="#000000"
+                android:textColor="#FFFFFF"
                 android:textSize="14sp" />
 
         </LinearLayout>
@@ -675,9 +675,9 @@
         android:layout_marginLeft="0dp"
         android:layout_marginRight="0dp"
         android:layout_marginTop="0dp"
-        android:background="#FFFFFF"
+        android:background="#000000"
         android:gravity="right"
-        android:textColor="#424242"
+        android:textColor="#FFFFFF"
         android:textStyle="bold" />
 
         <LinearLayout
@@ -694,7 +694,7 @@
                 android:layout_marginLeft="15dp"
                 android:layout_marginTop="0dp"
                 android:layout_marginBottom="0dp"
-                android:background="#777474"
+                android:background="#000000"
                 android:padding="10dp"
                 android:text="@string/addFilter"
                 android:textColor="#FFFFFF"
@@ -711,7 +711,7 @@
                 android:layout_marginLeft="0dp"
                 android:layout_marginTop="0dp"
                 android:layout_marginBottom="0dp"
-                android:background="#777474"
+                android:background="#000000"
                 android:padding="10dp"
                 android:text="@string/removeFilter"
                 android:textColor="#FFFFFF"
@@ -731,19 +731,19 @@
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
         android:layout_marginTop="3dp"
-        android:background="#eceff1"
+        android:background="#171717"
         android:padding="7dp">
 
         <EditText
             android:id="@+id/logOutput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#eceff1"
+            android:background="#171717"
             android:fadeScrollbars="true"
             android:scrollbarAlwaysDrawVerticalTrack="true"
             android:scrollbars="vertical"
             android:text=""
-            android:textColor="#455a64"
+            android:textColor="#FFFFFF"
             android:textIsSelectable="true"
             android:textSize="14sp"/>
     </ScrollView>
@@ -754,11 +754,11 @@
         android:layout_height="0dp"
         android:layout_marginBottom="0dp"
         android:layout_weight="0.05"
-        android:background="#00BCD4"
+        android:background="#141414"
         android:gravity="center"
         android:paddingHorizontal="3dp"
         android:maxLines="1"
-        android:textColor="#455a64"
+        android:textColor="#FFFFFF"
         android:textSize="12dp"
         android:visibility="visible" />
 </LinearLayout>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:paddingTop="15dp">
+
+    <CheckBox
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="0dp"
+        android:layout_weight=".1"
+        android:button="@drawable/custom_checkbox">
+    </CheckBox>
+
+    <TextView android:visibility="gone"
+        android:layout_weight="0" >
+    </TextView>
+
+    <HorizontalScrollView
+
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight=".3"
+        android:paddingLeft="10dp"
+        android:scrollbars="none">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="#000000"
+            android:paddingLeft="0dp"
+            android:textColor="#FFFFFF"
+            android:textSize="14dp">
+        </TextView>
+    </HorizontalScrollView>
+
+    <HorizontalScrollView
+
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight=".6"
+        android:paddingLeft="10dp"
+        android:scrollbars="none">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="#000000"
+            android:paddingLeft="0dp"
+            android:textColor="#FFFFFF"
+            android:textSize="14dp">
+        </TextView>
+
+    </HorizontalScrollView>
+
+    <Button
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:padding="2dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_weight="0"
+        android:background="@drawable/custom_button"
+        android:drawableLeft="@drawable/twotone_edit_24px"
+        android:gravity="center"
+        android:textColor="#FFFFFF"
+        android:textSize="14dp"
+        android:textStyle="bold">
+    </Button>
+
+</TableRow>
+

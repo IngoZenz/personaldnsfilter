@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="dnsfilter.android"
-    android:versionCode="1504301"
-    android:versionName="1.50.43.1" >
+    android:versionCode="1504302"
+    android:versionName="1.50.43.2" >
 
     <uses-sdk android:minSdkVersion="14" />
 
@@ -17,7 +17,7 @@
 
     <application
         android:usesCleartextTraffic="true"
-        android:icon="@drawable/icon"
+        android:icon="@mipmap/ic_launcher"
         android:label="personalDNSfilter"
         android:theme="@style/Theme.phttpp.TitleBar" >
         <activity

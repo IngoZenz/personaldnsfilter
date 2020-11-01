@@ -720,7 +720,7 @@ public class DNSFilterService extends VpnService  {
 
 				noti = notibuilder
 						.setContentTitle("DNSFilter is running!")
-						.setSmallIcon(R.drawable.icon)
+						.setSmallIcon(R.mipmap.ic_launcher)
 						.setContentIntent(pendingIntent)
 						.build();
 			} else {
