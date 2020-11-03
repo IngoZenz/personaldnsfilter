@@ -36,3 +36,4 @@ obj/
 .externalNativeBuild
 
 *.log
+app/release/output-metadata.json
