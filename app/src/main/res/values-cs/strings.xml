@@ -14,7 +14,7 @@
   <string name="EnableAutoStart">Automatické spuštění</string>
   <string name="EnableAdfilter">Zapnout blokování</string>
   <string name="dnsLabel">DNS:</string>
-  <string name="manualDNSCheck">Zakázat zjišťování DNS serveru - Ruční DNS servery uvedené níže:</string>
+  <string name="manualDNSCheck">Zakázat zjišťování DNS serveru - ruční DNS servery uvedené níže:</string>
   <string name="dnsCfgConfigDialogTitle">Konfigurace DNS serveru</string>
   <string name="filterUpdateDays">Interval aktualizace filtrů ve dnech:</string>
   <string name="active">Aktivní</string>
