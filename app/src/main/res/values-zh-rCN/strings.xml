@@ -14,20 +14,24 @@
   <string name="EnableAutoStart">自动启动</string>
   <string name="EnableAdfilter">启用拦截</string>
   <string name="dnsLabel">域名服务器(DNS)：</string>
-  <string name="manualDNSCheck">禁用DNS服务器发现 - 手动下面的DNS服务器：</string>
+  <string name="manualDNSCheck">禁用DNS服务器发现 - 手动配置下面的DNS服务器：</string>
   <string name="dnsCfgConfigDialogTitle">DNS 服务器配置</string>
   <string name="filterUpdateDays">过滤器更新间隔（日）：</string>
-  <string name="active">活动</string>
+  <string name="active">活跃</string>
   <string name="shortText">短文本</string>
+  <string name="URL" translatable="false">URL</string>
   <string name="cfgBackupRestore">备份和还原</string>
   <string name="backupConfig">备份配置</string>
   <string name="restoreBackup">还原备份</string>
   <string name="restoreDefault">恢复默认配置</string>
   <string name="category">类别</string>
   <string name="name">名称</string>
+  <string name="left" translatable="false"><![CDATA[◄]]></string>
+  <string name="right" translatable="false"><![CDATA[►]]></string>
   <string name="editFilterDialogTitle">编辑过滤器</string>
   <string name="addFilter">"添加过滤器"</string>
   <string name="removeFilter">"删除过滤器"</string>
-  <string name="proxyModeCheckBox">没有本地VPN 的DNS代理模式</string>
-  <string name="rootModeCheckBox">没有本地的 VPN 根模式</string>
+  <string name="proxyModeCheckBox">没有本地 VPN 的DNS代理模式</string>
+  <string name="rootModeCheckBox">没有本地 VPN 的 Root模式</string>
+  
 </resources>
