@@ -839,7 +839,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				public void run() {
 
 					//Link field
-					link_field_txt = config.getProperty("footerLinkText","");
+					link_field_txt = config.getProperty("footerLink","");
 					link_field.setText(fromHtml(link_field_txt));
 
 					//Log formatting
