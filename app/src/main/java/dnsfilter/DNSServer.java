@@ -33,11 +33,13 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.Base64;
 import java.util.HashSet;
 
 import util.ExecutionEnvironment;
 import util.Logger;
 import util.conpool.Connection;
+import util.conpool.HttpProxy;
 import util.http.HttpHeader;
 
 public class DNSServer {
@@ -54,8 +56,30 @@ public class DNSServer {
 
     private static DNSServer INSTANCE = new DNSServer(null,0,0);
 
+    protected static Proxy proxy = Proxy.NO_PROXY;
+
     static {
         Connection.setPoolTimeoutSeconds(30);
+        //load proxy
+        try {
+            boolean useProxy =  Boolean.parseBoolean(ConfigurationAccess.getLocal().getConfig().getProperty("resolveOverHttpProxy", "false"));
+            if (useProxy) {
+                String proxyIP = ConfigurationAccess.getLocal().getConfig().getProperty("httpProxyIP","").trim();
+                String proxyPort = ConfigurationAccess.getLocal().getConfig().getProperty("httpProxyPort","").trim();
+                if (!proxyIP.equals("") && !proxyPort.equals("")) {
+                    InetAddress proxyAddr = InetAddress.getByName(proxyIP);
+                    String proxyHost = ConfigurationAccess.getLocal().getConfig().getProperty("httpProxyHost","").trim();
+                    if (!proxyHost.equals(""))
+                        proxyAddr = InetAddress.getByAddress(proxyHost, proxyAddr.getAddress());
+
+                    proxy = new HttpProxy(new InetSocketAddress(proxyAddr, Integer.parseInt(proxyPort)));
+                    Logger.getLogger().logLine("Using Proxy:" + proxy);
+                } else Logger.getLogger().logLine("WARNING! Ignoring incomplete proxy configuration!");
+            }
+        } catch (Exception e){
+            Logger.getLogger().logLine("Exception during Proxy creation!");
+            Logger.getLogger().logException(e);
+        }
     }
     
     public static void invalidateOpenConnections() {
@@ -348,7 +372,7 @@ class TCP extends DNSServer {
     @Override
     public void resolve(DatagramPacket request, DatagramPacket response) throws IOException {
         for (int i = 0; i<2; i++) { //retry once in case of EOFException (pooled connection was already closed)
-            Connection con = Connection.connect(address, timeout, ssl, null, Proxy.NO_PROXY);
+            Connection con = Connection.connect(address, timeout, ssl, null, proxy);
             con.setSoTimeout(timeout);
             try {
                 DataInputStream in = new DataInputStream(con.getInputStream());
@@ -418,7 +442,7 @@ class DoH extends DNSServer {
         byte[] reqHeader = buildRequestHeader(request.getLength());
 
         for (int i = 0; i<2; i++) { //retry once in case of EOFException (pooled connection was already closed)
-            Connection con = Connection.connect(urlHostAddress, timeout, true, null, Proxy.NO_PROXY);
+            Connection con = Connection.connect(urlHostAddress, timeout, true, null, proxy);
             try {
                 OutputStream out = con.getOutputStream();
                 DataInputStream in = new DataInputStream(con.getInputStream());
