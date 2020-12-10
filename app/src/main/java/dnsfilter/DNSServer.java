@@ -31,9 +31,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.util.Base64;
 import java.util.HashSet;
 
 import util.ExecutionEnvironment;
