@@ -67,11 +67,18 @@ public class DNSServer {
                 if (!proxyIP.equals("") && !proxyPort.equals("")) {
                     InetAddress proxyAddr = InetAddress.getByName(proxyIP);
                     String proxyHost = ConfigurationAccess.getLocal().getConfig().getProperty("httpProxyHost","").trim();
+
                     if (!proxyHost.equals(""))
                         proxyAddr = InetAddress.getByAddress(proxyHost, proxyAddr.getAddress());
 
                     proxy = new HttpProxy(new InetSocketAddress(proxyAddr, Integer.parseInt(proxyPort)));
+
+                    String proxyAuthStr = ConfigurationAccess.getLocal().getConfig().getProperty("httpProxyBasicAuthStr","").trim();
+                    if (!proxyAuthStr.equals(""))
+                        ((HttpProxy)proxy).setProxyAuth(proxyAuthStr);
+
                     Logger.getLogger().logLine("Using Proxy:" + proxy);
+
                 } else Logger.getLogger().logLine("WARNING! Ignoring incomplete proxy configuration!");
             }
         } catch (Exception e){
