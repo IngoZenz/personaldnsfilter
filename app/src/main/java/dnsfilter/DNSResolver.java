@@ -65,6 +65,35 @@ public class DNSResolver implements Runnable {
 		this.replySocket = replySocket;
 	}
 
+
+
+	public boolean resolveLocal(DatagramPacket request, DatagramPacket response) throws IOException{
+		return false;
+		/*
+		SimpleDNSMessage dnsQuery = new SimpleDNSMessage(request.getData(), request.getOffset(), request.getLength());
+		Object[] info = dnsQuery.getQueryData();
+
+		short type = (short) info[1];
+
+		if (type != 1 && type != 28)
+			return false;
+
+		String host = (String) info[0];
+
+		if (DNSResponsePatcher.filter(host, false)) {
+			DNSResponsePatcher.logNstats(true, host);
+			byte[] ip;
+			if (type == 1)
+				ip = DNSResponsePatcher.ipv4_blocked;
+			else
+				ip = DNSResponsePatcher.ipv6_blocked;
+			int length = dnsQuery.produceResponse(response.getData(), response.getOffset(), ip);
+			response.setLength(length);
+			return true;
+		}
+		return false; */
+	}
+
 	private void processIPPackageMode() throws Exception {
 		int ttl = udpRequestPacket.getTTL();
 		int[] sourceIP = udpRequestPacket.getSourceIP();
@@ -87,13 +116,16 @@ public class DNSResolver implements Runnable {
 		DatagramPacket response = new DatagramPacket(packetData, offs, packetData.length - offs);
 
 		//forward request to DNS and receive response
-		DNSCommunicator.getInstance().requestDNS(request, response);
+		if (!resolveLocal(request, response)) {
+			//Not filterd directly but we need to check CNames, therefore request upstream
+			DNSCommunicator.getInstance().requestDNS(request, response);
 
-		// patch the response by applying filter			
-		byte[] buf = DNSResponsePatcher.patchResponse(clientID, response.getData(), offs);
+			// patch the response by applying filter
+			byte[] buf = DNSResponsePatcher.patchResponse(clientID, response.getData(), offs);
+		}
 
 		//create  UDP Header and update source and destination IP and port			
-		UDPPacket udp = UDPPacket.createUDPPacket(buf, ipOffs, hdrLen + response.getLength(), version);
+		UDPPacket udp = UDPPacket.createUDPPacket(response.getData(), ipOffs, hdrLen + response.getLength(), version);
 
 		//for the response source and destination have to be switched
 		udp.updateHeader(ttl, 17, destIP, sourceIP);
@@ -113,11 +145,13 @@ public class DNSResolver implements Runnable {
 		byte[] data = dataGramRequest.getData();
 		DatagramPacket response = new DatagramPacket(data, dataGramRequest.getOffset(), data.length - dataGramRequest.getOffset());
 
-		//forward request to DNS and receive response
-		DNSCommunicator.getInstance().requestDNS(dataGramRequest, response);
+		if (!resolveLocal(dataGramRequest, response)) {
+			//forward request to DNS and receive response
+			DNSCommunicator.getInstance().requestDNS(dataGramRequest, response);
 
-		// patch the response by applying filter			
-		DNSResponsePatcher.patchResponse(sourceAdr.toString(), response.getData(), response.getOffset());
+			// patch the response by applying filter
+			DNSResponsePatcher.patchResponse(sourceAdr.toString(), response.getData(), response.getOffset());
+		}
 
 		//finally return the response to the request source
 		response.setSocketAddress(sourceAdr);

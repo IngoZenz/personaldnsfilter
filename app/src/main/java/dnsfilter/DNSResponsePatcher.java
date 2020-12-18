@@ -36,8 +36,8 @@ public class DNSResponsePatcher {
 	private static Set FILTER = null;
 	private static LoggerInterface TRAFFIC_LOG = null;
 
-	private static byte[] ipv4_blocked;
-	private static byte[] ipv6_blocked;
+	protected static byte[] ipv4_blocked;
+	protected static byte[] ipv6_blocked;
 
 	private static long okCnt=0;
 	private static long filterCnt=0;
@@ -102,7 +102,7 @@ public class DNSResponsePatcher {
 				//This seems to work well - however is not 100% correct!
 
 				if (type == 1 || type == 28)
-					filter = filter || filter(queryHost);
+					filter = filter || filter(queryHost, true);
 
 				if (TRAFFIC_LOG != null)
 					TRAFFIC_LOG.logLine(client + ", Q-" + type + ", " + queryHost + ", " + "<empty>");
@@ -121,7 +121,7 @@ public class DNSResponsePatcher {
 
 				if ((type == 1 || type == 28)) {
 					if (!filter && checkCNAME && !host.equals(queryHost)) { //avoid duplicate checking same hosts
-						filter = filter || filter(host);  //Handle CNAME Cloaking!
+						filter = filter || filter(host, true);  //Handle CNAME Cloaking!
 						queryHost = host;
 					}
 					if (filter) {
@@ -175,7 +175,7 @@ public class DNSResponsePatcher {
 		}
 	}
 
-	private static boolean filter(String host) {
+	protected static boolean filter(String host, boolean log) {
 		boolean result;
 
 		if (FILTER == null)
@@ -183,6 +183,14 @@ public class DNSResponsePatcher {
 		else
 			result = FILTER.contains(host);
 
+		if (log)
+			logNstats(result, host);
+
+		return result;
+	}
+
+
+	protected static void logNstats(boolean result, String host) {
 		if (result == true)
 			Logger.getLogger().logLine("FILTERED:" + host);
 		else
@@ -192,8 +200,6 @@ public class DNSResponsePatcher {
 			okCnt++;
 		else
 			filterCnt++;
-
-		return result;
 	}
 
 
