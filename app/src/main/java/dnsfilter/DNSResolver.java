@@ -29,12 +29,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.SocketAddress;
 
 import util.ExecutionEnvironment;
 import util.Logger;
-import util.Utils;
 
 public class DNSResolver implements Runnable {
 
@@ -68,8 +66,7 @@ public class DNSResolver implements Runnable {
 
 
 	public boolean resolveLocal(DatagramPacket request, DatagramPacket response) throws IOException{
-		return false;
-		/*
+
 		SimpleDNSMessage dnsQuery = new SimpleDNSMessage(request.getData(), request.getOffset(), request.getLength());
 		Object[] info = dnsQuery.getQueryData();
 
@@ -88,11 +85,15 @@ public class DNSResolver implements Runnable {
 			else
 				ip = DNSResponsePatcher.ipv6_blocked;
 			int length = dnsQuery.produceResponse(response.getData(), response.getOffset(), ip);
+		
 			response.setLength(length);
+			
 			return true;
 		}
-		return false; */
+		
+		return false;
 	}
+
 
 	private void processIPPackageMode() throws Exception {
 		int ttl = udpRequestPacket.getTTL();
@@ -117,7 +118,7 @@ public class DNSResolver implements Runnable {
 
 		//forward request to DNS and receive response
 		if (!resolveLocal(request, response)) {
-			//Not filterd directly but we need to check CNames, therefore request upstream
+			
 			DNSCommunicator.getInstance().requestDNS(request, response);
 
 			// patch the response by applying filter

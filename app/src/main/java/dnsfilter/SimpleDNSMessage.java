@@ -1,7 +1,6 @@
 package dnsfilter;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.StringTokenizer;
 
@@ -49,7 +48,8 @@ public class SimpleDNSMessage {
     public int produceResponse(byte[] response, int offset,  byte[] ip) {
     	
         System.arraycopy(data, offs, response, offset, length);
-    	response[offset+2] = (byte) (((1<<7) + (response[offset+2] & 0b01111111)) | 0b00000100); // response flag and Authoritive answer
+    	//response[offset+2] = (byte) (((1<<7) + (response[offset+2] & 0b01111111)) | 0b00000100); // response flag and Authoritive answer
+        response[offset+2] = (byte) ((1<<7) + (response[offset+2] & 0b01111111));
         response[offset+3] = (byte) (1<<7); //recursion available
 
     	ByteBuffer buf = ByteBuffer.wrap(response, offset, response.length-offset);
@@ -61,11 +61,12 @@ public class SimpleDNSMessage {
     	
     	
     	StringTokenizer chainElements = new StringTokenizer(qHost,".");
+    	int count = chainElements.countTokens();
     	
     	//QUESTION
     	
     	//set request host
-        for (int i = 0; i < chainElements.countTokens(); i++) {
+        for (int i = 0; i < count; i++) {        	
         	String element = chainElements.nextToken();
             buf.put((byte)(element.length() & 0xFF));
             buf.put(element.getBytes());
@@ -79,7 +80,7 @@ public class SimpleDNSMessage {
         
         //ANSWER
         
-        short ptr = (short)((short)1 << 15) +12;
+        short ptr = (short)((short)0xC0 << 8) +12;
         buf.putShort(ptr);  //pointer to req host
         buf.putShort(qType); // Q-Type:1
         buf.putShort(qClass); // Q-Class:1
@@ -87,8 +88,7 @@ public class SimpleDNSMessage {
         buf.putShort((short)ip.length); // IP Len
         buf.put(ip);
         
-        return buf.position()- offset;
-    	
+        return buf.position()- offset;    	
     }
 
     
