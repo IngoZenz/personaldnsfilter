@@ -13,8 +13,8 @@ public class SimpleDNSMessage {
 	int rqFlgs;
 	int resFlgs;
 	String qHost;
-	Short qType;
-	Short qClass;	
+	short qType;
+	short qClass;
 
 	
 	public SimpleDNSMessage(byte[] data, int offs, int length) throws IOException {
