@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketAddress;
 
 import util.ExecutionEnvironment;
@@ -65,12 +66,13 @@ public class DNSResolver implements Runnable {
 
 
 
-	public boolean resolveLocal(DatagramPacket request, DatagramPacket response) throws IOException{
+	public boolean resolveLocal(String client, DatagramPacket request, DatagramPacket response) throws IOException{
 
 		SimpleDNSMessage dnsQuery = new SimpleDNSMessage(request.getData(), request.getOffset(), request.getLength());
 		Object[] info = dnsQuery.getQueryData();
 
 		short type = (short) info[1];
+		short clss = (short) info[2];
 
 		if (type != 1 && type != 28)
 			return false;
@@ -78,7 +80,10 @@ public class DNSResolver implements Runnable {
 		String host = (String) info[0];
 
 		if (DNSResponsePatcher.filter(host, false)) {
+
 			DNSResponsePatcher.logNstats(true, host);
+			DNSResponsePatcher.trafficLog(client,clss,type,host,null,0);
+
 			byte[] ip;
 			if (type == 1)
 				ip = DNSResponsePatcher.ipv4_blocked;
@@ -87,6 +92,8 @@ public class DNSResolver implements Runnable {
 			int length = dnsQuery.produceResponse(response.getData(), response.getOffset(), ip);
 		
 			response.setLength(length);
+
+			DNSResponsePatcher.trafficLog(client,clss,type,host, InetAddress.getByAddress(ip).getHostAddress(),ip.length);
 			
 			return true;
 		}
@@ -117,7 +124,7 @@ public class DNSResolver implements Runnable {
 		DatagramPacket response = new DatagramPacket(packetData, offs, packetData.length - offs);
 
 		//forward request to DNS and receive response
-		if (!resolveLocal(request, response)) {
+		if (!resolveLocal(clientID, request, response)) {
 			
 			DNSCommunicator.getInstance().requestDNS(request, response);
 
@@ -141,17 +148,18 @@ public class DNSResolver implements Runnable {
 
 	private void processDatagramPackageMode() throws Exception {
 		SocketAddress sourceAdr = dataGramRequest.getSocketAddress();
+		String clientID = sourceAdr.toString();
 
 		//we reuse the request data array
 		byte[] data = dataGramRequest.getData();
 		DatagramPacket response = new DatagramPacket(data, dataGramRequest.getOffset(), data.length - dataGramRequest.getOffset());
 
-		if (!resolveLocal(dataGramRequest, response)) {
+		if (!resolveLocal(clientID, dataGramRequest, response)) {
 			//forward request to DNS and receive response
 			DNSCommunicator.getInstance().requestDNS(dataGramRequest, response);
 
 			// patch the response by applying filter
-			DNSResponsePatcher.patchResponse(sourceAdr.toString(), response.getData(), response.getOffset());
+			DNSResponsePatcher.patchResponse(clientID, response.getData(), response.getOffset());
 		}
 
 		//finally return the response to the request source

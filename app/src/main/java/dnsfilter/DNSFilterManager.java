@@ -1298,7 +1298,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 							config.getProperty("trafficLogName", "trafficlog"),
 							Integer.parseInt(config.getProperty("trafficLogSize", "1048576").trim()),
 							Integer.parseInt(config.getProperty("trafficLogSlotCount", "2").trim()),
-							"timestamp, client:port, request type, domain name, answer");
+							"timestamp, client:port, class, type, domain name, answer");
 
 					((FileLogger) TRAFFIC_LOG).enableTimestamp(true);
 

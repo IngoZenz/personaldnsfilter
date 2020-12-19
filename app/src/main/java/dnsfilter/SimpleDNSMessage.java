@@ -27,7 +27,7 @@ public class SimpleDNSMessage {
 		if (isStandardQuery()) {
 			ByteBuffer buf = ByteBuffer.wrap(data, offs, length);
 			buf.position(offs+12);
-	        qHost =  readDomainName(buf, buf.arrayOffset());
+	        qHost =  DNSResponsePatcher.readDomainName(buf, buf.arrayOffset());
 	        qType = buf.getShort();
 	        qClass = buf.getShort();
 		}		
@@ -90,39 +90,5 @@ public class SimpleDNSMessage {
         
         return buf.position()- offset;    	
     }
-
-    
-    private static String readDomainName(ByteBuffer buf, int offs) throws IOException {
-
-        byte[] substr = new byte[64];
-
-        int count = -1;
-        String dot = "";
-        String result = "";
-        int ptrJumpPos = -1;
-
-        while (count != 0) {
-            count = buf.get();
-            if (count != 0) {
-                if ((count & 0xc0) == 0) {
-                    buf.get(substr, 0, count);
-                    result = result + dot + new String(substr, 0, count);
-                    dot = ".";
-                } else {// pointer
-                    buf.position(buf.position() - 1);
-                    int pointer = offs + (buf.getShort() & 0x3fff);
-                    if (ptrJumpPos == -1)
-                        ptrJumpPos = buf.position();
-                    buf.position(pointer);
-                }
-            } else {
-                if (count == 0 && ptrJumpPos != -1)
-                    buf.position(ptrJumpPos);
-            }
-        }
-        return result;
-    }
-
-	   
 
 }

@@ -95,7 +95,7 @@ public class DNSResponsePatcher {
 			for (int i = 0; i < questCount; i++) {
 
 				queryHost = readDomainName(buf, offs);
-				int type = buf.getShort(); // query type
+				short type = buf.getShort(); // query type
 
 				//checking the filter on the answer does not always work due to cname redirects (type 5 responses)
 				//therefore we just check the filter on the query host and thus we'll disallow also all cname redirects.
@@ -104,16 +104,15 @@ public class DNSResponsePatcher {
 				if (type == 1 || type == 28)
 					filter = filter || filter(queryHost, true);
 
-				if (TRAFFIC_LOG != null)
-					TRAFFIC_LOG.logLine(client + ", Q-" + type + ", " + queryHost + ", " + "<empty>");
+				short clss = buf.getShort(); // query class
 
-				buf.getShort(); // query class
+				trafficLog(client, clss, type, queryHost,null,0);
 			}
 
 			for (int i = 0; i < answerCount; i++) {
 				String host = readDomainName(buf, offs);
-				int type = buf.getShort(); // type
-				buf.getShort(); // class
+				short type = buf.getShort(); // type
+				short clss = buf.getShort(); // class
 				buf.getInt(); // TTL
 				int len = buf.getShort(); // len
 
@@ -164,7 +163,7 @@ public class DNSResponsePatcher {
 						else
 							answerStr = new String(answer);
 					}
-					TRAFFIC_LOG.logLine(client + ", A-" + type + ", " + host + ", " + answerStr + ", /Length:" + len);
+					trafficLog(client, clss, type, host, answerStr, len);
 				}
 			}
 			return buf.array();
@@ -189,6 +188,16 @@ public class DNSResponsePatcher {
 		return result;
 	}
 
+
+	protected static void trafficLog(String client, short clss, short type, String host, String answer, int length) {
+		if (TRAFFIC_LOG == null)
+			return;
+		if (answer != null)
+			TRAFFIC_LOG.logLine(client + ", "+ clss + ", A-" + type + ", " + host + ", " + answer + ", /Length:" + length);
+		else
+			TRAFFIC_LOG.logLine(client + ", "+ clss + ", Q-" + type + ", " + host + ", " + "<empty>");
+
+	}
 
 	protected static void logNstats(boolean result, String host) {
 		if (result == true)
@@ -223,7 +232,7 @@ public class DNSResponsePatcher {
 	}
 
 
-	private static String readDomainName(ByteBuffer buf, int offs) throws IOException {
+	protected static String readDomainName(ByteBuffer buf, int offs) throws IOException {
 
 		byte[] substr = new byte[64];
 
