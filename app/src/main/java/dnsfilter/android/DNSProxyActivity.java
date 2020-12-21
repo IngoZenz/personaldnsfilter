@@ -66,6 +66,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -79,6 +80,7 @@ import java.util.StringTokenizer;
 
 import dnsfilter.ConfigurationAccess;
 import dnsfilter.DNSFilterManager;
+import util.ExecutionEnvironment;
 import util.SuppressRepeatingsLogger;
 import util.GroupedLogger;
 import util.Logger;
@@ -108,6 +110,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected static Button restoreDefaultsBtn;
 	protected static Button backupDnBtn;
 	protected static Button backupUpBtn;
+	protected static Button manualDNSViewResDefBtn;
 	protected static TextView addFilterBtn;
 	protected static TextView removeFilterBtn;
 	protected static CheckBox appWhiteListCheck;
@@ -390,6 +393,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 			manualDNSView = (EditText) advDNSConfigDia.findViewById(R.id.manualDNS);
 			manualDNSView.setText(uiText);
+			manualDNSViewResDefBtn = (Button) advDNSConfigDia.findViewById(R.id.RestoreDefaultBtn);
+			manualDNSViewResDefBtn.setOnClickListener(this);
 
 			startBtn = (Button) findViewById(R.id.startBtn);
 			startBtn.setOnClickListener(this);
@@ -828,6 +833,31 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}
 	}
 
+	protected void setDNSCfgDialog(Properties config) {
+		String manualDNS_Help =
+				"# Format: <IP>::<PORT>::<PROTOCOL>::<URL END POINT>\n"+
+						"# IPV6 Addresses with '::' must be in brackets '[IPV6]'!\n\n" +
+						"# The default list contains following entries:\n" +
+						"# adguard1 (UDP); adguard2 (UDP); uncensoreddns.org (Dot); libredns.gr (DoT); libredns.gr (DoH);  nixnet.services Luxembourg (DoT); nixnet.services Las Vegas(DoT); nixnet.services New York(DoT)\n\n";
+
+		manualDNSView.setText(manualDNS_Help+config.getProperty("fallbackDNS").replace(";", "\n").replace(" ", ""));
+		manualDNSCheck.setChecked(!Boolean.parseBoolean(config.getProperty("detectDNS", "true")));
+
+	}
+
+	protected void restoreDefaultDNSConfig() {
+		try {
+			InputStream defIn = ExecutionEnvironment.getEnvironment().getAsset("dnsfilter.conf");
+			Properties defaults = new Properties();
+			defaults.load(defIn);
+			defIn.close();
+			setDNSCfgDialog(defaults);
+			message("Restored DNS Defaults!");
+		} catch (Exception e ){
+			message(e.getMessage());
+		}
+	}
+
 	protected void loadAndApplyConfig(boolean startApp) {
 
 		config = getConfig();
@@ -856,15 +886,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 					debug = Boolean.parseBoolean(config.getProperty("debug", "false"));
 
-					manualDNSCheck.setChecked(!Boolean.parseBoolean(config.getProperty("detectDNS", "true")));
-
-					String manualDNS_Help =
-							"# Format: <IP>::<PORT>::<PROTOCOL>::<URL END POINT>\n"+
-									"# IPV6 Addresses with '::' must be in brackets '[IPV6]'!\n\n" +
-                                    "# The default list contains following entries:\n" +
-									"# adguard1 (UDP); adguard2 (UDP); uncensoreddns.org (Dot); libredns.gr (DoT); libredns.gr (DoH);  nixnet.services Luxembourg (DoT); nixnet.services Las Vegas(DoT); nixnet.services New York(DoT)\n\n";
-
-					manualDNSView.setText(manualDNS_Help+config.getProperty("fallbackDNS").replace(";", "\n").replace(" ", ""));
+					setDNSCfgDialog(config);
 
 					FilterConfig.FilterConfigEntry[] filterEntries = buildFilterEntries(config);
 					filterCfg.setEntries(filterEntries);
@@ -1153,6 +1175,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		} else if (destination == backupDnBtn || destination == backupUpBtn) {
 			handleBackUpIdChange(destination == backupUpBtn);
 			return;
+		} else if (destination == manualDNSViewResDefBtn){
+			restoreDefaultDNSConfig();
+			return;
 		}
 
 		if (destination == rootModeCheck && rootModeCheck.isChecked() && !proxyModeCheck.isChecked()) {
@@ -1192,6 +1217,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			}
 		}
 	}
+
 
 	private void handleBackUpIdChange(boolean up) {
 		if (up && selectedBackup==availableBackups.length-1)

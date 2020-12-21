@@ -8,7 +8,25 @@
     android:focusableInTouchMode="true"
     android:orientation="vertical"
     android:weightSum="1" >
-
+        <Button
+            android:id="@+id/RestoreDefaultBtn"
+            android:textAllCaps="true"
+            android:elevation="2.3dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_gravity = "center_horizontal"
+            android:background="@drawable/custom_button"
+            android:padding="10dp"
+            android:text="@string/restoreDefault"
+            android:textAlignment="center"
+            android:textColor="#FFFFFF"
+            android:fontFamily="sans-serif-medium"
+            android:textSize="11sp"
+            android:textStyle="bold"/>
         <dnsfilter.android.PaddedCheckBox
             android:id="@+id/manualDNSCheck"
             android:layout_width="wrap_content"
@@ -47,6 +65,7 @@
             android:textSize="14dp"
             android:background="#eceff1">
         </EditText>
+
         </HorizontalScrollView>
         </LinearLayout>
 
