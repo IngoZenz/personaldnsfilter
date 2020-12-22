@@ -2,58 +2,61 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="match_parent"
+    android:layout_height="fill_parent"
     android:background="#FFFFFF"
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:orientation="vertical"
     android:weightSum="1" >
 
-        <dnsfilter.android.PaddedCheckBox
-            android:id="@+id/manualDNSCheck"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginTop="0dp"
-            android:button="@drawable/custom_checkbox"
-            android:checked="false"
-            android:text="@string/manualDNSCheck"
-            android:textColor="#424242" >
-        </dnsfilter.android.PaddedCheckBox>
-
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginBottom="25dp"
-            android:background="#eceff1">
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            android:layout_weight="0.9">
 
-        <HorizontalScrollView
-            android:id="@+id/manualDNSScroll"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#eceff1"
-            android:scrollbars="none">
+                <dnsfilter.android.PaddedCheckBox
+                    android:id="@+id/manualDNSCheck"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginRight="15dp"
+                    android:layout_marginTop="0dp"
+                    android:button="@drawable/custom_checkbox"
+                    android:checked="false"
+                    android:text="@string/manualDNSCheck"
+                    android:textColor="#424242" >
+                </dnsfilter.android.PaddedCheckBox>
 
-        <EditText
-            android:id="@+id/manualDNS"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minWidth="200dp"
-            android:inputType="textMultiLine|textNoSuggestions"
-            android:lines="15"
-            android:textColor="#424242"
-            android:textSize="14dp"
-            android:background="#eceff1">
-        </EditText>
 
-        </HorizontalScrollView>
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginRight="15dp"
+                    android:layout_marginBottom="15dp"
+                    android:background="#eceff1"
+                    android:id="@+id/manualDNSScroll"
+                    android:scrollbars="none">
+
+                        <EditText
+                            android:id="@+id/manualDNS"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minWidth="200dp"
+                            android:inputType="textMultiLine|textNoSuggestions"
+                            android:textColor="#424242"
+                            android:textSize="14dp"
+                            android:background="#eceff1">
+                        </EditText>
+
+                </HorizontalScrollView>
         </LinearLayout>
 
         <LinearLayout
+            android:orientation="vertical"
+            android:layout_weight="0.1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
@@ -80,4 +83,3 @@
         </LinearLayout>
 
 </LinearLayout>
-
