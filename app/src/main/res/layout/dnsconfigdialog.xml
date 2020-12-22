@@ -7,79 +7,73 @@
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:orientation="vertical"
-    android:weightSum="1" >
+    android:weightSum="1">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:orientation="vertical"
-            android:layout_weight="0.9">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.95"
+        android:orientation="vertical">
 
-                <dnsfilter.android.PaddedCheckBox
-                    android:id="@+id/manualDNSCheck"
+            <dnsfilter.android.PaddedCheckBox
+                android:id="@+id/manualDNSCheck"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginRight="15dp"
+                android:button="@drawable/custom_checkbox"
+                android:checked="false"
+                android:text="@string/manualDNSCheck"
+                android:textColor="#424242" />
+
+
+        <HorizontalScrollView
+            android:id="@+id/manualDNSScroll"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginBottom="15dp"
+            android:background="#eceff1"
+            android:padding="10dp"
+            android:scrollbars="none">
+
+                <EditText
+                    android:id="@+id/manualDNS"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="15dp"
-                    android:layout_marginRight="15dp"
-                    android:layout_marginTop="0dp"
-                    android:button="@drawable/custom_checkbox"
-                    android:checked="false"
-                    android:text="@string/manualDNSCheck"
-                    android:textColor="#424242" >
-                </dnsfilter.android.PaddedCheckBox>
-
-
-                <HorizontalScrollView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="10dp"
-                    android:layout_marginLeft="15dp"
-                    android:layout_marginRight="15dp"
-                    android:layout_marginBottom="15dp"
                     android:background="#eceff1"
-                    android:id="@+id/manualDNSScroll"
-                    android:scrollbars="none">
+                    android:inputType="textMultiLine|textNoSuggestions"
+                    android:minWidth="200dp"
+                    android:textColor="#424242"
+                    android:textSize="14dp" />
 
-                        <EditText
-                            android:id="@+id/manualDNS"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:minWidth="200dp"
-                            android:inputType="textMultiLine|textNoSuggestions"
-                            android:textColor="#424242"
-                            android:textSize="14dp"
-                            android:background="#eceff1">
-                        </EditText>
+        </HorizontalScrollView>
+    </LinearLayout>
 
-                </HorizontalScrollView>
-        </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.05"
+        android:background="#ffffff"
+        android:orientation="vertical">
 
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_weight="0.1"
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/RestoreDefaultBtn"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:background="#ffffff">
-                <Button
-                    android:id="@+id/RestoreDefaultBtn"
-                    android:textAllCaps="true"
-                    android:elevation="2.3dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
-                    android:layout_marginTop="10dp"
-                    android:layout_gravity="center_horizontal"
-                    android:background="@drawable/custom_button"
-                    android:padding="10dp"
-                    android:text="@string/restoreDefault"
-                    android:textAlignment="center"
-                    android:textColor="#FFFFFF"
-                    android:fontFamily="sans-serif-medium"
-                    android:textSize="11sp"
-                    android:textStyle="bold"/>
-        </LinearLayout>
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/custom_button"
+            android:elevation="2.3dp"
+            android:fontFamily="sans-serif-medium"
+            android:padding="10dp"
+            android:text="@string/restoreDefault"
+            android:textAlignment="center"
+            android:textAllCaps="true"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 
 </LinearLayout>
