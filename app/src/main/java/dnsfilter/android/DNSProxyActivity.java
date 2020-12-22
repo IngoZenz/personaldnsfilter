@@ -561,6 +561,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	@Override
 	public void onResume() {
 		super.onResume();
+		if (advDNSConfigDia_open) {
+			advDNSConfigDia.show();
+			((HorizontalScrollView) advDNSConfigDia.findViewById(R.id.manualDNSScroll)).fullScroll(ScrollView.FOCUS_LEFT);
+		}
 		checkPasscode();
 	}
 
@@ -995,13 +999,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			advDNSConfigDia.dismiss();
 	}
 
-	@Override
+/*	@Override
 	protected void onRestoreInstanceState(Bundle outState) {
 		if (advDNSConfigDia_open) {
 			advDNSConfigDia.show();
 			((HorizontalScrollView) advDNSConfigDia.findViewById(R.id.manualDNSScroll)).fullScroll(ScrollView.FOCUS_LEFT);
 		}
-	}
+	}*/
 
 
 
