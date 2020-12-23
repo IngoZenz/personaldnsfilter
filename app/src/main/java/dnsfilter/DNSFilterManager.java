@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -83,6 +84,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 	private static BlockedHosts hostFilter = null;
 	private static Hashtable hostsFilterOverRule = null;
+	private static Hashtable<String, byte[]> customIPMappings = null;
 	private boolean serverStopped = true;
 	private boolean reloading_filter = false;
 	private AutoFilterUpdater autoFilterUpdater;
@@ -729,7 +731,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 
 	private String[] parseHosts(String line) throws IOException {
-		if (line.startsWith("#") || line.startsWith("!") || line.trim().equals("") )
+		if (line.startsWith("#") || line.startsWith("!") || line.startsWith(">") || line.trim().equals("") )
 			return null;
 		String[] result;
 		StringTokenizer tokens = new StringTokenizer(line);
@@ -1081,7 +1083,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				boolean listSection = false;
 				while ((entry = addHostIn.readLine()) != null) {
 					String host = entry;
-					boolean hostEntry = !(entry.trim().equals("") && !entry.startsWith("#"));
+					boolean hostEntry = !(entry.trim().equals("") && !entry.startsWith("#") && !entry.startsWith(">"));
 					if (entry.startsWith("!"))
 						host = entry.trim().substring(1);
 					if (!hostEntry || !entriestoChange.contains(host)) {// take over entries with no change required
@@ -1213,7 +1215,15 @@ public class DNSFilterManager extends ConfigurationAccess  {
 		filterHostsFileRemoveDuplicates = false;
 		validIndex = true;
 		hostFilter = null;
-		hostsFilterOverRule = null;
+		if (hostsFilterOverRule != null) {
+			hostsFilterOverRule.clear();
+			hostsFilterOverRule = null;
+		}
+		if (customIPMappings != null) {
+			customIPMappings.clear();
+			customIPMappings = null;
+			DNSResolver.initLocalResolver(null, false);
+		}
 		additionalHostsImportTS = "0";
 		reloading_filter = false;
 
@@ -1332,7 +1342,10 @@ public class DNSFilterManager extends ConfigurationAccess  {
 					}
 				}
 
-				//load whitelisted hosts from additionalHosts.txt
+				//load whitelisted hosts and custom mappings from additionalHosts.txt
+
+				boolean enableLocalResolver = Boolean.parseBoolean(config.getProperty("enableLocalResolver", "false"));
+				DNSResolver.initLocalResolver(null, enableLocalResolver);
 
 				File additionalHosts = new File(WORKDIR + "additionalHosts.txt");
 				if (additionalHosts.exists()) {
@@ -1343,6 +1356,28 @@ public class DNSFilterManager extends ConfigurationAccess  {
 							if (hostsFilterOverRule == null)
 								hostsFilterOverRule = new Hashtable();
 							hostsFilterOverRule.put(entry.substring(1).trim(), new Boolean(false));
+						} else if (entry.startsWith(">")) {
+							if (customIPMappings == null) {
+								customIPMappings = new Hashtable();
+								DNSResolver.initLocalResolver(customIPMappings, enableLocalResolver);
+							}
+							StringTokenizer tokens = new StringTokenizer(entry.substring(1).trim());
+							try {
+								String host = tokens.nextToken().trim().toLowerCase();
+								String ip = tokens.nextToken().trim();
+
+								InetAddress address = InetAddress.getByName(ip);
+								byte[] addressBytes = address.getAddress();
+								if (addressBytes.length == 4)
+									customIPMappings.put(">4"+host, addressBytes);
+								else
+									customIPMappings.put(">6"+host, addressBytes);
+
+							} catch (Exception e) {
+								Logger.getLogger().logLine("Cannot apply custom mapping "+entry);
+								Logger.getLogger().logLine(e.toString());
+							}
+
 						}
 					}
 					addHostIn.close();

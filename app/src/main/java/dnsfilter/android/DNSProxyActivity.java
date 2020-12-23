@@ -162,10 +162,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	protected static String IN_FILTER_PREF = "X \u0009";
 	protected static String NO_FILTER_PREF = "✓\u0009";
+	protected static String IP_FORWARD_PREF = "=>";
 
 	//log color and format
 	protected static String filterLogFormat;
 	protected static String acceptLogFormat;
+	protected static String fwdLogFormat;
 	protected static String normalLogFormat="($CONTENT)";
 
 	protected static ConfigurationAccess CONFIG = ConfigurationAccess.getLocal();
@@ -223,13 +225,16 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 			boolean filterHostLog = logLn.startsWith(IN_FILTER_PREF);
 			boolean okHostLog = logLn.startsWith(NO_FILTER_PREF);
+			boolean fwdHostLog = logLn.startsWith(IP_FORWARD_PREF);
 
-			if (filterHostLog || okHostLog) {
+			if (filterHostLog || okHostLog || fwdHostLog) {
 
 				if (filterHostLog)
 					logLn = filterLogFormat.replace("($CONTENT)",logLn)+"<br>";
-				else
+				else if (okHostLog)
 					logLn = acceptLogFormat.replace("($CONTENT)",logLn)+"<br>";
+				else
+					logLn =  fwdLogFormat.replace("($CONTENT)",logLn)+"<br>";
 
 				logOutView.append(fromHtml(logLn));
 			} else {
@@ -258,6 +263,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			if (!scroll_locked) {
 				m_logStr = m_logStr.replace("FILTERED:",IN_FILTER_PREF);
 				m_logStr = m_logStr.replace("ALLOWED:",NO_FILTER_PREF);
+				m_logStr = m_logStr.replace("MAPPED_CUSTOM_IP:",IP_FORWARD_PREF);
 
 				addToLogView(m_logStr);
 
@@ -879,6 +885,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 					//Log formatting
 					filterLogFormat = config.getProperty("filterLogFormat", "<font color='#D03D06'>($CONTENT)</font>");
 					acceptLogFormat = config.getProperty("acceptLogFormat", "<font color='#23751C'>($CONTENT)</font>");
+					fwdLogFormat = config.getProperty("fwdLogFormat", "<font color='#ff9900'>($CONTENT)</font>");
 					normalLogFormat = config.getProperty("normalLogFormat","($CONTENT)");
 
 					try {

@@ -31,6 +31,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketAddress;
+import java.util.Hashtable;
 
 import util.ExecutionEnvironment;
 import util.Logger;
@@ -41,6 +42,7 @@ public class DNSResolver implements Runnable {
 	private static Object CNT_SYNC = new Object();
 	private static boolean IO_ERROR=false;
 
+
 	//for android usage based on IP packages from the VPN Interface
 	private UDPPacket udpRequestPacket;
 	private OutputStream responseOut;
@@ -50,6 +52,15 @@ public class DNSResolver implements Runnable {
 	private DatagramSocket replySocket;
 
 	private boolean datagramPacketMode = false;
+
+
+	private static boolean enableLocalResolver = false;
+	private static Hashtable <String, byte[]> customIPMappings = null;
+
+	public static void initLocalResolver(Hashtable<String, byte[]> customMappings, boolean enabled){
+		customIPMappings = customMappings;
+		enableLocalResolver = enabled;
+	}
 
 	public DNSResolver(UDPPacket udpRequestPacket, OutputStream reponseOut) {
 
@@ -66,7 +77,10 @@ public class DNSResolver implements Runnable {
 
 
 
-	public boolean resolveLocal(String client, DatagramPacket request, DatagramPacket response) throws IOException{
+	public boolean resolveLocal(String client, DatagramPacket request, DatagramPacket response) throws IOException {
+
+		if (!enableLocalResolver)
+			return false;
 
 		SimpleDNSMessage dnsQuery = new SimpleDNSMessage(request.getData(), request.getOffset(), request.getLength());
 		Object[] info = dnsQuery.getQueryData();
@@ -78,27 +92,36 @@ public class DNSResolver implements Runnable {
 			return false;
 
 		String host = (String) info[0];
+		byte[] ip = null;
+		String prfx = ">4";
+		byte[] filterIP = DNSResponsePatcher.ipv4_blocked;
+		if (type == 28) {
+			prfx = ">6";
+			filterIP = DNSResponsePatcher.ipv6_blocked;
+		}
 
-		if (DNSResponsePatcher.filter(host, false)) {
-
+		if (customIPMappings != null)
+			ip = customIPMappings.get(prfx+host.toLowerCase());
+		if (ip == null && DNSResponsePatcher.filter(host, false)) {
 			DNSResponsePatcher.logNstats(true, host);
-			DNSResponsePatcher.trafficLog(client,clss,type,host,null,0);
+			ip = filterIP;
+		}
+		if (ip != null) {
 
-			byte[] ip;
-			if (type == 1)
-				ip = DNSResponsePatcher.ipv4_blocked;
-			else
-				ip = DNSResponsePatcher.ipv6_blocked;
+			DNSResponsePatcher.trafficLog(client,clss,type,host,null,0);
 			int length = dnsQuery.produceResponse(response.getData(), response.getOffset(), ip);
-		
 			response.setLength(length);
 
-			DNSResponsePatcher.trafficLog(client,clss,type,host, InetAddress.getByAddress(ip).getHostAddress(),ip.length);
+			String addrStr = InetAddress.getByAddress(ip).getHostAddress().toString();
+
+			DNSResponsePatcher.trafficLog(client,clss,type,host, addrStr, ip.length);
+
+			if (ip != filterIP)
+				Logger.getLogger().logLine("MAPPED_CUSTOM_IP: "+host+"->"+addrStr);
 			
 			return true;
-		}
-		
-		return false;
+		} else
+			return false;
 	}
 
 

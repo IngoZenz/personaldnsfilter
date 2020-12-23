@@ -1,5 +1,7 @@
 # Add your own additional hosts here!
-# Format: 1 host name per line (sample below).
+# Supports Backlist, whitelist and map to custom IP
+
+# Format for Blacklist: 1 host name per line (sample below).
 # Wildcard Character "*" can be used for host blocking.
 # Host name and all sub domains will be blocked.
 
@@ -11,3 +13,10 @@ sample4712.justasample.com
 # Whitelisting does NOT support wildcards "*"
 
 !whitelistsample.justasample.com
+
+# In order to forward to custom ip add a ">" in front
+# of the host name followed by whitespace and mapped IP
+
+>router.home 192.168.2.1
+
+
