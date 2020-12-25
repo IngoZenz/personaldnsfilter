@@ -570,6 +570,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			}
 		}
 		try {
+			Properties config = CONFIG.getConfig();
+			if (config == null){
+				logLine("Error: Config is null!");
+				return;
+			}
 			final String code = CONFIG.getConfig().getProperty("passcode", "").trim();
 
 			if (code.equals(""))
@@ -820,10 +825,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-		if(grantResults[0]== PackageManager.PERMISSION_GRANTED){
+		if(grantResults.length >0 && grantResults[0]== PackageManager.PERMISSION_GRANTED){
 			initAppAndStartup();
 		}
 		else {
+			if (grantResults.length == 0)
+				logLine("grantResults is empty - assuming permission denied!");
 			System.exit(-1);
 		}
 	}
@@ -1290,9 +1297,14 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			if (linkEnd != -1)
 				link = linkTxt.substring(0,linkEnd);
 		}
-		if (!link.equals("")) {
-			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
-			startActivity(browserIntent);
+		try {
+			if (!link.equals("")) {
+				Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
+				startActivity(browserIntent);
+			}
+		} catch (Exception e){
+			message("Cannot open "+link);
+			logLine(e.toString());
 		}
 	}
 
