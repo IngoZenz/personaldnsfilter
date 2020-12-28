@@ -34,11 +34,7 @@ public class SimpleDNSMessage {
 	}
 
     public boolean isStandardQuery() {
-        return ( (rqFlgs >> 6) == 0);
-    }
-    
-    public short getResponseFlag(){
-    	return (short) (rqFlgs>>7);
+        return ( (rqFlgs >> 3) == 0);
     }
     
     public Object[] getQueryData() {

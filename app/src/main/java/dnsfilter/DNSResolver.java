@@ -25,6 +25,8 @@ package dnsfilter;
 import ip.IPPacket;
 import ip.UDPPacket;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
@@ -82,7 +84,22 @@ public class DNSResolver implements Runnable {
 		if (!enableLocalResolver)
 			return false;
 
-		SimpleDNSMessage dnsQuery = new SimpleDNSMessage(request.getData(), request.getOffset(), request.getLength());
+		SimpleDNSMessage dnsQuery = null;
+		try {
+			dnsQuery = new SimpleDNSMessage(request.getData(), request.getOffset(), request.getLength());
+		} catch (Exception e){
+			File dump = new File(ExecutionEnvironment.getEnvironment().getWorkDir()+"dnsdump_"+System.currentTimeMillis());
+			FileOutputStream dumpout = new FileOutputStream(dump);
+			dumpout.write(request.getData(), request.getOffset(), request.getLength());
+			dumpout.flush();
+			dumpout.close();
+			Logger.getLogger().logException(e);
+			throw new IOException(e);
+		}
+
+		if (!dnsQuery.isStandardQuery())
+			return false;
+
 		Object[] info = dnsQuery.getQueryData();
 
 		short type = (short) info[1];
