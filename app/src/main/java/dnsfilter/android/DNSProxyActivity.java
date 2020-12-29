@@ -1172,8 +1172,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			handleFooterClick();
 			return;
 		} else if (destination == helpBtn) {
-			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.zenz-home.com/personaldnsfilter/help/help.php"));
-			startActivity(browserIntent);
+			openBrowser("https://www.zenz-home.com/personaldnsfilter/help/help.php");
 			return;
 		} else if (destination == dnsField) {
 			handleDNSConfigDialog();
@@ -1233,6 +1232,16 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			} else {
 				remoteReleaseWakeLock();
 			}
+		}
+	}
+
+	private void openBrowser(String url) {
+		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+		try {
+			startActivity(browserIntent);
+		} catch (Exception e) {
+			message("Error opening "+url);
+			logLine(e.toString());
 		}
 	}
 
@@ -1334,15 +1343,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			if (linkEnd != -1)
 				link = linkTxt.substring(0,linkEnd);
 		}
-		try {
-			if (!link.equals("")) {
-				Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
-				startActivity(browserIntent);
-			}
-		} catch (Exception e){
-			message("Cannot open "+link);
-			logLine(e.toString());
+
+		if (!link.equals("")) {
+			openBrowser(link);
 		}
+
 	}
 
 	private void handleDNSConfigDialog() {
