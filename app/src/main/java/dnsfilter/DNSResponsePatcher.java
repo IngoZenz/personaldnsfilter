@@ -58,8 +58,8 @@ public class DNSResponsePatcher {
 	public static void init(Set filter, LoggerInterface trafficLogger) {
 		FILTER = filter;
 		TRAFFIC_LOG = trafficLogger;
-		okCnt=0;
-		filterCnt=0;
+		//okCnt=0;
+		//filterCnt=0;
 		try {
 			checkIP = Boolean.parseBoolean(ConfigurationAccess.getLocal().getConfig().getProperty("checkResolvedIP","false"));
 			checkCNAME = Boolean.parseBoolean(ConfigurationAccess.getLocal().getConfig().getProperty("checkCNAME","false"));
