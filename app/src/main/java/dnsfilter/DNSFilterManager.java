@@ -61,7 +61,7 @@ import util.Utils;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1504600-dev";
+	public static final String VERSION = "1504600-dev1";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -297,9 +297,12 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 	private byte[] mergeAndPersistConfig(byte[] currentConfigBytes) throws IOException {
 		String currentCfgStr = new String(currentConfigBytes);
-		boolean filterDisabled = currentCfgStr.indexOf("\n#!!!filterHostsFile =")!=-1;
-		if (filterDisabled)
+
+		//handle previous filter disable logic from version 1.50.45
+		boolean filterDisabledV15045 = currentCfgStr.indexOf("\n#!!!filterHostsFile =")!=-1;
+		if (filterDisabledV15045)
 			currentCfgStr = currentCfgStr.replace("\n#!!!filterHostsFile =", "\nfilterHostsFile =");
+
 		Properties currentConfig = new Properties();
 		currentConfig.load(new ByteArrayInputStream(currentCfgStr.getBytes()));
 
@@ -316,8 +319,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			if (!(useNewDefaultFilters && ln.startsWith("filterAutoUpdateURL"))) {
 				for (int i = 0; i < currentKeys.length; i++) {
 					if (ln.startsWith(currentKeys[i] + " =")) {
-						if (currentKeys[i].equals("filterHostsFile") && filterDisabled)
-							ln = "#!!!filterHostsFile" + " = " + currentConfig.getProperty(currentKeys[i], "");
+						if (currentKeys[i].equals("filterActive") && filterDisabledV15045)
+							ln = "filterActive = false";
 						else
 							ln = currentKeys[i] + " = " + currentConfig.getProperty(currentKeys[i], "");
 					}
@@ -543,6 +546,28 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	public void releaseWakeLock()  {
 		ExecutionEnvironment.getEnvironment().releaseWakeLock();
 	}
+
+	public void switchBlockingActive() throws IOException {
+		Properties config = getConfig();
+		if (config == null)
+			throw new IOException("Config is null!");
+
+		boolean active = !Boolean.parseBoolean(config.getProperty("filterActive", "true"));
+		// process changed activation status
+		String ln;
+		BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(readConfig())));
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		while ((ln = reader.readLine()) != null) {
+			if (ln.startsWith("filterActive"))
+				ln = "filterActive = " + active;
+			out.write((ln + "\r\n").getBytes());
+		}
+		out.flush();
+		out.close();
+		updateConfig(out.toByteArray());
+		restart();
+	}
+
 
 	private void writeDownloadInfoFile(int count, long lastModified) throws IOException{
 		FileOutputStream entryCountOut = new FileOutputStream(WORKDIR +filterhostfile+".DLD_CNT");
@@ -1325,8 +1350,9 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			filterHostsFileRemoveDuplicates = true;
 
 			filterhostfile = config.getProperty("filterHostsFile");
+			boolean filterActive = Boolean.parseBoolean(config.getProperty("filterActive", "true"));
 
-			if (filterhostfile != null) {
+			if (filterhostfile != null && filterActive) {
 
 				// load filter overrule values
 

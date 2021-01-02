@@ -87,7 +87,7 @@ public class DNSFilterService extends VpnService  {
 
 	public static DNSFilterManager DNSFILTER = null;
 	public static DNSFilterProxy DNSFILTERPROXY = null;
-	private static DNSFilterService INSTANCE = null;
+	protected static DNSFilterService INSTANCE = null;
 
 	private static boolean DNS_PROXY_PORT_IS_REDIRECTED = false;
 
@@ -106,7 +106,7 @@ public class DNSFilterService extends VpnService  {
 	boolean dnsCryptProxyStartTriggered = false;
 	PendingIntent pendingIntent;
 	private int mtu;
-
+	Notification.Builder notibuilder;
 
 
 	protected static class DNSReqForwarder {
@@ -633,6 +633,7 @@ public class DNSFilterService extends VpnService  {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
+
 		AndroidEnvironment.initEnvironment(this);
 		INSTANCE = this;
 		SERVICE = intent;
@@ -660,6 +661,7 @@ public class DNSFilterService extends VpnService  {
 				}
 
 				registerReceiver(ConnectionChangeReceiver.getInstance(), new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
+				registerReceiver(NotificationReceiver.getInstance(), new IntentFilter("pause_resume"));
 
 				possibleNetworkChange(true); // in order to trigger dns detection
 
@@ -712,17 +714,24 @@ public class DNSFilterService extends VpnService  {
 
 			if (android.os.Build.VERSION.SDK_INT >= 16) {
 
-				Notification.Builder notibuilder;
 				if (android.os.Build.VERSION.SDK_INT >= 26)
 					notibuilder = new Notification.Builder(this, getChannel());
 				else
 					notibuilder = new Notification.Builder(this);
 
+				Intent pause_resume = new Intent();
+				pause_resume.setAction("pause_resume");
+				PendingIntent pause_resume_Intent = PendingIntent.getBroadcast(this, 12345, pause_resume, PendingIntent.FLAG_UPDATE_CURRENT);
+
 				noti = notibuilder
-						.setContentTitle("DNSFilter is running!")
+						.setContentTitle(getResources().getString(R.string.notificationActive))
 						.setSmallIcon(R.drawable.icon)
-						.setContentIntent(pendingIntent)
+						//.setContentIntent(pendingIntent)
+						.setContentIntent(pause_resume_Intent)
+						//.addAction(0, "pause / resume", pause_resume_Intent)
 						.build();
+
+				updateNotification();
 			} else {
 				;//noti = new Notification(R.drawable.icon, "DNSFilter is running!",0);
 				return START_STICKY;
@@ -735,6 +744,31 @@ public class DNSFilterService extends VpnService  {
 		}
 
 		return START_STICKY;
+	}
+
+
+	public void pause_resume() throws IOException {
+		DNSFilterManager.getInstance().switchBlockingActive();
+		updateNotification();
+	}
+
+	private void updateNotification() {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN)
+			return;
+		try {
+			boolean active = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("filterActive", "true"));
+			String txt = getResources().getString(R.string.notificationActive);
+			if (!active)
+				txt = getResources().getString(R.string.notificationPaused);
+
+			notibuilder.setContentTitle(txt);
+			((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel(1);
+			((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).notify(1,notibuilder.build());
+
+		} catch (Exception e){
+			Logger.getLogger().logException(e);
+		}
+
 	}
 
 	private String getChannel() {
@@ -843,6 +877,7 @@ public class DNSFilterService extends VpnService  {
 
 			try {
 				unregisterReceiver(ConnectionChangeReceiver.getInstance());
+				unregisterReceiver(NotificationReceiver.getInstance());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -935,6 +970,8 @@ public class DNSFilterService extends VpnService  {
 		if (!dnsProxyMode || vpnInAdditionToProxyMode) {
 			restartVPN(true);
 		}
+		updateNotification();
+		DNSProxyActivity.reloadLocalConfig();
 		possibleNetworkChange(true); // trigger dns detection
 	}
 

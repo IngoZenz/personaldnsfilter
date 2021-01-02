@@ -175,6 +175,14 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	protected static boolean CHECKING_PASSCODE_DIAG = false;
 
+	protected static DNSProxyActivity INSTANCE;
+
+	public static void reloadLocalConfig() {
+		DNSProxyActivity instance = INSTANCE;
+		if (instance != null && CONFIG.isLocal())
+			instance.loadAndApplyConfig(false);
+	}
+
 	private static class MsgTimeoutListener implements TimeoutListener {
 
 		long timeout = Long.MAX_VALUE;
@@ -313,6 +321,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			AndroidEnvironment.initEnvironment(this);
 
 			MsgTO.setActivity(this);
+			INSTANCE = this;
 
 			if (getIntent().getBooleanExtra("SHOULD_FINISH", false)) {
 				finish();
@@ -911,7 +920,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 					filterReloadIntervalView.setText(config.getProperty("reloadIntervalDays", "7"));
 
-					enableAdFilterCheck.setChecked(config.getProperty("filterHostsFile") != null);
+					enableAdFilterCheck.setChecked(Boolean.parseBoolean(config.getProperty("filterActive", "true")));
+
 					enableAutoStartCheck.setChecked(Boolean.parseBoolean(config.getProperty("AUTOSTART", "false")));
 
 					enableCloakProtectCheck.setChecked(Boolean.parseBoolean(config.getProperty("checkCNAME", "true")));
@@ -1057,8 +1067,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 			boolean changed = persistAdditionalHosts();
 
-			boolean filterAds = enableAdFilterCheck.isChecked();
-
 			if (filterReloadIntervalView.getText().toString().equals(""))
 				filterReloadIntervalView.setText("7");
 
@@ -1110,11 +1118,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				else if (ln.trim().startsWith("rootModeOnAndroid"))
 					ln = "rootModeOnAndroid = " + rootModeCheck.isChecked();
 
-				else if (ln.trim().startsWith("#!!!filterHostsFile") && filterAds)
-					ln = ln.replace("#!!!filterHostsFile", "filterHostsFile");
-
-				else if (ln.trim().startsWith("filterHostsFile") && !filterAds)
-					ln = ln.replace("filterHostsFile", "#!!!filterHostsFile");
+				else if (ln.trim().startsWith("filterActive"))
+					ln = "filterActive = " + enableAdFilterCheck.isChecked();
 
 				out.write((ln + "\r\n").getBytes());
 
