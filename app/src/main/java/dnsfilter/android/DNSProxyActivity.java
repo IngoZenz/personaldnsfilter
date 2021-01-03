@@ -750,7 +750,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		try {
 			CONFIG.doRestoreDefaults();
 			backupStatusView.setTextColor(Color.parseColor("#23751C"));
-			loadAndApplyConfig(false);
+			if (!CONFIG.isLocal())
+				loadAndApplyConfig(false);
 			backupStatusView.setText("Restore Success!");
 		} catch (IOException eio) {
 			backupStatusView.setTextColor(Color.parseColor("#D03D06"));
@@ -763,7 +764,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		try {
 			CONFIG.doRestore(getBackupSubFolder());
 			backupStatusView.setTextColor(Color.parseColor("#23751C"));
-			loadAndApplyConfig(false);
+			if (!CONFIG.isLocal())
+				loadAndApplyConfig(false);
 			backupStatusView.setText("Restore Success!");
 		} catch (IOException eio) {
 			backupStatusView.setTextColor(Color.parseColor("#D03D06"));

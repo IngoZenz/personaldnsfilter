@@ -108,7 +108,6 @@ public class DNSFilterService extends VpnService  {
 	private int mtu;
 	Notification.Builder notibuilder;
 
-
 	protected static class DNSReqForwarder {
 		//used in case vpn mode is disabled for forwaring dns requests to local dns proxy
 
@@ -723,17 +722,18 @@ public class DNSFilterService extends VpnService  {
 				pause_resume.setAction("pause_resume");
 				PendingIntent pause_resume_Intent = PendingIntent.getBroadcast(this, 12345, pause_resume, PendingIntent.FLAG_UPDATE_CURRENT);
 
-				noti = notibuilder
+				notibuilder
 						.setContentTitle(getResources().getString(R.string.notificationActive))
 						.setSmallIcon(R.drawable.icon)
-						//.setContentIntent(pendingIntent)
-						.setContentIntent(pause_resume_Intent)
-						//.addAction(0, "pause / resume", pause_resume_Intent)
+						.setContentIntent(pendingIntent)
+						//.setContentIntent(pause_resume_Intent)
+						.addAction(0, getResources().getString(R.string.switch_pause_resume), pause_resume_Intent)
 						.build();
 
 				updateNotification();
+
+				noti = notibuilder.build();
 			} else {
-				;//noti = new Notification(R.drawable.icon, "DNSFilter is running!",0);
 				return START_STICKY;
 			}
 
@@ -762,6 +762,11 @@ public class DNSFilterService extends VpnService  {
 				txt = getResources().getString(R.string.notificationPaused);
 
 			notibuilder.setContentTitle(txt);
+			if (active)
+				notibuilder.setSmallIcon(R.drawable.icon);
+			else
+				notibuilder.setSmallIcon(R.drawable.icon_disabled);
+
 			((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel(1);
 			((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).notify(1,notibuilder.build());
 

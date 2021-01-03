@@ -33,7 +33,8 @@
   <string name="removeFilter">"Remove filter"</string>
   <string name="proxyModeCheckBox">DNS proxy mode without local VPN</string>
   <string name="rootModeCheckBox">Root mode without local VPN</string>
-  <string name="notificationActive" translatable="false">Active - Tap to pause!</string>
-  <string name="notificationPaused" translatable="false">Paused - Tap to resume!</string>
+  <string name="notificationActive" translatable="false">Active!</string>
+  <string name="notificationPaused" translatable="false">Paused!</string>
+  <string name="switch_pause_resume" translatable="false">Tap to switch!</string>
 
 </resources>
