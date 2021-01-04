@@ -237,18 +237,12 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	@Override
 	public Properties getConfig() throws IOException {
 
-		try {
-			if (config == null) {
-				byte[] configBytes = readConfig();
-				config = new Properties();
-				config.load(new ByteArrayInputStream(configBytes));
-			}
-			return config;
-		} catch (IOException e) {
-			Logger.getLogger().logException(e);
-			e.printStackTrace();
-			return null;
+		if (config == null) {
+			byte[] configBytes = readConfig();
+			config = new Properties();
+			config.load(new ByteArrayInputStream(configBytes));
 		}
+		return config;
 	}
 
 	@Override
@@ -549,9 +543,6 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 	public void switchBlockingActive() throws IOException {
 		Properties config = getConfig();
-		if (config == null)
-			throw new IOException("Config is null!");
-
 		boolean active = !Boolean.parseBoolean(config.getProperty("filterActive", "true"));
 		// process changed activation status
 		String ln;
