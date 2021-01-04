@@ -261,7 +261,7 @@ public class DNSFilterService extends VpnService  {
 			in = new FileInputStream(vpnInterface.getFileDescriptor());
 			out = new FileOutputStream(vpnInterface.getFileDescriptor());
 			if (explicitStart)
-				Logger.getLogger().logLine("VPN Connected!");
+				Logger.getLogger().logLine("VPN connected!");
 		}
 
 		private void stop(boolean explicitStop) {
@@ -281,7 +281,7 @@ public class DNSFilterService extends VpnService  {
 		@Override
 		public void run() {
 			if (explicitOperation || DNSProxyActivity.debug)
-				Logger.getLogger().logLine("VPN Runner Thread "+id+" started!");
+				Logger.getLogger().logLine("VPN runner thread "+id+" started!");
 			thread = Thread.currentThread();
 
 			try {
@@ -295,7 +295,7 @@ public class DNSFilterService extends VpnService  {
 
 					boolean skip = false;
 					if (DNSResolver.getResolverCount()>max_resolvers) {
-						Logger.getLogger().message("Max Resolver Count reached: "+max_resolvers);
+						Logger.getLogger().message("Max resolver count reached: "+max_resolvers);
 						skip = true;
 					}
 
@@ -304,13 +304,13 @@ public class DNSFilterService extends VpnService  {
 							IPPacket parsedIP = new IPPacket(data, 0, length);
 							if (parsedIP.getVersion() == 6) {
 								if (DNSProxyActivity.debug) { //IPV6 Debug Logging
-									Logger.getLogger().logLine("!!!IPV6 Packet!!! Protocol:" + parsedIP.getProt());
+									Logger.getLogger().logLine("!!!IPV6 packet!!! Protocol:" + parsedIP.getProt());
 									Logger.getLogger().logLine("SourceAddress:" + IPPacket.int2ip(parsedIP.getSourceIP()));
 									Logger.getLogger().logLine("DestAddress:" + IPPacket.int2ip(parsedIP.getDestIP()));
 									Logger.getLogger().logLine("TTL:" + parsedIP.getTTL());
 									Logger.getLogger().logLine("Length:" + parsedIP.getLength());
 									if (parsedIP.getProt() == 0) {
-										Logger.getLogger().logLine("Hopp by Hopp Header");
+										Logger.getLogger().logLine("Hopp by hopp header");
 										Logger.getLogger().logLine("NextHeader:" + (data[40] & 0xff));
 										Logger.getLogger().logLine("Hdr Ext Len:" + (data[41] & 0xff));
 										if ((data[40] & 0xff) == 58) // ICMP
@@ -319,16 +319,16 @@ public class DNSFilterService extends VpnService  {
 								}
 							}
 							if (parsedIP.checkCheckSum() != 0)
-								throw new IOException("IP Header Checksum Error!");
+								throw new IOException("IP header checksum error!");
 
 							if (parsedIP.getProt() == 1) {
-								if (DNSProxyActivity.debug) Logger.getLogger().logLine("Received ICMP Paket Type:" + (data[20] & 0xff));
+								if (DNSProxyActivity.debug) Logger.getLogger().logLine("Received ICMP packet type:" + (data[20] & 0xff));
 							}
 							if (parsedIP.getProt() == 17) {
 
 								UDPPacket parsedPacket = new UDPPacket(data, 0, length);
 								if (parsedPacket.checkCheckSum() != 0)
-									throw new IOException("UDP packet Checksum Error!");
+									throw new IOException("UDP packet checksum error!");
 
 								if (!skip)
 									new Thread(new DNSResolver(parsedPacket, out)).start();
@@ -424,7 +424,7 @@ public class DNSFilterService extends VpnService  {
 	private static String[] getDNSServers() throws IOException {
 
 		if (DNSProxyActivity.debug)
-			Logger.getLogger().logLine("Detecting DNS Servers...");
+			Logger.getLogger().logLine("Detecting DNS servers...");
 
 		String[] dnsServers = getDNSviaConnectivityManager();
 
@@ -504,7 +504,7 @@ public class DNSFilterService extends VpnService  {
 			}
 			if (dnsAdrs.isEmpty()) { //fallback
 				if (detect && rootMode)
-					Logger.getLogger().message("DNS Detection not possible in rootMode!");
+					Logger.getLogger().message("DNS detection not possible in root mode!");
 				StringTokenizer fallbackDNS = new StringTokenizer(dnsFilterMgr.getConfig().getProperty("fallbackDNS", ""), ";");
 				int cnt = fallbackDNS.countTokens();
 				for (int i = 0; i < cnt; i++) {
@@ -513,18 +513,18 @@ public class DNSFilterService extends VpnService  {
 					try {
 						DNSServer dnsServer = DNSServer.getInstance().createDNSServer(dnsEntry, timeout);
 						if (rootMode && dnsServer.getPort() == 53)
-							throw new IOException("Port 53 not allowed when running in Root Mode! Use Dot or DoH!");
+							throw new IOException("Port 53 not allowed when running in root mode! Use DoT or DoH!");
 						dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry, timeout));
 					} catch (Exception e) {
-						Logger.getLogger().logLine("Cannot create DNS Server for " + dnsEntry + "!\n" + e.toString());
-						Logger.getLogger().message("Invalid DNS Server entry: '" + dnsEntry+"'");
+						Logger.getLogger().logLine("Cannot create DNS server for " + dnsEntry + "!\n" + e.toString());
+						Logger.getLogger().message("Invalid DNS server entry: '" + dnsEntry+"'");
 					}
 				}
 			}
 			DNSCommunicator.getInstance().setDNSServers(dnsAdrs.toArray(new DNSServer[dnsAdrs.size()]));
 
 		} catch (IOException e) {
-			Logger.getLogger().logLine("!!!DNS Server initialization failed!!!");
+			Logger.getLogger().logLine("!!!DNS server initialization failed!!!");
 			Logger.getLogger().logLine(e.toString());
 			Logger.getLogger().message(e.getMessage());
 		} catch (Exception e) {
@@ -565,7 +565,7 @@ public class DNSFilterService extends VpnService  {
 		}
 
 		if (!routes.trim().equals("") && !routes.trim().equals(";"))
-			Logger.getLogger().logLine("Adding Routes:" + routes);
+			Logger.getLogger().logLine("Adding routes:" + routes);
 
 		StringTokenizer routeIPs = new StringTokenizer(routes, ";");
 
@@ -620,7 +620,7 @@ public class DNSFilterService extends VpnService  {
 		if (Build.VERSION.SDK_INT >= 21) {
 			builder.setBlocking(true);
 			if (explicitOp)
-				Logger.getLogger().logLine("Using Blocking Mode!");
+				Logger.getLogger().logLine("Using blocking mode!");
 			blocking = true;
 		}
 
@@ -638,7 +638,7 @@ public class DNSFilterService extends VpnService  {
 		SERVICE = intent;
 
 		if (DNSFILTER != null) {
-			Logger.getLogger().logLine("DNS Filter already running!");
+			Logger.getLogger().logLine("DNS filter already running!");
 		} else {
 			try {
 
@@ -651,7 +651,7 @@ public class DNSFilterService extends VpnService  {
 
 				if (rootMode && !dnsProxyMode) {
 					rootMode = false;
-					Logger.getLogger().logLine("WARNING! Root Mode only possible in combination with DNS Proxy Mode!");
+					Logger.getLogger().logLine("WARNING! Root mode only possible in combination with DNS proxy mode!");
 				}
 
 				if (rootMode) {
@@ -707,7 +707,7 @@ public class DNSFilterService extends VpnService  {
 				if (vpnInterface != null) {
 					vpnRunner = new VPNRunner(++startCounter, vpnInterface, true);
 					new Thread(vpnRunner).start();
-				} else Logger.getLogger().logLine("Error! Cannot get VPN Interface! Try restart!");
+				} else Logger.getLogger().logLine("Error! Cannot get VPN interface! Try restart!");
 			}
 
 
@@ -794,7 +794,7 @@ public class DNSFilterService extends VpnService  {
 			runOSCommand(false, "iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-port 5300");
 			DNS_PROXY_PORT_IS_REDIRECTED = true;
 		} catch (Exception e) {
-			Logger.getLogger().logLine("Exception during setting Port redirection:" + e.toString());
+			Logger.getLogger().logLine("Exception during setting port redirection:" + e.toString());
 
 		}
 	}
@@ -900,12 +900,12 @@ public class DNSFilterService extends VpnService  {
 			if (DNSFILTERPROXY != null) {
 				DNSFILTERPROXY.stop();
 				DNSFILTERPROXY = null;
-				Logger.getLogger().logLine("DNSFilterProxy Mode stopped!");
+				Logger.getLogger().logLine("DNS filter proxy Mode stopped!");
 			}
 			if (DNSFILTER != null) {
 				DNSFILTER.stop();
 				DNSFILTER = null;
-				Logger.getLogger().logLine("DNSFilter stopped!");
+				Logger.getLogger().logLine("DNS filter stopped!");
 			}
 			stopService(SERVICE);
 			SERVICE = null;
@@ -964,7 +964,7 @@ public class DNSFilterService extends VpnService  {
 			new Thread(vpnRunner).start();
 
 
-		} else throw new IOException("Error! Cannot get VPN Interface! Try restart!");
+		} else throw new IOException("Error! Cannot get VPN interface! Try restart!");
 	}
 
 
