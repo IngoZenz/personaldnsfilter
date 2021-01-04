@@ -57,10 +57,12 @@ public class DNSResolver implements Runnable {
 
 
 	private static boolean enableLocalResolver = false;
+	private static int localResolverTTL = 0;
 	private static Hashtable <String, byte[]> customIPMappings = null;
 
-	public static void initLocalResolver(Hashtable<String, byte[]> customMappings, boolean enabled){
+	public static void initLocalResolver(Hashtable<String, byte[]> customMappings, boolean enabled, int ttl){
 		customIPMappings = customMappings;
+		localResolverTTL= ttl;
 		enableLocalResolver = enabled;
 	}
 
@@ -126,7 +128,7 @@ public class DNSResolver implements Runnable {
 		if (ip != null) {
 
 			DNSResponsePatcher.trafficLog(client,clss,type,host,null,0);
-			int length = dnsQuery.produceResponse(response.getData(), response.getOffset(), ip);
+			int length = dnsQuery.produceResponse(response.getData(), response.getOffset(), ip, localResolverTTL);
 			response.setLength(length);
 
 			String addrStr = InetAddress.getByAddress(ip).getHostAddress().toString();

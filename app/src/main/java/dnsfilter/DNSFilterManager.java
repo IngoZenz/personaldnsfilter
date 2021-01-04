@@ -61,7 +61,7 @@ import util.Utils;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1504600-dev2";
+	public static final String VERSION = "1504600-dev3";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -237,18 +237,12 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	@Override
 	public Properties getConfig() throws IOException {
 
-		try {
-			if (config == null) {
-				byte[] configBytes = readConfig();
-				config = new Properties();
-				config.load(new ByteArrayInputStream(configBytes));
-			}
-			return config;
-		} catch (IOException e) {
-			Logger.getLogger().logException(e);
-			e.printStackTrace();
-			return null;
+		if (config == null) {
+			byte[] configBytes = readConfig();
+			config = new Properties();
+			config.load(new ByteArrayInputStream(configBytes));
 		}
+		return config;
 	}
 
 	@Override
@@ -549,9 +543,6 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 	public void switchBlockingActive() throws IOException {
 		Properties config = getConfig();
-		if (config == null)
-			throw new IOException("Config is null!");
-
 		boolean active = !Boolean.parseBoolean(config.getProperty("filterActive", "true"));
 		// process changed activation status
 		String ln;
@@ -1247,7 +1238,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 		if (customIPMappings != null) {
 			customIPMappings.clear();
 			customIPMappings = null;
-			DNSResolver.initLocalResolver(null, false);
+			DNSResolver.initLocalResolver(null, false, 0);
 		}
 		additionalHostsImportTS = "0";
 		reloading_filter = false;
@@ -1371,7 +1362,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				//load whitelisted hosts and custom mappings from additionalHosts.txt
 
 				boolean enableLocalResolver = Boolean.parseBoolean(config.getProperty("enableLocalResolver", "false"));
-				DNSResolver.initLocalResolver(null, enableLocalResolver);
+				int localTTL = Integer.parseInt(config.getProperty("localResolverTTL", "60"));
+				DNSResolver.initLocalResolver(null, enableLocalResolver, localTTL);
 
 				File additionalHosts = new File(WORKDIR + "additionalHosts.txt");
 				if (additionalHosts.exists()) {
@@ -1385,7 +1377,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 						} else if (entry.startsWith(">")) {
 							if (customIPMappings == null) {
 								customIPMappings = new Hashtable();
-								DNSResolver.initLocalResolver(customIPMappings, enableLocalResolver);
+								DNSResolver.initLocalResolver(customIPMappings, enableLocalResolver, localTTL);
 							}
 							StringTokenizer tokens = new StringTokenizer(entry.substring(1).trim());
 							try {

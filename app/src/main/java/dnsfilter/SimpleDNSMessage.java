@@ -41,7 +41,7 @@ public class SimpleDNSMessage {
     	return new Object[] {qHost, qType, qClass};    	
     }
     
-    public int produceResponse(byte[] response, int offset,  byte[] ip) {
+    public int produceResponse(byte[] response, int offset,  byte[] ip, int ttl) {
     	
         System.arraycopy(data, offs, response, offset, length);
     	//response[offset+2] = (byte) (((1<<7) + (response[offset+2] & 0b01111111)) | 0b00000100); // response flag and Authoritive answer
@@ -78,9 +78,9 @@ public class SimpleDNSMessage {
         
         short ptr = (short)((short)0xC0 << 8) +12;
         buf.putShort(ptr);  //pointer to req host
-        buf.putShort(qType); // Q-Type:1
-        buf.putShort(qClass); // Q-Class:1
-        buf.putInt(0); //TTL:0
+        buf.putShort(qType); // Q-Type
+        buf.putShort(qClass); // Q-Class
+        buf.putInt(ttl); //TTL
         buf.putShort((short)ip.length); // IP Len
         buf.put(ip);
         

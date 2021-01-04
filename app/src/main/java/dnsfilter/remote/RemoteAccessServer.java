@@ -17,11 +17,13 @@ import java.util.HashSet;
 import java.util.Properties;
 
 import dnsfilter.ConfigurationAccess;
+import dnsfilter.DNSFilterManager;
 import util.AsyncLogger;
 import util.Encryption;
 import util.GroupedLogger;
 import util.Logger;
 import util.LoggerInterface;
+import util.SuppressRepeatingsLogger;
 import util.TimeoutListener;
 import util.TimoutNotificator;
 import util.Utils;
@@ -128,7 +130,7 @@ public class RemoteAccessServer implements Runnable {
         int id;
         int connectedSessionId = -1; //connected Control Session in case of RemoteStream session
         Socket socket;
-        LoggerInterface remoteLogger;
+        SuppressRepeatingsLogger remoteLogger;
         boolean killed = false;
         boolean doReconnect = false;
         DataOutputStream out;
@@ -316,7 +318,9 @@ public class RemoteAccessServer implements Runnable {
                 throw new IOException(e);
             }
 
-            remoteLogger = new AsyncLogger(new LoggerInterface() {
+
+
+            remoteLogger = new SuppressRepeatingsLogger(new AsyncLogger(new LoggerInterface() {
 
                 public void sendLog(int type, String txt) {
                     synchronized (out) {
@@ -376,7 +380,14 @@ public class RemoteAccessServer implements Runnable {
                 public void closeLogger() {
 
                 }
-            });
+            }));
+
+            try {
+                long repeatingLogSuppressTime = Long.parseLong(DNSFilterManager.getInstance().getConfig().getProperty("repeatingLogSuppressTime", "1000"));
+                remoteLogger.setSuppressTime(repeatingLogSuppressTime);
+            } catch (Exception e) {
+                throw new IOException(e);
+            }
 
             synchronized (out) {
                 try {
