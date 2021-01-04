@@ -1247,7 +1247,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 		if (customIPMappings != null) {
 			customIPMappings.clear();
 			customIPMappings = null;
-			DNSResolver.initLocalResolver(null, false);
+			DNSResolver.initLocalResolver(null, false, 0);
 		}
 		additionalHostsImportTS = "0";
 		reloading_filter = false;
@@ -1371,7 +1371,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				//load whitelisted hosts and custom mappings from additionalHosts.txt
 
 				boolean enableLocalResolver = Boolean.parseBoolean(config.getProperty("enableLocalResolver", "false"));
-				DNSResolver.initLocalResolver(null, enableLocalResolver);
+				int localTTL = Integer.parseInt(config.getProperty("localResolverTTL", "60"));
+				DNSResolver.initLocalResolver(null, enableLocalResolver, localTTL);
 
 				File additionalHosts = new File(WORKDIR + "additionalHosts.txt");
 				if (additionalHosts.exists()) {
@@ -1385,7 +1386,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 						} else if (entry.startsWith(">")) {
 							if (customIPMappings == null) {
 								customIPMappings = new Hashtable();
-								DNSResolver.initLocalResolver(customIPMappings, enableLocalResolver);
+								DNSResolver.initLocalResolver(customIPMappings, enableLocalResolver, localTTL);
 							}
 							StringTokenizer tokens = new StringTokenizer(entry.substring(1).trim());
 							try {
