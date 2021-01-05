@@ -314,7 +314,7 @@ public class DNSFilterService extends VpnService  {
 										Logger.getLogger().logLine("NextHeader:" + (data[40] & 0xff));
 										Logger.getLogger().logLine("Hdr Ext Len:" + (data[41] & 0xff));
 										if ((data[40] & 0xff) == 58) // ICMP
-											Logger.getLogger().logLine("Received ICMP IPV6 Paket Type:" + (data[48] & 0xff));
+											Logger.getLogger().logLine("Received ICMP IPV6 packet type:" + (data[48] & 0xff));
 									}
 								}
 							}
@@ -350,7 +350,7 @@ public class DNSFilterService extends VpnService  {
 			}
 
 			if (explicitOperation || DNSProxyActivity.debug)
-				Logger.getLogger().logLine("VPN Runner Thread "+id+" terminated!");
+				Logger.getLogger().logLine("VPN runner thread "+id+" terminated!");
 		}
 
 	}

@@ -70,7 +70,7 @@ public class DNSFilterProxy implements Runnable {
 			}
 			DNSCommunicator.getInstance().setDNSServers(dnsAdrs.toArray(new DNSServer[dnsAdrs.size()]));
         } catch (IOException e) {
-            Logger.getLogger().logLine("!!!DNS Server initialization failed!!!");
+            Logger.getLogger().logLine("!!!DNS server initialization failed!!!");
             Logger.getLogger().logLine(e.toString());
             Logger.getLogger().message(e.getMessage());
         } catch (Exception e) {
@@ -186,7 +186,7 @@ public class DNSFilterProxy implements Runnable {
 				receiver.receive(request);
 
 				if (DNSResolver.getResolverCount()>max_resolvers) {
-					Logger.getLogger().message("Max Resolver Count reached: "+max_resolvers);
+					Logger.getLogger().message("Max resolver count reached: "+max_resolvers);
 				}
 				else new Thread(new DNSResolver(request, receiver)).start();
 

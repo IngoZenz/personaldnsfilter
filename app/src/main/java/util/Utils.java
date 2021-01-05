@@ -190,10 +190,10 @@ public class Utils {
 
 				if (r != -1) {
 					if (pos == buf.length)
-						throw new IOException("Buffer Overflow!");
+						throw new IOException("Buffer overflow!");
 
 					if (printableOnly && r < 32 && r < 9 && r > 13)
-						throw new IOException ("Non Printable character: "+r+"("+((char)r)+")");
+						throw new IOException ("Non printable character: "+r+"("+((char)r)+")");
 
 					buf[pos] = (byte) (r);
 					pos++;

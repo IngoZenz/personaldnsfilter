@@ -92,7 +92,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	private static RemoteAccessServer remoteAccessManager ;
 
 
-	private static String DOWNLOADED_FF_PREFIX= "# Downloaded by personalDNSFilter at: ";
+	private static String DOWNLOADED_FF_PREFIX= "# Downloaded by personalDNSfilter at: ";
 
 
 	protected Properties config = null;
@@ -175,7 +175,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 					while (!stopRequest) {
 
-						Logger.getLogger().logLine("DNS Filter: Next filter reload:" + new Date(nextReload));
+						Logger.getLogger().logLine("DNS filter: Next filter reload:" + new Date(nextReload));
 						try {
 							waitUntilNextFilterReload();
 						} catch (InterruptedException e) {
@@ -185,7 +185,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 							break;
 						try {
 							reloading_filter = true;
-							Logger.getLogger().logLine("DNS Filter: Reloading hosts filter ...");
+							Logger.getLogger().logLine("DNS filter: Reloading hosts filter ...");
 							if (updateFilter()) { // otherwise it was aborted
 								validIndex = false;
 								reloadFilter(false);
@@ -218,7 +218,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 							reloading_filter = false;
 						}
 					}
-					Logger.getLogger().logLine("DNS Filter: AutoFilterUpdater stopped!");
+					Logger.getLogger().logLine("DNS filter: AutoFilterUpdater stopped!");
 				} finally {
 					running = false;
 					monitor.notifyAll();
@@ -250,7 +250,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 		File propsFile = new File(WORKDIR + "dnsfilter.conf");
 		if (!propsFile.exists()) {
-			Logger.getLogger().logLine(propsFile + " not found! - creating default config!");
+			Logger.getLogger().logLine(propsFile + " not found! - Creating default config!");
 			createDefaultConfiguration();
 			propsFile = new File(WORKDIR + "dnsfilter.conf");
 		}
@@ -373,7 +373,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 			Logger.getLogger().logLine("Default configuration created successfully!");
 		} catch (IOException e) {
-			Logger.getLogger().logLine("FAILED creating default Configuration!");
+			Logger.getLogger().logLine("Failed creating default configuration!");
 			Logger.getLogger().logException(e);
 		}
 	}
@@ -389,7 +389,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 			this.config.load(new ByteArrayInputStream(config));
 
-			Logger.getLogger().message("Config Changed!\nRestart might be required!");
+			Logger.getLogger().message("Config changed!\nRestart might be required!");
 			//only update in file system / config instance will be updated with next restart
 		} catch (IOException e) {
 			throw new ConfigurationAccessException(e.getMessage(), e);
@@ -427,7 +427,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	@Override
 	public void triggerUpdateFilter() {
 		if (reloading_filter) {
-			Logger.getLogger().logLine("Filter Reload currently running!");
+			Logger.getLogger().logLine("Filter reload currently running!");
 			return;
 		}
 		if (filterReloadURL != null) {
@@ -436,7 +436,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				this.notifyAll();
 			}
 		} else
-			Logger.getLogger().logLine("DNS Filter: Setting 'filterAutoUpdateURL' not configured - cannot update filter!");
+			Logger.getLogger().logLine("DNS filter: Setting 'filterAutoUpdateURL' not configured - Cannot update filter!");
 	}
 
 	private void copyLocalFile(String from, String to) throws IOException {
@@ -489,7 +489,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 		try {
 			if (!canStop())
-				throw new IOException("Cannot stop! Pending Operation!");
+				throw new IOException("Cannot stop! Pending operation!");
 
 			stop();
 			copyFromAssets("dnsfilter.conf", "dnsfilter.conf");
@@ -512,7 +512,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 		try {
 			if (!canStop())
-				throw new IOException("Cannot stop! Pending Operation!");
+				throw new IOException("Cannot stop! Pending operation!");
 
 			stop();
 			copyLocalFile("backup/"+name+"/dnsfilter.conf", "dnsfilter.conf");
@@ -638,8 +638,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 							}
 							in.close();
 							if (aborted) {
-								Logger.getLogger().logLine("Aborting Filter Update!");
-								Logger.getLogger().message("Filter Update aborted!");
+								Logger.getLogger().logLine("Aborting filter update!");
+								Logger.getLogger().message("Filter update aborted!");
 								out.flush();
 								out.close();
 								return false;
@@ -672,7 +672,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 					new File(WORKDIR + filterhostfile + ".tmp").renameTo(new File(WORKDIR + filterhostfile));
 					writeDownloadInfoFile(count, new File(WORKDIR + filterhostfile).lastModified());
 				} else
-					throw new IOException("Renaming downloaded .tmp file to Filter file failed!");
+					throw new IOException("Renaming downloaded .tmp file to filter file failed!");
 
 			} finally {
 				ExecutionEnvironment.getEnvironment().releaseWakeLock();
@@ -701,7 +701,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			return new int[]{wildcard, -1};
 
 		if (buf.length == 0)
-			throw new IOException("Buffer Overflow!");
+			throw new IOException("Buffer overflow!");
 
 		if (r == 42) //wildcard
 			wildcard =1;
@@ -732,10 +732,10 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 				if (r != -1) {
 					if (pos == buf.length)
-						throw new IOException("Buffer Overflow!");
+						throw new IOException("Buffer overflow!");
 
 					if ( r < 32 && r < 9 && r > 13)
-						throw new IOException ("Non Printable character: "+r+"("+((char)r)+")");
+						throw new IOException ("Non printable character: "+r+"("+((char)r)+")");
 
 					buf[pos] = (byte) (r);
 					pos++;
@@ -766,7 +766,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 	private void checkHostName(String host) throws IOException {
 		if (host.length() > 253)
-			throw new IOException ("Invalid Hostname: "+host);
+			throw new IOException ("Invalid hostname: "+host);
 	}
 
 
@@ -825,7 +825,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 							in.close();
 						}
 					} catch (Exception e) {
-						Logger.getLogger().logLine("Error retrieving Number of downloaded hosts\n"+e.getMessage());
+						Logger.getLogger().logLine("Error retrieving number of downloaded hosts\n"+e.getMessage());
 						ffileCount=-1;
 					}
 				}
@@ -870,8 +870,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				if (fin != addHostIn)
 					addHostIn.close();
 				if (aborted) {
-					Logger.getLogger().logLine("Aborting Indexing!");
-					Logger.getLogger().message("Indexing Aborted!");
+					Logger.getLogger().logLine("Aborting indexing!");
+					Logger.getLogger().message("Indexing aborted!");
 					return;
 				}
 
@@ -932,7 +932,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 					addHostIn.close();
 
 				if (aborted) {
-					Logger.getLogger().logLine("Indexing Aborted!");
+					Logger.getLogger().logLine("Indexing aborted!");
 					if (filterHostsFileRemoveDuplicates)
 						fout.close();
 					return;
@@ -1069,8 +1069,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			synchronized (INSTANCE) {
 
 				String copyPasteStartSection = "##### AUTOMATIC ENTRIES BELOW! #####";
-				String whitelistSection = "## Whitelisted Entries! ##";
-				String blacklistSection = "## Blacklisted Entries! ##";
+				String whitelistSection = "## Whitelisted entries! ##";
+				String blacklistSection = "## Blacklisted entries! ##";
 
 				if (entries.trim().equals("") || hostFilter == null)
 					return;
@@ -1280,8 +1280,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 			initEnv();
 
-			Logger.getLogger().logLine("***Initializing PersonalDNSFilter Version " + VERSION + "!***");
-			Logger.getLogger().logLine("Using Directory: "+WORKDIR);
+			Logger.getLogger().logLine("***Initializing personalDNSfilter Version " + VERSION + "!***");
+			Logger.getLogger().logLine("Using directory: "+WORKDIR);
 
 			byte[] configBytes = readConfig();
 			config = new Properties();

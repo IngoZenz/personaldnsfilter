@@ -170,7 +170,7 @@ public class DNSResponsePatcher {
 		} catch (IOException eio) {
 			throw eio;
 		} catch (Exception e){
-			throw new IOException ("Invalid DNS Response Message Structure", e);
+			throw new IOException ("Invalid DNS response message structure", e);
 		}
 	}
 

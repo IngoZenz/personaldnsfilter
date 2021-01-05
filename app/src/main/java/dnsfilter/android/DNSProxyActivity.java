@@ -559,7 +559,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 					storagePermission = false;
 					requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-					Logger.getLogger().logLine("Need Storage Permissions to start!");
+					Logger.getLogger().logLine("Need storage permissions to start!");
 				}
 			}
 
@@ -738,10 +738,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		try {
 			CONFIG.doBackup(getBackupSubFolder());
 			backupStatusView.setTextColor(Color.parseColor("#23751C"));
-			backupStatusView.setText("Backup Success!");
+			backupStatusView.setText("Backup success!");
 		} catch (IOException eio) {
 			backupStatusView.setTextColor(Color.parseColor("#D03D06"));
-			backupStatusView.setText("Backup Failed! " + eio.getMessage());
+			backupStatusView.setText("Backup failed! " + eio.getMessage());
 		}
 	}
 
@@ -752,10 +752,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			backupStatusView.setTextColor(Color.parseColor("#23751C"));
 			if (!CONFIG.isLocal())
 				loadAndApplyConfig(false);
-			backupStatusView.setText("Restore Success!");
+			backupStatusView.setText("Restore success!");
 		} catch (IOException eio) {
 			backupStatusView.setTextColor(Color.parseColor("#D03D06"));
-			backupStatusView.setText("Restore Failed! " + eio.getMessage());
+			backupStatusView.setText("Restore failed! " + eio.getMessage());
 		}
 	}
 
@@ -766,10 +766,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			backupStatusView.setTextColor(Color.parseColor("#23751C"));
 			if (!CONFIG.isLocal())
 				loadAndApplyConfig(false);
-			backupStatusView.setText("Restore Success!");
+			backupStatusView.setText("Restore success!");
 		} catch (IOException eio) {
 			backupStatusView.setTextColor(Color.parseColor("#D03D06"));
-			backupStatusView.setText("Restore Failed! " + eio.getMessage());
+			backupStatusView.setText("Restore failed! " + eio.getMessage());
 		}
 	}
 
@@ -856,7 +856,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}
 		else {
 			if (grantResults.length == 0)
-				logLine("grantResults is empty - assuming permission denied!");
+				logLine("grantResults is empty - Assuming permission denied!");
 			System.exit(-1);
 		}
 	}
@@ -864,7 +864,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected void setDNSCfgDialog(Properties config) {
 		String manualDNS_Help =
 				"# Format: <IP>::<PORT>::<PROTOCOL>::<URL END POINT>\n"+
-						"# IPV6 Addresses with '::' must be in brackets '[IPV6]'!\n\n" +
+						"# IPV6 addresses with '::' must be in brackets '[IPV6]'!\n\n" +
 						"# The default list contains following entries:\n" +
 						"# adguard1 (UDP); adguard2 (UDP); uncensoreddns.org (Dot); libredns.gr (DoT); libredns.gr (DoH);  nixnet.services Luxembourg (DoT); nixnet.services Las Vegas(DoT); nixnet.services New York(DoT)\n\n";
 
@@ -880,7 +880,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			defaults.load(defIn);
 			defIn.close();
 			setDNSCfgDialog(defaults);
-			message("Restored DNS Defaults!");
+			message("Restored DNS defaults!");
 		} catch (Exception e ){
 			message(e.getMessage());
 		}
@@ -910,7 +910,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 						int logSize = Integer.parseInt(config.getProperty("logTextSize", "14"));
 						logOutView.setTextSize(TypedValue.COMPLEX_UNIT_SP, logSize);
 					} catch (Exception e) {
-						Logger.getLogger().logLine("Error in log Text Size setting! "+e.toString());
+						Logger.getLogger().logLine("Error in log text size setting! "+e.toString());
 					}
 
 					debug = Boolean.parseBoolean(config.getProperty("debug", "false"));
@@ -1159,7 +1159,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		if (switchingConfig ) {
 			advancedConfigCheck.setChecked(false);
-			Logger.getLogger().logLine("Config Switch in progress - Wait!");
+			Logger.getLogger().logLine("Config switch in progress - Wait!");
 			return;
 		}
 
@@ -1206,12 +1206,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		if (destination == rootModeCheck && rootModeCheck.isChecked() && !proxyModeCheck.isChecked()) {
 			proxyModeCheck.setChecked(true);
-			Logger.getLogger().logLine("Enabled also DNS Proxy Mode as required by Root Mode!");
+			Logger.getLogger().logLine("Enabled also DNS proxy mode as required by root mode!");
 		}
 
 		if (destination == proxyModeCheck && !proxyModeCheck.isChecked() && rootModeCheck.isChecked()) {
 			rootModeCheck.setChecked(false);
-			Logger.getLogger().logLine("Disabled also Root Mode as it requires DNS Proxy Mode!");
+			Logger.getLogger().logLine("Disabled also root mode as it requires DNS proxy mode!");
 		}
 
 		persistConfig();
@@ -1294,7 +1294,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				final String keyphrase = ConfigurationAccess.getLocal().getConfig().getProperty("client_remote_ctrl_keyphrase", "");
 
 				if (host.equals("") || host.equals("0.0.0.0") || keyphrase.equals(""))
-					throw new IOException("Remote Control not configured!");
+					throw new IOException("Remote control not configured!");
 
 				final int port;
 				try {
@@ -1314,7 +1314,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 							onRemoteConnected(ConfigurationAccess.getRemote(myLogger.getNestedLogger(), host, port, keyphrase));
 							checkPasscode();
 						} catch (IOException e) {
-							Logger.getLogger().logLine("Remote Connect failed!" + e.toString());
+							Logger.getLogger().logLine("Remote connect failed!" + e.toString());
 							message("Remote Connect Failed!");
 							switchingConfig = false;
 						}
@@ -1543,8 +1543,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected void startup() {
 
 		if (DNSFilterService.SERVICE != null) {
-			Logger.getLogger().logLine("DNSFilterService is running!");
-			Logger.getLogger().logLine("Filter Statistic since last restart:");
+			Logger.getLogger().logLine("DNS filter service is running!");
+			Logger.getLogger().logLine("Filter statistic since last restart:");
 			showFilterRate(false);
 			//Logger.getLogger().message("Attached already running Service!");
 			return;
@@ -1582,7 +1582,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		if (requestCode == 0 && resultCode == Activity.RESULT_OK) {
 			startSvc();
 		} else if (requestCode == 0 && resultCode != Activity.RESULT_OK) {
-			Logger.getLogger().logLine("VPN Dialog not accepted!\r\nPress Restart to display Dialog again!");
+			Logger.getLogger().logLine("VPN dialog not accepted!\r\nPress restart to display dialog again!");
 		}
 	}
 

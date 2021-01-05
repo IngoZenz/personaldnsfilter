@@ -81,7 +81,7 @@ public class HttpHeader {
 				setValue("Host", hostEntry);
 		} else {
 			if (!(_first.length() >= 12))
-				throw new IOException("Invalid Response Header:" + _first);
+				throw new IOException("Invalid response header:" + _first);
 
 			String _first12 = _first.substring(0, 12).toLowerCase();
 			if (_first12.startsWith("http/")) {
@@ -92,7 +92,7 @@ public class HttpHeader {
 					throw new IOException(e.getMessage());
 				}
 			} else
-				throw new IOException("Invalid Response Header:" + _first);
+				throw new IOException("Invalid response header:" + _first);
 		}
 
 		String next = Utils.readLineFromStream(in,true);
@@ -124,7 +124,7 @@ public class HttpHeader {
 					if (!keyUpper.equals("HOST"))
 						_mapping.put(keyUpper, curVal + "_,_" + value); // multiple values per key separated by "_,_" as "," only doesn't work for Set-Cookie expires setting
 				} else if (!curVal.equals(value))
-					throw new IOException("Invalid Header! Duplicated Content-Length with different values:" + curVal + "<>" + value + "!");
+					throw new IOException("Invalid header! Duplicated Content-Length with different values:" + curVal + "<>" + value + "!");
 			}
 			next = Utils.readLineFromStream(in,true);
 		}
@@ -133,7 +133,7 @@ public class HttpHeader {
 			if (hostEntry != null) {
 				parseHostEntry();
 			} else
-				throw new IOException("Bad Request - No Host specified!");
+				throw new IOException("Bad request - No host specified!");
 		}
 	}
 
@@ -181,13 +181,13 @@ public class HttpHeader {
 
 	public String getResponseMessage() {
 		if (type != RESPONSE_HEADER)
-			throw new IllegalStateException(this + " is not a ResonseHeader!");
+			throw new IllegalStateException(this + " is not a ResponseHeader!");
 		return _first;
 	}
 
 	public int getResponseCode() {
 		if (type != RESPONSE_HEADER)
-			throw new IllegalStateException(this + " is not a ResonseHeader!");
+			throw new IllegalStateException(this + " is not a ResponseHeader!");
 		return responsecode;
 	}
 
@@ -318,7 +318,7 @@ public class HttpHeader {
 		int idx = _first.indexOf(' ');
 		int idx2 = _first.lastIndexOf(' ');
 		if (idx == -1 || idx == idx2)
-			throw new IOException("Bad Request:" + _first);
+			throw new IOException("Bad request:" + _first);
 
 		method = _first.substring(0, idx);
 		url = _first.substring(idx + 1, idx2);
@@ -368,7 +368,7 @@ public class HttpHeader {
 			try {
 				remote_port = Integer.parseInt(hostEntry.substring(idx + 1));
 			} catch (NumberFormatException nfe) {
-				throw new IOException("Bad Request - Cannot parse port to int:" + _first);
+				throw new IOException("Bad request - Cannot parse port to int:" + _first);
 			}
 			remote_host_name = hostEntry.substring(0, idx);
 		}	

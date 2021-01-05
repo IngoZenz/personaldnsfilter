@@ -148,7 +148,7 @@ public class PackedSortedList implements List, RandomAccess {
 			persistedPackDataRefs--;
 			//Logger.getLogger().logLine("Released reference: "+persistedPackDataRefs);
 			if (persistedPackDataRefs <0)
-				throw new IllegalStateException("Inconsistent State! persistedPackDataRefs = "+  persistedPackDataRefs);
+				throw new IllegalStateException("Inconsistent state! persistedPackDataRefs = "+  persistedPackDataRefs);
 			if ( persistedPackDataRefs == 0) { //no more references=>close
 				persistedPackData.close();
 				persistedPackData = null;
@@ -163,7 +163,7 @@ public class PackedSortedList implements List, RandomAccess {
 
 		if (persistedPackData == null) {
 			if (persistedPackDataRefs >0)
-				throw new IllegalStateException("Inconsistent State! persistedPackData is null but there are "+persistedPackDataRefs+" references!");
+				throw new IllegalStateException("Inconsistent state! persistedPackData is null but there are "+persistedPackDataRefs+" references!");
 			persistedPackData = new RandomAccessFile(persistedPackFile, "r");
 		}
 		persistedPackDataRefs++;
@@ -305,7 +305,7 @@ public class PackedSortedList implements List, RandomAccess {
 		if (persistentOutdated) {
 
 			if (!loaded)
-				throw new IOException("PackedSortedList can not be persisted when not in Memory!");
+				throw new IOException("PackedSortedList can not be persisted when not in memory!");
 
 			persistedPackFile = new File(path);
 

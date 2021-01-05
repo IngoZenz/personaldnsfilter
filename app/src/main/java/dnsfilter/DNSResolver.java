@@ -225,7 +225,7 @@ public class DNSResolver implements Runnable {
 		} catch (IOException e) {
 			boolean hasNetwork = ExecutionEnvironment.getEnvironment().hasNetwork();
 			if (!hasNetwork)
-				Logger.getLogger().message("No Network!");
+				Logger.getLogger().message("No network!");
 			String msg = e.getMessage();
 			if (e.getMessage()==null)
 				msg = e.toString();
@@ -233,7 +233,7 @@ public class DNSResolver implements Runnable {
 				Logger.getLogger().logLine(msg);
 			else if (!IO_ERROR && hasNetwork) {
 				// a new IO Error while connected occured
-				Logger.getLogger().logLine(msg+"\nIO Error occured! Check network or DNS Config!");
+				Logger.getLogger().logLine(msg+"\nIO Error occured! Check network or DNS config!");
 				IO_ERROR= true; //prevent repeating error logs
 			}
 		} catch (Exception e) {

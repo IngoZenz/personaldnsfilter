@@ -27,8 +27,8 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 
 	static String NEW_ITEM = "<new>";
 	static String INVALID_URL = "<invalid URL!>";
-	static String ALL_CATEGORIES = "All Categories";
-	static String ALL_ACTIVE = "All Active Filters";
+	static String ALL_CATEGORIES = "All categories";
+	static String ALL_ACTIVE = "All active filters";
 
 
 
