@@ -25,6 +25,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import dnsfilter.ConfigurationAccess;
 import util.Logger;
 
 public class NotificationReceiver extends BroadcastReceiver {
@@ -39,6 +40,12 @@ public class NotificationReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		try {
+			String passwd = ConfigurationAccess.getLocal().getConfig().getProperty("passcode","").trim();
+			if (!passwd.equals("")) {
+				Logger.getLogger().logLine("Notification action not allowed when passcode protected!");
+				Logger.getLogger().message("Not permitted - Passcode protected!");
+				return;
+			}
 			DNSFilterService instance = DNSFilterService.INSTANCE;
 			if (instance != null)
 				DNSFilterService.INSTANCE.pause_resume();
