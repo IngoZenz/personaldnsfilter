@@ -1,5 +1,5 @@
 # Add your own additional hosts here!
-# Supports Backlist, whitelist and map to custom IP
+# Supports Blacklist, whitelist and map to custom IP
 
 # Format for Blacklist: 1 host name per line (sample below).
 # Wildcard Character "*" can be used for host blocking.
