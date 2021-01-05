@@ -92,7 +92,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	private static RemoteAccessServer remoteAccessManager ;
 
 
-	private static String DOWNLOADED_FF_PREFIX= "# Downloaded by personalDNSfilter at: ";
+	private static String DOWNLOADED_FF_PREFIX= "# Downloaded by personalDNSFilter at: ";
 
 
 	protected Properties config = null;
@@ -1069,8 +1069,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			synchronized (INSTANCE) {
 
 				String copyPasteStartSection = "##### AUTOMATIC ENTRIES BELOW! #####";
-				String whitelistSection = "## Whitelisted entries! ##";
-				String blacklistSection = "## Blacklisted entries! ##";
+				String whitelistSection = "## Whitelisted Entries! ##";
+				String blacklistSection = "## Blacklisted Entries! ##";
 
 				if (entries.trim().equals("") || hostFilter == null)
 					return;
