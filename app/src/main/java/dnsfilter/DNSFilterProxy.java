@@ -27,6 +27,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -161,34 +166,72 @@ public class DNSFilterProxy implements Runnable {
 		runner.run();
 	}
 
+	private static InetAddress openVPN4pDNSf_Adr;
+
+	{
+		try {
+			openVPN4pDNSf_Adr = InetAddress.getByName("10.10.10.10");
+		} catch (UnknownHostException e) {
+			Logger.getLogger().logException(e);
+		}
+	}
+
+	public static boolean isAlocalAddress(InetAddress addr) throws IOException {
+
+		if (addr.equals(openVPN4pDNSf_Adr) || addr.isAnyLocalAddress() || addr.isLoopbackAddress())
+			return true;
+
+		return NetworkInterface.getByInetAddress(addr) != null;
+	}
+
 	@Override
 	public void run() {
 		int max_resolvers;
+		boolean onlyLocal;
 		try {
 			max_resolvers  = Integer.parseInt(DNSFilterManager.getInstance().getConfig().getProperty("maxResolverCount", "100"));
+			onlyLocal = Boolean.parseBoolean(DNSFilterManager.getInstance().getConfig().getProperty("dnsProxyOnlyLocalRequests", "true"));
 		} catch (Exception e) {
-			Logger.getLogger().logLine("Exception:Cannot get maxResolverCount configuration!");
+			Logger.getLogger().logLine("Exception:Cannot get configuration!");
 			Logger.getLogger().logException(e);
 			return;
 		}
 		try {
-			receiver = new DatagramSocket(port);
+			if (onlyLocal && ExecutionEnvironment.getEnvironment().getEnvironmentID() == 0)
+				//currently only possible for non Android - see below!
+				receiver = new DatagramSocket(port, InetAddress.getByName("127.0.0.1"));
+			else
+				receiver = new DatagramSocket(port);
+
 			ExecutionEnvironment.getEnvironment().protectSocket(receiver, 1);
+
 		} catch (IOException eio) {
 			Logger.getLogger().logLine("Exception:Cannot open DNS port " + port + "!" + eio.getMessage());
 			return;
 		}
 		Logger.getLogger().logLine("DNSFilterProxy running on port " + port + "!");
+
 		while (!stopped) {
 			try {
 				byte[] data = new byte[DNSServer.getBufSize()];
 				DatagramPacket request = new DatagramPacket(data, 0, DNSServer.getBufSize());
 				receiver.receive(request);
 
+				boolean permitted = true;
+				// This is temporary solution on Android as here we can not the localhost socket only
+				// due to interoperability with openVPN for pDNSf.
+				// Will work on better solution for next release
+				if (onlyLocal && ExecutionEnvironment.getEnvironment().getEnvironmentID() == 1)
+					permitted = isAlocalAddress(request.getAddress());
+
+				if (!permitted)
+					Logger.getLogger().logLine(request.getAddress()+" not permitted! Only local access!");
+
 				if (DNSResolver.getResolverCount()>max_resolvers) {
 					Logger.getLogger().message("Max resolver count reached: "+max_resolvers);
 				}
-				else new Thread(new DNSResolver(request, receiver)).start();
+				else if (permitted)
+					new Thread(new DNSResolver(request, receiver)).start();
 
 			} catch (IOException e) {
 				if (!stopped)

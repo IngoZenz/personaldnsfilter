@@ -92,6 +92,7 @@ public class DNSFilterService extends VpnService  {
 	private static boolean DNS_PROXY_PORT_IS_REDIRECTED = false;
 
 	private static boolean dnsProxyMode = false;
+	private static boolean dnsProxyOnlyLocal = true;
 	private static boolean rootMode = false;
 	private static boolean vpnInAdditionToProxyMode = false;
 	private static boolean routeDNS = false;
@@ -646,6 +647,7 @@ public class DNSFilterService extends VpnService  {
 				DNSFILTER = DNSFilterManager.getInstance();
 				DNSFILTER.init();
 				dnsProxyMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("dnsProxyOnAndroid", "false"));
+				dnsProxyOnlyLocal = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("dnsProxyOnlyLocalRequests", "true"));
 				rootMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("rootModeOnAndroid", "false"));
 				vpnInAdditionToProxyMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("vpnInAdditionToProxyMode", "false"));
 
@@ -788,6 +790,10 @@ public class DNSFilterService extends VpnService  {
 	}
 
 	private void setUpPortRedir() {
+
+		if (dnsProxyOnlyLocal)
+			return;
+
 		if (DNS_PROXY_PORT_IS_REDIRECTED)
 			return;
 		try {
@@ -795,6 +801,18 @@ public class DNSFilterService extends VpnService  {
 			DNS_PROXY_PORT_IS_REDIRECTED = true;
 		} catch (Exception e) {
 			Logger.getLogger().logLine("Exception during setting port redirection:" + e.toString());
+
+		}
+	}
+
+	private void clearPortRedir() {
+		if (!DNS_PROXY_PORT_IS_REDIRECTED)
+			return;
+		try {
+			runOSCommand(false, "iptables -t nat -D PREROUTING -p udp --dport 53 -j REDIRECT --to-port 5300");
+			DNS_PROXY_PORT_IS_REDIRECTED = false;
+		} catch (Exception e) {
+			Logger.getLogger().logLine("Exception when clearing port redirection:" + e.toString());
 
 		}
 	}
@@ -889,6 +907,7 @@ public class DNSFilterService extends VpnService  {
 
 			if (rootMode) {
 				dnsReqForwarder.clearForward();
+				clearPortRedir();
 			}
 
 			VPNRunner runningVPN = vpnRunner;
