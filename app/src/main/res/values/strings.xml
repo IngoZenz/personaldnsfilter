@@ -34,8 +34,8 @@
   <string name="proxyModeCheckBox">DNS proxy mode without local VPN</string>
   <string name="rootModeCheckBox">Root mode without local VPN</string>
   <string name="proxyLocalOnlyCheckbox" translatable="false">Allow only local DNS proxy requests</string>
-  <string name="notificationActive" translatable="false">Active!</string>
-  <string name="notificationPaused" translatable="false">Paused!</string>
-  <string name="switch_pause_resume" translatable="false">Tap to switch!</string>
+  <string name="notificationActive" translatable="false">Active</string>
+  <string name="notificationPaused" translatable="false">Paused</string>
+  <string name="switch_pause_resume" translatable="false">Tap to switch</string>
 
 </resources>
