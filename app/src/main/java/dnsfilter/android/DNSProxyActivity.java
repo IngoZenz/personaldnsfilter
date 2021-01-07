@@ -120,6 +120,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected static CheckBox keepAwakeCheck;
 	protected static CheckBox enableAdFilterCheck;
 	protected static CheckBox proxyModeCheck;
+	protected static CheckBox proxyLocalOnlyCheck;
 	protected static CheckBox enableAutoStartCheck;
 	protected static CheckBox rootModeCheck;
 	protected static CheckBox enableCloakProtectCheck;
@@ -496,6 +497,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			proxyModeCheck = (CheckBox) findViewById(R.id.proxyModeCheck);
 			proxyModeCheck.setChecked(checked);
 			proxyModeCheck.setOnClickListener(this);
+
+			checked = proxyLocalOnlyCheck != null && proxyLocalOnlyCheck .isChecked();
+			proxyLocalOnlyCheck = (CheckBox) findViewById(R.id.proxyLocalOnlyCheck);
+			proxyLocalOnlyCheck.setChecked(checked);
+			proxyLocalOnlyCheck.setOnClickListener(this);
 
 			checked = rootModeCheck != null && rootModeCheck.isChecked();
 			rootModeCheck = (CheckBox) findViewById(R.id.rootModeCheck);
@@ -932,6 +938,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 					proxyModeCheck.setChecked(Boolean.parseBoolean(config.getProperty("dnsProxyOnAndroid", "false")));
 
+					proxyLocalOnlyCheck.setChecked(Boolean.parseBoolean(config.getProperty("dnsProxyOnlyLocalRequests", "true")));
+
 					rootModeCheck.setChecked(Boolean.parseBoolean(config.getProperty("rootModeOnAndroid", "false")));
 
 					//set whitelisted Apps into UI
@@ -1116,6 +1124,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 				else if (ln.trim().startsWith("dnsProxyOnAndroid"))
 					ln = "dnsProxyOnAndroid = " + proxyModeCheck.isChecked();
+
+				else if (ln.trim().startsWith("dnsProxyOnlyLocalRequests"))
+					ln = "dnsProxyOnlyLocalRequests = " + proxyLocalOnlyCheck.isChecked();
 
 				else if (ln.trim().startsWith("rootModeOnAndroid"))
 					ln = "rootModeOnAndroid = " + rootModeCheck.isChecked();
@@ -1404,6 +1415,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 			keepAwakeCheck.setVisibility(View.VISIBLE);
 			proxyModeCheck.setVisibility(View.VISIBLE);
+			proxyLocalOnlyCheck.setVisibility(View.VISIBLE);
 			rootModeCheck.setVisibility(View.VISIBLE);
 			enableCloakProtectCheck.setVisibility(View.VISIBLE);
 			editAdditionalHostsCheck.setVisibility(View.VISIBLE);
@@ -1426,6 +1438,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				if (dest.isChecked()) {
 					keepAwakeCheck.setVisibility(View.GONE);
 					proxyModeCheck.setVisibility(View.GONE);
+					proxyLocalOnlyCheck.setVisibility(View.GONE);
 					rootModeCheck.setVisibility(View.GONE);
 					enableCloakProtectCheck.setVisibility(View.GONE);
 					if (dest != editAdditionalHostsCheck) {
@@ -1447,6 +1460,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				} else {
 					keepAwakeCheck.setVisibility(View.VISIBLE);
 					proxyModeCheck.setVisibility(View.VISIBLE);
+					proxyLocalOnlyCheck.setVisibility(View.VISIBLE);
 					rootModeCheck.setVisibility(View.VISIBLE);
 					enableCloakProtectCheck.setVisibility(View.VISIBLE);
 					editAdditionalHostsCheck.setVisibility(View.VISIBLE);
