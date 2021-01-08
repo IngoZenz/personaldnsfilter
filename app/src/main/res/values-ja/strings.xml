@@ -30,4 +30,8 @@
   <string name="removeFilter">"フィルターを削除"</string>
   <string name="proxyModeCheckBox">ローカル VPN の無い DNS プロキシモード</string>
   <string name="rootModeCheckBox">ローカル VPN の無いルートモード</string>
+  <string name="proxyLocalOnlyCheckbox">ローカル DNS プロキシリクエストのみを許可</string>
+  <string name="notificationActive">アクティブ</string>
+  <string name="notificationPaused">一時停止</string>
+  <string name="switch_pause_resume">タップして切り替え</string>
 </resources>

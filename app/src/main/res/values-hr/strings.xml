@@ -30,4 +30,8 @@
   <string name="removeFilter">"Uklonite filtar"</string>
   <string name="proxyModeCheckBox">Načinu proxy servera DNS-a bez lokalnog VPN</string>
   <string name="rootModeCheckBox">Root modu bez lokalnih VPN</string>
+  <string name="proxyLocalOnlyCheckbox">Dopusti samo lokalne zahtjeve DNS proxyja</string>
+  <string name="notificationActive">Aktivno</string>
+  <string name="notificationPaused">Pauzirano</string>
+  <string name="switch_pause_resume">Dodirnite za prebacivanje</string>
 </resources>

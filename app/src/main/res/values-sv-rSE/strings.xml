@@ -30,4 +30,8 @@
   <string name="removeFilter">"Ta bort filter"</string>
   <string name="proxyModeCheckBox">DNS-proxy-läge utan lokal VPN</string>
   <string name="rootModeCheckBox">Rotläge utan lokal VPN</string>
+  <string name="proxyLocalOnlyCheckbox">Tillåt endast lokala DNS-proxyförfrågningar</string>
+  <string name="notificationActive">Aktiv</string>
+  <string name="notificationPaused">Pausad</string>
+  <string name="switch_pause_resume">Tryck för att växla</string>
 </resources>

@@ -30,4 +30,8 @@
   <string name="removeFilter">"Suprimeix el filtre"</string>
   <string name="proxyModeCheckBox">DNS, proxy mode sense local VPN</string>
   <string name="rootModeCheckBox">Arrel en mode sense local VPN</string>
+  <string name="proxyLocalOnlyCheckbox">Només les sol·licituds de servidor intermediari DNS local</string>
+  <string name="notificationActive">Actiu</string>
+  <string name="notificationPaused">Pausat</string>
+  <string name="switch_pause_resume">Toca per canviar</string>
 </resources>

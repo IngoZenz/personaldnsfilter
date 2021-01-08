@@ -30,4 +30,8 @@
   <string name="removeFilter">"Видалити фільтр"</string>
   <string name="proxyModeCheckBox">Проксі-режим DNS без локального VPN</string>
   <string name="rootModeCheckBox">Рут-режим без локального VPN</string>
+  <string name="proxyLocalOnlyCheckbox">Дозволити лише запити локального DNS-проксі</string>
+  <string name="notificationActive">Активний</string>
+  <string name="notificationPaused">Призупинено</string>
+  <string name="switch_pause_resume">Торкніться, щоб переключитися</string>
 </resources>
