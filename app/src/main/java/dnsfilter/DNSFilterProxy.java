@@ -188,16 +188,18 @@ public class DNSFilterProxy implements Runnable {
 	public void run() {
 		int max_resolvers;
 		boolean onlyLocal;
+		boolean androidRootMode;
 		try {
 			max_resolvers  = Integer.parseInt(DNSFilterManager.getInstance().getConfig().getProperty("maxResolverCount", "100"));
 			onlyLocal = Boolean.parseBoolean(DNSFilterManager.getInstance().getConfig().getProperty("dnsProxyOnlyLocalRequests", "true"));
+			androidRootMode = Boolean.parseBoolean(DNSFilterManager.getInstance().getConfig().getProperty("rootModeOnAndroid", "false"));
 		} catch (Exception e) {
 			Logger.getLogger().logLine("Exception:Cannot get configuration!");
 			Logger.getLogger().logException(e);
 			return;
 		}
 		try {
-			if (onlyLocal && ExecutionEnvironment.getEnvironment().getEnvironmentID() == 0)
+			if (onlyLocal && (ExecutionEnvironment.getEnvironment().getEnvironmentID() == 0 || androidRootMode))
 				//currently only possible for non Android - see below!
 				receiver = new DatagramSocket(port, InetAddress.getByName("127.0.0.1"));
 			else
@@ -218,10 +220,10 @@ public class DNSFilterProxy implements Runnable {
 				receiver.receive(request);
 
 				boolean permitted = true;
-				// This is temporary solution on Android as here we can not the localhost socket only
+				// This is temporary solution on Android as here we can not open the localhost socket only
 				// due to interoperability with openVPN for pDNSf.
 				// Will work on better solution for next release
-				if (onlyLocal && ExecutionEnvironment.getEnvironment().getEnvironmentID() == 1)
+				if (onlyLocal && ExecutionEnvironment.getEnvironment().getEnvironmentID() == 1 && !androidRootMode)
 					permitted = isAlocalAddress(request.getAddress());
 
 				if (!permitted)
