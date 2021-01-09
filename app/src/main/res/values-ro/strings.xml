@@ -30,4 +30,8 @@
   <string name="removeFilter">"Elimină filtru"</string>
   <string name="proxyModeCheckBox">Mod proxy DNS fără VPN local</string>
   <string name="rootModeCheckBox">Mod rădăcină fără VPN local</string>
+  <string name="proxyLocalOnlyCheckbox">Permiteți numai solicitări proxy DNS locale</string>
+  <string name="notificationActive">Activ</string>
+  <string name="notificationPaused">Întrerupt</string>
+  <string name="switch_pause_resume">Atingeți pentru a comuta</string>
 </resources>

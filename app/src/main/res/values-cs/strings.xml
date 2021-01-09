@@ -30,4 +30,8 @@
   <string name="removeFilter">"Odstranit filtr"</string>
   <string name="proxyModeCheckBox">Režim DNS proxy bez lokální VPN</string>
   <string name="rootModeCheckBox">Režim Root bez lokální VPN</string>
+  <string name="proxyLocalOnlyCheckbox">Povolit pouze požadavky lokálního proxy DNS</string>
+  <string name="notificationActive">Aktivní</string>
+  <string name="notificationPaused">Pozastaveno</string>
+  <string name="switch_pause_resume">Klepnutím přepnout</string>
 </resources>
