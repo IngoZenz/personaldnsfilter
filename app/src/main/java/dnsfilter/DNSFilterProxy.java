@@ -178,7 +178,7 @@ public class DNSFilterProxy implements Runnable {
 
 	public static boolean isAlocalAddress(InetAddress addr) throws IOException {
 
-		if (addr.equals(openVPN4pDNSf_Adr) || addr.isAnyLocalAddress() || addr.isLoopbackAddress())
+		if (addr.equals(openVPN4pDNSf_Adr)  || addr.isLoopbackAddress() || addr.isAnyLocalAddress())
 			return true;
 
 		return NetworkInterface.getByInetAddress(addr) != null;
