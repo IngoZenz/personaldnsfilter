@@ -36,8 +36,8 @@ public class DNSResponsePatcher {
 	private static Set FILTER = null;
 	private static LoggerInterface TRAFFIC_LOG = null;
 
-	private static byte[] ipv4_blocked;
-	private static byte[] ipv6_blocked;
+	protected static byte[] ipv4_blocked;
+	protected static byte[] ipv6_blocked;
 
 	private static long okCnt=0;
 	private static long filterCnt=0;
@@ -58,8 +58,8 @@ public class DNSResponsePatcher {
 	public static void init(Set filter, LoggerInterface trafficLogger) {
 		FILTER = filter;
 		TRAFFIC_LOG = trafficLogger;
-		okCnt=0;
-		filterCnt=0;
+		//okCnt=0;
+		//filterCnt=0;
 		try {
 			checkIP = Boolean.parseBoolean(ConfigurationAccess.getLocal().getConfig().getProperty("checkResolvedIP","false"));
 			checkCNAME = Boolean.parseBoolean(ConfigurationAccess.getLocal().getConfig().getProperty("checkCNAME","false"));
@@ -95,25 +95,24 @@ public class DNSResponsePatcher {
 			for (int i = 0; i < questCount; i++) {
 
 				queryHost = readDomainName(buf, offs);
-				int type = buf.getShort(); // query type
+				short type = buf.getShort(); // query type
 
 				//checking the filter on the answer does not always work due to cname redirects (type 5 responses)
 				//therefore we just check the filter on the query host and thus we'll disallow also all cname redirects.
 				//This seems to work well - however is not 100% correct!
 
 				if (type == 1 || type == 28)
-					filter = filter || filter(queryHost);
+					filter = filter || filter(queryHost, true);
 
-				if (TRAFFIC_LOG != null)
-					TRAFFIC_LOG.logLine(client + ", Q-" + type + ", " + queryHost + ", " + "<empty>");
+				short clss = buf.getShort(); // query class
 
-				buf.getShort(); // query class
+				trafficLog(client, clss, type, queryHost,null,0);
 			}
 
 			for (int i = 0; i < answerCount; i++) {
 				String host = readDomainName(buf, offs);
-				int type = buf.getShort(); // type
-				buf.getShort(); // class
+				short type = buf.getShort(); // type
+				short clss = buf.getShort(); // class
 				buf.getInt(); // TTL
 				int len = buf.getShort(); // len
 
@@ -121,7 +120,7 @@ public class DNSResponsePatcher {
 
 				if ((type == 1 || type == 28)) {
 					if (!filter && checkCNAME && !host.equals(queryHost)) { //avoid duplicate checking same hosts
-						filter = filter || filter(host);  //Handle CNAME Cloaking!
+						filter = filter || filter(host, true);  //Handle CNAME Cloaking!
 						queryHost = host;
 					}
 					if (filter) {
@@ -164,18 +163,18 @@ public class DNSResponsePatcher {
 						else
 							answerStr = new String(answer);
 					}
-					TRAFFIC_LOG.logLine(client + ", A-" + type + ", " + host + ", " + answerStr + ", /Length:" + len);
+					trafficLog(client, clss, type, host, answerStr, len);
 				}
 			}
 			return buf.array();
 		} catch (IOException eio) {
 			throw eio;
 		} catch (Exception e){
-			throw new IOException ("Invalid DNS Response Message Structure", e);
+			throw new IOException ("Invalid DNS response message structure", e);
 		}
 	}
 
-	private static boolean filter(String host) {
+	protected static boolean filter(String host, boolean log) {
 		boolean result;
 
 		if (FILTER == null)
@@ -183,6 +182,24 @@ public class DNSResponsePatcher {
 		else
 			result = FILTER.contains(host);
 
+		if (log)
+			logNstats(result, host);
+
+		return result;
+	}
+
+
+	protected static void trafficLog(String client, short clss, short type, String host, String answer, int length) {
+		if (TRAFFIC_LOG == null)
+			return;
+		if (answer != null)
+			TRAFFIC_LOG.logLine(client + ", "+ clss + ", A-" + type + ", " + host + ", " + answer + ", /Length:" + length);
+		else
+			TRAFFIC_LOG.logLine(client + ", "+ clss + ", Q-" + type + ", " + host + ", " + "<empty>");
+
+	}
+
+	protected static void logNstats(boolean result, String host) {
 		if (result == true)
 			Logger.getLogger().logLine("FILTERED:" + host);
 		else
@@ -192,8 +209,6 @@ public class DNSResponsePatcher {
 			okCnt++;
 		else
 			filterCnt++;
-
-		return result;
 	}
 
 
@@ -217,7 +232,7 @@ public class DNSResponsePatcher {
 	}
 
 
-	private static String readDomainName(ByteBuffer buf, int offs) throws IOException {
+	protected static String readDomainName(ByteBuffer buf, int offs) throws IOException {
 
 		byte[] substr = new byte[64];
 

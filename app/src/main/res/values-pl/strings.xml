@@ -30,4 +30,8 @@
   <string name="removeFilter">"Usuń filtr"</string>
   <string name="proxyModeCheckBox">Tryb proxy DNS bez lokalnego VPN</string>
   <string name="rootModeCheckBox">Tryb roota bez lokalnego VPN</string>
+  <string name="proxyLocalOnlyCheckbox">Zezwalaj tylko na żądania lokalnego serwera proxy DNS</string>
+  <string name="notificationActive">Aktywne</string>
+  <string name="notificationPaused">Wstrzymano</string>
+  <string name="switch_pause_resume">Dotknij, aby przełączyć</string>
 </resources>

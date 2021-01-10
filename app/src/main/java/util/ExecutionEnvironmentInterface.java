@@ -27,7 +27,8 @@ package util;
 
  public interface ExecutionEnvironmentInterface {
 	
-	public void wakeLock();
+	public int getEnvironmentID();
+ 	public void wakeLock();
 	public void releaseWakeLock();
 	public void releaseAllWakeLocks();
 	public String getWorkDir();

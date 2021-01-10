@@ -215,7 +215,7 @@ public class HugePackedSet implements Set {
 	public static HugePackedSet load(String path, boolean inMemory, ObjectPackagingManager objMgr) throws IOException {
 		//check version
 		if (!checkIndexVersion(path))
-			throw new IOException("Incompatible Index Version - Rebuild Index!");
+			throw new IOException("Incompatible index version - Rebuild Index!");
 				
 		// get slotcount
 		int slotCount = 0;

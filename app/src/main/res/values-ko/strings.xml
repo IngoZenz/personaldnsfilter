@@ -30,4 +30,8 @@
   <string name="removeFilter">"제거 필터"</string>
   <string name="proxyModeCheckBox">DNS proxy 모드지 않고 로컬 VPN</string>
   <string name="rootModeCheckBox">루트 모드지 않고 로컬 VPN</string>
+  <string name="proxyLocalOnlyCheckbox">로컬 DNS 프록시 요청 만 허용</string>
+  <string name="notificationActive">활성화</string>
+  <string name="notificationPaused">일시 정지</string>
+  <string name="switch_pause_resume">전환하려면 탭하세요.</string>
 </resources>

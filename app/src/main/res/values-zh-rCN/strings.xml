@@ -19,19 +19,19 @@
   <string name="filterUpdateDays">过滤器更新间隔（日）：</string>
   <string name="active">活跃</string>
   <string name="shortText">短文本</string>
-  <string name="URL" translatable="false">URL</string>
   <string name="cfgBackupRestore">备份和还原</string>
   <string name="backupConfig">备份配置</string>
   <string name="restoreBackup">还原备份</string>
   <string name="restoreDefault">恢复默认配置</string>
   <string name="category">类别</string>
   <string name="name">名称</string>
-  <string name="left" translatable="false"><![CDATA[◄]]></string>
-  <string name="right" translatable="false"><![CDATA[►]]></string>
   <string name="editFilterDialogTitle">编辑过滤器</string>
   <string name="addFilter">"添加过滤器"</string>
   <string name="removeFilter">"删除过滤器"</string>
   <string name="proxyModeCheckBox">没有本地 VPN 的DNS代理模式</string>
   <string name="rootModeCheckBox">没有本地 VPN 的 Root模式</string>
-  
+  <string name="proxyLocalOnlyCheckbox">仅允许本地DNS代理请求</string>
+  <string name="notificationActive">活跃</string>
+  <string name="notificationPaused">暂停</string>
+  <string name="switch_pause_resume">点按即可切换</string>
 </resources>

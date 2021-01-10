@@ -30,4 +30,8 @@
   <string name="removeFilter">"Уклоните филтер"</string>
   <string name="proxyModeCheckBox">Режиму прокси-сервера и ДНС без локалних ВПН</string>
   <string name="rootModeCheckBox">Корен режиму без локалних ВПН</string>
+  <string name="proxyLocalOnlyCheckbox">Дозволи само локалне ДНС проки захтеве</string>
+  <string name="notificationActive">Активни</string>
+  <string name="notificationPaused">Паузирано</string>
+  <string name="switch_pause_resume">Додирните за пребацивање</string>
 </resources>

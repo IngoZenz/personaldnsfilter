@@ -83,7 +83,7 @@ public class AppSelectorView extends LinearLayout {
 				//set 'Loading apps...' info
 				final TextView infoText = new TextView(getContext());
 				infoText.setTextColor(Color.BLACK);
-				infoText.setText("Loading Apps...");
+				infoText.setText("Loading apps...");
 
 				post(new Runnable() {
 					@Override

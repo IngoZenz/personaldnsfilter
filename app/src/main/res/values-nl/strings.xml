@@ -30,4 +30,8 @@
   <string name="removeFilter">"Filter verwijderen"</string>
   <string name="proxyModeCheckBox">DNS-proxy modus zonder lokale VPN</string>
   <string name="rootModeCheckBox">Root modus zonder lokale VPN</string>
+  <string name="proxyLocalOnlyCheckbox">Sta alleen lokale DNS-proxyverzoeken toe</string>
+  <string name="notificationActive">actief</string>
+  <string name="notificationPaused">Gepauseerd</string>
+  <string name="switch_pause_resume">Tik om te schakelen</string>
 </resources>

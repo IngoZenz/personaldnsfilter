@@ -30,4 +30,8 @@
   <string name="removeFilter">"फ़िल्टर निकालें"</string>
   <string name="proxyModeCheckBox">DNS प्रॉक्सी मोड के बिना स्थानीय वीपीएन</string>
   <string name="rootModeCheckBox">रूट मोड के बिना स्थानीय वीपीएन</string>
+  <string name="proxyLocalOnlyCheckbox">केवल स्थानीय DNS प्रॉक्सी अनुरोधों की अनुमति दें</string>
+  <string name="notificationActive">सक्रिय</string>
+  <string name="notificationPaused">रुका हुआ</string>
+  <string name="switch_pause_resume">स्विच करने के लिए टैप करें</string>
 </resources>

@@ -30,4 +30,8 @@
   <string name="removeFilter">"删除过滤器"</string>
   <string name="proxyModeCheckBox">DNS代理方式不当地VPN</string>
   <string name="rootModeCheckBox">根模式不当地VPN</string>
+  <string name="proxyLocalOnlyCheckbox">僅允許本地DNS代理請求</string>
+  <string name="notificationActive">活性</string>
+  <string name="notificationPaused">暫停</string>
+  <string name="switch_pause_resume">點按即可切換</string>
 </resources>

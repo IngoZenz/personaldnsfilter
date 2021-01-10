@@ -42,9 +42,14 @@ package util;
 		else
 			return m_default;
 	}
-	
-	
-	@Override
+
+
+	 @Override
+	 public int getEnvironmentID() {
+		 return 0; //default
+	 }
+
+	 @Override
 	public void wakeLock() {
 		// by default do nothing
 		

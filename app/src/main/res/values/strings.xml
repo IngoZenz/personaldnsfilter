@@ -33,5 +33,9 @@
   <string name="removeFilter">"Remove filter"</string>
   <string name="proxyModeCheckBox">DNS proxy mode without local VPN</string>
   <string name="rootModeCheckBox">Root mode without local VPN</string>
+  <string name="proxyLocalOnlyCheckbox">Allow only local DNS proxy requests</string>
+  <string name="notificationActive">Active</string>
+  <string name="notificationPaused">Paused</string>
+  <string name="switch_pause_resume">Tap to switch</string>
 
 </resources>

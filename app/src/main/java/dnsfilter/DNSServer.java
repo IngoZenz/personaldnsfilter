@@ -82,7 +82,7 @@ public class DNSServer {
                 } else Logger.getLogger().logLine("WARNING! Ignoring incomplete proxy configuration!");
             }
         } catch (Exception e){
-            Logger.getLogger().logLine("Exception during Proxy creation!");
+            Logger.getLogger().logLine("Exception during proxy creation!");
             Logger.getLogger().logException(e);
         }
     }
@@ -102,7 +102,7 @@ public class DNSServer {
             return DOT;
         else if (s.equals("DOH"))
             return DOH;
-        else throw new IOException("Invalid Protocol: "+s);
+        else throw new IOException("Invalid protocol: "+s);
     }
 
 
@@ -156,7 +156,7 @@ public class DNSServer {
             try {
                 port = Integer.parseInt(entryTokens[1]);
             } catch (NumberFormatException nfe) {
-                throw new IOException("Invalid Port!", nfe);
+                throw new IOException("Invalid port!", nfe);
             }
         }
         int proto = DNSServer.UDP;
@@ -215,7 +215,7 @@ public class DNSServer {
                 if (size + response.getOffset() < maxBufSize && bufSize < size+response.getOffset()) { //resize for future requests
                     bufSize = Math.min(1024*(((size +response.getOffset()) / 1024) +1), maxBufSize);
                     Logger.getLogger().logLine("BUFFER RESIZE:"+bufSize);
-                } else if (size + response.getOffset() >= maxBufSize ) throw new IOException("Max Response Buffer to small for response of length " + size);
+                } else if (size + response.getOffset() >= maxBufSize ) throw new IOException("Max response buffer to small for response of length " + size);
 
                 response.setData(new byte[bufSize],response.getOffset(),bufSize-response.getOffset());
             }
@@ -337,11 +337,11 @@ class UDP extends DNSServer {
                 } catch (IOException eio) {
                     synchronized (sessions) {
                         if (!sessions.contains(socket))
-                            throw new IOException("Sessions are closed due to network chnage!");
+                            throw new IOException("Sessions are closed due to network change!");
                     }
                     retry++;
                     if (retry == UDP_RETRY_CNT )
-                        throw new IOException("No DNS Response from " + address);
+                        throw new IOException("No DNS response from " + address);
                 }
             }
         } finally {

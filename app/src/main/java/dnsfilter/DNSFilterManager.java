@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -60,7 +61,7 @@ import util.Utils;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1504500";
+	public static final String VERSION = "1504600";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -83,6 +84,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 	private static BlockedHosts hostFilter = null;
 	private static Hashtable hostsFilterOverRule = null;
+	private static Hashtable<String, byte[]> customIPMappings = null;
 	private boolean serverStopped = true;
 	private boolean reloading_filter = false;
 	private AutoFilterUpdater autoFilterUpdater;
@@ -173,7 +175,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 					while (!stopRequest) {
 
-						Logger.getLogger().logLine("DNS Filter: Next filter reload:" + new Date(nextReload));
+						Logger.getLogger().logLine("DNS filter: Next filter reload:" + new Date(nextReload));
 						try {
 							waitUntilNextFilterReload();
 						} catch (InterruptedException e) {
@@ -183,7 +185,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 							break;
 						try {
 							reloading_filter = true;
-							Logger.getLogger().logLine("DNS Filter: Reloading hosts filter ...");
+							Logger.getLogger().logLine("DNS filter: Reloading hosts filter ...");
 							if (updateFilter()) { // otherwise it was aborted
 								validIndex = false;
 								reloadFilter(false);
@@ -216,7 +218,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 							reloading_filter = false;
 						}
 					}
-					Logger.getLogger().logLine("DNS Filter: AutoFilterUpdater stopped!");
+					Logger.getLogger().logLine("DNS filter: AutoFilterUpdater stopped!");
 				} finally {
 					running = false;
 					monitor.notifyAll();
@@ -235,18 +237,12 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	@Override
 	public Properties getConfig() throws IOException {
 
-		try {
-			if (config == null) {
-				byte[] configBytes = readConfig();
-				config = new Properties();
-				config.load(new ByteArrayInputStream(configBytes));
-			}
-			return config;
-		} catch (IOException e) {
-			Logger.getLogger().logException(e);
-			e.printStackTrace();
-			return null;
+		if (config == null) {
+			byte[] configBytes = readConfig();
+			config = new Properties();
+			config.load(new ByteArrayInputStream(configBytes));
 		}
+		return config;
 	}
 
 	@Override
@@ -254,7 +250,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 		File propsFile = new File(WORKDIR + "dnsfilter.conf");
 		if (!propsFile.exists()) {
-			Logger.getLogger().logLine(propsFile + " not found! - creating default config!");
+			Logger.getLogger().logLine(propsFile + " not found! - Creating default config!");
 			createDefaultConfiguration();
 			propsFile = new File(WORKDIR + "dnsfilter.conf");
 		}
@@ -295,9 +291,12 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 	private byte[] mergeAndPersistConfig(byte[] currentConfigBytes) throws IOException {
 		String currentCfgStr = new String(currentConfigBytes);
-		boolean filterDisabled = currentCfgStr.indexOf("\n#!!!filterHostsFile =")!=-1;
-		if (filterDisabled)
+
+		//handle previous filter disable logic from version 1.50.45
+		boolean filterDisabledV15045 = currentCfgStr.indexOf("\n#!!!filterHostsFile =")!=-1;
+		if (filterDisabledV15045)
 			currentCfgStr = currentCfgStr.replace("\n#!!!filterHostsFile =", "\nfilterHostsFile =");
+
 		Properties currentConfig = new Properties();
 		currentConfig.load(new ByteArrayInputStream(currentCfgStr.getBytes()));
 
@@ -314,8 +313,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			if (!(useNewDefaultFilters && ln.startsWith("filterAutoUpdateURL"))) {
 				for (int i = 0; i < currentKeys.length; i++) {
 					if (ln.startsWith(currentKeys[i] + " =")) {
-						if (currentKeys[i].equals("filterHostsFile") && filterDisabled)
-							ln = "#!!!filterHostsFile" + " = " + currentConfig.getProperty(currentKeys[i], "");
+						if (currentKeys[i].equals("filterActive") && filterDisabledV15045)
+							ln = "filterActive = false";
 						else
 							ln = currentKeys[i] + " = " + currentConfig.getProperty(currentKeys[i], "");
 					}
@@ -374,7 +373,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 			Logger.getLogger().logLine("Default configuration created successfully!");
 		} catch (IOException e) {
-			Logger.getLogger().logLine("FAILED creating default Configuration!");
+			Logger.getLogger().logLine("Failed creating default configuration!");
 			Logger.getLogger().logException(e);
 		}
 	}
@@ -390,7 +389,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 			this.config.load(new ByteArrayInputStream(config));
 
-			Logger.getLogger().message("Config Changed!\nRestart might be required!");
+			Logger.getLogger().message("Config changed!\nRestart might be required!");
 			//only update in file system / config instance will be updated with next restart
 		} catch (IOException e) {
 			throw new ConfigurationAccessException(e.getMessage(), e);
@@ -428,7 +427,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	@Override
 	public void triggerUpdateFilter() {
 		if (reloading_filter) {
-			Logger.getLogger().logLine("Filter Reload currently running!");
+			Logger.getLogger().logLine("Filter reload currently running!");
 			return;
 		}
 		if (filterReloadURL != null) {
@@ -437,7 +436,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				this.notifyAll();
 			}
 		} else
-			Logger.getLogger().logLine("DNS Filter: Setting 'filterAutoUpdateURL' not configured - cannot update filter!");
+			Logger.getLogger().logLine("DNS filter: Setting 'filterAutoUpdateURL' not configured - Cannot update filter!");
 	}
 
 	private void copyLocalFile(String from, String to) throws IOException {
@@ -490,7 +489,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 		try {
 			if (!canStop())
-				throw new IOException("Cannot stop! Pending Operation!");
+				throw new IOException("Cannot stop! Pending operation!");
 
 			stop();
 			copyFromAssets("dnsfilter.conf", "dnsfilter.conf");
@@ -513,7 +512,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 		try {
 			if (!canStop())
-				throw new IOException("Cannot stop! Pending Operation!");
+				throw new IOException("Cannot stop! Pending operation!");
 
 			stop();
 			copyLocalFile("backup/"+name+"/dnsfilter.conf", "dnsfilter.conf");
@@ -541,6 +540,25 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	public void releaseWakeLock()  {
 		ExecutionEnvironment.getEnvironment().releaseWakeLock();
 	}
+
+	public void switchBlockingActive() throws IOException {
+		Properties config = getConfig();
+		boolean active = !Boolean.parseBoolean(config.getProperty("filterActive", "true"));
+		// process changed activation status
+		String ln;
+		BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(readConfig())));
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		while ((ln = reader.readLine()) != null) {
+			if (ln.startsWith("filterActive"))
+				ln = "filterActive = " + active;
+			out.write((ln + "\r\n").getBytes());
+		}
+		out.flush();
+		out.close();
+		updateConfig(out.toByteArray());
+		restart();
+	}
+
 
 	private void writeDownloadInfoFile(int count, long lastModified) throws IOException{
 		FileOutputStream entryCountOut = new FileOutputStream(WORKDIR +filterhostfile+".DLD_CNT");
@@ -620,8 +638,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 							}
 							in.close();
 							if (aborted) {
-								Logger.getLogger().logLine("Aborting Filter Update!");
-								Logger.getLogger().message("Filter Update aborted!");
+								Logger.getLogger().logLine("Aborting filter update!");
+								Logger.getLogger().message("Filter update aborted!");
 								out.flush();
 								out.close();
 								return false;
@@ -654,7 +672,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 					new File(WORKDIR + filterhostfile + ".tmp").renameTo(new File(WORKDIR + filterhostfile));
 					writeDownloadInfoFile(count, new File(WORKDIR + filterhostfile).lastModified());
 				} else
-					throw new IOException("Renaming downloaded .tmp file to Filter file failed!");
+					throw new IOException("Renaming downloaded .tmp file to filter file failed!");
 
 			} finally {
 				ExecutionEnvironment.getEnvironment().releaseWakeLock();
@@ -683,7 +701,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			return new int[]{wildcard, -1};
 
 		if (buf.length == 0)
-			throw new IOException("Buffer Overflow!");
+			throw new IOException("Buffer overflow!");
 
 		if (r == 42) //wildcard
 			wildcard =1;
@@ -714,10 +732,10 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 				if (r != -1) {
 					if (pos == buf.length)
-						throw new IOException("Buffer Overflow!");
+						throw new IOException("Buffer overflow!");
 
 					if ( r < 32 && r < 9 && r > 13)
-						throw new IOException ("Non Printable character: "+r+"("+((char)r)+")");
+						throw new IOException ("Non printable character: "+r+"("+((char)r)+")");
 
 					buf[pos] = (byte) (r);
 					pos++;
@@ -729,7 +747,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 
 	private String[] parseHosts(String line) throws IOException {
-		if (line.startsWith("#") || line.startsWith("!") || line.trim().equals("") )
+		if (line.startsWith("#") || line.startsWith("!") || line.startsWith(">") || line.trim().equals("") )
 			return null;
 		String[] result;
 		StringTokenizer tokens = new StringTokenizer(line);
@@ -748,7 +766,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 	private void checkHostName(String host) throws IOException {
 		if (host.length() > 253)
-			throw new IOException ("Invalid Hostname: "+host);
+			throw new IOException ("Invalid hostname: "+host);
 	}
 
 
@@ -807,7 +825,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 							in.close();
 						}
 					} catch (Exception e) {
-						Logger.getLogger().logLine("Error retrieving Number of downloaded hosts\n"+e.getMessage());
+						Logger.getLogger().logLine("Error retrieving number of downloaded hosts\n"+e.getMessage());
 						ffileCount=-1;
 					}
 				}
@@ -852,8 +870,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				if (fin != addHostIn)
 					addHostIn.close();
 				if (aborted) {
-					Logger.getLogger().logLine("Aborting Indexing!");
-					Logger.getLogger().message("Indexing Aborted!");
+					Logger.getLogger().logLine("Aborting indexing!");
+					Logger.getLogger().message("Indexing aborted!");
 					return;
 				}
 
@@ -914,7 +932,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 					addHostIn.close();
 
 				if (aborted) {
-					Logger.getLogger().logLine("Indexing Aborted!");
+					Logger.getLogger().logLine("Indexing aborted!");
 					if (filterHostsFileRemoveDuplicates)
 						fout.close();
 					return;
@@ -1081,7 +1099,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				boolean listSection = false;
 				while ((entry = addHostIn.readLine()) != null) {
 					String host = entry;
-					boolean hostEntry = !(entry.trim().equals("") && !entry.startsWith("#"));
+					boolean hostEntry = !(entry.trim().equals("") && !entry.startsWith("#") && !entry.startsWith(">"));
 					if (entry.startsWith("!"))
 						host = entry.trim().substring(1);
 					if (!hostEntry || !entriestoChange.contains(host)) {// take over entries with no change required
@@ -1213,7 +1231,15 @@ public class DNSFilterManager extends ConfigurationAccess  {
 		filterHostsFileRemoveDuplicates = false;
 		validIndex = true;
 		hostFilter = null;
-		hostsFilterOverRule = null;
+		if (hostsFilterOverRule != null) {
+			hostsFilterOverRule.clear();
+			hostsFilterOverRule = null;
+		}
+		if (customIPMappings != null) {
+			customIPMappings.clear();
+			customIPMappings = null;
+			DNSResolver.initLocalResolver(null, false, 0);
+		}
 		additionalHostsImportTS = "0";
 		reloading_filter = false;
 
@@ -1254,8 +1280,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 			initEnv();
 
-			Logger.getLogger().logLine("***Initializing PersonalDNSFilter Version " + VERSION + "!***");
-			Logger.getLogger().logLine("Using Directory: "+WORKDIR);
+			Logger.getLogger().logLine("***Initializing personalDNSfilter Version " + VERSION + "!***");
+			Logger.getLogger().logLine("Using directory: "+WORKDIR);
 
 			byte[] configBytes = readConfig();
 			config = new Properties();
@@ -1298,7 +1324,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 							config.getProperty("trafficLogName", "trafficlog"),
 							Integer.parseInt(config.getProperty("trafficLogSize", "1048576").trim()),
 							Integer.parseInt(config.getProperty("trafficLogSlotCount", "2").trim()),
-							"timestamp, client:port, request type, domain name, answer");
+							"timestamp, client:port, class, type, domain name, answer");
 
 					((FileLogger) TRAFFIC_LOG).enableTimestamp(true);
 
@@ -1315,8 +1341,9 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			filterHostsFileRemoveDuplicates = true;
 
 			filterhostfile = config.getProperty("filterHostsFile");
+			boolean filterActive = Boolean.parseBoolean(config.getProperty("filterActive", "true"));
 
-			if (filterhostfile != null) {
+			if (filterhostfile != null && filterActive) {
 
 				// load filter overrule values
 
@@ -1332,7 +1359,11 @@ public class DNSFilterManager extends ConfigurationAccess  {
 					}
 				}
 
-				//load whitelisted hosts from additionalHosts.txt
+				//load whitelisted hosts and custom mappings from additionalHosts.txt
+
+				boolean enableLocalResolver = Boolean.parseBoolean(config.getProperty("enableLocalResolver", "false"));
+				int localTTL = Integer.parseInt(config.getProperty("localResolverTTL", "60"));
+				DNSResolver.initLocalResolver(null, enableLocalResolver, localTTL);
 
 				File additionalHosts = new File(WORKDIR + "additionalHosts.txt");
 				if (additionalHosts.exists()) {
@@ -1343,6 +1374,28 @@ public class DNSFilterManager extends ConfigurationAccess  {
 							if (hostsFilterOverRule == null)
 								hostsFilterOverRule = new Hashtable();
 							hostsFilterOverRule.put(entry.substring(1).trim(), new Boolean(false));
+						} else if (entry.startsWith(">")) {
+							if (customIPMappings == null) {
+								customIPMappings = new Hashtable();
+								DNSResolver.initLocalResolver(customIPMappings, enableLocalResolver, localTTL);
+							}
+							StringTokenizer tokens = new StringTokenizer(entry.substring(1).trim());
+							try {
+								String host = tokens.nextToken().trim().toLowerCase();
+								String ip = tokens.nextToken().trim();
+
+								InetAddress address = InetAddress.getByName(ip);
+								byte[] addressBytes = address.getAddress();
+								if (addressBytes.length == 4)
+									customIPMappings.put(">4"+host, addressBytes);
+								else
+									customIPMappings.put(">6"+host, addressBytes);
+
+							} catch (Exception e) {
+								Logger.getLogger().logLine("Cannot apply custom mapping "+entry);
+								Logger.getLogger().logLine(e.toString());
+							}
+
 						}
 					}
 					addHostIn.close();

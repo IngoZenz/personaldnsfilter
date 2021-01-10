@@ -9,10 +9,10 @@
   <string name="EnableConfigCheckBox">Cài đặt nâng cao</string>
   <string name="editFilterLoadCheckBox">Thiết lập thêm bộ lọc</string>
   <string name="editAdditionalHostsCheckBox">Thiết lập thêm máy chủ (host)</string>
-  <string name="appWhitelistCheckBox">Danh sách trắng ứng dụng </string>
+  <string name="appWhitelistCheckBox">Danh sách trắng ứng dụng</string>
   <string name="keepAwakeCheckBox">Ngăn thiết bị ngủ đông</string>
   <string name="EnableAutoStart">Tự khởi động</string>
-  <string name="EnableAdfilter">Chặn quảng cáo</string>
+  <string name="EnableAdfilter">Khả năng ngăn chặn</string>
   <string name="dnsLabel">DNS:</string>
   <string name="manualDNSCheck">Vô hiệu hóa máy chủ DNS discovery - hướng Dẫn sử dụng máy chủ dưới:</string>
   <string name="dnsCfgConfigDialogTitle">Cấu hình DNS</string>
@@ -30,4 +30,8 @@
   <string name="removeFilter">"Bỏ lọc"</string>
   <string name="proxyModeCheckBox">Chế độ Proxy</string>
   <string name="rootModeCheckBox">Chế độ Root</string>
+  <string name="proxyLocalOnlyCheckbox">Chỉ cho phép các yêu cầu proxy DNS cục bộ</string>
+  <string name="notificationActive">Hoạt động</string>
+  <string name="notificationPaused">Tạm dừng</string>
+  <string name="switch_pause_resume">Nhấn để chuyển</string>
 </resources>

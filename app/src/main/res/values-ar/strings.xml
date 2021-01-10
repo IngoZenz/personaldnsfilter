@@ -30,4 +30,8 @@
   <string name="removeFilter">"إزالة عامل التصفية"</string>
   <string name="proxyModeCheckBox">وضع وكيل DNS بدون VPN المحلي</string>
   <string name="rootModeCheckBox">وضع الجذر بدون VPN المحلي</string>
+  <string name="proxyLocalOnlyCheckbox">السماح فقط بطلبات وكيل DNS المحلية</string>
+  <string name="notificationActive">نشط</string>
+  <string name="notificationPaused">ايقاف مؤقت</string>
+  <string name="switch_pause_resume">انقر للتبديل</string>
 </resources>

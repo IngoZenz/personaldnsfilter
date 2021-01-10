@@ -53,7 +53,7 @@ public class IPPacket {
 			this.ipHeader = ByteBuffer.wrap(packet, offs, 40).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
 			ipHdrlen = 40;
 		} else
-			throw new IllegalArgumentException("Invalid Version:" + version);
+			throw new IllegalArgumentException("Invalid version:" + version);
 	}
 
 	protected void initIPHeader(int TTL, int prot, int[] sourceIP, int[] destIP) {
@@ -78,7 +78,7 @@ public class IPPacket {
 			ipHeader.put(sourceIP);
 			ipHeader.put(destIP);
 		} else
-			throw new IllegalStateException("Illegal Version:" + version);
+			throw new IllegalStateException("Illegal version:" + version);
 	}
 
 
@@ -99,7 +99,7 @@ public class IPPacket {
 			ipHeader.position(0);
 			ipHeader.put(hdrPacket);
 		} else
-			throw new IllegalStateException("Illegal Version:" + version);
+			throw new IllegalStateException("Illegal version:" + version);
 	}
 
 
@@ -189,7 +189,7 @@ public class IPPacket {
 			ipHeader.put(sourceIP);
 			ipHeader.put(destIP);
 		} else
-			throw new IllegalStateException("Illegal Version:" + version);
+			throw new IllegalStateException("Illegal version:" + version);
 	}
 
 	public int getVersion() {
@@ -209,7 +209,7 @@ public class IPPacket {
 		} else if (version == 6) {
 			return copyFromHeader(2, 4);
 		} else
-			throw new IllegalStateException("Illegal Version:" + version);
+			throw new IllegalStateException("Illegal version:" + version);
 	}
 
 	public int[] getDestIP() {
@@ -218,7 +218,7 @@ public class IPPacket {
 		} else if (version == 6) {
 			return copyFromHeader(6, 4);
 		} else
-			throw new IllegalStateException("Illegal Version:" + version);
+			throw new IllegalStateException("Illegal version:" + version);
 	}
 
 	public int getTTL() {
@@ -227,7 +227,7 @@ public class IPPacket {
 		else if (version == 6)
 			return ipHeader.get(1) & 0xFF;
 		else
-			throw new IllegalStateException("Illegal Version:" + version);
+			throw new IllegalStateException("Illegal version:" + version);
 	}
 
 	public int getProt() {
@@ -236,7 +236,7 @@ public class IPPacket {
 		else if (version == 6)
 			return ipHeader.get(1) >>> 8 & 0x00FF;
 		else
-			throw new IllegalStateException("Illegal Version:" + version);
+			throw new IllegalStateException("Illegal version:" + version);
 	}
 
 	public int getLength() {
@@ -245,7 +245,7 @@ public class IPPacket {
 		else if (version == 6)
 			return 40 + (ipHeader.get(1)>>>16);
 		else
-			throw new IllegalStateException("Illegal Version:" + version);
+			throw new IllegalStateException("Illegal version:" + version);
 	}
 
 	public byte[] getData() {
