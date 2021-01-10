@@ -61,7 +61,7 @@ import util.Utils;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1504600-dev04";
+	public static final String VERSION = "1504600";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
