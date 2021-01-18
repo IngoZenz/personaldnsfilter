@@ -630,6 +630,10 @@ public class DNSFilterService extends VpnService  {
 
 		builder.setMtu(mtu);
 
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			builder.setMetered(false); //take over defaults from underlying network
+		}
+
 		return builder.setConfigureIntent(pendingIntent).establish();
 	}
 
