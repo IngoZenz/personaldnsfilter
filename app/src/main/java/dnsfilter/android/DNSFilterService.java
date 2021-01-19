@@ -113,7 +113,7 @@ public class DNSFilterService extends VpnService  {
 		//used in case vpn mode is disabled for forwaring dns requests to local dns proxy
 
 		String forwardip = null;
-		String ipFilePath = ExecutionEnvironment.getEnvironment().getWorkDir()+"forward_ip";
+		String ipFileName = "forward_ip";
 
 
 
@@ -148,6 +148,7 @@ public class DNSFilterService extends VpnService  {
 
 
 		public void clean() {
+			String ipFilePath = ExecutionEnvironment.getEnvironment().getWorkDir()+ipFileName;
 			File f = new File(ipFilePath);
 			try {
 				if (f.exists()) {
@@ -174,6 +175,9 @@ public class DNSFilterService extends VpnService  {
 
 
 		public synchronized void updateForward() {
+
+			String ipFilePath = ExecutionEnvironment.getEnvironment().getWorkDir()+ipFileName;
+
 			try {
 				String ip = getALocalIpAddress();
 				if (ip !=null &&!ip.equals(forwardip)){
@@ -195,6 +199,9 @@ public class DNSFilterService extends VpnService  {
 		}
 
 		public synchronized void clearForward() {
+
+			String ipFilePath = ExecutionEnvironment.getEnvironment().getWorkDir()+ipFileName;
+
 			if (forwardip == null)
 				return;
 
