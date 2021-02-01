@@ -1,6 +1,8 @@
 # personalDNSfilter
 
-See http://www.zenz-solutions.de/personaldnsfilter for details
+Un Trabajo original de IngoZenz visit http://www.zenz-solutions.de/personaldnsfilter for details
+
+Original compiled apk on f-Droid
 
 [<img src="https://f-droid.org/badge/get-it-on.png"
      alt="Get it on F-Droid"
