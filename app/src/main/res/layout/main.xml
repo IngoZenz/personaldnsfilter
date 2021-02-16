@@ -292,6 +292,7 @@
                         android:fontFamily="sans-serif-medium"
                         android:padding="3dp"
                         android:text="@string/left"
+                        android:includeFontPadding="false"
                         android:textAllCaps="true"
                         android:textColor="#000000"
                         android:textSize="18sp" />
@@ -322,6 +323,7 @@
                         android:fontFamily="sans-serif-medium"
                         android:padding="3dp"
                         android:text="@string/right"
+                        android:includeFontPadding="false"
                         android:textAllCaps="true"
                         android:textColor="#000000"
                         android:textSize="18sp" />
@@ -346,9 +348,10 @@
                             <TextView
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_weight=".1"
+                                android:layout_weight=".14"
                                 android:paddingLeft="0dp"
                                 android:text="@string/active"
+                                android:singleLine="true"
                                 android:textColor="#424242"
                                 android:textSize="14dp"
                                 android:textStyle="bold" />
@@ -578,6 +581,7 @@
                         android:fontFamily="sans-serif-medium"
                         android:padding="3dp"
                         android:text="@string/left"
+                        android:includeFontPadding="false"
                         android:textAllCaps="true"
                         android:textColor="#000000"
                         android:textSize="18sp" />
@@ -607,6 +611,7 @@
                         android:fontFamily="sans-serif-medium"
                         android:padding="3dp"
                         android:text="@string/right"
+                        android:includeFontPadding="false"
                         android:textAllCaps="true"
                         android:textColor="#000000"
                         android:textSize="18sp" />
