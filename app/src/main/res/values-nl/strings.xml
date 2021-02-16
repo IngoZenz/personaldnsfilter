@@ -23,6 +23,7 @@
   <string name="backupConfig">Back-up configuratie</string>
   <string name="restoreBackup">Back-up terugzetten</string>
   <string name="restoreDefault">Standaardconfiguratie herstellen</string>
+  <string name="cnameCloakingConfig">CNAME Cloaking bescherming (agressief)</string>
   <string name="category">categorie</string>
   <string name="name">naam</string>
   <string name="editFilterDialogTitle">Filter bewerken</string>

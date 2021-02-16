@@ -422,9 +422,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			helpBtn.setOnClickListener(this);
 			remoteCtrlBtn = (Button) findViewById(R.id.remoteCtrlBtn);
 			if (!CONFIG.isLocal())
-				remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null, getResources().getDrawable(R.drawable.baseline_settings_remote_24px), null);
+				remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null, getResources().getDrawable(R.drawable.remote_icon), null);
 			else
-				remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null, getResources().getDrawable(R.drawable.outline_settings_remote_24px), null);
+				remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null, getResources().getDrawable(R.drawable.remote_icon_outline), null);
 
 			remoteCtrlBtn.setOnClickListener(this);
 			backupBtn = (Button) findViewById(R.id.backupBtn);
@@ -946,9 +946,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 					appSelector.setSelectedApps(config.getProperty("androidAppWhiteList", ""));
 
 					if (!CONFIG.isLocal())
-						remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null,getResources().getDrawable(R.drawable.baseline_settings_remote_24px), null);
+						remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null,getResources().getDrawable(R.drawable.remote_icon), null);
 					else
-						remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null,getResources().getDrawable(R.drawable.outline_settings_remote_24px), null);
+						remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null,getResources().getDrawable(R.drawable.remote_icon_outline), null);
 
 					switchingConfig = false;
 				}

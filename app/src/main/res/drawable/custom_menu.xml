@@ -1,0 +1,8 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item android:state_checked="true" android:state_focused="true" android:drawable="@drawable/menu_active_focus" />
+    <item android:state_checked="true" android:drawable="@drawable/menu_active" />
+    <item android:state_checked="false" android:state_focused="true" android:drawable="@drawable/menu_inactive_focus" />
+    <item android:state_checked="false" android:drawable="@drawable/menu_inactive" />
+
+</selector>

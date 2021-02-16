@@ -24,10 +24,11 @@
   <string name="backupConfig">Backup configuration</string>
   <string name="restoreBackup">Restore backup</string>
   <string name="restoreDefault">Restore default configuration</string>
+  <string name="cnameCloakingConfig">CNAME cloaking protection (aggressive)</string>
   <string name="category">Category</string>
   <string name="name">Name</string>
-  <string name="left" translatable="false"><![CDATA[◄]]></string>
-  <string name="right" translatable="false"><![CDATA[►]]></string>
+  <string name="left" translatable="false">◀</string>
+  <string name="right" translatable="false">▶</string>
   <string name="editFilterDialogTitle">Edit filter</string>
   <string name="addFilter">"Add filter"</string>
   <string name="removeFilter">"Remove filter"</string>
@@ -37,5 +38,4 @@
   <string name="notificationActive">Active</string>
   <string name="notificationPaused">Paused</string>
   <string name="switch_pause_resume">Tap to switch</string>
-
 </resources>

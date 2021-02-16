@@ -23,6 +23,7 @@
   <string name="backupConfig">Yedek yapılandırması</string>
   <string name="restoreBackup">Yedeği geri yükle</string>
   <string name="restoreDefault">Varsayılan yapılandırmayı geri yükle</string>
+  <string name="cnameCloakingConfig">CNAME cloaking koruma (agresif)</string>
   <string name="category">Kategori</string>
   <string name="name">Adı</string>
   <string name="editFilterDialogTitle">Filtreyi düzenle</string>

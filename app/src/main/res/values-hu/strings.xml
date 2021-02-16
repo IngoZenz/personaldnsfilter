@@ -23,6 +23,7 @@
   <string name="backupConfig">Biztonsági konfiguráció</string>
   <string name="restoreBackup">A biztonsági mentés visszaállítása</string>
   <string name="restoreDefault">Vissza az alapértelmezett konfigurációs</string>
+  <string name="cnameCloakingConfig">CNAME cloaking védelem (agresszív)</string>
   <string name="category">Kategória</string>
   <string name="name">Név</string>
   <string name="editFilterDialogTitle">A szűrő szerkesztése</string>

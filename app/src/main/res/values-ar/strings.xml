@@ -23,6 +23,7 @@
   <string name="backupConfig">تهئية النسخ الإحتياطي</string>
   <string name="restoreBackup">استعادة النسخة الاحتياطية</string>
   <string name="restoreDefault">استعادة الضبط الافتراضي</string>
+  <string name="cnameCloakingConfig"> CNAME cloaking الحماية (العدوانية)</string>
   <string name="category">الفئة</string>
   <string name="name">الاسم</string>
   <string name="editFilterDialogTitle">تعديل عامل التصفية</string>

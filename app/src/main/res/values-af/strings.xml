@@ -23,6 +23,7 @@
   <string name="backupConfig">Friends opset</string>
   <string name="restoreBackup">Die herstel van friends</string>
   <string name="restoreDefault">Die herstel van die standaard opset</string>
+  <string name="cnameCloakingConfig">CNAME Cloaking Beskerming (aggressief)</string>
   <string name="category">Kategorie</string>
   <string name="name">Naam</string>
   <string name="editFilterDialogTitle">Wysig filter</string>

@@ -23,6 +23,7 @@
   <string name="backupConfig">Konfiguracija sigurnosne kopije</string>
   <string name="restoreBackup">Vrati sigurnosnu kopiju</string>
   <string name="restoreDefault">Vrati zadanu konfiguraciju</string>
+  <string name="cnameCloakingConfig">CNAME Cloaking zaštita (agresivna)</string>
   <string name="category">Kategorija</string>
   <string name="name">Naziv</string>
   <string name="editFilterDialogTitle">Uredi filter</string>

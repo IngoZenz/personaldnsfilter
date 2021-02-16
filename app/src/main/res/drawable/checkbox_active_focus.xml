@@ -1,49 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-	<!-- outer rectangle -->
-	<item>
-		<shape android:shape="rectangle">
-			<corners android:radius="4dp" />
-			<size
-				android:width="22dp"
-				android:height="22dp"/>
-			<stroke
-				android:width="2dp"
-				android:color="#69f0ae">
-			</stroke>
-			<!-- fake background -->
-			<solid
-				android:color="#00FFFFFF">
-			</solid>
-		</shape>
-	</item>
-	<!-- cross -->
-	<item android:top="0dp" android:right="0dp" android:left="0dp" android:bottom="0dp">
-		<rotate
-			android:fromDegrees="45"
-			android:toDegrees="45"
-			android:pivotX="50%"
-			android:pivotY="50%" >
-			<shape android:shape="line">
-				<stroke
-					android:width="2dp"
-					android:color="#69f0ae" />
-				<size android:height="2dp" />
-			</shape>
-		</rotate>
-	</item>
-	<item android:top="0dp" android:right="0dp" android:left="0dp" android:bottom="0dp">
-		<rotate
-			android:fromDegrees="135"
-			android:toDegrees="135"
-			android:pivotX="50%"
-			android:pivotY="50%" >
-			<shape android:shape="line">
-				<stroke
-					android:width="2dp"
-					android:color="#69f0ae" />
-				<size android:height="2dp" />
-			</shape>
-		</rotate>
-	</item>
-</layer-list>
+<vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:name="vector"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:name="path"
+        android:pathData="M 19 3 L 5 3 C 3.9 3 3 3.9 3 5 L 3 19 C 3 20.1 3.9 21 5 21 L 19 21 C 20.1 21 21 20.1 21 19 L 21 5 C 21 3.9 20.1 3 19 3 Z M 10 17 L 5 12 L 6.4 10.6 L 10 14.2 L 17.6 6.6 L 19 8 L 10 17 Z"
+        android:fillColor="#69f0ae"
+        android:strokeWidth="1"/>
+</vector>

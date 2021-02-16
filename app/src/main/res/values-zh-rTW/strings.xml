@@ -23,6 +23,7 @@
   <string name="backupConfig">备配置</string>
   <string name="restoreBackup">恢复备份</string>
   <string name="restoreDefault">恢复默认结构</string>
+  <string name="cnameCloakingConfig">CNAME 隱身保護（激進）</string>
   <string name="category">类别</string>
   <string name="name">名称</string>
   <string name="editFilterDialogTitle">编辑过滤器</string>

@@ -65,7 +65,7 @@
         android:layout_marginRight="10dp"
         android:layout_weight="0"
         android:background="@drawable/custom_button"
-        android:drawableLeft="@drawable/twotone_edit_24px"
+        android:drawableLeft="@drawable/edit_pen"
         android:gravity="center"
         android:textColor="#FFFFFF"
         android:textSize="14dp"
