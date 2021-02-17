@@ -19,6 +19,7 @@
             android:id="@+id/relLayout1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:paddingTop="10dp">
 
             <TextView
@@ -59,6 +60,7 @@
                 android:id="@+id/relLayout2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
                 android:paddingTop="0dp">
 
                 <dnsfilter.android.PaddedCheckBox
@@ -66,7 +68,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="15dp"
-                    android:layout_marginTop="0dp"
+                    android:layout_marginTop="2dp"
                     android:button="@drawable/custom_menu"
                     android:checked="false"
                     android:text="@string/EnableConfigCheckBox"
@@ -100,6 +102,7 @@
                         android:gravity="center"
                         android:padding="2dp"
                         android:text="?"
+                        android:includeFontPadding="false"
                         android:textColor="#000000"
                         android:textSize="16dp"
                         android:textStyle="bold"></Button>
@@ -429,7 +432,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="15dp"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginBottom="4dp"
                 android:background="@drawable/custom_button"
                 android:elevation="2.3dp"
@@ -447,7 +450,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginBottom="4dp"
                 android:background="@drawable/custom_button"
                 android:elevation="2.3dp"
@@ -464,7 +467,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginBottom="4dp"
                 android:background="@drawable/custom_button"
                 android:elevation="2.3dp"
