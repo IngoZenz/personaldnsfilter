@@ -86,9 +86,11 @@
                         android:layout_width="28dp"
                         android:layout_height="28dp"
                         android:layout_marginRight="10dp"
+                        android:layout_marginBottom="4dp"
                         android:background="@drawable/custom_button"
                         android:drawableLeft="@drawable/remote_icon"
                         android:gravity="center"
+                        android:elevation="2.3dp"
                         android:padding="2dp"
                         android:textColor="#424242"></Button>
 
@@ -98,11 +100,13 @@
                         android:layout_width="28dp"
                         android:layout_height="28dp"
                         android:layout_marginRight="15dp"
+                        android:layout_marginBottom="4dp"
                         android:background="@drawable/custom_button"
                         android:gravity="center"
                         android:padding="2dp"
                         android:text="?"
                         android:includeFontPadding="false"
+                        android:elevation="2.3dp"
                         android:textColor="#000000"
                         android:textSize="16dp"
                         android:textStyle="bold"></Button>
