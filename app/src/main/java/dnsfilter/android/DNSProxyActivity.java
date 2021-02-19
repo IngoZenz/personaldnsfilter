@@ -133,7 +133,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected static EditText manualDNSView;
 	protected static boolean advDNSConfigDia_open = false;
 	protected static String SCROLL_PAUSE = "II  ";
-	protected static String SCROLL_CONTINUE = ">>  ";
+	protected static String SCROLL_CONTINUE = "►  ";
 	protected static boolean scroll_locked = false;
 	protected static TextView link_field;
 	protected static int link_field_color = Color.TRANSPARENT;
