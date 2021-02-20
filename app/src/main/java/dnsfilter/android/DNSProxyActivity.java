@@ -1620,7 +1620,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	@Override
 	public void message(String txt) {
-		setMessage(fromHtml("<strong>"+txt+"</strong>"), Color.parseColor("#FDD835"));
+		setMessage(fromHtml("<strong>"+txt+"</strong>"), Color.parseColor("#FFC107"));
 		MsgTO.setTimeout(5000);
 	}
 
