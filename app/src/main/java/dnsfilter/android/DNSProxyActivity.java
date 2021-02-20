@@ -161,9 +161,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected static int NO_ACTION_MENU = 0;
 
 
-	protected static String IN_FILTER_PREF = "X \u0009";
-	protected static String NO_FILTER_PREF = "✓\u0009";
-	protected static String IP_FORWARD_PREF = "-> ";
+	protected static String IN_FILTER_PREF = "✗ \u0009";
+	protected static String NO_FILTER_PREF = "✓ \u0009";
+	protected static String IP_FORWARD_PREF = "→ \u0009";
 
 	//log color and format
 	protected static String filterLogFormat;
@@ -907,8 +907,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 					link_field.setText(fromHtml(link_field_txt));
 
 					//Log formatting
-					filterLogFormat = config.getProperty("filterLogFormat", "<font color='#D03D06'>($CONTENT)</font>");
-					acceptLogFormat = config.getProperty("acceptLogFormat", "<font color='#23751C'>($CONTENT)</font>");
+					filterLogFormat = config.getProperty("filterLogFormat", "<font color='#F44336'>($CONTENT)</font>");
+					acceptLogFormat = config.getProperty("acceptLogFormat", "<font color='#4CAF50'>($CONTENT)</font>");
 					fwdLogFormat = config.getProperty("fwdLogFormat", "<font color='#ff9900'>($CONTENT)</font>");
 					normalLogFormat = config.getProperty("normalLogFormat","($CONTENT)");
 
@@ -1620,7 +1620,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	@Override
 	public void message(String txt) {
-		setMessage(fromHtml("<strong>"+txt+"</strong>"), Color.parseColor("#ffcc00"));
+		setMessage(fromHtml("<strong>"+txt+"</strong>"), Color.parseColor("#FDD835"));
 		MsgTO.setTimeout(5000);
 	}
 
