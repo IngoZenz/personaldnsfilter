@@ -743,10 +743,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		TextView backupStatusView = findViewById(R.id.backupLog);
 		try {
 			CONFIG.doBackup(getBackupSubFolder());
-			backupStatusView.setTextColor(Color.parseColor("#23751C"));
+			backupStatusView.setTextColor(Color.parseColor("#43A047"));
 			backupStatusView.setText("Backup success!");
 		} catch (IOException eio) {
-			backupStatusView.setTextColor(Color.parseColor("#D03D06"));
+			backupStatusView.setTextColor(Color.parseColor("#E53935"));
 			backupStatusView.setText("Backup failed! " + eio.getMessage());
 		}
 	}
@@ -755,12 +755,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		TextView backupStatusView = findViewById(R.id.backupLog);
 		try {
 			CONFIG.doRestoreDefaults();
-			backupStatusView.setTextColor(Color.parseColor("#23751C"));
+			backupStatusView.setTextColor(Color.parseColor("#43A047"));
 			if (!CONFIG.isLocal())
 				loadAndApplyConfig(false);
 			backupStatusView.setText("Restore success!");
 		} catch (IOException eio) {
-			backupStatusView.setTextColor(Color.parseColor("#D03D06"));
+			backupStatusView.setTextColor(Color.parseColor("#E53935"));
 			backupStatusView.setText("Restore failed! " + eio.getMessage());
 		}
 	}
@@ -769,12 +769,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		TextView backupStatusView = findViewById(R.id.backupLog);
 		try {
 			CONFIG.doRestore(getBackupSubFolder());
-			backupStatusView.setTextColor(Color.parseColor("#23751C"));
+			backupStatusView.setTextColor(Color.parseColor("#43A047"));
 			if (!CONFIG.isLocal())
 				loadAndApplyConfig(false);
 			backupStatusView.setText("Restore success!");
 		} catch (IOException eio) {
-			backupStatusView.setTextColor(Color.parseColor("#D03D06"));
+			backupStatusView.setTextColor(Color.parseColor("#E53935"));
 			backupStatusView.setText("Restore failed! " + eio.getMessage());
 		}
 	}
@@ -909,7 +909,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 					//Log formatting
 					filterLogFormat = config.getProperty("filterLogFormat", "<font color='#F44336'>($CONTENT)</font>");
 					acceptLogFormat = config.getProperty("acceptLogFormat", "<font color='#4CAF50'>($CONTENT)</font>");
-					fwdLogFormat = config.getProperty("fwdLogFormat", "<font color='#ff9900'>($CONTENT)</font>");
+					fwdLogFormat = config.getProperty("fwdLogFormat", "<font color='#FFC400'>($CONTENT)</font>");
 					normalLogFormat = config.getProperty("normalLogFormat","($CONTENT)");
 
 					try {

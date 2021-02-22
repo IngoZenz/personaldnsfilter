@@ -125,7 +125,7 @@
         android:layout_marginBottom="15dp"
         android:layout_marginLeft="15dp"
         android:layout_marginTop="15dp"
-        android:textColor="#D03D06"
+        android:textColor="#E53935"
         android:visibility="gone"/>
 
     <LinearLayout
