@@ -161,9 +161,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected static int NO_ACTION_MENU = 0;
 
 
-	protected static String IN_FILTER_PREF = "✗ \u0009";
-	protected static String NO_FILTER_PREF = "✓ \u0009";
-	protected static String IP_FORWARD_PREF = "➞ \u0009";
+	protected static String IN_FILTER_PREF = "✗\u2002\u2009";
+	protected static String NO_FILTER_PREF = "✓\u2004\u2009";
+	protected static String IP_FORWARD_PREF = "➞\u200A";
 
 	//log color and format
 	protected static String filterLogFormat;
