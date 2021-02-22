@@ -297,9 +297,9 @@
                         android:background="@drawable/custom_button"
                         android:elevation="2.3dp"
                         android:fontFamily="sans-serif-medium"
+                        android:includeFontPadding="false"
                         android:padding="3dp"
                         android:text="@string/left"
-                        android:includeFontPadding="false"
                         android:textAllCaps="true"
                         android:textColor="#000000"
                         android:textSize="18sp" />
