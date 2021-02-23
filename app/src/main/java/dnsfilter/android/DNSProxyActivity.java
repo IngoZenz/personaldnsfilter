@@ -845,7 +845,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		logLine("Initializing ...");
 		if (BOOT_START) {
 			Logger.getLogger().logLine("Running on SDK" + Build.VERSION.SDK_INT);
-			if (Build.VERSION.SDK_INT >= 20) //on older Android we have to keep the app in forgrounnd due to teh VPN Accespt dialog popping up after each reboot.
+			if (Build.VERSION.SDK_INT >= 20) //on older Android we have to keep the app in forground due to the VPN accept dialog popping up after each reboot.
 				finish();
 			BOOT_START = false;
 		}
@@ -907,9 +907,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 					link_field.setText(fromHtml(link_field_txt));
 
 					//Log formatting
-					filterLogFormat = config.getProperty("filterLogFormat", "<font color='#F44336'>($CONTENT)</font>");
-					acceptLogFormat = config.getProperty("acceptLogFormat", "<font color='#4CAF50'>($CONTENT)</font>");
-					fwdLogFormat = config.getProperty("fwdLogFormat", "<font color='#FFC400'>($CONTENT)</font>");
+					filterLogFormat = config.getProperty("filterLogFormat", "<font color='#E53935'>($CONTENT)</font>");
+					acceptLogFormat = config.getProperty("acceptLogFormat", "<font color='#43A047'>($CONTENT)</font>");
+					fwdLogFormat = config.getProperty("fwdLogFormat", "<font color='#FFB300'>($CONTENT)</font>");
 					normalLogFormat = config.getProperty("normalLogFormat","($CONTENT)");
 
 					try {
@@ -942,7 +942,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 					rootModeCheck.setChecked(Boolean.parseBoolean(config.getProperty("rootModeOnAndroid", "false")));
 
-					//set whitelisted Apps into UI
+					//set whitelisted apps into UI
 					appSelector.setSelectedApps(config.getProperty("androidAppWhiteList", ""));
 
 					if (!CONFIG.isLocal())
@@ -1400,7 +1400,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		((TextView) findViewById(R.id.backupLog)).setText("");
 		if (advancedConfigCheck.isChecked()) {
 			setVisibilityForAdvCfg(View.GONE);
-			//App Whitelisting only supported on SDK >= 21
+			//App whitelisting only supported on SDK >= 21
 			if (Build.VERSION.SDK_INT >= 21 && CONFIG.isLocal()) {
 				appWhiteListCheck.setVisibility(View.VISIBLE);
 				appWhitelistingEnabled=true;
@@ -1574,10 +1574,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				intent = VpnService.prepare(this.getApplicationContext());
 			if (intent != null) {
 				startActivityForResult(intent, 0);
-			} else { //already prepared or vpn disabled
+			} else { //already prepared or VPN disabled
 				startSvc();
 			}
-		} catch (NullPointerException e) { // NullPointer might occur on Android 4.4 when vpn already initialized
+		} catch (NullPointerException e) { // NullPointer might occur on Android 4.4 when VPN already initialized
 			Logger.getLogger().logLine("Seems we are on Android 4.4 or older!");
 			startSvc(); // assume it is ok!
 		} catch (Exception e) {
@@ -1712,7 +1712,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	public void onActionModeStarted(android.view.ActionMode mode) {
 
 	/*	if (Build.VERSION.SDK_INT < 23 && logOutView.hasFocus()) {
-			// get Action Menu on old devices before 6.0
+			// get action menu on old devices before 6.0
 			int start = logOutView.getSelectionStart();
 			int end = logOutView.getSelectionEnd();
 
@@ -1741,8 +1741,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				}
 
 				if (NO_ACTION_MENU > 1) {
-					//2 times no Action ==> Action Menu not working on this device
-					// ==>Fallback to the Buttons on top of Log View
+					//2 times no action ==> action menu not working on this device
+					// ==>Fallback to the buttons on top of log view
 					findViewById(R.id.copyfromlog).setVisibility(View.VISIBLE);
 				}
 			}
