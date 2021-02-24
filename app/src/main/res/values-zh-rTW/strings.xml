@@ -3,16 +3,16 @@
 <resources>
   <string name="app_name">personalDNSfilter</string>
   <string name="listenPortLabel">連接埠:</string>
-  <string name="startBtnLabel">重新</string>
+  <string name="startBtnLabel">重新啟動</string>
   <string name="stopBtnLabel">關閉</string>
-  <string name="filterReloadBtnLabel">重新載入篩選器</string>
+  <string name="filterReloadBtnLabel">更新過濾清單</string>
   <string name="EnableConfigCheckBox">進階設定</string>
-  <string name="editFilterLoadCheckBox">設置過濾條件更新</string>
-  <string name="editAdditionalHostsCheckBox">設置其他的主機</string>
-  <string name="appWhitelistCheckBox">白名单的应用程序</string>
-  <string name="keepAwakeCheckBox">保持設備處於喚醒狀態</string>
-  <string name="EnableAutoStart">自動啟動</string>
-  <string name="EnableAdfilter">使能阻止</string>
+  <string name="editFilterLoadCheckBox">設定hosts清單來源</string>
+  <string name="editAdditionalHostsCheckBox">自行添加過濾規則</string>
+  <string name="appWhitelistCheckBox">將應用程式加入白名單</string>
+  <string name="keepAwakeCheckBox">保持螢幕開啟</string>
+  <string name="EnableAutoStart">開機自動啟動</string>
+  <string name="EnableAdfilter">啟動</string>
   <string name="dnsLabel">網域名稱系統：</string>
   <string name="manualDNSCheck">禁止DNS服务器上发现的手册DNS服务器如下：</string>
   <string name="dnsCfgConfigDialogTitle">DNS server configuration</string>
