@@ -176,6 +176,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	protected static boolean CHECKING_PASSCODE_DIAG = false;
 
+	protected static boolean NO_VPN = false;
+
 	protected static DNSProxyActivity INSTANCE;
 
 	public static void reloadLocalConfig() {
@@ -901,6 +903,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		if (config != null) {
 
+			boolean dnsProxyMode = Boolean.parseBoolean(config.getProperty("dnsProxyOnAndroid", "false"));
+			boolean vpnInAdditionToProxyMode = Boolean.parseBoolean(config.getProperty("vpnInAdditionToProxyMode", "false"));
+			NO_VPN = dnsProxyMode && !vpnInAdditionToProxyMode;
+
 			Runnable uiUpdater = new Runnable() {
 				@Override
 				public void run() {
@@ -1404,7 +1410,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		if (advancedConfigCheck.isChecked()) {
 			setVisibilityForAdvCfg(View.GONE);
 			//App whitelisting only supported on SDK >= 21
-			if (Build.VERSION.SDK_INT >= 21 && CONFIG.isLocal()) {
+			if (Build.VERSION.SDK_INT >= 21 && CONFIG.isLocal() && !NO_VPN) {
 				appWhiteListCheck.setVisibility(View.VISIBLE);
 				appWhitelistingEnabled=true;
 			}
@@ -1546,6 +1552,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				return;
 
 			startup();
+			loadAndApplyConfig(false);
 		}
 	    else {
             try {
