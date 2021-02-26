@@ -23,6 +23,7 @@
   <string name="backupConfig">Sao lưu cấu hình</string>
   <string name="restoreBackup">Khôi phục sao lưu</string>
   <string name="restoreDefault">Khôi phục mặc định</string>
+  <string name="cnameCloakingConfig">CNAME cloaking bảo vệ (hung hăng)</string>
   <string name="category">Mục</string>
   <string name="name">Tên</string>
   <string name="editFilterDialogTitle">Sửa bộ lọc</string>

@@ -23,6 +23,7 @@
   <string name="backupConfig">बैकअप कॉन्फ़िगरेशन</string>
   <string name="restoreBackup">बैकअप बहाल</string>
   <string name="restoreDefault">डिफ़ॉल्ट कॉन्फ़िगरेशन पुनर्स्थापित करें</string>
+  <string name="cnameCloakingConfig">CNAME क्लोकिंग सुरक्षा (आक्रामक)</string>
   <string name="category">वर्ग</string>
   <string name="name">नाम</string>
   <string name="editFilterDialogTitle">फ़िल्टर संपादित करें</string>

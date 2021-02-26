@@ -23,6 +23,7 @@
   <string name="backupConfig">גבה הגדרות</string>
   <string name="restoreBackup">שחזר הגדרות</string>
   <string name="restoreDefault">שחזר הגדרות ראשוניות</string>
+  <string name="cnameCloakingConfig">הגנת סיכה של CNAME (אגרסיבית)</string>
   <string name="category">קטגוריות</string>
   <string name="name">שם</string>
   <string name="editFilterDialogTitle">ערוך מסנן</string>

@@ -23,6 +23,7 @@
   <string name="backupConfig">Configuración del respaldo</string>
   <string name="restoreBackup">Restaurar respaldo</string>
   <string name="restoreDefault">Restaurar a la configuración predeterminada</string>
+  <string name="cnameCloakingConfig">CNAME cloaking protección (agresivo)</string>
   <string name="category">Categoría</string>
   <string name="name">Nombre</string>
   <string name="editFilterDialogTitle">Editar filtro</string>

@@ -23,6 +23,7 @@
   <string name="backupConfig">Sikkerhetskopier konfigurasjon</string>
   <string name="restoreBackup">Gjenopprett sikkerhetskopi</string>
   <string name="restoreDefault">Gjenoppretter standardkonfigurasjonen</string>
+  <string name="cnameCloakingConfig">CNAME cloaking beskyttelse (aggressiv)</string>
   <string name="category">Kategori</string>
   <string name="name">Navn</string>
   <string name="editFilterDialogTitle">Rediger filter</string>

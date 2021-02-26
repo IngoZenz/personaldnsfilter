@@ -4,13 +4,17 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_weight="1"
-    android:paddingTop="15dp">
+    android:gravity="center_vertical"
+    android:paddingTop="10dp"
+    android:paddingBottom="5dp"
+    android:clipToPadding="false"
+    >
 
     <CheckBox
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="0dp"
-        android:layout_weight=".1"
+        android:layout_weight=".14"
         android:button="@drawable/custom_checkbox">
     </CheckBox>
 
@@ -65,8 +69,9 @@
         android:layout_marginRight="10dp"
         android:layout_weight="0"
         android:background="@drawable/custom_button"
-        android:drawableLeft="@drawable/twotone_edit_24px"
+        android:drawableLeft="@drawable/edit_pen"
         android:gravity="center"
+        android:elevation="2.3dp"
         android:textColor="#FFFFFF"
         android:textSize="14dp"
         android:textStyle="bold">

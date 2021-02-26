@@ -23,6 +23,7 @@
   <string name="backupConfig">備份功能設定</string>
   <string name="restoreBackup">回復備份</string>
   <string name="restoreDefault">重置為默認設定</string>
+  <string name="cnameCloakingConfig">CNAME 隱身保護（激進）</string>
   <string name="category">類別</string>
   <string name="name">名稱</string>
   <string name="editFilterDialogTitle">編輯過濾清單</string>

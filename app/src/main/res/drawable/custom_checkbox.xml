@@ -2,7 +2,7 @@
 
     <item android:state_checked="true" android:state_focused="true" android:drawable="@drawable/checkbox_active_focus" />
     <item android:state_checked="true" android:drawable="@drawable/checkbox_active" />
-    <item android:state_checked="false" android:state_focused="true" android:drawable="@drawable/checkbox_focus" />
+    <item android:state_checked="false" android:state_focused="true" android:drawable="@drawable/checkbox_inactive_focus" />
     <item android:state_checked="false" android:drawable="@drawable/checkbox_inactive" />
 
 </selector>

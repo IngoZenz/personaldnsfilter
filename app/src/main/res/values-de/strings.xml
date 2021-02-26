@@ -23,6 +23,7 @@
   <string name="backupConfig">Konfiguration sichern</string>
   <string name="restoreBackup">Sicherung wiederherstellen</string>
   <string name="restoreDefault">Standard-Konfiguration wiederherstellen</string>
+  <string name="cnameCloakingConfig">CNAME Cloaking Schutz (aggressiv)</string>
   <string name="category">Kategorie</string>
   <string name="name">Name</string>
   <string name="editFilterDialogTitle">Filter bearbeiten</string>

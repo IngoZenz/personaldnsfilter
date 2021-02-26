@@ -23,6 +23,7 @@
   <string name="backupConfig">Конфигурација бацкуп</string>
   <string name="restoreBackup">Враћање резервне копије</string>
   <string name="restoreDefault">Вратите подразумевана подешавања</string>
+  <string name="cnameCloakingConfig">CNAME cloaking заштита (агресивна)</string>
   <string name="category">Категорија</string>
   <string name="name">Име</string>
   <string name="editFilterDialogTitle">Промена филтера</string>

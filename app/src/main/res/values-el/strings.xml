@@ -23,6 +23,7 @@
   <string name="backupConfig">Ρύθμιση αντιγράφων ασφαλείας</string>
   <string name="restoreBackup">Επαναφορά αντιγράφων ασφαλείας</string>
   <string name="restoreDefault">Επαναφορά προεπιλεγμένων ρυθμίσεων</string>
+  <string name="cnameCloakingConfig">CNAME Cloaking προστασία (επιθετική)</string>
   <string name="category">Κατηγορία</string>
   <string name="name">Όνομα</string>
   <string name="editFilterDialogTitle">Επεξεργασία φίλτρων</string>

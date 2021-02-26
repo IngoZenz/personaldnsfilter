@@ -23,6 +23,7 @@
   <string name="backupConfig">백업 설정</string>
   <string name="restoreBackup">백업 복원</string>
   <string name="restoreDefault">기본 설정을 복원</string>
+  <string name="cnameCloakingConfig">CNAME cloaking 보호 (공격적)</string>
   <string name="category">카테고리</string>
   <string name="name">이름</string>
   <string name="editFilterDialogTitle">필터 편집</string>
