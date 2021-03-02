@@ -339,7 +339,9 @@
                 <ScrollView
                     android:layout_width="fill_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginLeft="10dp">
+                    android:layout_marginLeft="10dp"
+                    android:scrollbarSize="5dp"
+                    android:scrollbarThumbVertical="@drawable/scroll_bar">
 
                     <TableLayout
                         android:id="@+id/filtercfgtable"
