@@ -300,7 +300,6 @@
                         android:includeFontPadding="false"
                         android:padding="3dp"
                         android:text="@string/left"
-                        android:textAllCaps="true"
                         android:textColor="#000000"
                         android:textSize="18sp" />
 
@@ -331,7 +330,6 @@
                         android:padding="3dp"
                         android:text="@string/right"
                         android:includeFontPadding="false"
-                        android:textAllCaps="true"
                         android:textColor="#000000"
                         android:textSize="18sp" />
                 </LinearLayout>
@@ -591,7 +589,6 @@
                         android:padding="3dp"
                         android:text="@string/left"
                         android:includeFontPadding="false"
-                        android:textAllCaps="true"
                         android:textColor="#000000"
                         android:textSize="18sp" />
 
@@ -621,7 +618,6 @@
                         android:padding="3dp"
                         android:text="@string/right"
                         android:includeFontPadding="false"
-                        android:textAllCaps="true"
                         android:textColor="#000000"
                         android:textSize="18sp" />
                 </LinearLayout>
