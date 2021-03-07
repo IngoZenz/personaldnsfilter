@@ -23,6 +23,7 @@
   <string name="backupConfig">Varmuuskopioi määritykset</string>
   <string name="restoreBackup">Palauta varmuuskopio</string>
   <string name="restoreDefault">Palauta oletusmääritykset</string>
+  <string name="cnameCloakingConfig">CNAME Cloaking suojaus (aggressiivinen)</string>
   <string name="category">Kategoria</string>
   <string name="name">Nimi</string>
   <string name="editFilterDialogTitle">Muokkaa suodatinta</string>

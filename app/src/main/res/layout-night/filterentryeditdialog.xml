@@ -125,7 +125,7 @@
         android:layout_marginBottom="15dp"
         android:layout_marginLeft="15dp"
         android:layout_marginTop="15dp"
-        android:textColor="#D03D06"
+        android:textColor="#E53935"
         android:visibility="gone"/>
 
     <LinearLayout
@@ -143,7 +143,7 @@
             android:layout_marginLeft="15dp"
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_button"
-            android:drawableLeft="@drawable/baseline_done_24px"
+            android:drawableLeft="@drawable/done"
             android:elevation="2.3dp"
             android:fontFamily="sans-serif-medium"
             android:padding="5dp" />
@@ -155,7 +155,7 @@
             android:layout_marginLeft="10dp"
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_button"
-            android:drawableLeft="@drawable/baseline_cancel_24px"
+            android:drawableLeft="@drawable/cancel"
             android:elevation="2.3dp"
             android:padding="5dp"/>
 
@@ -167,7 +167,7 @@
             android:layout_marginLeft="40dp"
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_button"
-            android:drawableLeft="@drawable/twotone_delete_forever_24px"
+            android:drawableLeft="@drawable/delete"
             android:elevation="2.3dp"
             android:padding="5dp" />
 

@@ -23,6 +23,7 @@
   <string name="backupConfig">Còpia de seguretat de la configuració</string>
   <string name="restoreBackup">Restaurar la còpia de seguretat</string>
   <string name="restoreDefault">Restaurar la configuració predeterminada</string>
+  <string name="cnameCloakingConfig">CNAME Cloaking Protecció (agressiva)</string>
   <string name="category">Categoria</string>
   <string name="name">Nom</string>
   <string name="editFilterDialogTitle">Edita filtre</string>

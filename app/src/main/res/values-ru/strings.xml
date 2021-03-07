@@ -23,6 +23,7 @@
   <string name="backupConfig">Конфигурация копирования</string>
   <string name="restoreBackup">Восстановление рез. копии</string>
   <string name="restoreDefault">Восстановить настройки по умолчанию</string>
+  <string name="cnameCloakingConfig">CNAME cloaking защита (агрессивная)</string>
   <string name="category">Категория</string>
   <string name="name">Название</string>
   <string name="editFilterDialogTitle">Редактировать фильтр</string>

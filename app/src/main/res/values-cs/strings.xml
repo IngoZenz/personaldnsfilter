@@ -23,6 +23,7 @@
   <string name="backupConfig">Konfigurace zálohy</string>
   <string name="restoreBackup">Obnovit zálohu</string>
   <string name="restoreDefault">Obnovit výchozí konfiguraci</string>
+  <string name="cnameCloakingConfig">CNAME Cloaking ochrana (agresivní)</string>
   <string name="category">Kategorie</string>
   <string name="name">Název</string>
   <string name="editFilterDialogTitle">Upravit filtr</string>

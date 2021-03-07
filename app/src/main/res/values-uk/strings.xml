@@ -23,6 +23,7 @@
   <string name="backupConfig">Конфігурація резервування</string>
   <string name="restoreBackup">Відновити з резервної копії</string>
   <string name="restoreDefault">Відновити налаштування за замовчуванням</string>
+  <string name="cnameCloakingConfig">CNAME cloaking захист (агресивний)</string>
   <string name="category">Категорія</string>
   <string name="name">Ім\'я</string>
   <string name="editFilterDialogTitle">Редагувати фільтр</string>

@@ -23,6 +23,7 @@
   <string name="backupConfig">Configurare backup</string>
   <string name="restoreBackup">Restaurare copie de rezervă</string>
   <string name="restoreDefault">Restabilire configurație implicită</string>
+  <string name="cnameCloakingConfig">CNAME cloaking protectie (agresiva)</string>
   <string name="category">Categorie</string>
   <string name="name">Nume</string>
   <string name="editFilterDialogTitle">Editare filtru</string>

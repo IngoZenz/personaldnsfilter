@@ -23,6 +23,7 @@
   <string name="backupConfig">バックアップの設定</string>
   <string name="restoreBackup">バックアップから復元</string>
   <string name="restoreDefault">既定値に復元</string>
+  <string name="cnameCloakingConfig">CNAME cloaking 保護（積極的）</string>
   <string name="category">カテゴリ</string>
   <string name="name">名前</string>
   <string name="editFilterDialogTitle">フィルターを編集</string>

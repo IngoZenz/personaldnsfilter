@@ -133,7 +133,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected static EditText manualDNSView;
 	protected static boolean advDNSConfigDia_open = false;
 	protected static String SCROLL_PAUSE = "II  ";
-	protected static String SCROLL_CONTINUE = ">>  ";
+	protected static String SCROLL_CONTINUE = " ▶ ";
 	protected static boolean scroll_locked = false;
 	protected static TextView link_field;
 	protected static int link_field_color = Color.TRANSPARENT;
@@ -161,9 +161,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected static int NO_ACTION_MENU = 0;
 
 
-	protected static String IN_FILTER_PREF = "X \u0009";
-	protected static String NO_FILTER_PREF = "✓\u0009";
-	protected static String IP_FORWARD_PREF = "-> ";
+	protected static String IN_FILTER_PREF = "✗\u2002\u2009";
+	protected static String NO_FILTER_PREF = "✓\u2004\u2009";
+	protected static String IP_FORWARD_PREF = "➞\u200A";
 
 	//log color and format
 	protected static String filterLogFormat;
@@ -175,6 +175,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected static boolean switchingConfig = false;
 
 	protected static boolean CHECKING_PASSCODE_DIAG = false;
+
+	protected static boolean NO_VPN = false;
 
 	protected static DNSProxyActivity INSTANCE;
 
@@ -422,9 +424,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			helpBtn.setOnClickListener(this);
 			remoteCtrlBtn = (Button) findViewById(R.id.remoteCtrlBtn);
 			if (!CONFIG.isLocal())
-				remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null, getResources().getDrawable(R.drawable.baseline_settings_remote_24px), null);
+				remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null, getResources().getDrawable(R.drawable.remote_icon), null);
 			else
-				remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null, getResources().getDrawable(R.drawable.outline_settings_remote_24px), null);
+				remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null, getResources().getDrawable(R.drawable.remote_icon_outline), null);
 
 			remoteCtrlBtn.setOnClickListener(this);
 			backupBtn = (Button) findViewById(R.id.backupBtn);
@@ -743,10 +745,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		TextView backupStatusView = findViewById(R.id.backupLog);
 		try {
 			CONFIG.doBackup(getBackupSubFolder());
-			backupStatusView.setTextColor(Color.parseColor("#23751C"));
+			backupStatusView.setTextColor(Color.parseColor("#43A047"));
 			backupStatusView.setText("Backup success!");
 		} catch (IOException eio) {
-			backupStatusView.setTextColor(Color.parseColor("#D03D06"));
+			backupStatusView.setTextColor(Color.parseColor("#E53935"));
 			backupStatusView.setText("Backup failed! " + eio.getMessage());
 		}
 	}
@@ -755,12 +757,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		TextView backupStatusView = findViewById(R.id.backupLog);
 		try {
 			CONFIG.doRestoreDefaults();
-			backupStatusView.setTextColor(Color.parseColor("#23751C"));
+			backupStatusView.setTextColor(Color.parseColor("#43A047"));
 			if (!CONFIG.isLocal())
 				loadAndApplyConfig(false);
 			backupStatusView.setText("Restore success!");
 		} catch (IOException eio) {
-			backupStatusView.setTextColor(Color.parseColor("#D03D06"));
+			backupStatusView.setTextColor(Color.parseColor("#E53935"));
 			backupStatusView.setText("Restore failed! " + eio.getMessage());
 		}
 	}
@@ -769,12 +771,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		TextView backupStatusView = findViewById(R.id.backupLog);
 		try {
 			CONFIG.doRestore(getBackupSubFolder());
-			backupStatusView.setTextColor(Color.parseColor("#23751C"));
+			backupStatusView.setTextColor(Color.parseColor("#43A047"));
 			if (!CONFIG.isLocal())
 				loadAndApplyConfig(false);
 			backupStatusView.setText("Restore success!");
 		} catch (IOException eio) {
-			backupStatusView.setTextColor(Color.parseColor("#D03D06"));
+			backupStatusView.setTextColor(Color.parseColor("#E53935"));
 			backupStatusView.setText("Restore failed! " + eio.getMessage());
 		}
 	}
@@ -829,8 +831,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		String entries = "";
 		while (entryTokens.hasMoreTokens()) {
 			String token = entryTokens.nextToken();
-			if (token.startsWith(IN_FILTER_PREF) || token.startsWith(NO_FILTER_PREF)) {
-				entries = entries+token.substring(1).trim()+"\n";
+			if (token.startsWith(IN_FILTER_PREF)) {
+				entries = entries+token.substring(IN_FILTER_PREF.length()).trim()+"\n";
+			}
+			if (token.startsWith(NO_FILTER_PREF)) {
+				entries = entries+token.substring(NO_FILTER_PREF.length()).trim()+"\n";
 			}
 		}
 
@@ -845,7 +850,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		logLine("Initializing ...");
 		if (BOOT_START) {
 			Logger.getLogger().logLine("Running on SDK" + Build.VERSION.SDK_INT);
-			if (Build.VERSION.SDK_INT >= 20) //on older Android we have to keep the app in forgrounnd due to teh VPN Accespt dialog popping up after each reboot.
+			if (Build.VERSION.SDK_INT >= 20) //on older Android we have to keep the app in forground due to the VPN accept dialog popping up after each reboot.
 				finish();
 			BOOT_START = false;
 		}
@@ -898,6 +903,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		if (config != null) {
 
+			boolean dnsProxyMode = Boolean.parseBoolean(config.getProperty("dnsProxyOnAndroid", "false"));
+			boolean vpnInAdditionToProxyMode = Boolean.parseBoolean(config.getProperty("vpnInAdditionToProxyMode", "false"));
+			NO_VPN = dnsProxyMode && !vpnInAdditionToProxyMode;
+
 			Runnable uiUpdater = new Runnable() {
 				@Override
 				public void run() {
@@ -907,9 +916,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 					link_field.setText(fromHtml(link_field_txt));
 
 					//Log formatting
-					filterLogFormat = config.getProperty("filterLogFormat", "<font color='#D03D06'>($CONTENT)</font>");
-					acceptLogFormat = config.getProperty("acceptLogFormat", "<font color='#23751C'>($CONTENT)</font>");
-					fwdLogFormat = config.getProperty("fwdLogFormat", "<font color='#ff9900'>($CONTENT)</font>");
+					filterLogFormat = config.getProperty("filterLogFormat", "<font color='#E53935'>($CONTENT)</font>");
+					acceptLogFormat = config.getProperty("acceptLogFormat", "<font color='#43A047'>($CONTENT)</font>");
+					fwdLogFormat = config.getProperty("fwdLogFormat", "<font color='#FFB300'>($CONTENT)</font>");
 					normalLogFormat = config.getProperty("normalLogFormat","($CONTENT)");
 
 					try {
@@ -942,13 +951,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 					rootModeCheck.setChecked(Boolean.parseBoolean(config.getProperty("rootModeOnAndroid", "false")));
 
-					//set whitelisted Apps into UI
+					//set whitelisted apps into UI
 					appSelector.setSelectedApps(config.getProperty("androidAppWhiteList", ""));
 
 					if (!CONFIG.isLocal())
-						remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null,getResources().getDrawable(R.drawable.baseline_settings_remote_24px), null);
+						remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null,getResources().getDrawable(R.drawable.remote_icon), null);
 					else
-						remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null,getResources().getDrawable(R.drawable.outline_settings_remote_24px), null);
+						remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null,getResources().getDrawable(R.drawable.remote_icon_outline), null);
 
 					switchingConfig = false;
 				}
@@ -1400,8 +1409,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		((TextView) findViewById(R.id.backupLog)).setText("");
 		if (advancedConfigCheck.isChecked()) {
 			setVisibilityForAdvCfg(View.GONE);
-			//App Whitelisting only supported on SDK >= 21
-			if (Build.VERSION.SDK_INT >= 21 && CONFIG.isLocal()) {
+			//App whitelisting only supported on SDK >= 21
+			if (Build.VERSION.SDK_INT >= 21 && CONFIG.isLocal() && !NO_VPN) {
 				appWhiteListCheck.setVisibility(View.VISIBLE);
 				appWhitelistingEnabled=true;
 			}
@@ -1543,6 +1552,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				return;
 
 			startup();
+			loadAndApplyConfig(false);
 		}
 	    else {
             try {
@@ -1574,10 +1584,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				intent = VpnService.prepare(this.getApplicationContext());
 			if (intent != null) {
 				startActivityForResult(intent, 0);
-			} else { //already prepared or vpn disabled
+			} else { //already prepared or VPN disabled
 				startSvc();
 			}
-		} catch (NullPointerException e) { // NullPointer might occur on Android 4.4 when vpn already initialized
+		} catch (NullPointerException e) { // NullPointer might occur on Android 4.4 when VPN already initialized
 			Logger.getLogger().logLine("Seems we are on Android 4.4 or older!");
 			startSvc(); // assume it is ok!
 		} catch (Exception e) {
@@ -1620,7 +1630,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	@Override
 	public void message(String txt) {
-		setMessage(fromHtml("<strong>"+txt+"</strong>"), Color.parseColor("#ffcc00"));
+		setMessage(fromHtml("<strong>"+txt+"</strong>"), Color.parseColor("#FFC107"));
 		MsgTO.setTimeout(5000);
 	}
 
@@ -1712,7 +1722,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	public void onActionModeStarted(android.view.ActionMode mode) {
 
 	/*	if (Build.VERSION.SDK_INT < 23 && logOutView.hasFocus()) {
-			// get Action Menu on old devices before 6.0
+			// get action menu on old devices before 6.0
 			int start = logOutView.getSelectionStart();
 			int end = logOutView.getSelectionEnd();
 
@@ -1741,8 +1751,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				}
 
 				if (NO_ACTION_MENU > 1) {
-					//2 times no Action ==> Action Menu not working on this device
-					// ==>Fallback to the Buttons on top of Log View
+					//2 times no action ==> action menu not working on this device
+					// ==>Fallback to the buttons on top of log view
 					findViewById(R.id.copyfromlog).setVisibility(View.VISIBLE);
 				}
 			}
