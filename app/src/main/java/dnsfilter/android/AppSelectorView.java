@@ -126,13 +126,26 @@ public class AppSelectorView extends LinearLayout {
 
 				wrappers = sortedWrappers.toArray(new ComparableAppInfoWrapper[0]);
 
-				for (int i = 0; (i < wrappers.length && !abort); i++) {
+				post(new Runnable() {
+					@Override
+					public void run() {
+						for (int i = 0; (i < wrappers.length && !abort); i++) {
+							Drawable icon = (wrappers[i].wrapped.loadIcon(pm));
+							if (icon.getIntrinsicWidth() != iconSize)
+								icon = resizeDrawable(icon, corIconSize);
+							wrappers[i].checkBox.setCompoundDrawablesWithIntrinsicBounds(null, null, icon, null);
+							addView(wrappers[i].checkBox);
+						}
+						loaded = !abort;
+					}
+				});
+				/*for (int i = 0; (i < wrappers.length && !abort); i++) {
 					Drawable icon = (wrappers[i].wrapped.loadIcon(pm));
 					if (icon.getIntrinsicWidth() != iconSize)
 						icon = resizeDrawable(icon, corIconSize);
 					post(new UIUpdate(wrappers[i].checkBox, icon, this));
 				}
-				loaded = !abort;
+				loaded = !abort;*/
 
 			} finally {
 				runningUpdate = null;
