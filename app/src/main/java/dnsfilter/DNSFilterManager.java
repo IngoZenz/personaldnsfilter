@@ -22,6 +22,8 @@
 
 package dnsfilter;
 
+import android.os.Build;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -51,12 +53,15 @@ import java.util.StringTokenizer;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import dnsfilter.remote.RemoteAccessServer;
 import util.ExecutionEnvironment;
 import util.FileLogger;
 import util.Logger;
 import util.LoggerInterface;
 import util.Utils;
+import util.conpool.TLSSocketFactory;
 
 
 public class DNSFilterManager extends ConfigurationAccess  {
@@ -592,7 +597,15 @@ public class DNSFilterManager extends ConfigurationAccess  {
 							if (!urlStr.startsWith("file://")) {
 								URL url = new URL(urlStr);
 								URLConnection con = url.openConnection();
-								
+
+								if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+									try {
+										((HttpsURLConnection) con).setSSLSocketFactory(new TLSSocketFactory());
+									} catch (Exception e) {
+										Logger.getLogger().message(e.getMessage());
+									}
+								}
+
 								con.setConnectTimeout(120000);
 								con.setReadTimeout(120000);
 								con.setRequestProperty("Accept-Encoding", "gzip, deflate, identity");
