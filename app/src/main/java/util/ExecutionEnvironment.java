@@ -46,7 +46,12 @@ package util;
 
 	 @Override
 	 public int getEnvironmentID() {
-		 return 0; //default
+		 return 0; //java default
+	 }
+
+	 @Override
+	 public String getEnvironmentVersion() {
+		 return System.getProperty("java.version");
 	 }
 
 	 @Override

@@ -22,8 +22,6 @@
 
 package dnsfilter;
 
-import android.os.Build;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -582,6 +580,10 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				OutputStream out = new FileOutputStream(WORKDIR + filterhostfile + ".tmp");
 				out.write((DOWNLOADED_FF_PREFIX + new Date() + "from URLs: " + filterReloadURL + "\n").getBytes());
 
+				// Force TLS for Android version below Build.VERSION_CODES.LOLLIPOP (21)
+				boolean useTLSSocketFactory = ExecutionEnvironment.getEnvironment().getEnvironmentID() == 1
+						&& Integer.parseInt(ExecutionEnvironment.getEnvironment().getEnvironmentVersion())<21;
+
 				StringTokenizer urlTokens = new StringTokenizer(filterReloadURL, ";");
 
 				int urlCnt = urlTokens.countTokens();
@@ -598,7 +600,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 								URL url = new URL(urlStr);
 								URLConnection con = url.openConnection();
 
-								if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+								if (useTLSSocketFactory) {
 									try {
 										((HttpsURLConnection) con).setSSLSocketFactory(new TLSSocketFactory());
 									} catch (Exception e) {

@@ -58,6 +58,11 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
     }
 
     @Override
+    public String getEnvironmentVersion() {
+        return ""+android.os.Build.VERSION.SDK_INT;
+    }
+
+    @Override
     public void wakeLock(){
         WifiManager.WifiLock wifiLock = ((WifiManager) ctx.getApplicationContext().getSystemService(Context.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL, "personalHttpProxy");
         wifiLock.acquire();
