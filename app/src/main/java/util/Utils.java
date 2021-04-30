@@ -326,19 +326,17 @@ public class Utils {
 	}
 
 	public static void moveFileTree(File sourceFile, File destFile) throws IOException {
-		try {
-			if (sourceFile.isDirectory()) {
-				for (File file : sourceFile.listFiles()) {
-					moveFileTree(file, new File(file.getPath().replace(sourceFile.getPath(), destFile.getPath())));
-				}
-			} else {
-				if (!sourceFile.renameTo(destFile))
-					throw new IOException("Move " + sourceFile+ " to " + destFile + " failed!");
 
+		if (sourceFile.isDirectory()) {
+			for (File file : sourceFile.listFiles()) {
+				moveFileTree(file, new File(file.getPath().replace(sourceFile.getPath(), destFile.getPath())));
+				sourceFile.delete();
 			}
-		} catch (Exception e) {
-			throw new IOException(e);
+		} else {
+			copyFile(sourceFile, destFile);
+			sourceFile.delete();
 		}
+
 	}
 
 }
