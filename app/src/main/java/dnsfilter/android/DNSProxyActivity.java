@@ -87,6 +87,7 @@ import util.Logger;
 import util.LoggerInterface;
 import util.TimeoutListener;
 import util.TimoutNotificator;
+import util.Utils;
 
 
 public class DNSProxyActivity extends Activity implements OnClickListener, LoggerInterface, TextWatcher, DialogInterface.OnKeyListener, ActionMode.Callback, MenuItem.OnMenuItemClickListener,View.OnTouchListener, View.OnFocusChangeListener {
@@ -151,7 +152,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	protected static boolean appStart = true;
 
-	protected static File WORKPATH = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter");
+	protected static File WORKPATH; // set within AndroidEnvironment.initEnvironment()
 
 	protected static String ADDITIONAL_HOSTS_TO_LONG = "additionalHosts.txt too long to edit here!\nSize Limit: 512 KB!\nUse other editor!";
 
@@ -563,15 +564,30 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			}
 
 			boolean storagePermission = true;
+
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 				if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 					storagePermission = false;
-					requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-					Logger.getLogger().logLine("Need storage permissions to start!");
+					//requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+					//Logger.getLogger().logLine("Need storage permissions to start!");
 				}
 			}
 
-			if (appStart && storagePermission) {
+			//TO BE DELETED ONCE ON TARGET 11! MIGRATION OF CONFIG DATA TO EXTERNAL USER FOLDER
+			if (!WORKPATH.exists() && storagePermission) {
+				File OLDPATH = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter");
+				if (OLDPATH.exists() && !OLDPATH.equals(WORKPATH)) {
+					try {
+						Utils.moveFileTree(OLDPATH, WORKPATH);
+					} catch (IOException eio) {
+						Logger.getLogger().logLine("Migration ofold config location has failed!");
+						Logger.getLogger().logException(eio);
+					}
+				}
+			}
+
+
+			if (appStart) {
 				initAppAndStartup();
 			}
 
@@ -596,11 +612,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		if (CHECKING_PASSCODE_DIAG)
 			return; //avoid double checkign after resume
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-				return; // No storage permissions yet => do not check here - Dirty workarround - we need to improve here!
-			}
-		}
 		try {
 			Properties config = CONFIG.getConfig();
 			if (config == null){
@@ -858,20 +869,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		appStart = false; // now started
 	}
 
-
-	@Override
-	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-		if(grantResults.length >0 && grantResults[0]== PackageManager.PERMISSION_GRANTED){
-			initAppAndStartup();
-		}
-		else {
-			if (grantResults.length == 0)
-				logLine("grantResults is empty - Assuming permission denied!");
-			System.exit(-1);
-		}
-	}
-	
 	protected void setDNSCfgDialog(Properties config) {
 		String manualDNS_Help =
 				"# Format: <IP>::<PORT>::<PROTOCOL>::<URL END POINT>\n"+

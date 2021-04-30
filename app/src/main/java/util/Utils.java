@@ -34,6 +34,9 @@ import java.io.OutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -320,6 +323,22 @@ public class Utils {
 		InputStream in = new FileInputStream(from);
 		OutputStream out = new FileOutputStream(to);
 		copyFully(in, out, true);
+	}
+
+	public static void moveFileTree(File sourceFile, File destFile) throws IOException {
+		try {
+			if (sourceFile.isDirectory()) {
+				for (File file : sourceFile.listFiles()) {
+					moveFileTree(file, new File(file.getPath().substring("temp".length() + 1)));
+				}
+			} else {
+				if (!sourceFile.renameTo(destFile))
+					throw new IOException("Move " + sourceFile+ " to " + destFile + " failed!");
+
+			}
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
 	}
 
 }

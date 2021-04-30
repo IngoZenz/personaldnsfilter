@@ -27,12 +27,15 @@ import android.content.res.AssetManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
+import android.os.Environment;
 import android.os.PowerManager;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Stack;
 
+import dnsfilter.DNSFilterManager;
 import util.ExecutionEnvironment;
 import util.ExecutionEnvironmentInterface;
 import util.Logger;
@@ -50,6 +53,10 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
 
     public static void initEnvironment(Context context) {
         ctx = context;
+        if (android.os.Build.VERSION.SDK_INT >= 19)
+            DNSProxyActivity.WORKPATH = new File(context.getExternalFilesDirs (null)[0].getAbsolutePath() + "/PersonalDNSFilter");
+        else
+            DNSProxyActivity.WORKPATH = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter");
     }
 
     @Override

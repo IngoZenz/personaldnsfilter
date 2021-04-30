@@ -17,8 +17,7 @@
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher"
         android:label="personalDNSfilter"
-        android:theme="@style/Theme.phttpp.TitleBar"
-        android:requestLegacyExternalStorage="true">
+        android:theme="@style/Theme.phttpp.TitleBar">
         <activity
             android:name="dnsfilter.android.DNSProxyActivity"
             android:label="personalDNSfilter" >
