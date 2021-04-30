@@ -579,8 +579,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				if (OLDPATH.exists() && !OLDPATH.equals(WORKPATH)) {
 					try {
 						Utils.moveFileTree(OLDPATH, WORKPATH);
+						Logger.getLogger().logLine("MIGRATED old config Location to App Storage!");
+						Logger.getLogger().logLine("NEW FOLDER: "+WORKPATH);
 					} catch (IOException eio) {
-						Logger.getLogger().logLine("Migration ofold config location has failed!");
+						Logger.getLogger().logLine("Migration of old config location has failed!");
 						Logger.getLogger().logException(eio);
 					}
 				}
