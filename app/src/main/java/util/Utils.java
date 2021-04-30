@@ -329,7 +329,7 @@ public class Utils {
 		try {
 			if (sourceFile.isDirectory()) {
 				for (File file : sourceFile.listFiles()) {
-					moveFileTree(file, new File(file.getPath().substring("temp".length() + 1)));
+					moveFileTree(file, new File(file.getPath().replace(sourceFile.getPath(), destFile.getPath())));
 				}
 			} else {
 				if (!sourceFile.renameTo(destFile))
