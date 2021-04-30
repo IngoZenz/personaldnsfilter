@@ -21,10 +21,12 @@ package dnsfilter;
    Contact:i.z@gmx.net
  */
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -38,6 +40,7 @@ import util.ExecutionEnvironment;
 import util.Logger;
 import util.conpool.Connection;
 import util.conpool.HttpProxy;
+import util.http.HttpChunkedInputStream;
 import util.http.HttpHeader;
 
 public class DNSServer {
@@ -46,7 +49,7 @@ public class DNSServer {
     protected int timeout;
     protected long lastPerformance = -1;
     private static int bufSize=1024;
-    private static int maxBufSize= -1; //will be initialized on request
+    protected static int maxBufSize= -1; //will be read in static initializer below
     public static final int UDP = 0; //Via UDP
     public static final int TCP = 1; //Via TCP
     public static final int DOT = 2; // DNS over TLS
@@ -83,6 +86,15 @@ public class DNSServer {
             }
         } catch (Exception e){
             Logger.getLogger().logLine("Exception during proxy creation!");
+            Logger.getLogger().logException(e);
+        }
+
+        //load maxBufSize config
+        try {
+            maxBufSize = Integer.parseInt(ConfigurationAccess.getLocal().getConfig().getProperty("MTU","3000"));
+        } catch (Exception e) {
+            maxBufSize = 3000;
+            Logger.getLogger().logLine("Exception during MTU config access - using default 3000!");
             Logger.getLogger().logException(e);
         }
     }
@@ -201,16 +213,6 @@ public class DNSServer {
                 //Write access to static data, synchronization against the class is needed.
                 //Could be optimized in future by setting the buf size per DNSServer Instance and not static.
                 //However at the time the buffer is created, it is not known what will be the DNSServer used, because it be might be switched.
-                if (maxBufSize == -1) {
-                    //load maxBufSize config
-                    try {
-                        maxBufSize = Integer.parseInt(ConfigurationAccess.getLocal().getConfig().getProperty("MTU","3000"));
-                    } catch (IOException eio) {
-                        throw eio;
-                    } catch (Exception e){
-                        throw new IOException(e);
-                    }
-                }
 
                 if (size + response.getOffset() < maxBufSize && bufSize < size+response.getOffset()) { //resize for future requests
                     bufSize = Math.min(1024*(((size +response.getOffset()) / 1024) +1), maxBufSize);
@@ -220,7 +222,11 @@ public class DNSServer {
                 response.setData(new byte[bufSize],response.getOffset(),bufSize-response.getOffset());
             }
         }
-        in.readFully(response.getData(), response.getOffset(),size);
+        try {
+            in.readFully(response.getData(), response.getOffset(), size);
+        } catch (IOException eio) {
+            throw new IOException("Read failed: "+response.getData().length+", "+response.getOffset()+", "+size ,eio);
+        }
         response.setLength(size);
     }
 
@@ -448,9 +454,10 @@ class DoH extends DNSServer {
 
         for (int i = 0; i<2; i++) { //retry once in case of EOFException (pooled connection was already closed)
             Connection con = Connection.connect(urlHostAddress, timeout, true, null, proxy);
+
             try {
                 OutputStream out = con.getOutputStream();
-                DataInputStream in = new DataInputStream(con.getInputStream());
+                InputStream in = con.getInputStream();
                 out.write(reqHeader);
                 out.write(request.getData(), request.getOffset(), request.getLength());
                 out.flush();
@@ -458,10 +465,32 @@ class DoH extends DNSServer {
                 if (responseHeader.getResponseCode() != 200)
                     throw new IOException("DoH failed for " + url + "! " + responseHeader.getResponseCode() + " - " + responseHeader.getResponseMessage());
 
+                boolean reuse = true;
+
                 int size = (int) responseHeader.getContentLength();
-                readResponseFromStream(in, size, response);
+
+                if (size == -1) {
+
+                    if (responseHeader.chunkedTransfer())
+                        in = new HttpChunkedInputStream(in);
+                    else
+                        reuse = false; //neither content-length nor chunked
+
+                    //read response into buffer
+                    int r = 0;
+                    size = 0;
+                    byte[] buf = new byte[maxBufSize];
+
+                    while ( (r = in.read(buf, size, buf.length-size)) != -1) {
+                        size = size + r;
+                        if (size == maxBufSize)
+                            throw new IOException("Buffer to small!");
+                    }
+                    in = new ByteArrayInputStream(buf,0, size);
+                }
+                readResponseFromStream(new DataInputStream(in), size, response);
                 response.setSocketAddress(address);
-                con.release(true);
+                con.release(reuse);
                 return;
             } catch (EOFException eof) {
                 con.release(false);
