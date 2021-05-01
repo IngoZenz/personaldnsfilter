@@ -473,6 +473,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			copyLocalFile("dnsfilter.conf", "backup/"+name+"/dnsfilter.conf");
 			copyLocalFile("additionalHosts.txt", "backup/"+name+"/additionalHosts.txt");
 			copyLocalFile("VERSION.TXT", "backup/"+name+"/VERSION.TXT");
+			Logger.getLogger().message(new File(WORKDIR  + "/backup/"+name).getPath());
 		} catch (IOException e) {
 			throw new ConfigurationAccessException(e.getMessage(), e);
 		}
