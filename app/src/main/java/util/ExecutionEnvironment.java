@@ -98,4 +98,9 @@ package util;
 		return true;
 	 }
 
+	 @Override
+	 public void migrateConfig() throws IOException {
+		 // nothing to migrate by default
+	 }
+
  }

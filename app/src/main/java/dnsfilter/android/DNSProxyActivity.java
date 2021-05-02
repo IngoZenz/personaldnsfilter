@@ -563,32 +563,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				Logger.setLogger(new GroupedLogger(new LoggerInterface[]{myLogger}));
 			}
 
-			boolean storagePermission = true;
-
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-					storagePermission = false;
-					//requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-					//Logger.getLogger().logLine("Need storage permissions to start!");
-				}
-			}
-
-			//TO BE DELETED ONCE ON TARGET 11! MIGRATION OF CONFIG DATA TO EXTERNAL USER FOLDER
-			if (!WORKPATH.exists() && storagePermission) {
-				File OLDPATH = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter");
-				if (OLDPATH.exists() && !OLDPATH.equals(WORKPATH)) {
-					try {
-						Utils.moveFileTree(OLDPATH, WORKPATH);
-						Logger.getLogger().logLine("MIGRATED old config Location to App Storage!");
-						Logger.getLogger().logLine("NEW FOLDER: "+WORKPATH);
-					} catch (IOException eio) {
-						Logger.getLogger().logLine("Migration of old config location has failed!");
-						Logger.getLogger().logException(eio);
-					}
-				}
-			}
-
-
 			if (appStart) {
 				initAppAndStartup();
 			}

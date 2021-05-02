@@ -252,7 +252,18 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	public byte[] readConfig() throws ConfigurationAccessException{
 
 		File propsFile = new File(WORKDIR + "dnsfilter.conf");
+
+		if (!propsFile.exists())  {
+			// check if data migration is needed and run migration
+			try {
+				ExecutionEnvironment.getEnvironment().migrateConfig();
+			} catch (IOException e) {
+				Logger.getLogger().logLine(e.toString());
+			}
+		}
+
 		if (!propsFile.exists()) {
+			// New install - create default config
 			Logger.getLogger().logLine(propsFile + " not found! - Creating default config!");
 			createDefaultConfiguration();
 			propsFile = new File(WORKDIR + "dnsfilter.conf");
