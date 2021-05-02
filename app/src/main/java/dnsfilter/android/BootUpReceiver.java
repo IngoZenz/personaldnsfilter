@@ -33,10 +33,13 @@ import android.net.VpnService;
 import android.os.Build;
 import android.os.Environment;
 
+import util.ExecutionEnvironment;
+
 public class BootUpReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
+		AndroidEnvironment.initEnvironment(context);
 		Properties config;
 		if ((config = getConfig()) != null && Boolean.parseBoolean(config.getProperty("AUTOSTART", "false"))) {
 
@@ -55,7 +58,7 @@ public class BootUpReceiver extends BroadcastReceiver {
 
 	public Properties getConfig() {
 
-		File propsFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter/dnsfilter.conf");
+		File propsFile = new File(ExecutionEnvironment.getEnvironment().getWorkDir()+"dnsfilter.conf");
 
 		try {
 			InputStream in = new FileInputStream(propsFile);
