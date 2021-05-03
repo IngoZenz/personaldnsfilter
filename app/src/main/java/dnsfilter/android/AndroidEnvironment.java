@@ -23,10 +23,12 @@
 package dnsfilter.android;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Environment;
 import android.os.PowerManager;
 
@@ -35,15 +37,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Stack;
 
-import dnsfilter.DNSFilterManager;
 import util.ExecutionEnvironment;
 import util.ExecutionEnvironmentInterface;
 import util.Logger;
+import util.Utils;
 
 public class AndroidEnvironment implements ExecutionEnvironmentInterface {
 
     private static Context ctx = null;
     private static AndroidEnvironment INSTANCE = new AndroidEnvironment();
+    private static String WORKDIR;
     private static Stack wakeLooks = new Stack();
 
     static {
@@ -54,9 +57,9 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
     public static void initEnvironment(Context context) {
         ctx = context;
         if (android.os.Build.VERSION.SDK_INT >= 19)
-            DNSProxyActivity.WORKPATH = new File(context.getExternalFilesDirs (null)[0].getAbsolutePath() + "/PersonalDNSFilter");
+            WORKDIR = context.getExternalFilesDirs (null)[0].getAbsolutePath() + "/PersonalDNSFilter";
         else
-            DNSProxyActivity.WORKPATH = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter");
+            WORKDIR= Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter";
     }
 
     @Override
@@ -115,7 +118,7 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
 
     @Override
     public String getWorkDir() {
-        return DNSProxyActivity.WORKPATH+"/";
+        return WORKDIR;
     }
 
     @Override
@@ -144,6 +147,39 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
     @Override
     public boolean protectSocket(Object socket, int type) {
         return DNSFilterService.protectSocket(socket, type);
+    }
+
+    @Override
+    public void migrateConfig() throws IOException {
+
+        //TO BE DELETED ONCE ON TARGET 11! MIGRATION OF CONFIG DATA TO EXTERNAL USER FOLDER
+
+        boolean storagePermission = true;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ctx.checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                storagePermission = false;
+                //requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                //Logger.getLogger().logLine("Need storage permissions to start!");
+            }
+        }
+
+        //TO BE DELETED ONCE ON TARGET 11! MIGRATION OF CONFIG DATA TO EXTERNAL USER FOLDER
+        File F_WORKDIR = new File(WORKDIR);
+        if (!F_WORKDIR.exists() && storagePermission) {
+            File OLDPATH = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter");
+            if (OLDPATH.exists() && !OLDPATH.equals(F_WORKDIR)) {
+                try {
+                    Utils.moveFileTree(OLDPATH, F_WORKDIR);
+                    Logger.getLogger().logLine("MIGRATED old config location to app storage!");
+                    Logger.getLogger().logLine("NEW FOLDER: "+F_WORKDIR);
+                } catch (IOException eio) {
+                    Logger.getLogger().logLine("Migration of old config location has failed!");
+                    Logger.getLogger().logException(eio);
+                }
+            }
+        }
+
     }
 
 }

@@ -152,8 +152,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	protected static boolean appStart = true;
 
-	protected static File WORKPATH; // set within AndroidEnvironment.initEnvironment()
-
 	protected static String ADDITIONAL_HOSTS_TO_LONG = "additionalHosts.txt too long to edit here!\nSize Limit: 512 KB!\nUse other editor!";
 
 	protected static Properties config = null;
@@ -331,8 +329,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				finish();
 				System.exit(0);
 			}
-
-			DNSFilterManager.WORKDIR = DNSProxyActivity.WORKPATH.getAbsolutePath() + "/";
 
 			setContentView(R.layout.main);
 
@@ -563,32 +559,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				Logger.setLogger(new GroupedLogger(new LoggerInterface[]{myLogger}));
 			}
 
-			boolean storagePermission = true;
-
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-				if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-					storagePermission = false;
-					//requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-					//Logger.getLogger().logLine("Need storage permissions to start!");
-				}
-			}
-
-			//TO BE DELETED ONCE ON TARGET 11! MIGRATION OF CONFIG DATA TO EXTERNAL USER FOLDER
-			if (!WORKPATH.exists() && storagePermission) {
-				File OLDPATH = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter");
-				if (OLDPATH.exists() && !OLDPATH.equals(WORKPATH)) {
-					try {
-						Utils.moveFileTree(OLDPATH, WORKPATH);
-						Logger.getLogger().logLine("MIGRATED old config Location to App Storage!");
-						Logger.getLogger().logLine("NEW FOLDER: "+WORKPATH);
-					} catch (IOException eio) {
-						Logger.getLogger().logLine("Migration of old config location has failed!");
-						Logger.getLogger().logException(eio);
-					}
-				}
-			}
-
-
 			if (appStart) {
 				initAppAndStartup();
 			}
@@ -662,7 +632,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		StringWriter str = new StringWriter();
 		e.printStackTrace(new PrintWriter(str));
 		try {
-			FileOutputStream dump = new FileOutputStream(WORKPATH+"/dump-"+System.currentTimeMillis()+".txt");
+			FileOutputStream dump = new FileOutputStream(ExecutionEnvironment.getEnvironment().getWorkDir()+"/dump-"+System.currentTimeMillis()+".txt");
 			dump.write(("TIME: "+new Date()+"\nVERSION: "+DNSFilterManager.VERSION+"\n\n").getBytes());
 			dump.write(str.toString().getBytes());
 			dump.flush();

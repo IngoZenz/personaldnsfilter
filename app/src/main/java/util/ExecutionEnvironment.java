@@ -72,7 +72,7 @@ package util;
 	
 	@Override
 	public String getWorkDir() {
-		return System.getProperty("user.dir")+ File.separator;
+		return System.getProperty("user.dir");
 	}
 
 	@Override
@@ -96,6 +96,11 @@ package util;
 	 @Override
 	 public boolean protectSocket(Object socket, int type) {
 		return true;
+	 }
+
+	 @Override
+	 public void migrateConfig() throws IOException {
+		 // nothing to migrate by default
 	 }
 
  }

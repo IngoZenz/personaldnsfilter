@@ -22,6 +22,8 @@ Contact:i.z@gmx.net
 
 package util;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
@@ -320,8 +322,8 @@ public class Utils {
 		File dir = to.getParentFile();
 		if (dir != null)
 			dir.mkdirs();
-		InputStream in = new FileInputStream(from);
-		OutputStream out = new FileOutputStream(to);
+		InputStream in = new BufferedInputStream(new FileInputStream(from));
+		OutputStream out = new BufferedOutputStream(new FileOutputStream(to));
 		copyFully(in, out, true);
 	}
 
