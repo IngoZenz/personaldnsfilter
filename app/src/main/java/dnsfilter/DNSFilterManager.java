@@ -22,8 +22,6 @@
 
 package dnsfilter;
 
-import android.os.Environment;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -111,7 +109,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	}
 
 	private String getPath() {
-		return ExecutionEnvironment.getEnvironment().getWorkDir()+"/";
+		return ExecutionEnvironment.getEnvironment().getWorkDir()+File.separator;
 	}
 
 	private class AsyncIndexBuilder implements Runnable {
