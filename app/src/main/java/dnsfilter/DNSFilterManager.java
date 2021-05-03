@@ -22,8 +22,6 @@
 
 package dnsfilter;
 
-import android.os.Environment;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
