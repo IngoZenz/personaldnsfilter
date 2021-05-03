@@ -109,7 +109,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	}
 
 	private String getPath() {
-		return ExecutionEnvironment.getEnvironment().getWorkDir()+"/";
+		return ExecutionEnvironment.getEnvironment().getWorkDir()+File.separator;
 	}
 
 	private class AsyncIndexBuilder implements Runnable {
