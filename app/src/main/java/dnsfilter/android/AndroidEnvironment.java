@@ -171,7 +171,7 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
             if (OLDPATH.exists() && !OLDPATH.equals(F_WORKDIR)) {
                 try {
                     Utils.moveFileTree(OLDPATH, F_WORKDIR);
-                    Logger.getLogger().logLine("MIGRATED old config Location to App Storage!");
+                    Logger.getLogger().logLine("MIGRATED old config location to app storage!");
                     Logger.getLogger().logLine("NEW FOLDER: "+F_WORKDIR);
                 } catch (IOException eio) {
                     Logger.getLogger().logLine("Migration of old config location has failed!");
