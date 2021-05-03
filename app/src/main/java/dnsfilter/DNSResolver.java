@@ -90,7 +90,7 @@ public class DNSResolver implements Runnable {
 		try {
 			dnsQuery = new SimpleDNSMessage(request.getData(), request.getOffset(), request.getLength());
 		} catch (Exception e){
-			File dump = new File(ExecutionEnvironment.getEnvironment().getWorkDir()+"dnsdump_"+System.currentTimeMillis());
+			File dump = new File(ExecutionEnvironment.getEnvironment().getWorkDir()+"/dnsdump_"+System.currentTimeMillis());
 			FileOutputStream dumpout = new FileOutputStream(dump);
 			dumpout.write(request.getData(), request.getOffset(), request.getLength());
 			dumpout.flush();

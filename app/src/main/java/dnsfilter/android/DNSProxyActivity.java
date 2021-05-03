@@ -152,8 +152,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	protected static boolean appStart = true;
 
-	protected static File WORKPATH; // set within AndroidEnvironment.initEnvironment()
-
 	protected static String ADDITIONAL_HOSTS_TO_LONG = "additionalHosts.txt too long to edit here!\nSize Limit: 512 KB!\nUse other editor!";
 
 	protected static Properties config = null;
@@ -331,8 +329,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				finish();
 				System.exit(0);
 			}
-
-			DNSFilterManager.WORKDIR = DNSProxyActivity.WORKPATH.getAbsolutePath() + "/";
 
 			setContentView(R.layout.main);
 
@@ -636,7 +632,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		StringWriter str = new StringWriter();
 		e.printStackTrace(new PrintWriter(str));
 		try {
-			FileOutputStream dump = new FileOutputStream(WORKPATH+"/dump-"+System.currentTimeMillis()+".txt");
+			FileOutputStream dump = new FileOutputStream(ExecutionEnvironment.getEnvironment().getWorkDir()+"/dump-"+System.currentTimeMillis()+".txt");
 			dump.write(("TIME: "+new Date()+"\nVERSION: "+DNSFilterManager.VERSION+"\n\n").getBytes());
 			dump.write(str.toString().getBytes());
 			dump.flush();

@@ -150,8 +150,6 @@ public class DNSFilterProxy implements Runnable {
 		SuppressRepeatingsLogger myLogger = new SuppressRepeatingsLogger(new StandaloneLogger());
 		Logger.setLogger(new GroupedLogger(new LoggerInterface[] {myLogger}));
 		ExecutionEnvironment.setEnvironment(new StandaloneEnvironment());
-		DNSFilterManager.WORKDIR = ExecutionEnvironment.getEnvironment().getWorkDir();
-		
 		DNSFilterManager filtermgr = DNSFilterManager.getInstance();
 		filtermgr.init();
 

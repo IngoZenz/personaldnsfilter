@@ -148,7 +148,7 @@ public class DNSFilterService extends VpnService  {
 
 
 		public void clean() {
-			String ipFilePath = ExecutionEnvironment.getEnvironment().getWorkDir()+ipFileName;
+			String ipFilePath = ExecutionEnvironment.getEnvironment().getWorkDir()+"/"+ipFileName;
 			File f = new File(ipFilePath);
 			try {
 				if (f.exists()) {
@@ -176,7 +176,7 @@ public class DNSFilterService extends VpnService  {
 
 		public synchronized void updateForward() {
 
-			String ipFilePath = ExecutionEnvironment.getEnvironment().getWorkDir()+ipFileName;
+			String ipFilePath = ExecutionEnvironment.getEnvironment().getWorkDir()+"/"+ipFileName;
 
 			try {
 				String ip = getALocalIpAddress();
@@ -200,7 +200,7 @@ public class DNSFilterService extends VpnService  {
 
 		public synchronized void clearForward() {
 
-			String ipFilePath = ExecutionEnvironment.getEnvironment().getWorkDir()+ipFileName;
+			String ipFilePath = ExecutionEnvironment.getEnvironment().getWorkDir()+"/"+ipFileName;
 
 			if (forwardip == null)
 				return;
@@ -656,8 +656,6 @@ public class DNSFilterService extends VpnService  {
 			Logger.getLogger().logLine("DNS filter already running!");
 		} else {
 			try {
-
-				DNSFilterManager.WORKDIR = DNSProxyActivity.WORKPATH.getAbsolutePath() + "/";
 				DNSFILTER = DNSFilterManager.getInstance();
 				DNSFILTER.init();
 				dnsProxyMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("dnsProxyOnAndroid", "false"));

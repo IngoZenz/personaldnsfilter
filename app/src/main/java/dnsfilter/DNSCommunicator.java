@@ -79,7 +79,7 @@ public class DNSCommunicator {
 				if (currentCheckingDNServers != null && Utils.arrayEqual(currentCheckingDNServers, this.dnsServers))
 					return; // already triggered!
 
-				File dnsPerfFile= new File(ExecutionEnvironment.getEnvironment().getWorkDir()+"dnsperf.info");
+				File dnsPerfFile= new File(ExecutionEnvironment.getEnvironment().getWorkDir()+"/dnsperf.info");
 				if (!dnsPerfFile.exists() || dnsPerfFile.delete()) {
 					dnsPerfOut[0] = new FileOutputStream(dnsPerfFile);
 					dnsPerfOut[0].write(("#DNS Response Times\r\n#Started: " + new Date() + "\r\n\r\n").getBytes());

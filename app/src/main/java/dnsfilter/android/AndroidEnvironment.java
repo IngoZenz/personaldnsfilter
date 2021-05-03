@@ -46,6 +46,7 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
 
     private static Context ctx = null;
     private static AndroidEnvironment INSTANCE = new AndroidEnvironment();
+    private static String WORKDIR;
     private static Stack wakeLooks = new Stack();
 
     static {
@@ -56,9 +57,9 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
     public static void initEnvironment(Context context) {
         ctx = context;
         if (android.os.Build.VERSION.SDK_INT >= 19)
-            DNSProxyActivity.WORKPATH = new File(context.getExternalFilesDirs (null)[0].getAbsolutePath() + "/PersonalDNSFilter");
+            WORKDIR = context.getExternalFilesDirs (null)[0].getAbsolutePath() + "/PersonalDNSFilter";
         else
-            DNSProxyActivity.WORKPATH = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter");
+            WORKDIR= Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter";
     }
 
     @Override
@@ -117,7 +118,7 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
 
     @Override
     public String getWorkDir() {
-        return DNSProxyActivity.WORKPATH+"/";
+        return WORKDIR;
     }
 
     @Override
@@ -164,13 +165,14 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
         }
 
         //TO BE DELETED ONCE ON TARGET 11! MIGRATION OF CONFIG DATA TO EXTERNAL USER FOLDER
-        if (!DNSProxyActivity.WORKPATH.exists() && storagePermission) {
+        File F_WORKDIR = new File(WORKDIR);
+        if (!F_WORKDIR.exists() && storagePermission) {
             File OLDPATH = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter");
-            if (OLDPATH.exists() && !OLDPATH.equals(DNSProxyActivity.WORKPATH)) {
+            if (OLDPATH.exists() && !OLDPATH.equals(F_WORKDIR)) {
                 try {
-                    Utils.moveFileTree(OLDPATH, DNSProxyActivity.WORKPATH);
+                    Utils.moveFileTree(OLDPATH, F_WORKDIR);
                     Logger.getLogger().logLine("MIGRATED old config Location to App Storage!");
-                    Logger.getLogger().logLine("NEW FOLDER: "+DNSProxyActivity.WORKPATH);
+                    Logger.getLogger().logLine("NEW FOLDER: "+F_WORKDIR);
                 } catch (IOException eio) {
                     Logger.getLogger().logLine("Migration of old config location has failed!");
                     Logger.getLogger().logException(eio);

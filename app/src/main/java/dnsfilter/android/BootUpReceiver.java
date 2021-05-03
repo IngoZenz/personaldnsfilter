@@ -58,7 +58,7 @@ public class BootUpReceiver extends BroadcastReceiver {
 
 	public Properties getConfig() {
 
-		File propsFile = new File(ExecutionEnvironment.getEnvironment().getWorkDir()+"dnsfilter.conf");
+		File propsFile = new File(ExecutionEnvironment.getEnvironment().getWorkDir()+"/dnsfilter.conf");
 
 		try {
 			InputStream in = new FileInputStream(propsFile);

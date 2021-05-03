@@ -72,7 +72,7 @@ package util;
 	
 	@Override
 	public String getWorkDir() {
-		return System.getProperty("user.dir")+ File.separator;
+		return System.getProperty("user.dir");
 	}
 
 	@Override
