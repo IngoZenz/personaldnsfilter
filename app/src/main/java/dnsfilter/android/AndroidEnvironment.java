@@ -56,8 +56,10 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
 
     public static void initEnvironment(Context context) {
         ctx = context;
-        if (android.os.Build.VERSION.SDK_INT >= 19)
+        if (android.os.Build.VERSION.SDK_INT >= 19) {
+            context.getExternalFilesDirs(null); //Seems on some devices this has to be called once before accessing Files...
             WORKDIR = context.getExternalFilesDirs (null)[0].getAbsolutePath() + "/PersonalDNSFilter";
+        }
         else
             WORKDIR= Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter";
     }
