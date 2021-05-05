@@ -47,6 +47,27 @@ public class AppSelectorView extends LinearLayout {
 		}
 	}
 
+	private class UIUpdate implements Runnable {
+
+		private CheckBox checkBox;
+		private Drawable icon;
+		AsyncLoader update;
+
+		private UIUpdate(CheckBox checkBox, Drawable icon, AsyncLoader update) {
+			this.checkBox = checkBox;
+			this.icon = icon;
+			this.update = update;
+		}
+
+		@Override
+		public void run() {
+			if (update.abort)
+				return;
+			checkBox.setCompoundDrawablesWithIntrinsicBounds(null, null, icon, null);
+			addView(checkBox);
+		}
+	}
+
 	private class AsyncLoader implements Runnable {
 
 		private boolean abort = false;
@@ -105,19 +126,13 @@ public class AppSelectorView extends LinearLayout {
 
 				wrappers = sortedWrappers.toArray(new ComparableAppInfoWrapper[0]);
 
-				post(new Runnable() {
-					@Override
-					public void run() {
-						for (int i = 0; (i < wrappers.length && !abort); i++) {
-							Drawable icon = (wrappers[i].wrapped.loadIcon(pm));
-							if (icon.getIntrinsicWidth() != iconSize)
-								icon = resizeDrawable(icon, corIconSize);
-							wrappers[i].checkBox.setCompoundDrawablesWithIntrinsicBounds(null, null, icon, null);
-							addView(wrappers[i].checkBox);
-						}
-						loaded = !abort;
-					}
-				});
+				for (int i = 0; (i < wrappers.length && !abort); i++) {
+					Drawable icon = (wrappers[i].wrapped.loadIcon(pm));
+					if (icon.getIntrinsicWidth() != iconSize)
+						icon = resizeDrawable(icon, corIconSize);
+					post(new UIUpdate(wrappers[i].checkBox, icon, this));
+				}
+				loaded = !abort;
 
 			} finally {
 				runningUpdate = null;
