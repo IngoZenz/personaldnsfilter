@@ -64,7 +64,7 @@ import util.conpool.TLSSocketFactory;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1504801";
+	public static final String VERSION = "1504802";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
