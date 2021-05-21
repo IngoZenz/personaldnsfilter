@@ -58,16 +58,16 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
         ctx = context;
         if (android.os.Build.VERSION.SDK_INT >= 19) {
             context.getExternalFilesDirs(null); //Seems on some devices this has to be called once before accessing Files...
-            File[] dirs = context.getExternalFilesDirs(null);
-            if (dirs != null)
-                WORKDIR = dirs[0].getAbsolutePath() + "/PersonalDNSFilter";
+            File dir = context.getExternalFilesDir(null);
+            if (dir != null)
+                WORKDIR = dir.getAbsolutePath() + "/PersonalDNSFilter";
         }
         else
             WORKDIR= Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter";
     }
 
     private void waitForStorage() {
-        File[] dirs = null;
+        File dir = null;
 
         if (android.os.Build.VERSION.SDK_INT >= 19) {
 
@@ -75,10 +75,10 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
 
                 Logger.getLogger().log("WAITING FOR STORAGE!");
 
-                dirs = ctx.getExternalFilesDirs(null);
+                dir = ctx.getExternalFilesDir(null);
 
-                if (dirs != null) {
-                    WORKDIR = dirs[0].getAbsolutePath() + "/PersonalDNSFilter";
+                if (dir != null) {
+                    WORKDIR = dir.getAbsolutePath() + "/PersonalDNSFilter";
                     return;
                 }
                 try {
