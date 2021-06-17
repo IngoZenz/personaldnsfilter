@@ -46,7 +46,9 @@ import android.text.Spanned;
 import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.ActionMode;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -56,6 +58,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
+import android.widget.PopupWindow;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TextView;
@@ -838,7 +841,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			BOOT_START = false;
 		}
 		loadAndApplyConfig(true);
+
 		appStart = false; // now started
+
+		Dialog popup = new Dialog(DNSProxyActivity.this, R.style.Theme_dialog_TitleBar);
+		popup.setContentView(R.layout.popup);
+		popup.setTitle("Consider your rating!");
+		popup.show();
 	}
 
 	protected void setDNSCfgDialog(Properties config) {
