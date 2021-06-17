@@ -16,10 +16,10 @@
         android:layout_marginBottom="15dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#eceff1"
+        android:background="#FFFFFF"
         android:minWidth="200dp"
         android:textColor="#424242"
-        android:text="Thanks for using our free app personalDNSfilter!\nOften we get bad rating due to misunderstanding.\nTherefore, before rating, please check our FAQ, ask our TG Group or just write us an E-Mail.\nA bad rating is not motivating to provide this free app further on Google Play Store.">
+        android:text="Thanks for using our free app personalDNSfilter!\nOften we get bad ratings due to misunderstanding.\nTherefore - before rating - please check our FAQ, ask our Telegram group or just write us an e-mail.\nA bad rating is not motivating to provide this free app further on Google Play.">
 
     </TextView>
 " />
