@@ -1,4 +1,4 @@
-/* 
+/*
  PersonalDNSFilter 1.5
  Copyright (C) 2017 Ingo Zenz
 
@@ -44,14 +44,19 @@ import android.text.InputType;
 import android.text.Spannable;
 import android.text.Spanned;
 import android.text.TextWatcher;
+import android.text.method.LinkMovementMethod;
 import android.util.TypedValue;
 import android.view.ActionMode;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -63,7 +68,6 @@ import android.widget.TextView;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -838,7 +842,52 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			BOOT_START = false;
 		}
 		loadAndApplyConfig(true);
+
 		appStart = false; // now started
+
+		handleInitialInfoPopUp();
+
+	}
+
+	private static Dialog popUpDialog = null;
+	private static boolean showInitialInfoPopUp = true;
+	private static boolean popUpDialogChanged = false;
+	private static Button initialInfoPopUpExitBtn = null;
+
+
+	private void closeInitialInfoPopUp() {
+		showInitialInfoPopUp = !((CheckBox)popUpDialog.findViewById(R.id.disableInfoPopUp)).isChecked();
+		popUpDialog.dismiss();
+		if (!showInitialInfoPopUp) {
+			popUpDialogChanged = true;
+			persistConfig();
+			popUpDialogChanged = false;
+		}
+	}
+
+
+	private void handleInitialInfoPopUp() {
+		try {
+			Properties config = CONFIG.getConfig();
+			showInitialInfoPopUp  = Boolean.parseBoolean(config.getProperty("showInitialInfoPopUp", "true"));
+			if (showInitialInfoPopUp) {
+				popUpDialog = new Dialog(DNSProxyActivity.this, R.style.Theme_dialog_TitleBar);
+				popUpDialog.setContentView(R.layout.popup);
+				popUpDialog.setTitle(config.getProperty("initialInfoPopUpTitle"));
+				((TextView)popUpDialog.findViewById(R.id.infoPopUpTxt)).setText(fromHtml(config.getProperty("initialInfoPopUpText","")));
+				((TextView)popUpDialog.findViewById(R.id.infoPopUpTxt)).setMovementMethod(LinkMovementMethod.getInstance());
+				initialInfoPopUpExitBtn = (Button) popUpDialog.findViewById(R.id.closeInfoPopupBtn);
+				initialInfoPopUpExitBtn.setOnClickListener(this);
+				popUpDialog.show();
+				Window window = popUpDialog.getWindow();
+				WindowManager mWinMgr = (WindowManager) DNSProxyActivity.this.getSystemService(DNSProxyActivity.this.WINDOW_SERVICE);
+				int displayWidth = (int) (mWinMgr.getDefaultDisplay().getWidth() * 0.95);
+				window.setLayout(displayWidth, WindowManager.LayoutParams.WRAP_CONTENT);
+			}
+		} catch (Exception e) {
+			Logger.getLogger().logException(e);
+			showInitialInfoPopUp = false; //some issue => do not try again for future starts of app
+		}
 	}
 
 	protected void setDNSCfgDialog(Properties config) {
@@ -1112,6 +1161,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				else if (ln.trim().startsWith("filterActive"))
 					ln = "filterActive = " + enableAdFilterCheck.isChecked();
 
+				else if (popUpDialogChanged && ln.trim().startsWith("showInitialInfoPopUp"))
+					ln = "showInitialInfoPopUp = " + showInitialInfoPopUp;
+
 				out.write((ln + "\r\n").getBytes());
 
 				changed = changed || !lnOld.equals(ln);
@@ -1187,6 +1239,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			return;
 		} else if (destination == backupDnBtn || destination == backupUpBtn) {
 			handleBackUpIdChange(destination == backupUpBtn);
+			return;
+		} else if (destination == initialInfoPopUpExitBtn) {
+			closeInitialInfoPopUp();
 			return;
 		} else if (destination == manualDNSViewResDefBtn){
 			restoreDefaultDNSConfig();
