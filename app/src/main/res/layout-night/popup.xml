@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:paddingLeft="15dp"
     android:paddingRight="15dp"
-    android:background="#FFFFFF"
+    android:background="#000000"
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:orientation="vertical">
@@ -18,8 +18,8 @@
         android:padding="5dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#eceff1"
-        android:textColor="#424242"
+        android:background="#000000"
+        android:textColor="#FFFFFF"
         android:text="">
 
     </TextView>
@@ -33,7 +33,7 @@
         android:button="@drawable/custom_switch"
         android:checked="false"
         android:text="Do not show again"
-        android:textColor="#424242" />
+        android:textColor="#FFFFFF" />
     <Button
         android:id="@+id/closeInfoPopupBtn"
         android:layout_width="wrap_content"
