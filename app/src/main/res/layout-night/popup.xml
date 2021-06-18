@@ -21,9 +21,8 @@
         android:background="#000000"
         android:textColor="#FFFFFF"
         android:text="">
-
     </TextView>
-" />
+
     <dnsfilter.android.PaddedCheckBox
         android:id="@+id/disableInfoPopUp"
         android:layout_width="wrap_content"
