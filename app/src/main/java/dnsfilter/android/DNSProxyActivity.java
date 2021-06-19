@@ -575,12 +575,17 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	@Override
 	public void onResume() {
-		super.onResume();
-		if (advDNSConfigDia_open) {
-			advDNSConfigDia.show();
-			((HorizontalScrollView) advDNSConfigDia.findViewById(R.id.manualDNSScroll)).fullScroll(ScrollView.FOCUS_LEFT);
+		try {
+			super.onResume();
+			if (advDNSConfigDia_open) {
+				advDNSConfigDia.show();
+				((HorizontalScrollView) advDNSConfigDia.findViewById(R.id.manualDNSScroll)).fullScroll(ScrollView.FOCUS_LEFT);
+			}
+			checkPasscode();
+		} catch (Exception e){
+			e.printStackTrace();
+			Logger.getLogger().logLine("onResume() failed! "+e.toString());
 		}
-		checkPasscode();
 	}
 
 	private void checkPasscode() {
@@ -897,7 +902,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 						"# The default list contains following entries:\n" +
 						"# adguard1 (UDP); adguard2 (UDP); uncensoreddns.org (Dot); libredns.gr (DoT); libredns.gr (DoH);  nixnet.services Luxembourg (DoT); nixnet.services Las Vegas(DoT); nixnet.services New York(DoT)\n\n";
 
-		manualDNSView.setText(manualDNS_Help+config.getProperty("fallbackDNS").replace(";", "\n").replace(" ", ""));
+		manualDNSView.setText(manualDNS_Help+config.getProperty("fallbackDNS","").replace(";", "\n").replace(" ", ""));
 		manualDNSCheck.setChecked(!Boolean.parseBoolean(config.getProperty("detectDNS", "true")));
 
 	}
@@ -1056,8 +1061,14 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
-		if (advDNSConfigDia_open)
-			advDNSConfigDia.dismiss();
+		try {
+			if (advDNSConfigDia_open)
+				advDNSConfigDia.dismiss();
+			advDNSConfigDia_open = false;
+		} catch (Exception e){
+			e.printStackTrace();
+			Logger.getLogger().logLine("onSaveInstanceState() failed! "+e.toString());
+		}
 	}
 
 /*	@Override

@@ -15,10 +15,9 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginBottom="10dp"
-        android:padding="5dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#eceff1"
+        android:background="#FFFFFF"
         android:textColor="#424242"
         android:text="">
     </TextView>
