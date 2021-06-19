@@ -330,7 +330,10 @@ public class Utils {
 	public static void moveFileTree(File sourceFile, File destFile) throws IOException {
 
 		if (sourceFile.isDirectory()) {
-			for (File file : sourceFile.listFiles()) {
+			File[] files = sourceFile.listFiles();
+			if (files == null)
+				throw new IOException("IOError occured while trying to move "+sourceFile);
+			for (File file : files) {
 				moveFileTree(file, new File(file.getPath().replace(sourceFile.getPath(), destFile.getPath())));
 				sourceFile.delete();
 			}
