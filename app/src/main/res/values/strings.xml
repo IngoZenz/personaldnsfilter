@@ -27,8 +27,6 @@
   <string name="cnameCloakingConfig">CNAME cloaking protection (aggressive)</string>
   <string name="category">Category</string>
   <string name="name">Name</string>
-  <string name="left" translatable="false">◀</string>
-  <string name="right" translatable="false">▶</string>
   <string name="editFilterDialogTitle">Edit filter</string>
   <string name="addFilter">"Add filter"</string>
   <string name="removeFilter">"Remove filter"</string>
