@@ -339,7 +339,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
 				window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
 				window.setStatusBarColor(this.getResources().getColor(R.color.colorPrimaryDark));
-				getWindow().setNavigationBarColor(getResources().getColor(R.color.colorGray));
+				getWindow().setNavigationBarColor(getResources().getColor(R.color.colorPrimaryDark));
 			}
 
 			setContentView(R.layout.main);
