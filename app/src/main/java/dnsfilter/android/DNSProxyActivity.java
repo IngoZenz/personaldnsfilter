@@ -116,6 +116,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected static Button backupDnBtn;
 	protected static Button backupUpBtn;
 	protected static Button manualDNSViewResDefBtn;
+	protected static Button exitDNSCfgBtn;
 	protected static TextView addFilterBtn;
 	protected static TextView removeFilterBtn;
 	protected static CheckBox appWhiteListCheck;
@@ -422,6 +423,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			manualDNSView.setText(uiText);
 			manualDNSViewResDefBtn = (Button) advDNSConfigDia.findViewById(R.id.RestoreDefaultBtn);
 			manualDNSViewResDefBtn.setOnClickListener(this);
+			exitDNSCfgBtn = (Button) advDNSConfigDia.findViewById(R.id.closeDnsCfg);
+			exitDNSCfgBtn.setOnClickListener(this);
 
 			startBtn = (Button) findViewById(R.id.startBtn);
 			startBtn.setOnClickListener(this);
@@ -1264,6 +1267,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			return;
 		} else if (destination == manualDNSViewResDefBtn){
 			restoreDefaultDNSConfig();
+			return;
+		} else if (destination == exitDNSCfgBtn){
+			advDNSConfigDia.dismiss();
+			advDNSConfigDia_open = false;
+			persistConfig();
 			return;
 		}
 
