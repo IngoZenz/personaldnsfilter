@@ -70,6 +70,8 @@
                 android:id="@+id/RestoreDefaultBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:layout_marginLeft="4dp"
                 android:background="@drawable/custom_button"
                 android:elevation="2.3dp"
                 android:fontFamily="sans-serif-medium"
@@ -78,13 +80,16 @@
                 android:textAllCaps="true"
                 android:textColor="#FFFFFF"
                 android:textSize="11sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                />
 
             <Button
                 android:id="@+id/closeDnsCfg"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
+                android:layout_marginBottom="4dp"
+                android:layout_marginRight="4dp"
+                android:layout_marginLeft="6dp"
                 android:background="@drawable/custom_button"
                 android:elevation="2.3dp"
                 android:fontFamily="sans-serif-medium"
@@ -93,7 +98,8 @@
                 android:textAllCaps="true"
                 android:textColor="#FFFFFF"
                 android:textSize="11sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                />
         </LinearLayout>
     </LinearLayout>
 
