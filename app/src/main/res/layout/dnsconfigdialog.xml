@@ -59,48 +59,40 @@
         android:background="#ffffff"
         android:orientation="vertical">
 
-        <LinearLayout
+
+        <Button
+            android:id="@+id/RestoreDefaultBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
+            android:background="@drawable/custom_button"
+            android:elevation="2.3dp"
+            android:fontFamily="sans-serif-medium"
+            android:padding="10dp"
+            android:text="@string/restoreDefault"
+            android:textAllCaps="true"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="15dp"
+            android:layout_marginRight="15dp"
             android:background="#ffffff"
             android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/RestoreDefaultBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
-                android:layout_marginLeft="4dp"
-                android:background="@drawable/custom_button"
-                android:elevation="2.3dp"
-                android:fontFamily="sans-serif-medium"
-                android:padding="10dp"
-                android:text="@string/restoreDefault"
-                android:textAllCaps="true"
-                android:textColor="#FFFFFF"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                />
 
             <Button
                 android:id="@+id/closeDnsCfg"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
-                android:layout_marginRight="4dp"
-                android:layout_marginLeft="6dp"
                 android:background="@drawable/custom_button"
+                android:drawableLeft="@drawable/done"
                 android:elevation="2.3dp"
                 android:fontFamily="sans-serif-medium"
-                android:padding="10dp"
-                android:text="@string/stopBtnLabel"
-                android:textAllCaps="true"
-                android:textColor="#FFFFFF"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                />
+                android:padding="5dp" />
         </LinearLayout>
     </LinearLayout>
-
 </LinearLayout>
