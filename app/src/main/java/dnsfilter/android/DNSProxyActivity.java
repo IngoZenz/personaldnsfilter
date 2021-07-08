@@ -404,6 +404,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			advDNSConfigDia.setContentView(R.layout.dnsconfigdialog);
 			advDNSConfigDia.setTitle(getResources().getString(R.string.dnsCfgConfigDialogTitle));
 			advDNSConfigDia.setOnKeyListener(this);
+			Window window = advDNSConfigDia.getWindow();
+			WindowManager mWinMgr = (WindowManager) DNSProxyActivity.this.getSystemService(DNSProxyActivity.this.WINDOW_SERVICE);
+			int displayWidth = (int) (mWinMgr.getDefaultDisplay().getWidth() * 0.90);
+			window.setLayout(displayWidth, WindowManager.LayoutParams.WRAP_CONTENT);
+			advDNSConfigDia.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
 			boolean checked = manualDNSCheck != null && manualDNSCheck.isChecked();
 
@@ -891,8 +896,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				popUpDialog.show();
 				Window window = popUpDialog.getWindow();
 				WindowManager mWinMgr = (WindowManager) DNSProxyActivity.this.getSystemService(DNSProxyActivity.this.WINDOW_SERVICE);
-				int displayWidth = (int) (mWinMgr.getDefaultDisplay().getWidth() * 0.95);
+				int displayWidth = (int) (mWinMgr.getDefaultDisplay().getWidth() * 0.90);
 				window.setLayout(displayWidth, WindowManager.LayoutParams.WRAP_CONTENT);
+				popUpDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 			}
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
