@@ -1075,7 +1075,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		try {
 			if (advDNSConfigDia_open)
 				advDNSConfigDia.dismiss();
-			advDNSConfigDia_open = false;
 		} catch (Exception e){
 			e.printStackTrace();
 			Logger.getLogger().logLine("onSaveInstanceState() failed! "+e.toString());
