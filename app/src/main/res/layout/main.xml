@@ -91,7 +91,6 @@
                         android:background="@drawable/custom_button"
                         android:drawableLeft="@drawable/remote_icon"
                         android:gravity="center"
-                        android:elevation="2.3dp"
                         android:padding="2dp"
                         android:textColor="#424242"></Button>
 
@@ -104,7 +103,6 @@
                         android:layout_marginBottom="4dp"
                         android:background="@drawable/custom_button"
                         android:gravity="center"
-                        android:elevation="2.3dp"
                         android:padding="2dp"
                         android:text="?"
                         android:includeFontPadding="false"
@@ -298,7 +296,6 @@
                         android:layout_weight="0.05"
                         android:background="@drawable/custom_button"
                         android:drawableRight="@drawable/arrow_left"
-                        android:elevation="2.3dp"
                         android:padding="4dp" />
 
                     <TextView
@@ -325,7 +322,6 @@
                         android:background="@drawable/custom_button"
                         android:drawableLeft="@drawable/arrow_right"
                         android:gravity="center"
-                        android:elevation="2.3dp"
                         android:padding="4dp" />
                 </LinearLayout>
 
@@ -434,7 +430,6 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="4dp"
                 android:background="@drawable/custom_button"
-                android:elevation="3.2dp"
                 android:fontFamily="sans-serif-medium"
                 android:padding="10dp"
                 android:text="@string/filterReloadBtnLabel"
@@ -452,7 +447,6 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="4dp"
                 android:background="@drawable/custom_button"
-                android:elevation="3.2dp"
                 android:fontFamily="sans-serif-medium"
                 android:padding="10dp"
                 android:text="@string/startBtnLabel"
@@ -469,7 +463,6 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="4dp"
                 android:background="@drawable/custom_button"
-                android:elevation="3.2dp"
                 android:fontFamily="sans-serif-medium"
                 android:padding="10dp"
                 android:text="@string/stopBtnLabel"
@@ -580,7 +573,6 @@
                         android:layout_weight="0.04"
                         android:background="@drawable/custom_button"
                         android:drawableRight="@drawable/arrow_left"
-                        android:elevation="2.3dp"
                         android:padding="4dp" />
 
                     <EditText
@@ -605,7 +597,6 @@
                         android:layout_weight="0.04"
                         android:background="@drawable/custom_button"
                         android:drawableLeft="@drawable/arrow_right"
-                        android:elevation="2.3dp"
                         android:padding="4dp" />
                 </LinearLayout>
 
@@ -618,7 +609,6 @@
                     android:layout_marginTop="10dp"
                     android:layout_marginRight="10dp"
                     android:background="@drawable/custom_button"
-                    android:elevation="2.3dp"
                     android:fontFamily="sans-serif-medium"
                     android:padding="10dp"
                     android:text="@string/backupConfig"
@@ -638,7 +628,6 @@
                     android:layout_marginRight="10dp"
                     android:layout_marginBottom="10dp"
                     android:background="@drawable/custom_button"
-                    android:elevation="2.3dp"
                     android:fontFamily="sans-serif-medium"
                     android:padding="10dp"
                     android:text="@string/restoreBackup"
@@ -660,7 +649,6 @@
                 android:layout_marginRight="10dp"
                 android:layout_marginBottom="15dp"
                 android:background="@drawable/custom_button"
-                android:elevation="2.3dp"
                 android:fontFamily="sans-serif-medium"
                 android:padding="10dp"
                 android:text="@string/restoreDefault"
