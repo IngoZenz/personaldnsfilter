@@ -41,14 +41,7 @@
         android:layout_marginBottom="10dp"
         android:layout_gravity="right"
         android:background="@drawable/custom_button"
+        android:drawableLeft="@drawable/done"
         android:elevation="2.3dp"
-        android:fontFamily="sans-serif-medium"
-        android:padding="10dp"
-        android:text="close"
-        android:textAllCaps="true"
-        android:textColor="#FFFFFF"
-        android:textSize="11sp"
-        android:textStyle="bold" />
-
-
+        android:padding="3dp"/>
 </LinearLayout>
