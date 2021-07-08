@@ -144,7 +144,6 @@
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_button"
             android:drawableLeft="@drawable/done"
-            android:elevation="2.3dp"
             android:fontFamily="sans-serif-medium"
             android:padding="5dp" />
         <Button
@@ -156,7 +155,6 @@
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_button"
             android:drawableLeft="@drawable/cancel"
-            android:elevation="2.3dp"
             android:padding="5dp"/>
 
         <Button
@@ -168,7 +166,6 @@
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_button"
             android:drawableLeft="@drawable/delete"
-            android:elevation="2.3dp"
             android:padding="5dp" />
 
 

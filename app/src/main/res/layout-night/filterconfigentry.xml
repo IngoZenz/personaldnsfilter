@@ -71,7 +71,6 @@
         android:background="@drawable/custom_button"
         android:drawableLeft="@drawable/edit_pen"
         android:gravity="center"
-        android:elevation="2.3dp"
         android:textColor="#FFFFFF"
         android:textSize="14dp"
         android:textStyle="bold">
