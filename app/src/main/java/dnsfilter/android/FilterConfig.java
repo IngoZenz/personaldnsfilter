@@ -70,11 +70,6 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 
 		configTable = table;
 		editDialog = new Dialog(table.getContext(), R.style.Theme_dialog_TitleBar);
-
-		Window window = editDialog .getWindow();
-		window.setLayout((int) (DNSProxyActivity.DISPLAY_WIDTH*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
-		window.setBackgroundDrawableResource(android.R.color.transparent);
-
 		editDialog.setOnKeyListener(this);
 		editDialog.setContentView(R.layout.filterentryeditdialog);
 		editDialog.setTitle(table.getContext().getResources().getString(R.string.editFilterDialogTitle));
@@ -247,9 +242,9 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 		((TextView)editDialog.findViewById(R.id.filterName)).setText(((TextView)currentContent[2]).getText().toString());
 		((TextView)editDialog.findViewById(R.id.filterUrl)).setText(((TextView)currentContent[3]).getText().toString());
 		editDialog.show();
-		WindowManager.LayoutParams lp = editDialog.getWindow().getAttributes();
-		lp.width = (int)(configTable.getContext().getResources().getDisplayMetrics().widthPixels*1.00);;
-		editDialog.getWindow().setAttributes(lp);
+		Window window = editDialog .getWindow();
+		window.setLayout((int) (DNSProxyActivity.DISPLAY_WIDTH*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
+		window.setBackgroundDrawableResource(android.R.color.transparent);
 	}
 
 	private void handleEditDialogEvent(View v) {
