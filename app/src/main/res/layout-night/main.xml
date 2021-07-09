@@ -41,6 +41,7 @@
                 android:layout_marginLeft="7dp"
                 android:layout_marginTop="10dp"
                 android:layout_toRightOf="@+id/textView1"
+                android:gravity="center_vertical"
                 android:layout_weight="0"
                 android:background="#373737"
                 android:drawableRight="@drawable/edit_pen"
