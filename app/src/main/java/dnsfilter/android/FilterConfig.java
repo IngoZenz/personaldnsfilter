@@ -16,13 +16,9 @@ import android.widget.TextView;
 import android.view.View.OnClickListener;
 
 import java.io.File;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.TreeMap;
-
-import util.Logger;
-
 
 public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListener {
 
@@ -75,6 +71,10 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 		configTable = table;
 		editDialog = new Dialog(table.getContext(), R.style.Theme_dialog_TitleBar);
 
+		Window window = editDialog .getWindow();
+		window.setLayout((int) (DNSProxyActivity.DISPLAY_WIDTH*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
+		window.setBackgroundDrawableResource(android.R.color.transparent);
+
 		editDialog.setOnKeyListener(this);
 		editDialog.setContentView(R.layout.filterentryeditdialog);
 		editDialog.setTitle(table.getContext().getResources().getString(R.string.editFilterDialogTitle));
@@ -108,9 +108,6 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 	private void addItem(FilterConfigEntry entry) {
 		TableRow row = (TableRow) LayoutInflater.from(configTable.getContext()).inflate(R.layout.filterconfigentry, null);
 		configTable.addView(row);
-
-
-
 		View[] cells = getContentCells(row);
 		((CheckBox) cells[0]).setChecked(entry.active);
 		((TextView) cells[1]).setText(entry.category);

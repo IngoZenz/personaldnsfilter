@@ -176,6 +176,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	protected static boolean NO_VPN = false;
 
+	protected static int DISPLAY_WIDTH = 0;
+
 	protected static DNSProxyActivity INSTANCE;
 
 	public static void reloadLocalConfig() {
@@ -320,6 +322,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 			super.onCreate(savedInstanceState);
 			AndroidEnvironment.initEnvironment(this);
+			DISPLAY_WIDTH = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getWidth();
 
 			MsgTO.setActivity(this);
 			INSTANCE = this;
@@ -404,11 +407,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			advDNSConfigDia.setContentView(R.layout.dnsconfigdialog);
 			advDNSConfigDia.setTitle(getResources().getString(R.string.dnsCfgConfigDialogTitle));
 			advDNSConfigDia.setOnKeyListener(this);
+
 			Window window = advDNSConfigDia.getWindow();
-			WindowManager mWinMgr = (WindowManager) DNSProxyActivity.this.getSystemService(DNSProxyActivity.this.WINDOW_SERVICE);
-			int displayWidth = (int) (mWinMgr.getDefaultDisplay().getWidth() * 0.90);
-			window.setLayout(displayWidth, WindowManager.LayoutParams.WRAP_CONTENT);
-			advDNSConfigDia.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+			window.setLayout((int) (DISPLAY_WIDTH * 0.9), WindowManager.LayoutParams.WRAP_CONTENT);
+			window.setBackgroundDrawableResource(android.R.color.transparent);
 
 			boolean checked = manualDNSCheck != null && manualDNSCheck.isChecked();
 
@@ -895,10 +897,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				initialInfoPopUpExitBtn.setOnClickListener(this);
 				popUpDialog.show();
 				Window window = popUpDialog.getWindow();
-				WindowManager mWinMgr = (WindowManager) DNSProxyActivity.this.getSystemService(DNSProxyActivity.this.WINDOW_SERVICE);
-				int displayWidth = (int) (mWinMgr.getDefaultDisplay().getWidth() * 0.90);
-				window.setLayout(displayWidth, WindowManager.LayoutParams.WRAP_CONTENT);
-				popUpDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+				window.setLayout((int) (DISPLAY_WIDTH*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
+				window.setBackgroundDrawableResource(android.R.color.transparent);
 			}
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
