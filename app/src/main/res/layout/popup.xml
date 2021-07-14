@@ -42,5 +42,5 @@
         android:layout_gravity="right"
         android:background="@drawable/custom_button"
         android:drawableLeft="@drawable/done"
-        android:padding="5dp"/>
+        android:padding="3dp"/>
 </LinearLayout>
