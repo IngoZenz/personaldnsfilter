@@ -1287,10 +1287,14 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		persistConfig();
 
 		if (destination == remoteCtrlBtn) {
-			//close advanced settings to force reload from new config
-			advancedConfigCheck.setChecked(false);
-			handleAdvancedConfig(null);
-			handleRemoteControl();
+			if (!switchingConfig) {
+				//close advanced settings to force reload from new config
+				advancedConfigCheck.setChecked(false);
+				if (CONFIG.isLocal())
+					pepareRemoteControl();
+				else
+					handleRemoteControl();
+			}
 		}
 		if (destination == startBtn || destination == enableAdFilterCheck)
 			handleRestart();
@@ -1347,6 +1351,96 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		logLine("=>CONNECTED to "+ CONFIG +"<=");
 	}
 
+	private void persistRemoteControlConfig(String destination, String passphrase) throws Exception {
+		String host;
+		int port;
+
+		try {
+			host = destination.substring(0,destination.indexOf(":"));
+			port = Integer.parseInt(destination.substring(destination.indexOf(":")+1));
+		} catch (Exception e) {
+			throw new Exception("Destination needed in format \"host:port\"!");
+		}
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		String ln;
+
+		BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(CONFIG.readConfig())));
+		while ((ln = reader.readLine()) != null) {
+
+			if (ln.trim().startsWith("client_remote_ctrl_host"))
+				ln = "client_remote_ctrl_host = " + host;
+
+			if (ln.trim().startsWith("client_remote_ctrl_port"))
+				ln = "client_remote_ctrl_port= " + port;
+
+			if (ln.trim().startsWith("client_remote_ctrl_keyphrase"))
+				ln = "client_remote_ctrl_keyphrase = " + passphrase;
+
+			out.write((ln + "\r\n").getBytes());
+		}
+		reader.close();
+		out.flush();
+		out.close();
+
+		updateConfig(out.toByteArray());
+	}
+
+	private void pepareRemoteControl() {
+
+		final Dialog remoteConnectDialog = new Dialog(this, R.style.Theme_dialog_TitleBar);
+		remoteConnectDialog.setContentView(R.layout.remoteconnect);
+		final Button okBtn = remoteConnectDialog.findViewById(R.id.remoteEditOkBtn);
+		final Button cancleBtn = remoteConnectDialog.findViewById(R.id.remoteEditCancelBtn);
+
+		OnClickListener onClickListener = new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				remoteConnectDialog.dismiss();
+				if (v == okBtn) {
+					try {
+						String destination  = ((EditText)remoteConnectDialog.findViewById(R.id.remote_destination)).getText().toString();
+						String passphrase = ((EditText)remoteConnectDialog.findViewById(R.id.passphrase)).getText().toString();
+						persistRemoteControlConfig(destination, passphrase);
+					} catch (Exception e) {
+						Logger.getLogger().logLine("Cannot store remote connect configuration! "+e.toString());
+						Logger.getLogger().message(e.getMessage());
+						return;
+					}
+					handleRemoteControl();
+				}
+			}
+		};
+		remoteConnectDialog.setOnKeyListener(this);
+		remoteConnectDialog.setTitle(getResources().getString(R.string.remoteConnectDialogTitle));
+
+		okBtn.setOnClickListener(onClickListener);
+		cancleBtn.setOnClickListener(onClickListener);
+
+		String host;
+		String passphrase;
+		int port;
+		try {
+			host = ConfigurationAccess.getLocal().getConfig().getProperty("client_remote_ctrl_host", "");
+			passphrase = ConfigurationAccess.getLocal().getConfig().getProperty("client_remote_ctrl_keyphrase", "");
+			try {
+				port = Integer.parseInt(ConfigurationAccess.getLocal().getConfig().getProperty("client_remote_ctrl_port", "3333"));
+			} catch (Exception e) {
+				port = 3333;
+			}
+		} catch (Exception e) {
+			Logger.getLogger().logException(e);
+			return;
+		}
+		((EditText)remoteConnectDialog.findViewById(R.id.remote_destination)).setText(host+":"+port);
+		((EditText)remoteConnectDialog.findViewById(R.id.passphrase)).setText(passphrase);
+		remoteConnectDialog.show();
+		Window window = remoteConnectDialog.getWindow();
+		window.setLayout((int) (DNSProxyActivity.DISPLAY_WIDTH*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
+		window.setBackgroundDrawableResource(android.R.color.transparent);
+	}
+
+
 
 
 	private void handleRemoteControl() {
@@ -1356,7 +1450,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			return;
 
 		switchingConfig = true;
-
+		handleAdvancedConfig(null); // reset UI view
 		if (CONFIG.isLocal()) {
 
 			try {
