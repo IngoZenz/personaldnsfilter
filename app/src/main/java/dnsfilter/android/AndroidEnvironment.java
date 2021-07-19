@@ -61,6 +61,16 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
             File dir = context.getExternalFilesDir(null);
             if (dir != null)
                 WORKDIR = dir.getAbsolutePath() + "/PersonalDNSFilter";
+
+            if (WORKDIR == null || !new File(WORKDIR).exists() ){
+                String backwardcompWorkdir = "/storage/emulated/0/Android/data/dnsfilter.android/files/PersonalDNSFilter";
+                try {
+                    if (new File(backwardcompWorkdir).exists())
+                        WORKDIR = backwardcompWorkdir;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
         else
             WORKDIR= Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter";
