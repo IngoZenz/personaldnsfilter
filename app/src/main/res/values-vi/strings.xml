@@ -35,4 +35,7 @@
   <string name="notificationActive">Hoạt động</string>
   <string name="notificationPaused">Tạm dừng</string>
   <string name="switch_pause_resume">Nhấn để chuyển</string>
+  <string name="remote_destination">Nơi Đến</string>
+  <string name="passphrase">Cụm mật khẩu</string>
+  <string name="remoteConnectDialogTitle">Điều khiển từ xa</string>
 </resources>

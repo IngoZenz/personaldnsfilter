@@ -23,7 +23,7 @@
   <string name="backupConfig">バックアップの設定</string>
   <string name="restoreBackup">バックアップから復元</string>
   <string name="restoreDefault">既定値に復元</string>
-  <string name="cnameCloakingConfig">CNAME cloaking 保護（積極的）</string>
+  <string name="cnameCloakingConfig">CNAME クローキング保護 (積極的)</string>
   <string name="category">カテゴリ</string>
   <string name="name">名前</string>
   <string name="editFilterDialogTitle">フィルターを編集</string>
@@ -35,4 +35,7 @@
   <string name="notificationActive">アクティブ</string>
   <string name="notificationPaused">一時停止</string>
   <string name="switch_pause_resume">タップして切り替え</string>
+  <string name="remote_destination">指定先</string>
+  <string name="passphrase">パスフレーズ</string>
+  <string name="remoteConnectDialogTitle">リモートコントロール</string>
 </resources>

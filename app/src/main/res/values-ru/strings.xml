@@ -35,4 +35,7 @@
   <string name="notificationActive">Активно</string>
   <string name="notificationPaused">Остановлено</string>
   <string name="switch_pause_resume">Нажмите, чтобы переключить</string>
+  <string name="remote_destination">Путь</string>
+  <string name="passphrase">Пароль</string>
+  <string name="remoteConnectDialogTitle">Дистанционное управление</string>
 </resources>

@@ -35,4 +35,7 @@
   <string name="notificationActive">Aktív</string>
   <string name="notificationPaused">Szüneteltetve</string>
   <string name="switch_pause_resume">Koppintson a váltáshoz</string>
+  <string name="remote_destination">Rendeltetési hely</string>
+  <string name="passphrase">Jelszó</string>
+  <string name="remoteConnectDialogTitle">Távirányító</string>
 </resources>

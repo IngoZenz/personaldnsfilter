@@ -35,4 +35,7 @@
   <string name="notificationActive">actief</string>
   <string name="notificationPaused">Gepauseerd</string>
   <string name="switch_pause_resume">Tik om te schakelen</string>
+  <string name="remote_destination">Doelstelling</string>
+  <string name="passphrase">Wachtwoordzin</string>
+  <string name="remoteConnectDialogTitle">Bediening op afstand</string>
 </resources>

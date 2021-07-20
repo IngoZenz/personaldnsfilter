@@ -35,4 +35,7 @@
   <string name="notificationActive">Активни</string>
   <string name="notificationPaused">Паузирано</string>
   <string name="switch_pause_resume">Додирните за пребацивање</string>
+  <string name="remote_destination">Одредиште</string>
+  <string name="passphrase">Пасспхрасе</string>
+  <string name="remoteConnectDialogTitle">Даљинско управљање</string>
 </resources>

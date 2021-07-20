@@ -35,4 +35,7 @@
   <string name="notificationActive">활성화</string>
   <string name="notificationPaused">일시 정지</string>
   <string name="switch_pause_resume">전환하려면 탭하세요.</string>
+  <string name="remote_destination">목적지</string>
+  <string name="passphrase">암호</string>
+  <string name="remoteConnectDialogTitle">리모콘</string>
 </resources>
