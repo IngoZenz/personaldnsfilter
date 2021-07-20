@@ -13,7 +13,7 @@
   <string name="keepAwakeCheckBox">保持設備喚醒</string>
   <string name="EnableAutoStart">開機自動啟動</string>
   <string name="EnableAdfilter">啟動網址過濾</string>
-  <string name="dnsLabel">DNS：</string>
+  <string name="dnsLabel">DNS:</string>
   <string name="manualDNSCheck">停用自動搜尋最佳DNS伺服器功能，手動設定名單如下：</string>
   <string name="dnsCfgConfigDialogTitle">DNS伺服器設定</string>
   <string name="filterUpdateDays">自動更新過濾清單的間隔（天）：</string>
@@ -35,4 +35,7 @@
   <string name="notificationActive">啟動</string>
   <string name="notificationPaused">暫停</string>
   <string name="switch_pause_resume">輕觸以切換</string>
+  <string name="remote_destination">目的地</string>
+  <string name="passphrase">密碼</string>
+  <string name="remoteConnectDialogTitle">遙控</string>
 </resources>

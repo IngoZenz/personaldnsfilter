@@ -35,4 +35,7 @@
   <string name="notificationActive">सक्रिय</string>
   <string name="notificationPaused">रुका हुआ</string>
   <string name="switch_pause_resume">स्विच करने के लिए टैप करें</string>
+  <string name="remote_destination">गंतव्य</string>
+  <string name="passphrase">पदबंध</string>
+  <string name="remoteConnectDialogTitle">रिमोट कंट्रोल</string>
 </resources>

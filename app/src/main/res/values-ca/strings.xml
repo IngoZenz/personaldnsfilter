@@ -35,4 +35,7 @@
   <string name="notificationActive">Actiu</string>
   <string name="notificationPaused">Pausat</string>
   <string name="switch_pause_resume">Toca per canviar</string>
+  <string name="remote_destination">Destinació</string>
+  <string name="passphrase">Contrasenya</string>
+  <string name="remoteConnectDialogTitle">Control remot</string>
 </resources>

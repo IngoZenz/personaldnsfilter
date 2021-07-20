@@ -35,4 +35,7 @@
   <string name="notificationActive">Activo</string>
   <string name="notificationPaused">Pausado</string>
   <string name="switch_pause_resume">Toca para cambiar</string>
+  <string name="remote_destination">Destino</string>
+  <string name="passphrase">Frase de contraseña</string>
+  <string name="remoteConnectDialogTitle">Control remoto</string>
 </resources>

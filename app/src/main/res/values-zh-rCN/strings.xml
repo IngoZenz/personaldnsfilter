@@ -35,4 +35,7 @@
   <string name="notificationActive">活跃</string>
   <string name="notificationPaused">暂停</string>
   <string name="switch_pause_resume">点按即可切换</string>
+  <string name="remote_destination">目标</string>
+  <string name="passphrase">口令</string>
+  <string name="remoteConnectDialogTitle">远程控制</string>
 </resources>

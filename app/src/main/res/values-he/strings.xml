@@ -35,4 +35,7 @@
   <string name="notificationActive">פעיל</string>
   <string name="notificationPaused">מופסק</string>
   <string name="switch_pause_resume">לחץ להחלפה</string>
+  <string name="remote_destination">יַעַד</string>
+  <string name="passphrase">ביטוי סיסמה</string>
+  <string name="remoteConnectDialogTitle">שלט רחוק</string>
 </resources>

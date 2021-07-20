@@ -35,4 +35,7 @@
   <string name="notificationActive">Aktiivinen</string>
   <string name="notificationPaused">Pysäytetty</string>
   <string name="switch_pause_resume">Vaihda napauttamalla</string>
+  <string name="remote_destination">Kohde</string>
+  <string name="passphrase">Salasana</string>
+  <string name="remoteConnectDialogTitle">Etähallinta</string>
 </resources>
