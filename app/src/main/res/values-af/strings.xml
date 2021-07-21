@@ -35,4 +35,7 @@
   <string name="notificationActive">Aktiewe</string>
   <string name="notificationPaused">Onderbreek</string>
   <string name="switch_pause_resume">Tik om oor te skakel</string>
+  <string name="remote_destination">Bestemming</string>
+  <string name="passphrase">Wagfrase</string>
+  <string name="remoteConnectDialogTitle">Afstandbeheer</string>
 </resources>

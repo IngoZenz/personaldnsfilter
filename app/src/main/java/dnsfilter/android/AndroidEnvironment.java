@@ -46,7 +46,7 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
 
     private static Context ctx = null;
     private static AndroidEnvironment INSTANCE = new AndroidEnvironment();
-    private static String WORKDIR;
+    private static String WORKDIR = null;
     private static Stack wakeLooks = new Stack();
 
     static {
@@ -58,10 +58,47 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
         ctx = context;
         if (android.os.Build.VERSION.SDK_INT >= 19) {
             context.getExternalFilesDirs(null); //Seems on some devices this has to be called once before accessing Files...
-            WORKDIR = context.getExternalFilesDirs (null)[0].getAbsolutePath() + "/PersonalDNSFilter";
+            File dir = context.getExternalFilesDir(null);
+            if (dir != null)
+                WORKDIR = dir.getAbsolutePath() + "/PersonalDNSFilter";
+
+            String backwardcompWorkdir = "/storage/emulated/0/Android/data/dnsfilter.android/files/PersonalDNSFilter";
+            try {
+                if (WORKDIR == null || !new File(WORKDIR).exists()) {
+                    if (new File(backwardcompWorkdir).exists())
+                        WORKDIR = backwardcompWorkdir;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else
+            WORKDIR = Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter";
+    }
+
+    private void waitForStorage() {
+        File dir = null;
+
+        if (android.os.Build.VERSION.SDK_INT >= 19) {
+
+            for (int i = 0; i < 15; i++) {
+
+                Logger.getLogger().log("WAITING FOR STORAGE!");
+
+                dir = ctx.getExternalFilesDir(null);
+
+                if (dir != null) {
+                    WORKDIR = dir.getAbsolutePath() + "/PersonalDNSFilter";
+                    return;
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
-        else
-            WORKDIR= Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter";
+        boolean pathExists = new File("/storage/emulated/0/Android/data/dnsfilter.android/files/PersonalDNSFilter").exists();
+        throw new IllegalStateException("Cannot get external storage!"+pathExists);
     }
 
     @Override
@@ -120,6 +157,8 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
 
     @Override
     public String getWorkDir() {
+        if (WORKDIR == null)
+            waitForStorage();
         return WORKDIR;
     }
 

@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -15,13 +16,9 @@ import android.widget.TextView;
 import android.view.View.OnClickListener;
 
 import java.io.File;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.TreeMap;
-
-import util.Logger;
-
 
 public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListener {
 
@@ -73,7 +70,6 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 
 		configTable = table;
 		editDialog = new Dialog(table.getContext(), R.style.Theme_dialog_TitleBar);
-
 		editDialog.setOnKeyListener(this);
 		editDialog.setContentView(R.layout.filterentryeditdialog);
 		editDialog.setTitle(table.getContext().getResources().getString(R.string.editFilterDialogTitle));
@@ -107,9 +103,6 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 	private void addItem(FilterConfigEntry entry) {
 		TableRow row = (TableRow) LayoutInflater.from(configTable.getContext()).inflate(R.layout.filterconfigentry, null);
 		configTable.addView(row);
-
-
-
 		View[] cells = getContentCells(row);
 		((CheckBox) cells[0]).setChecked(entry.active);
 		((TextView) cells[1]).setText(entry.category);
@@ -249,9 +242,9 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 		((TextView)editDialog.findViewById(R.id.filterName)).setText(((TextView)currentContent[2]).getText().toString());
 		((TextView)editDialog.findViewById(R.id.filterUrl)).setText(((TextView)currentContent[3]).getText().toString());
 		editDialog.show();
-		WindowManager.LayoutParams lp = editDialog.getWindow().getAttributes();
-		lp.width = (int)(configTable.getContext().getResources().getDisplayMetrics().widthPixels*1.00);;
-		editDialog.getWindow().setAttributes(lp);
+		Window window = editDialog .getWindow();
+		window.setLayout((int) (DNSProxyActivity.DISPLAY_WIDTH*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
+		window.setBackgroundDrawableResource(android.R.color.transparent);
 	}
 
 	private void handleEditDialogEvent(View v) {

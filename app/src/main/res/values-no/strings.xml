@@ -35,4 +35,7 @@
   <string name="notificationActive">Aktiv</string>
   <string name="notificationPaused">Pauset</string>
   <string name="switch_pause_resume">Trykk for å bytte</string>
+  <string name="remote_destination">Mål</string>
+  <string name="passphrase">Passfrase</string>
+  <string name="remoteConnectDialogTitle">Fjernstyring</string>
 </resources>

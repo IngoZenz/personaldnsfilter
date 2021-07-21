@@ -35,4 +35,7 @@
   <string name="notificationActive">Aktif</string>
   <string name="notificationPaused">Ditunda</string>
   <string name="switch_pause_resume">Ketuk untuk beralih</string>
+  <string name="remote_destination">Tujuan</string>
+  <string name="passphrase">Frasa sandi</string>
+  <string name="remoteConnectDialogTitle">Kontrol jarak jauh</string>
 </resources>

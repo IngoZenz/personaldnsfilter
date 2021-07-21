@@ -1,4 +1,4 @@
-/* 
+/*
  PersonalDNSFilter 1.5
  Copyright (C) 2017 Ingo Zenz
 
@@ -22,13 +22,11 @@
 
 package dnsfilter.android;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -36,7 +34,6 @@ import android.net.Uri;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.StrictMode;
 import android.text.Editable;
 import android.text.Html;
@@ -44,6 +41,7 @@ import android.text.InputType;
 import android.text.Spannable;
 import android.text.Spanned;
 import android.text.TextWatcher;
+import android.text.method.LinkMovementMethod;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.KeyEvent;
@@ -52,6 +50,8 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -63,7 +63,6 @@ import android.widget.TextView;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -87,7 +86,6 @@ import util.Logger;
 import util.LoggerInterface;
 import util.TimeoutListener;
 import util.TimoutNotificator;
-import util.Utils;
 
 
 public class DNSProxyActivity extends Activity implements OnClickListener, LoggerInterface, TextWatcher, DialogInterface.OnKeyListener, ActionMode.Callback, MenuItem.OnMenuItemClickListener,View.OnTouchListener, View.OnFocusChangeListener {
@@ -112,6 +110,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected static Button backupDnBtn;
 	protected static Button backupUpBtn;
 	protected static Button manualDNSViewResDefBtn;
+	protected static Button exitDNSCfgBtn;
 	protected static TextView addFilterBtn;
 	protected static TextView removeFilterBtn;
 	protected static CheckBox appWhiteListCheck;
@@ -176,6 +175,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected static boolean CHECKING_PASSCODE_DIAG = false;
 
 	protected static boolean NO_VPN = false;
+
+	protected static int DISPLAY_WIDTH = 0;
 
 	protected static DNSProxyActivity INSTANCE;
 
@@ -321,6 +322,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 			super.onCreate(savedInstanceState);
 			AndroidEnvironment.initEnvironment(this);
+			DISPLAY_WIDTH = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getWidth();
 
 			MsgTO.setActivity(this);
 			INSTANCE = this;
@@ -328,6 +330,14 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			if (getIntent().getBooleanExtra("SHOULD_FINISH", false)) {
 				finish();
 				System.exit(0);
+			}
+
+			if (Build.VERSION.SDK_INT >= 21) {
+				Window window = this.getWindow();
+				window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+				window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+				window.setStatusBarColor(this.getResources().getColor(R.color.colorPrimaryDark));
+				getWindow().setNavigationBarColor(getResources().getColor(R.color.colorPrimaryDark));
 			}
 
 			setContentView(R.layout.main);
@@ -398,6 +408,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			advDNSConfigDia.setTitle(getResources().getString(R.string.dnsCfgConfigDialogTitle));
 			advDNSConfigDia.setOnKeyListener(this);
 
+			Window window = advDNSConfigDia.getWindow();
+			window.setLayout((int) (DISPLAY_WIDTH * 0.9), WindowManager.LayoutParams.WRAP_CONTENT);
+			window.setBackgroundDrawableResource(android.R.color.transparent);
+
 			boolean checked = manualDNSCheck != null && manualDNSCheck.isChecked();
 
 			manualDNSCheck = (CheckBox) advDNSConfigDia.findViewById(R.id.manualDNSCheck);
@@ -410,6 +424,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			manualDNSView.setText(uiText);
 			manualDNSViewResDefBtn = (Button) advDNSConfigDia.findViewById(R.id.RestoreDefaultBtn);
 			manualDNSViewResDefBtn.setOnClickListener(this);
+			exitDNSCfgBtn = (Button) advDNSConfigDia.findViewById(R.id.closeDnsCfg);
+			exitDNSCfgBtn.setOnClickListener(this);
 
 			startBtn = (Button) findViewById(R.id.startBtn);
 			startBtn.setOnClickListener(this);
@@ -571,12 +587,17 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	@Override
 	public void onResume() {
-		super.onResume();
-		if (advDNSConfigDia_open) {
-			advDNSConfigDia.show();
-			((HorizontalScrollView) advDNSConfigDia.findViewById(R.id.manualDNSScroll)).fullScroll(ScrollView.FOCUS_LEFT);
+		try {
+			super.onResume();
+			if (advDNSConfigDia_open) {
+				advDNSConfigDia.show();
+				((HorizontalScrollView) advDNSConfigDia.findViewById(R.id.manualDNSScroll)).fullScroll(ScrollView.FOCUS_LEFT);
+			}
+			checkPasscode();
+		} catch (Exception e){
+			e.printStackTrace();
+			Logger.getLogger().logLine("onResume() failed! "+e.toString());
 		}
-		checkPasscode();
 	}
 
 	private void checkPasscode() {
@@ -838,7 +859,51 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			BOOT_START = false;
 		}
 		loadAndApplyConfig(true);
+
 		appStart = false; // now started
+
+		handleInitialInfoPopUp();
+
+	}
+
+	private static Dialog popUpDialog = null;
+	private static boolean showInitialInfoPopUp = true;
+	private static boolean popUpDialogChanged = false;
+	private static Button initialInfoPopUpExitBtn = null;
+
+
+	private void closeInitialInfoPopUp() {
+		showInitialInfoPopUp = !((CheckBox)popUpDialog.findViewById(R.id.disableInfoPopUp)).isChecked();
+		popUpDialog.dismiss();
+		if (!showInitialInfoPopUp) {
+			popUpDialogChanged = true;
+			persistConfig();
+			popUpDialogChanged = false;
+		}
+	}
+
+
+	private void handleInitialInfoPopUp() {
+		try {
+			Properties config = CONFIG.getConfig();
+			showInitialInfoPopUp  = Boolean.parseBoolean(config.getProperty("showInitialInfoPopUp", "true"));
+			if (showInitialInfoPopUp) {
+				popUpDialog = new Dialog(DNSProxyActivity.this, R.style.Theme_dialog_TitleBar);
+				popUpDialog.setContentView(R.layout.popup);
+				popUpDialog.setTitle(config.getProperty("initialInfoPopUpTitle"));
+				((TextView)popUpDialog.findViewById(R.id.infoPopUpTxt)).setText(fromHtml(config.getProperty("initialInfoPopUpText","")));
+				((TextView)popUpDialog.findViewById(R.id.infoPopUpTxt)).setMovementMethod(LinkMovementMethod.getInstance());
+				initialInfoPopUpExitBtn = (Button) popUpDialog.findViewById(R.id.closeInfoPopupBtn);
+				initialInfoPopUpExitBtn.setOnClickListener(this);
+				popUpDialog.show();
+				Window window = popUpDialog.getWindow();
+				window.setLayout((int) (DISPLAY_WIDTH*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
+				window.setBackgroundDrawableResource(android.R.color.transparent);
+			}
+		} catch (Exception e) {
+			Logger.getLogger().logException(e);
+			showInitialInfoPopUp = false; //some issue => do not try again for future starts of app
+		}
 	}
 
 	protected void setDNSCfgDialog(Properties config) {
@@ -848,7 +913,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 						"# The default list contains following entries:\n" +
 						"# adguard1 (UDP); adguard2 (UDP); uncensoreddns.org (Dot); libredns.gr (DoT); libredns.gr (DoH);  nixnet.services Luxembourg (DoT); nixnet.services Las Vegas(DoT); nixnet.services New York(DoT)\n\n";
 
-		manualDNSView.setText(manualDNS_Help+config.getProperty("fallbackDNS").replace(";", "\n").replace(" ", ""));
+		manualDNSView.setText(manualDNS_Help+config.getProperty("fallbackDNS","").replace(";", "\n").replace(" ", ""));
 		manualDNSCheck.setChecked(!Boolean.parseBoolean(config.getProperty("detectDNS", "true")));
 
 	}
@@ -1007,8 +1072,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
-		if (advDNSConfigDia_open)
-			advDNSConfigDia.dismiss();
+		try {
+			if (advDNSConfigDia_open)
+				advDNSConfigDia.dismiss();
+		} catch (Exception e){
+			e.printStackTrace();
+			Logger.getLogger().logLine("onSaveInstanceState() failed! "+e.toString());
+		}
 	}
 
 /*	@Override
@@ -1112,6 +1182,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				else if (ln.trim().startsWith("filterActive"))
 					ln = "filterActive = " + enableAdFilterCheck.isChecked();
 
+				else if (popUpDialogChanged && ln.trim().startsWith("showInitialInfoPopUp"))
+					ln = "showInitialInfoPopUp = " + showInitialInfoPopUp;
+
 				out.write((ln + "\r\n").getBytes());
 
 				changed = changed || !lnOld.equals(ln);
@@ -1188,8 +1261,16 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		} else if (destination == backupDnBtn || destination == backupUpBtn) {
 			handleBackUpIdChange(destination == backupUpBtn);
 			return;
+		} else if (destination == initialInfoPopUpExitBtn) {
+			closeInitialInfoPopUp();
+			return;
 		} else if (destination == manualDNSViewResDefBtn){
 			restoreDefaultDNSConfig();
+			return;
+		} else if (destination == exitDNSCfgBtn){
+			advDNSConfigDia.dismiss();
+			advDNSConfigDia_open = false;
+			persistConfig();
 			return;
 		}
 
@@ -1206,10 +1287,14 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		persistConfig();
 
 		if (destination == remoteCtrlBtn) {
-			//close advanced settings to force reload from new config
-			advancedConfigCheck.setChecked(false);
-			handleAdvancedConfig(null);
-			handleRemoteControl();
+			if (!switchingConfig) {
+				//close advanced settings to force reload from new config
+				advancedConfigCheck.setChecked(false);
+				if (CONFIG.isLocal())
+					pepareRemoteControl();
+				else
+					handleRemoteControl();
+			}
 		}
 		if (destination == startBtn || destination == enableAdFilterCheck)
 			handleRestart();
@@ -1266,6 +1351,96 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		logLine("=>CONNECTED to "+ CONFIG +"<=");
 	}
 
+	private void persistRemoteControlConfig(String destination, String passphrase) throws Exception {
+		String host;
+		int port;
+
+		try {
+			host = destination.substring(0,destination.indexOf(":"));
+			port = Integer.parseInt(destination.substring(destination.indexOf(":")+1));
+		} catch (Exception e) {
+			throw new Exception("Destination needed in format \"host:port\"!");
+		}
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		String ln;
+
+		BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(CONFIG.readConfig())));
+		while ((ln = reader.readLine()) != null) {
+
+			if (ln.trim().startsWith("client_remote_ctrl_host"))
+				ln = "client_remote_ctrl_host = " + host;
+
+			if (ln.trim().startsWith("client_remote_ctrl_port"))
+				ln = "client_remote_ctrl_port= " + port;
+
+			if (ln.trim().startsWith("client_remote_ctrl_keyphrase"))
+				ln = "client_remote_ctrl_keyphrase = " + passphrase;
+
+			out.write((ln + "\r\n").getBytes());
+		}
+		reader.close();
+		out.flush();
+		out.close();
+
+		updateConfig(out.toByteArray());
+	}
+
+	private void pepareRemoteControl() {
+
+		final Dialog remoteConnectDialog = new Dialog(this, R.style.Theme_dialog_TitleBar);
+		remoteConnectDialog.setContentView(R.layout.remoteconnect);
+		final Button okBtn = remoteConnectDialog.findViewById(R.id.remoteEditOkBtn);
+		final Button cancleBtn = remoteConnectDialog.findViewById(R.id.remoteEditCancelBtn);
+
+		OnClickListener onClickListener = new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				remoteConnectDialog.dismiss();
+				if (v == okBtn) {
+					try {
+						String destination  = ((EditText)remoteConnectDialog.findViewById(R.id.remote_destination)).getText().toString();
+						String passphrase = ((EditText)remoteConnectDialog.findViewById(R.id.passphrase)).getText().toString();
+						persistRemoteControlConfig(destination, passphrase);
+					} catch (Exception e) {
+						Logger.getLogger().logLine("Cannot store remote connect configuration! "+e.toString());
+						Logger.getLogger().message(e.getMessage());
+						return;
+					}
+					handleRemoteControl();
+				}
+			}
+		};
+		remoteConnectDialog.setOnKeyListener(this);
+		remoteConnectDialog.setTitle(getResources().getString(R.string.remoteConnectDialogTitle));
+
+		okBtn.setOnClickListener(onClickListener);
+		cancleBtn.setOnClickListener(onClickListener);
+
+		String host;
+		String passphrase;
+		int port;
+		try {
+			host = ConfigurationAccess.getLocal().getConfig().getProperty("client_remote_ctrl_host", "");
+			passphrase = ConfigurationAccess.getLocal().getConfig().getProperty("client_remote_ctrl_keyphrase", "");
+			try {
+				port = Integer.parseInt(ConfigurationAccess.getLocal().getConfig().getProperty("client_remote_ctrl_port", "3333"));
+			} catch (Exception e) {
+				port = 3333;
+			}
+		} catch (Exception e) {
+			Logger.getLogger().logException(e);
+			return;
+		}
+		((EditText)remoteConnectDialog.findViewById(R.id.remote_destination)).setText(host+":"+port);
+		((EditText)remoteConnectDialog.findViewById(R.id.passphrase)).setText(passphrase);
+		remoteConnectDialog.show();
+		Window window = remoteConnectDialog.getWindow();
+		window.setLayout((int) (DNSProxyActivity.DISPLAY_WIDTH*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
+		window.setBackgroundDrawableResource(android.R.color.transparent);
+	}
+
+
 
 
 	private void handleRemoteControl() {
@@ -1275,7 +1450,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			return;
 
 		switchingConfig = true;
-
+		handleAdvancedConfig(null); // reset UI view
 		if (CONFIG.isLocal()) {
 
 			try {

@@ -35,4 +35,7 @@
   <string name="notificationActive">Etkin</string>
   <string name="notificationPaused">Duraklatıldı</string>
   <string name="switch_pause_resume">Değiştir</string>
+  <string name="remote_destination">Hedef</string>
+  <string name="passphrase">Parola-şifre</string>
+  <string name="remoteConnectDialogTitle">Uzaktan kontrol</string>
 </resources>

@@ -30,6 +30,7 @@
                 android:layout_marginLeft="15dp"
                 android:layout_marginTop="10dp"
                 android:text="@string/dnsLabel"
+                android:textStyle="bold"
                 android:textColor="#424242" />
 
             <TextView
@@ -40,6 +41,7 @@
                 android:layout_marginLeft="7dp"
                 android:layout_marginTop="10dp"
                 android:layout_toRightOf="@+id/textView1"
+                android:gravity="center_vertical"
                 android:layout_weight="0"
                 android:background="#eceff1"
                 android:drawableRight="@drawable/edit_pen"
@@ -90,7 +92,6 @@
                         android:background="@drawable/custom_button"
                         android:drawableLeft="@drawable/remote_icon"
                         android:gravity="center"
-                        android:elevation="2.3dp"
                         android:padding="2dp"
                         android:textColor="#424242"></Button>
 
@@ -103,7 +104,6 @@
                         android:layout_marginBottom="4dp"
                         android:background="@drawable/custom_button"
                         android:gravity="center"
-                        android:elevation="2.3dp"
                         android:padding="2dp"
                         android:text="?"
                         android:includeFontPadding="false"
@@ -252,6 +252,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="10dp"
                         android:layout_marginTop="15dp"
+                        android:layout_marginBottom="15dp"
                         android:paddingRight="7dp"
                         android:text="@string/filterUpdateDays"
                         android:textColor="#424242"
@@ -291,24 +292,19 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="0dp"
-                        android:layout_marginTop="6dp"
+                        android:layout_marginTop="5dp"
                         android:layout_marginBottom="3dp"
-                        android:layout_weight="0.1"
+                        android:layout_weight="0.05"
                         android:background="@drawable/custom_button"
-                        android:elevation="2.3dp"
-                        android:fontFamily="sans-serif-medium"
-                        android:includeFontPadding="false"
-                        android:padding="3dp"
-                        android:text="@string/left"
-                        android:textColor="#000000"
-                        android:textSize="18sp" />
+                        android:drawableRight="@drawable/arrow_left"
+                        android:padding="4dp" />
 
                     <TextView
                         android:id="@+id/categoryFilter"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
-                        android:layout_weight="0.8"
+                        android:layout_weight="0.9"
                         android:background="#cfd8dc"
                         android:gravity="center"
                         android:inputType="number"
@@ -321,17 +317,13 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="0dp"
-                        android:layout_marginTop="6dp"
+                        android:layout_marginTop="5dp"
                         android:layout_marginBottom="3dp"
-                        android:layout_weight="0.1"
+                        android:layout_weight="0.05"
                         android:background="@drawable/custom_button"
-                        android:elevation="2.3dp"
-                        android:fontFamily="sans-serif-medium"
-                        android:padding="3dp"
-                        android:text="@string/right"
-                        android:includeFontPadding="false"
-                        android:textColor="#000000"
-                        android:textSize="18sp" />
+                        android:drawableLeft="@drawable/arrow_right"
+                        android:gravity="center"
+                        android:padding="4dp" />
                 </LinearLayout>
 
                 <ScrollView
@@ -439,7 +431,6 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="4dp"
                 android:background="@drawable/custom_button"
-                android:elevation="2.3dp"
                 android:fontFamily="sans-serif-medium"
                 android:padding="10dp"
                 android:text="@string/filterReloadBtnLabel"
@@ -453,11 +444,10 @@
                 android:id="@+id/startBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
+                android:layout_marginLeft="6dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="4dp"
                 android:background="@drawable/custom_button"
-                android:elevation="2.3dp"
                 android:fontFamily="sans-serif-medium"
                 android:padding="10dp"
                 android:text="@string/startBtnLabel"
@@ -470,11 +460,10 @@
                 android:id="@+id/stopBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
+                android:layout_marginLeft="6dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="4dp"
                 android:background="@drawable/custom_button"
-                android:elevation="2.3dp"
                 android:fontFamily="sans-serif-medium"
                 android:padding="10dp"
                 android:text="@string/stopBtnLabel"
@@ -582,15 +571,10 @@
                         android:layout_marginLeft="0dp"
                         android:layout_marginTop="5dp"
                         android:layout_marginBottom="3dp"
-                        android:layout_weight="0.1"
+                        android:layout_weight="0.04"
                         android:background="@drawable/custom_button"
-                        android:elevation="2.3dp"
-                        android:fontFamily="sans-serif-medium"
-                        android:padding="3dp"
-                        android:text="@string/left"
-                        android:includeFontPadding="false"
-                        android:textColor="#000000"
-                        android:textSize="18sp" />
+                        android:drawableRight="@drawable/arrow_left"
+                        android:padding="4dp" />
 
                     <EditText
                         android:id="@+id/BackupId"
@@ -611,15 +595,10 @@
                         android:layout_marginLeft="0dp"
                         android:layout_marginTop="5dp"
                         android:layout_marginBottom="3dp"
-                        android:layout_weight="0.1"
+                        android:layout_weight="0.04"
                         android:background="@drawable/custom_button"
-                        android:elevation="2.3dp"
-                        android:fontFamily="sans-serif-medium"
-                        android:padding="3dp"
-                        android:text="@string/right"
-                        android:includeFontPadding="false"
-                        android:textColor="#000000"
-                        android:textSize="18sp" />
+                        android:drawableLeft="@drawable/arrow_right"
+                        android:padding="4dp" />
                 </LinearLayout>
 
                 <Button
@@ -631,7 +610,6 @@
                     android:layout_marginTop="10dp"
                     android:layout_marginRight="10dp"
                     android:background="@drawable/custom_button"
-                    android:elevation="2.3dp"
                     android:fontFamily="sans-serif-medium"
                     android:padding="10dp"
                     android:text="@string/backupConfig"
@@ -651,7 +629,6 @@
                     android:layout_marginRight="10dp"
                     android:layout_marginBottom="10dp"
                     android:background="@drawable/custom_button"
-                    android:elevation="2.3dp"
                     android:fontFamily="sans-serif-medium"
                     android:padding="10dp"
                     android:text="@string/restoreBackup"
@@ -673,7 +650,6 @@
                 android:layout_marginRight="10dp"
                 android:layout_marginBottom="15dp"
                 android:background="@drawable/custom_button"
-                android:elevation="2.3dp"
                 android:fontFamily="sans-serif-medium"
                 android:padding="10dp"
                 android:text="@string/restoreDefault"
@@ -783,8 +759,8 @@
     <TextView
         android:id="@+id/link_field"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginBottom="0dp"
+        android:layout_height="0.5dp"
+        android:layout_marginBottom="-1dp"
         android:layout_weight="0.05"
         android:background="#00BCD4"
         android:gravity="center"

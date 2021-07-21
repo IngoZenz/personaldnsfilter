@@ -20,32 +20,21 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/category"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="15dp"
                 android:layout_marginTop="15dp"
-                android:text="@string/category"
+                android:text="@string/remote_destination"
                 android:textColor="#424242" />
 
             <TextView
-                android:id="@+id/name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="15dp"
                 android:layout_marginTop="15dp"
-                android:text="@string/name"
+                android:text="@string/passphrase"
                 android:textColor="#424242" />
 
-            <TextView
-                android:id="@+id/url"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="15dp"
-                android:layout_marginLeft="15dp"
-                android:layout_marginTop="15dp"
-                android:text="@string/URL"
-                android:textColor="#424242" />
         </LinearLayout>
 
         <LinearLayout
@@ -54,89 +43,44 @@
             android:orientation="vertical">
 
             <EditText
-                android:id="@+id/filterCategory"
+                android:id="@+id/remote_destination"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="15dp"
                 android:layout_marginRight="15dp"
                 android:layout_marginTop="15dp"
                 android:background="#eceff1"
-                android:text="blah"
                 android:textColor="#424242"
                 android:textSize="14dp"
                 android:inputType="textNoSuggestions"/>
 
 
             <EditText
-                android:id="@+id/filterName"
+                android:id="@+id/passphrase"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="15dp"
                 android:layout_marginRight="15dp"
                 android:layout_marginTop="15dp"
                 android:background="#eceff1"
-                android:text="blah"
                 android:textColor="#424242"
                 android:textSize="14dp"
                 android:inputType="textNoSuggestions"/>
 
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="15dp"
-                android:layout_marginLeft="15dp"
-                android:layout_marginRight="15dp"
-                android:layout_marginTop="15dp"
-                android:background="#eceff1"
-                android:scrollbars="none">
-
-                <EditText
-                    android:id="@+id/filterUrl"
-                    android:layout_width="match_parent"
-                    android:minWidth="200dp"
-                    android:layout_height="wrap_content"
-                    android:background="#eceff1"
-                    android:text="blah"
-                    android:textColor="#424242"
-                    android:textSize="14dp"
-                    android:inputType="textNoSuggestions"/>
-            </HorizontalScrollView>
-
         </LinearLayout>
 
     </LinearLayout>
-    <dnsfilter.android.PaddedCheckBox
-        android:id="@+id/activeChk"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:button="@drawable/custom_checkbox"
-        android:checked="true"
-        android:text="@string/active"
-        android:textSize="14dp"
-        android:textColor="#424242"
-        android:layout_gravity="right"
-        android:layout_marginRight="15dp"
-        android:layout_marginLeft="15dp"/>
-
-    <TextView
-        android:id="@+id/errorMsg"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="15dp"
-        android:layout_marginLeft="15dp"
-        android:layout_marginTop="15dp"
-        android:textColor="#E53935"
-        android:visibility="gone"/>
 
     <LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="15dp"
+        android:layout_marginTop="15dp"
         android:weightSum="1">
 
         <Button
-            android:id="@+id/filterEditOkBtn"
+            android:id="@+id/remoteEditOkBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
@@ -147,7 +91,7 @@
             android:fontFamily="sans-serif-medium"
             android:padding="5dp" />
         <Button
-            android:id="@+id/filterEditCancelBtn"
+            android:id="@+id/remoteEditCancelBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
@@ -156,18 +100,6 @@
             android:background="@drawable/custom_button"
             android:drawableLeft="@drawable/cancel"
             android:padding="5dp"/>
-
-        <Button
-            android:id="@+id/filterEditDelBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:layout_marginLeft="18dp"
-            android:layout_marginTop="5dp"
-            android:background="@drawable/custom_button"
-            android:drawableLeft="@drawable/delete"
-            android:padding="5dp" />
-
 
     </LinearLayout>
 

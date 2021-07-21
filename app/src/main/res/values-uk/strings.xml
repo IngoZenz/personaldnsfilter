@@ -35,4 +35,7 @@
   <string name="notificationActive">Активний</string>
   <string name="notificationPaused">Призупинено</string>
   <string name="switch_pause_resume">Торкніться, щоб переключитися</string>
+  <string name="remote_destination">Пункт призначення</string>
+  <string name="passphrase">Кодова фраза</string>
+  <string name="remoteConnectDialogTitle">Дистанційне керування</string>
 </resources>
