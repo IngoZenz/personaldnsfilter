@@ -64,7 +64,7 @@ import util.conpool.TLSSocketFactory;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1504804";
+	public static final String VERSION = "1504900";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -333,7 +333,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 						if (currentKeys[i].equals("filterActive") && filterDisabledV15045)
 							ln = "filterActive = false";
 						else
-							ln = currentKeys[i] + " = " + currentConfig.getProperty(currentKeys[i], "");
+							ln = currentKeys[i] + " = " + currentConfig.getProperty(currentKeys[i], "").replace("\n","\\n");
 					}
 				}
 			} else Logger.getLogger().logLine("Taking over default configuration: "+ln);
