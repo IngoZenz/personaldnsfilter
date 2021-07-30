@@ -38,3 +38,6 @@ obj/
 *.log
 app/release/output-metadata.json
 app/release/
+build.gradle
+gradle.properties
+gradle/wrapper/gradle-wrapper.properties
