@@ -294,17 +294,19 @@
                         android:layout_marginLeft="0dp"
                         android:layout_marginTop="5dp"
                         android:layout_marginBottom="3dp"
-                        android:layout_weight="0.05"
+                        android:layout_weight="0.09"
                         android:background="@drawable/custom_button"
-                        android:drawableRight="@drawable/arrow_left"
-                        android:padding="4dp" />
+                        android:drawableStart="@drawable/arrow_left"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"
+                        android:paddingLeft="7dp" />
 
                     <TextView
                         android:id="@+id/categoryFilter"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
-                        android:layout_weight="0.8"
+                        android:layout_weight="0.82"
                         android:background="#212121"
                         android:gravity="center"
                         android:inputType="number"
@@ -319,10 +321,12 @@
                         android:layout_marginLeft="0dp"
                         android:layout_marginTop="5dp"
                         android:layout_marginBottom="3dp"
-                        android:layout_weight="0.05"
+                        android:layout_weight="0.09"
                         android:background="@drawable/custom_button"
-                        android:drawableLeft="@drawable/arrow_right"
-                        android:padding="4dp" />
+                        android:drawableEnd="@drawable/arrow_right"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"
+                        android:paddingRight="7dp"/>
                 </LinearLayout>
 
                 <ScrollView
@@ -570,17 +574,19 @@
                         android:layout_marginLeft="0dp"
                         android:layout_marginTop="5dp"
                         android:layout_marginBottom="3dp"
-                        android:layout_weight="0.04"
+                        android:layout_weight="0.085"
                         android:background="@drawable/custom_button"
-                        android:drawableRight="@drawable/arrow_left"
-                        android:padding="4dp" />
+                        android:drawableStart="@drawable/arrow_left"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"
+                        android:paddingLeft="6.5dp" />
 
                     <EditText
                         android:id="@+id/BackupId"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
-                        android:layout_weight="0.8"
+                        android:layout_weight="0.83"
                         android:background="#212121"
                         android:gravity="center"
                         android:text="."
@@ -594,10 +600,12 @@
                         android:layout_marginLeft="0dp"
                         android:layout_marginTop="5dp"
                         android:layout_marginBottom="3dp"
-                        android:layout_weight="0.04"
+                        android:layout_weight="0.085"
                         android:background="@drawable/custom_button"
-                        android:drawableLeft="@drawable/arrow_right"
-                        android:padding="4dp" />
+                        android:drawableEnd="@drawable/arrow_right"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"
+                        android:paddingRight="6.5dp"/>
                 </LinearLayout>
 
                 <Button
