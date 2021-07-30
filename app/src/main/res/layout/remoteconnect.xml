@@ -88,6 +88,7 @@
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_button"
             android:drawableLeft="@drawable/done"
+            android:drawableTint="#ffffff"
             android:fontFamily="sans-serif-medium"
             android:padding="5dp" />
         <Button
@@ -99,6 +100,8 @@
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_button"
             android:drawableLeft="@drawable/cancel"
+
+            android:drawableTint="#ffffff"
             android:padding="5dp"/>
 
     </LinearLayout>

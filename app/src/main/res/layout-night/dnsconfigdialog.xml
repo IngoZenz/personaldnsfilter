@@ -69,7 +69,7 @@
             android:padding="10dp"
             android:text="@string/restoreDefault"
             android:textAllCaps="true"
-            android:textColor="#FFFFFF"
+            android:textColor="#000000"
             android:textSize="11sp"
             android:textStyle="bold" />
 

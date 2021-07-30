@@ -89,6 +89,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/custom_button"
                 android:drawableLeft="@drawable/done"
+                android:drawableTint="#ffffff"
                 android:fontFamily="sans-serif-medium"
                 android:padding="3dp" />
         </LinearLayout>
