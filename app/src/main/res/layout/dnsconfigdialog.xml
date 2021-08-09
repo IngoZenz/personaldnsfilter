@@ -70,7 +70,7 @@
             android:padding="10dp"
             android:text="@string/restoreDefault"
             android:textAllCaps="true"
-            android:textColor="#FFFFFF"
+            android:textColor="#000000"
             android:textSize="11sp"
             android:textStyle="bold" />
 
@@ -89,7 +89,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/custom_button"
                 android:drawableLeft="@drawable/done"
-                android:drawableTint="#ffffff"
+                android:drawableTint="#000000"
                 android:fontFamily="sans-serif-medium"
                 android:padding="3dp" />
         </LinearLayout>

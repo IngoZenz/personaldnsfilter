@@ -91,7 +91,7 @@
                         android:layout_marginBottom="4dp"
                         android:background="@drawable/custom_button"
                         android:drawableLeft="@drawable/remote_icon"
-                        android:drawableTint="#ffffff"
+                        android:drawableTint="#000000"
                         android:gravity="center"
                         android:padding="2dp"
                         android:textColor="#424242"></Button>
@@ -108,7 +108,7 @@
                         android:padding="2dp"
                         android:text="?"
                         android:includeFontPadding="false"
-                        android:textColor="#FFFFFF"
+                        android:textColor="#000000"
                         android:textSize="16dp"
                         android:textStyle="bold"></Button>
                 </LinearLayout>
@@ -298,7 +298,7 @@
                         android:layout_weight="0.09"
                         android:background="@drawable/custom_button"
                         android:drawableStart="@drawable/arrow_left"
-                        android:drawableTint="#ffffff"
+                        android:drawableTint="#000000"
                         android:paddingTop="4dp"
                         android:paddingBottom="4dp"
                         android:paddingLeft="7dp"
@@ -327,7 +327,7 @@
                         android:layout_weight="0.09"
                         android:background="@drawable/custom_button"
                         android:drawableEnd="@drawable/arrow_right"
-                        android:drawableTint="#ffffff"
+                        android:drawableTint="#000000"
                         android:paddingTop="4dp"
                         android:paddingBottom="4dp"
                         android:paddingRight="7dp"/>
@@ -442,7 +442,7 @@
                 android:padding="10dp"
                 android:text="@string/filterReloadBtnLabel"
                 android:textAllCaps="true"
-                android:textColor="#FFFFFF"
+                android:textColor="#000000"
                 android:textSize="11sp"
                 android:textStyle="bold" />
 
@@ -459,7 +459,7 @@
                 android:padding="10dp"
                 android:text="@string/startBtnLabel"
                 android:textAllCaps="true"
-                android:textColor="#FFFFFF"
+                android:textColor="#000000"
                 android:textSize="11sp"
                 android:textStyle="bold" />
 
@@ -475,7 +475,7 @@
                 android:padding="10dp"
                 android:text="@string/stopBtnLabel"
                 android:textAllCaps="true"
-                android:textColor="#FFFFFF"
+                android:textColor="#000000"
                 android:textSize="11sp"
                 android:textStyle="bold" />
 
@@ -581,7 +581,7 @@
                         android:layout_weight="0.085"
                         android:background="@drawable/custom_button"
                         android:drawableStart="@drawable/arrow_left"
-                        android:drawableTint="#ffffff"
+                        android:drawableTint="#000000"
                         android:paddingTop="4dp"
                         android:paddingBottom="4dp"
                         android:paddingLeft="6.5dp" />
@@ -608,7 +608,7 @@
                         android:layout_weight="0.085"
                         android:background="@drawable/custom_button"
                         android:drawableEnd="@drawable/arrow_right"
-                        android:drawableTint="#ffffff"
+                        android:drawableTint="#000000"
                         android:paddingTop="4dp"
                         android:paddingBottom="4dp"
                         android:paddingRight="6.5dp"/>
@@ -628,7 +628,7 @@
                     android:text="@string/backupConfig"
                     android:textAlignment="center"
                     android:textAllCaps="true"
-                    android:textColor="#FFFFFF"
+                    android:textColor="#000000"
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
@@ -647,7 +647,7 @@
                     android:text="@string/restoreBackup"
                     android:textAlignment="center"
                     android:textAllCaps="true"
-                    android:textColor="#FFFFFF"
+                    android:textColor="#000000"
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
@@ -668,7 +668,7 @@
                 android:text="@string/restoreDefault"
                 android:textAlignment="center"
                 android:textAllCaps="true"
-                android:textColor="#FFFFFF"
+                android:textColor="#000000"
                 android:textSize="11sp"
                 android:textStyle="bold" />
 
