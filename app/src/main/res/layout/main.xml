@@ -443,8 +443,8 @@
                 android:text="@string/filterReloadBtnLabel"
                 android:textAllCaps="true"
                 android:textColor="#000000"
-                android:textSize="11sp"
-                android:textStyle="bold" />
+                android:textSize="12sp"
+                android:textStyle="normal" />
 
 
             <Button
@@ -460,8 +460,8 @@
                 android:text="@string/startBtnLabel"
                 android:textAllCaps="true"
                 android:textColor="#000000"
-                android:textSize="11sp"
-                android:textStyle="bold" />
+                android:textSize="12sp"
+                android:textStyle="normal" />
 
             <Button
                 android:id="@+id/stopBtn"
@@ -476,8 +476,8 @@
                 android:text="@string/stopBtnLabel"
                 android:textAllCaps="true"
                 android:textColor="#000000"
-                android:textSize="11sp"
-                android:textStyle="bold" />
+                android:textSize="12sp"
+                android:textStyle="normal" />
 
         </LinearLayout>
 
@@ -629,8 +629,8 @@
                     android:textAlignment="center"
                     android:textAllCaps="true"
                     android:textColor="#000000"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
+                    android:textSize="12sp"
+                    android:textStyle="normal" />
 
                 <Button
                     android:id="@+id/RestoreBackupBtn"
@@ -648,8 +648,8 @@
                     android:textAlignment="center"
                     android:textAllCaps="true"
                     android:textColor="#000000"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
+                    android:textSize="12sp"
+                    android:textStyle="normal" />
 
             </LinearLayout>
 
@@ -669,8 +669,8 @@
                 android:textAlignment="center"
                 android:textAllCaps="true"
                 android:textColor="#000000"
-                android:textSize="11sp"
-                android:textStyle="bold" />
+                android:textSize="12sp"
+                android:textStyle="normal" />
 
             <TextView
                 android:id="@+id/backupLog"
