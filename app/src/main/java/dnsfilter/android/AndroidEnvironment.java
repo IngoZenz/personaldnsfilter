@@ -118,7 +118,7 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
         PowerManager.WakeLock wakeLock = ((PowerManager) ctx.getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "personalDNSfilter:wakelock");
         wakeLock.acquire();
         wakeLooks.push(new Object[]{wifiLock, wakeLock});
-        Logger.getLogger().logLine("Aquired WIFI lock and partial wake lock!");
+        Logger.getLogger().logLine("Acquired WIFI lock and partial wake lock!");
     }
 
     @Override
