@@ -62,13 +62,13 @@ public class Connection implements TimeoutListener {
 	private PooledConnectionOutputStream out;
 	String poolKey;
 	TimeoutTime timeout;
-	boolean aquired = true;
+	boolean acquired = true;
 	boolean valid = true;
 	boolean ssl = false;
 
 	private static byte[] NO_IP = new byte[]{0,0,0,0};
 	private static HashMap connPooled = new HashMap();
-	private static HashSet connAquired = new HashSet();
+	private static HashSet connAcquired = new HashSet();
 	private static Hashtable CUSTOM_HOSTS = getCustomHosts();
 	private static String CUSTOM_HOSTS_FILE_NAME = null;
 	private static int  POOLTIMEOUT_SECONDS = 300;	
@@ -104,7 +104,7 @@ public class Connection implements TimeoutListener {
 			con = new Connection(sadr,conTimeout, ssl, sslSocketFactory, proxy);
 		}		
 		con.initStreams();
-		connAquired.add(con);
+		connAcquired.add(con);
 		return con;
 	}
 	
@@ -123,7 +123,7 @@ public class Connection implements TimeoutListener {
 			con = new Connection(host, port, conTimeout, ssl, sslSocketFactory, proxy);		
 		}		
 		con.initStreams();
-		connAquired.add(con);
+		connAcquired.add(con);
 		return con;
 	}
 	
@@ -244,7 +244,7 @@ public class Connection implements TimeoutListener {
 					cons[ii].release(false);				
 			}
 			
-			Connection[] cons = (Connection[]) connAquired.toArray(new Connection[0]);
+			Connection[] cons = (Connection[]) connAcquired.toArray(new Connection[0]);
 			for (int i = 0; i < cons.length; i++)
 				cons[i].release(false);
 		}
@@ -252,9 +252,9 @@ public class Connection implements TimeoutListener {
 	
 	public static void poolReuse(Connection con) {
 		synchronized (connPooled) {
-			if (!con.aquired)
-				throw new IllegalStateException("Inconsistent connection state - Cannot release non aquired connection");
-			con.aquired=false;
+			if (!con.acquired)
+				throw new IllegalStateException("Inconsistent connection state - Cannot release non acquired connection");
+			con.acquired=false;
 			Vector hostCons = (Vector) connPooled.get(con.poolKey);
 			if (hostCons == null) {
 				hostCons = new Vector();
@@ -279,9 +279,9 @@ public class Connection implements TimeoutListener {
 			Connection con = null;
 			while (!found && !hostCons.isEmpty()) {
 				con = (Connection) hostCons.remove(hostCons.size() - 1);
-				if (con.aquired)
-					throw new IllegalStateException("Inconsistent connection state - Cannot take already aquired connection from pool!");
-				con.aquired=true;
+				if (con.acquired)
+					throw new IllegalStateException("Inconsistent connection state - Cannot take already acquired connection from pool!");
+				con.acquired=true;
 				toNotify.unregister(con);
 				found = con.isAlive();
 				if (!found) {
@@ -338,7 +338,7 @@ public class Connection implements TimeoutListener {
 		if (!valid) //a killed connection already released
 			return;
 		
-		connAquired.remove(this);
+		connAcquired.remove(this);
 
 		if (reuse) {
 			in.invalidate();
@@ -398,8 +398,8 @@ public class Connection implements TimeoutListener {
 	
 	// return count of received and sent bytes
 	public long[] getTraffic() {
-		if (!aquired)
-			throw new IllegalStateException("Inconsistent connection state - Connection is not aquired!");
+		if (!acquired)
+			throw new IllegalStateException("Inconsistent connection state - Connection is not acquired!");
 		return new long[] {in.getTraffic(),out.getTraffic()};
 	}
 	
