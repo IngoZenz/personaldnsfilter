@@ -1230,7 +1230,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			String entry = entryit.next();
 			boolean skip = false;
 
-			hostsFilterOverRule.remove(entry);
+			hostsFilterOverRule.remove(entry.toLowerCase());
 			hostFilter.clearCache(entry);
 
 			// skip previously whitelisted entry which shall be blacklisted again and is already part of the default filters
@@ -1240,7 +1240,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			if (!skip) {
 				addHostOut.write( "\n"+excludePref + entry);
 				if (!filter) {
-					hostsFilterOverRule.put(entry, false);  //whitelisting via hostfilter overrule
+					hostsFilterOverRule.put(entry.toLowerCase(), false);  //whitelisting via hostfilter overrule
 				}
 				else
 					hostFilter.update(entry); //update index directly
@@ -1384,7 +1384,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 					if (key.startsWith("filter.")) {
 						if (hostsFilterOverRule == null)
 							hostsFilterOverRule = new Hashtable();
-						hostsFilterOverRule.put(key.substring(7), new Boolean(Boolean.parseBoolean(((String) entry.getValue()).trim())));
+						hostsFilterOverRule.put(key.substring(7).toLowerCase(), new Boolean(Boolean.parseBoolean(((String) entry.getValue()).trim())));
 					}
 				}
 
@@ -1402,7 +1402,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 						if (entry.startsWith("!")) {
 							if (hostsFilterOverRule == null)
 								hostsFilterOverRule = new Hashtable();
-							hostsFilterOverRule.put(entry.substring(1).trim(), new Boolean(false));
+							hostsFilterOverRule.put(entry.substring(1).trim().toLowerCase(), new Boolean(false));
 						} else if (entry.startsWith(">")) {
 							if (customIPMappings == null) {
 								customIPMappings = new Hashtable();
