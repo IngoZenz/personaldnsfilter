@@ -77,7 +77,6 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	private static int okCacheSize = 500;
 	private static int filterListCacheSize = 500;
 	private static boolean reloadUrlChanged;
-	private static String additionalHostsImportTS = "0";
 	private static boolean validIndex;
 	private static boolean aborted = false;
 
@@ -85,7 +84,6 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	private static LoggerInterface TRAFFIC_LOG;
 
 	private static BlockedHosts hostFilter = null;
-	private static Hashtable hostsFilterOverRule = null;
 	private static Hashtable<String, byte[]> customIPMappings = null;
 	private boolean serverStopped = true;
 	private boolean reloading_filter = false;
@@ -686,9 +684,11 @@ public class DNSFilterManager extends ConfigurationAccess  {
 					}
 
 				}
+
+				// invalidate index in order to force rebuild
+				setIndexOutdated(true);
 				// update last loaded URL after successfull update
-				// setting additionalhosts TS = 0 is a hack here - but it enforces that index is recreated
-				updateIndexReloadInfoConfFile(filterReloadURL, "0");
+				updateIndexReloadInfoConfFile(filterReloadURL);
 				reloadUrlChanged = false;
 				Logger.getLogger().logLine("Updating filter completed!");
 
@@ -711,6 +711,19 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			}
 		}
 		return true; //completed
+	}
+
+	private void setIndexOutdated(boolean outdated) throws IOException{
+		File f =new File(getPath() + "IDX_OUTDATED");
+		if (outdated) {
+			f.createNewFile();
+		}
+		else
+			if (!f.delete()) throw new IOException("Cannot delete 'IDX_OUTDATED' file!");
+	}
+
+	private boolean isIndexOutdated(){
+		return new File(getPath() + "IDX_OUTDATED").exists();
 	}
 
 	public int[] readHostFileEntry(InputStream in, byte[] buf) throws IOException {
@@ -824,11 +837,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 				Logger.getLogger().logLine("Reading filter file and building index...!");
 				File filterfile = new File(getPath() + filterhostfile);
-				File additionalHosts = new File(getPath() + "additionalHosts.txt");
 				File indexFile = new File(getPath() + filterhostfile + ".idx");
 				BufferedReader fin = new BufferedReader(new InputStreamReader(new FileInputStream(filterfile)));
-				BufferedReader addHostIn = new BufferedReader(new InputStreamReader(new FileInputStream(additionalHosts)));
-
 
 				int size = 0;
 
@@ -863,42 +873,36 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				int estimatedIdxCount = ffileCount;
 				if (estimatedIdxCount == -1)
 					//estimate based on file size
-					estimatedIdxCount = Math.max(1, (int) ((filterfile.length() + additionalHosts.length()) / 30));
+					estimatedIdxCount = Math.max(1, (int) ((filterfile.length() ) / 30));
 				else //known ff entry count plus the estimated entries from add hosts.
-					estimatedIdxCount= estimatedIdxCount + ((int) (additionalHosts.length() / 20));
+					estimatedIdxCount= estimatedIdxCount;
 
 
-				BlockedHosts hostFilterSet = new BlockedHosts(estimatedIdxCount, okCacheSize, filterListCacheSize, hostsFilterOverRule);
+				BlockedHosts hostFilterSet = new BlockedHosts(estimatedIdxCount, okCacheSize, filterListCacheSize);
 
 				String entry = firstffLine; // first line from filterfile as read above
 
 				boolean skipFFprep = false;
 
 				if (ffDownloaded && ffileCount != -1) {
-					// Filterfile known ... We can skip preparation and directly go to additional hosts
 					entry = null;
 					size = ffileCount;
 					skipFFprep = true;
 				}
 
-				while (!aborted && (entry != null || fin != addHostIn)) {
-					if (entry == null) {
-						//ready with filter file continue with additionalHosts
-						fin.close();
-						fin = addHostIn;
-					} else {
-						String[] hostEntry = parseHosts(entry);
-						if (hostEntry != null && !hostEntry[1].equals("localhost")) {
-							hostFilterSet.prepareInsert(hostEntry[1]);
-							size++;
-						}
+				while (!aborted && entry != null) {
+
+					String[] hostEntry = parseHosts(entry);
+					if (hostEntry != null && !hostEntry[1].equals("localhost")) {
+						hostFilterSet.prepareInsert(hostEntry[1]);
+						size++;
 					}
+
 					entry = fin.readLine();
 				}
 
 				fin.close();
-				if (fin != addHostIn)
-					addHostIn.close();
+
 				if (aborted) {
 					Logger.getLogger().logLine("Aborting indexing!");
 					Logger.getLogger().message("Indexing aborted!");
@@ -913,7 +917,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				Logger.getLogger().logLine("Building index for " + size + " entries...!");
 
 				fin = new BufferedReader(new InputStreamReader(new FileInputStream(filterfile)));
-				addHostIn = new BufferedReader(new InputStreamReader(new FileInputStream(additionalHosts)));
+
 				File uniqueEntriyFile = new File(getPath() + "uniqueentries.tmp");
 				BufferedOutputStream fout = null;
 
@@ -928,39 +932,30 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				if (ffDownloaded)
 					fin.readLine(); // skip first comment line
 
-				while (!aborted && ((entry = fin.readLine()) != null || fin != addHostIn)) {
-					if (entry == null) {
-						//ready with filter file continue with additionalHosts
-						fin.close();
-						fin = addHostIn;
-						ffileCount=uniqueEntries;
-					} else {
-						String[] hostEntry;
-						if (!ffDownloaded || fin == addHostIn )
-							hostEntry = parseHosts(entry);
-						else // reading downloaded filterfile with known plain hosts format
-							hostEntry = new String[] {"",entry};
+				while (!aborted && (entry = fin.readLine()) != null ) {
 
-						if (hostEntry != null && !hostEntry[1].equals("localhost")) {
-							if (!hostFilterSet.add(hostEntry[1]))
-								;//Logger.getLogger().logLine("Duplicate detected ==>" + entry);
-							else {
-								uniqueEntries++;
-								if (fin != addHostIn && filterHostsFileRemoveDuplicates)
-									fout.write((hostEntry[1] + "\n").getBytes()); // create filterhosts without duplicates
-							}
-							processed++;
-							if (processed % 10000 == 0) {
-								Logger.getLogger().message("Building index for " + processed + "/" + size + " entries completed!");
-							}
+					String[] hostEntry;
+					if (!ffDownloaded)
+						hostEntry = parseHosts(entry);
+					else // reading downloaded filterfile with known plain hosts format
+						hostEntry = new String[] {"",entry};
+					if (hostEntry != null && !hostEntry[1].equals("localhost")) {
+						if (!hostFilterSet.add(hostEntry[1]))
+							;//Logger.getLogger().logLine("Duplicate detected ==>" + entry);
+						else {
+							uniqueEntries++;
+							if (filterHostsFileRemoveDuplicates)
+								fout.write((hostEntry[1] + "\n").getBytes()); // create filterhosts without duplicates
+						}
+						processed++;
+						if (processed % 10000 == 0) {
+							Logger.getLogger().message("Building index for " + processed + "/" + size + " entries completed!");
 						}
 					}
 				}
+				ffileCount = uniqueEntries;
 				Logger.getLogger().message("Building index for " + processed + "/" + size + " entries completed!");
 				fin.close();
-				if (fin != addHostIn)
-					addHostIn.close();
-
 				if (aborted) {
 					Logger.getLogger().logLine("Indexing aborted!");
 					if (filterHostsFileRemoveDuplicates)
@@ -991,7 +986,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 					hostFilterSet.persist(getPath() + filterhostfile + ".idx");
 					hostFilterSet.clear(); //release memory
 
-					hostFilterSet = BlockedHosts.loadPersistedIndex(indexFile.getAbsolutePath(), false, okCacheSize, filterListCacheSize, hostsFilterOverRule); //loads only file handles not the whole structure.
+					hostFilterSet = BlockedHosts.loadPersistedIndex(indexFile.getAbsolutePath(), false, okCacheSize, filterListCacheSize); //loads only file handles not the whole structure.
 
 					if (hostFilter != null) {
 						hostFilter.migrateTo(hostFilterSet);
@@ -1000,14 +995,14 @@ public class DNSFilterManager extends ConfigurationAccess  {
 						hostFilter = hostFilterSet;
 						DNSResponsePatcher.init(hostFilter, TRAFFIC_LOG); //give newly created filter to DNSResponsePatcher
 					}
+					applyOverrules();
 				} finally {
 					if (lock)
 						hostFilter.unLock(1); //Update done! Release exclusive lock so readers are welcome!
 				}
+				setIndexOutdated(false);
 				validIndex = true;
 				Logger.getLogger().logLine("Processing new filter file completed!");
-				additionalHostsImportTS = "" + additionalHosts.lastModified();
-				updateIndexReloadInfoConfFile(filterReloadURL, additionalHostsImportTS); //update last loaded URL and additionalHosts
 			} finally {
 				updatingFilter = false;
 				INSTANCE.notifyAll();
@@ -1015,17 +1010,56 @@ public class DNSFilterManager extends ConfigurationAccess  {
 		}
 	}
 
+	private void applyOverrules() throws IOException {
+		File additionalHosts = new File(getPath() + "additionalHosts.txt");
+		BufferedReader addHostIn = new BufferedReader(new InputStreamReader(new FileInputStream(additionalHosts)));
+		customIPMappings.clear();
+
+		String entry = null;
+		while ((entry = addHostIn.readLine()) != null) {
+			entry = entry.trim().toLowerCase();
+			if (!entry.equals("") && !entry.startsWith("#")) {
+				if (entry.startsWith(">"))
+					applyCustomIpMapping(entry.substring(1).trim());
+				if (entry.startsWith("!"))
+					hostFilter.addOverrule(entry.substring(1).trim(), false);
+				else
+					hostFilter.addOverrule(entry, true);
+			}
+		}
+		addHostIn.close();
+	}
+
+	private void applyCustomIpMapping(String entry) {
+		StringTokenizer tokens = new StringTokenizer(entry);
+		try {
+			String host = tokens.nextToken().trim().toLowerCase();
+			String ip = tokens.nextToken().trim();
+
+			InetAddress address = InetAddress.getByName(ip);
+			byte[] addressBytes = address.getAddress();
+			if (addressBytes.length == 4)
+				customIPMappings.put(">4"+host, addressBytes);
+			else
+				customIPMappings.put(">6"+host, addressBytes);
+
+		} catch (Exception e) {
+			Logger.getLogger().logLine("Cannot apply custom mapping "+entry);
+			Logger.getLogger().logLine(e.toString());
+		}
+	}
+
 	private void reloadFilter(boolean async) throws IOException {
 		try {
 			ExecutionEnvironment.getEnvironment().wakeLock(); //ensure device stays awake until filter reload is completed
-
 			File filterfile = new File(getPath() + filterhostfile);
 			File downloadInfoFile = new File(getPath() + filterhostfile + ".DLD_CNT");
 			File additionalHosts = new File(getPath() + "additionalHosts.txt");
+
+			validIndex = !isIndexOutdated();
+
 			if (!additionalHosts.exists())
 				additionalHosts.createNewFile();
-
-			boolean needRedloadAdditionalHosts = !("" + additionalHosts.lastModified()).equals(additionalHostsImportTS);
 
 			if (filterfile.exists() && downloadInfoFile.exists() && !reloadUrlChanged) {
 				nextReload = filterReloadIntervalDays * 24 * 60 * 60 * 1000 + downloadInfoFile.lastModified();
@@ -1034,11 +1068,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 			File indexFile = new File(getPath() + filterhostfile + ".idx");
 			if (indexFile.exists() && validIndex && BlockedHosts.checkIndexVersion(indexFile.getAbsolutePath())) {
-				hostFilter = BlockedHosts.loadPersistedIndex(indexFile.getAbsolutePath(), false, okCacheSize, filterListCacheSize, hostsFilterOverRule);
-				if (needRedloadAdditionalHosts && filterfile.exists() && nextReload != 0) {
-					// additionalHosts where modified - reload async and keep current index until reload completed in order to prevent start without any filter!
-					new Thread(new AsyncIndexBuilder()).start();
-				}
+				hostFilter = BlockedHosts.loadPersistedIndex(indexFile.getAbsolutePath(), false, okCacheSize, filterListCacheSize);
+				applyOverrules();
 			} else if (filterfile.exists() && nextReload != 0) {
 				if (!async) {
 					rebuildIndex();
@@ -1051,27 +1082,21 @@ public class DNSFilterManager extends ConfigurationAccess  {
 		}
 	}
 
-	private void updateIndexReloadInfoConfFile(String url, String additionalHosts_lastImportTS) {
+	private void updateIndexReloadInfoConfFile(String url) {
 		try {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(getPath() + "dnsfilter.conf")));
 			String ln;
-			boolean found1 = false;
-			boolean found2 = false;
+			boolean found = false;
 			while ((ln = reader.readLine()) != null) {
 				if (url != null && ln.startsWith("previousAutoUpdateURL")) {
-					found1 = true;
+					found = true;
 					ln = "previousAutoUpdateURL = " + url;
-				} else if (additionalHosts_lastImportTS != null && ln.startsWith("additionalHosts_lastImportTS")) {
-					found2 = true;
-					ln = "additionalHosts_lastImportTS = " + additionalHosts_lastImportTS;
 				}
 				out.write((ln + "\r\n").getBytes());
 			}
-			if (!found1 && url != null)
+			if (!found )
 				out.write(("previousAutoUpdateURL = " + url + "\r\n").getBytes());
-			if (!found2 && additionalHosts_lastImportTS != null)
-				out.write(("additionalHosts_lastImportTS = " + additionalHosts_lastImportTS + "\r\n").getBytes());
 
 			out.flush();
 			reader.close();
@@ -1111,9 +1136,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				// find which entries need to be overwritten
 				while (entryTokens.hasMoreTokens()) {
 					String entry = entryTokens.nextToken().trim();
-					boolean filterContains = hostFilter.contains(entry);
-					if ((filter && !filterContains) || (!filter && filterContains))
-						entriestoChange.add(entry);
+					entriestoChange.add(entry);
 				}
 
 				// update additional hosts file
@@ -1128,7 +1151,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				boolean copyPasteSection = false;
 				boolean listSection = false;
 				while ((entry = addHostIn.readLine()) != null) {
-					String host = entry;
+					String host = entry.toLowerCase();
 					boolean hostEntry = !(entry.trim().equals("") && !entry.startsWith("#") && !entry.startsWith(">"));
 					if (entry.startsWith("!"))
 						host = entry.trim().substring(1);
@@ -1165,10 +1188,6 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				additionalHosts.delete();
 
 				additionalHostsNew.renameTo(additionalHosts);
-
-				//index was updated ==> update timestamp in order to avoid reindexing
-				additionalHostsImportTS = "" + additionalHosts.lastModified();
-				updateIndexReloadInfoConfFile(filterReloadURL, additionalHostsImportTS); //update last loaded URL and additionalHosts
 
 				Logger.getLogger().message("Updated " + entriestoChange.size() + " host(s)!");
 
@@ -1220,33 +1239,13 @@ public class DNSFilterManager extends ConfigurationAccess  {
 		if (!filter)
 			excludePref="!";
 
-		if (hostsFilterOverRule == null) {
-			hostsFilterOverRule = new Hashtable();
-			hostFilter.setHostsFilterOverRule(hostsFilterOverRule);
-		}
 
 		Iterator<String> entryit = entriestoChange.iterator();
 		while (entryit.hasNext()) {
 			String entry = entryit.next();
-			boolean skip = false;
-
-			hostsFilterOverRule.remove(entry);
-			hostFilter.clearCache(entry);
-
-			// skip previously whitelisted entry which shall be blacklisted again and is already part of the default filters
-			// Requires that the index is up-to-date (lastFinishedIndexRunTS > lastRequestedIndexRunTS)
-			skip = (filter && hostFilter.contains(entry));
-
-			if (!skip) {
-				addHostOut.write( "\n"+excludePref + entry);
-				if (!filter) {
-					hostsFilterOverRule.put(entry, false);  //whitelisting via hostfilter overrule
-				}
-				else
-					hostFilter.update(entry); //update index directly
-			}
-			if (filter)
-				hostFilter.updatePersist();
+			hostFilter.removeOverrule(entry.toLowerCase(), !filter);
+			addHostOut.write( "\n"+excludePref + entry);
+			hostFilter.addOverrule(entry.toLowerCase(), false);
 		}
 	}
 
@@ -1261,16 +1260,12 @@ public class DNSFilterManager extends ConfigurationAccess  {
 		filterHostsFileRemoveDuplicates = false;
 		validIndex = true;
 		hostFilter = null;
-		if (hostsFilterOverRule != null) {
-			hostsFilterOverRule.clear();
-			hostsFilterOverRule = null;
-		}
+
 		if (customIPMappings != null) {
 			customIPMappings.clear();
 			customIPMappings = null;
 			DNSResolver.initLocalResolver(null, false, 0);
 		}
-		additionalHostsImportTS = "0";
 		reloading_filter = false;
 	}
 
@@ -1321,7 +1316,6 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			//start remote Control server if configured and not started already
 			if (remoteAccessManager == null) {
 				try {
-
 					int port = Integer.parseInt(config.getProperty("server_remote_ctrl_port", "-1"));
 					String keyphrase = config.getProperty("server_remote_ctrl_keyphrase", "");
 					if (port != -1)
@@ -1342,8 +1336,6 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			//wake lock if configured
 			if (config.getProperty("androidKeepAwake", "true").equalsIgnoreCase("true"))
 				ExecutionEnvironment.getEnvironment().wakeLock();
-
-			additionalHostsImportTS = config.getProperty("additionalHosts_lastImportTS", "0");
 
 			//Init traffic Logger
 			try {
@@ -1374,61 +1366,20 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 			if (filterhostfile != null && filterActive) {
 
-				// load filter overrule values
-
+				//Warn in case filter overruling within dnsfilter.conf is still used!
 				Iterator entries = config.entrySet().iterator();
-
 				while (entries.hasNext()) {
 					Entry entry = (Entry) entries.next();
 					String key = (String) entry.getKey();
 					if (key.startsWith("filter.")) {
-						if (hostsFilterOverRule == null)
-							hostsFilterOverRule = new Hashtable();
-						hostsFilterOverRule.put(key.substring(7), new Boolean(Boolean.parseBoolean(((String) entry.getValue()).trim())));
+						Logger.getLogger().logLine("WARNING! '"+key+"' not supported anymore! Use additionalHosts.txt!");
 					}
 				}
-
-				//load whitelisted hosts and custom mappings from additionalHosts.txt
 
 				boolean enableLocalResolver = Boolean.parseBoolean(config.getProperty("enableLocalResolver", "false"));
 				int localTTL = Integer.parseInt(config.getProperty("localResolverTTL", "60"));
-				DNSResolver.initLocalResolver(null, enableLocalResolver, localTTL);
-
-				File additionalHosts = new File(getPath() + "additionalHosts.txt");
-				if (additionalHosts.exists()) {
-					BufferedReader addHostIn = new BufferedReader(new InputStreamReader(new FileInputStream(additionalHosts)));
-					String entry = null;
-					while ((entry = addHostIn.readLine()) != null) {
-						if (entry.startsWith("!")) {
-							if (hostsFilterOverRule == null)
-								hostsFilterOverRule = new Hashtable();
-							hostsFilterOverRule.put(entry.substring(1).trim(), new Boolean(false));
-						} else if (entry.startsWith(">")) {
-							if (customIPMappings == null) {
-								customIPMappings = new Hashtable();
-								DNSResolver.initLocalResolver(customIPMappings, enableLocalResolver, localTTL);
-							}
-							StringTokenizer tokens = new StringTokenizer(entry.substring(1).trim());
-							try {
-								String host = tokens.nextToken().trim().toLowerCase();
-								String ip = tokens.nextToken().trim();
-
-								InetAddress address = InetAddress.getByName(ip);
-								byte[] addressBytes = address.getAddress();
-								if (addressBytes.length == 4)
-									customIPMappings.put(">4"+host, addressBytes);
-								else
-									customIPMappings.put(">6"+host, addressBytes);
-
-							} catch (Exception e) {
-								Logger.getLogger().logLine("Cannot apply custom mapping "+entry);
-								Logger.getLogger().logLine(e.toString());
-							}
-
-						}
-					}
-					addHostIn.close();
-				}
+				customIPMappings = new Hashtable();
+				DNSResolver.initLocalResolver(customIPMappings, enableLocalResolver, localTTL);
 
 				// trigger regular filter update when configured
 				filterReloadURL = getFilterReloadURL(config);
@@ -1442,7 +1393,6 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				reloadFilter(true);
 
 				if (filterReloadURL != null) {
-
 					autoFilterUpdater = new AutoFilterUpdater();
 					Thread t = new Thread(autoFilterUpdater);
 					t.setDaemon(true);

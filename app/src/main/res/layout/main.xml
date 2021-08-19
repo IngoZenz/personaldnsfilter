@@ -298,7 +298,6 @@
                         android:layout_weight="0.09"
                         android:background="@drawable/custom_button"
                         android:drawableStart="@drawable/arrow_left"
-                        android:drawableTint="#000000"
                         android:paddingTop="4dp"
                         android:paddingBottom="4dp"
                         android:paddingLeft="7dp"
@@ -327,7 +326,6 @@
                         android:layout_weight="0.09"
                         android:background="@drawable/custom_button"
                         android:drawableEnd="@drawable/arrow_right"
-                        android:drawableTint="#000000"
                         android:paddingTop="4dp"
                         android:paddingBottom="4dp"
                         android:paddingRight="7dp"/>
@@ -581,7 +579,6 @@
                         android:layout_weight="0.085"
                         android:background="@drawable/custom_button"
                         android:drawableStart="@drawable/arrow_left"
-                        android:drawableTint="#000000"
                         android:paddingTop="4dp"
                         android:paddingBottom="4dp"
                         android:paddingLeft="6.5dp" />
@@ -608,7 +605,6 @@
                         android:layout_weight="0.085"
                         android:background="@drawable/custom_button"
                         android:drawableEnd="@drawable/arrow_right"
-                        android:drawableTint="#000000"
                         android:paddingTop="4dp"
                         android:paddingBottom="4dp"
                         android:paddingRight="6.5dp"/>

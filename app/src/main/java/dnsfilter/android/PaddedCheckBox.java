@@ -8,7 +8,7 @@ import android.widget.CheckBox;
 
 public class PaddedCheckBox extends CheckBox {
 
-	private static int dpAsPx_32 = 0;
+	private static int dpAsPx_40 = 0;
 	private static int dpAsPx_10 = 0;
 
 	private int convertDpToPx(int padding_in_dp) {
@@ -41,14 +41,14 @@ public class PaddedCheckBox extends CheckBox {
 
 	private void doPadding() {
 
-		if (dpAsPx_32 == 0) {
-			dpAsPx_32 = convertDpToPx(32);
+		if (dpAsPx_40 == 0) {
+			dpAsPx_40 = convertDpToPx(40);
 			dpAsPx_10 = convertDpToPx(10);
 		}
 
 		if (Build.VERSION.SDK_INT >= 17)
 			this.setPadding(dpAsPx_10, dpAsPx_10, dpAsPx_10, dpAsPx_10);
-		else this.setPadding(dpAsPx_32, 0, 0, 0);
+		else this.setPadding(dpAsPx_40, 0, 0, 0);
 
 	}
 }
