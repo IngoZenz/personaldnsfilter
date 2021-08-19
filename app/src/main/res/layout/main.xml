@@ -41,10 +41,10 @@
                 android:layout_marginLeft="7dp"
                 android:layout_marginTop="10dp"
                 android:layout_toRightOf="@+id/textView1"
-                android:gravity="center_vertical"
                 android:layout_weight="0"
-                android:background="#eceff1"
+                android:background="@drawable/text_view"
                 android:drawableRight="@drawable/edit_pen"
+                android:gravity="center_vertical"
                 android:maxLength="64"
                 android:padding="10dp"
                 android:textColor="#424242" />
@@ -116,13 +116,13 @@
 
             <ScrollView
                 android:id="@+id/advSettingsScroll"
+                android:background="@drawable/box_background"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="15dp"
                 android:layout_marginTop="3dp"
                 android:layout_marginRight="15dp"
                 android:layout_marginBottom="3dp"
-                android:background="#eceff1"
                 android:scrollbarSize="5dp"
                 android:scrollbarThumbVertical="@drawable/scroll_bar">
 
@@ -234,13 +234,13 @@
 
             <LinearLayout
                 android:id="@+id/filtercfgview"
+                android:background="@drawable/box_background"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="15dp"
                 android:layout_marginTop="3dp"
                 android:layout_marginRight="15dp"
                 android:layout_marginBottom="15dp"
-                android:background="#eceff1"
                 android:orientation="vertical"
                 android:paddingBottom="15dp">
 
@@ -336,6 +336,7 @@
                     android:layout_height="match_parent"
                     android:layout_marginLeft="10dp"
                     android:scrollbarSize="5dp"
+                    android:overScrollMode="never"
                     android:scrollbarThumbVertical="@drawable/scroll_bar">
 
                     <TableLayout
@@ -488,6 +489,7 @@
             android:layout_marginRight="15dp"
             android:layout_marginBottom="15dp"
             android:scrollbarSize="5dp"
+            android:overScrollMode="never"
             android:scrollbarThumbVertical="@drawable/scroll_bar">
 
             <HorizontalScrollView
@@ -495,8 +497,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="0dp"
-                android:background="#eceff1"
                 android:scrollbarSize="5dp"
+                android:overScrollMode="never"
                 android:scrollbarThumbHorizontal="@drawable/scroll_bar">
 
                 <EditText
@@ -519,8 +521,9 @@
             android:layout_marginTop="3dp"
             android:layout_marginRight="15dp"
             android:layout_marginBottom="15dp"
-            android:background="#eceff1"
-            android:scrollbarSize="5dp"
+            android:background="@drawable/box_background"
+            android:overScrollMode="never"
+            android:scrollbarSize="0dp"
             android:scrollbarThumbVertical="@drawable/scroll_bar"
             android:visibility="gone">
 
@@ -540,7 +543,7 @@
             android:layout_marginTop="3dp"
             android:layout_marginRight="15dp"
             android:layout_marginBottom="10dp"
-            android:background="#eceff1"
+            android:background="@drawable/box_background"
             android:orientation="vertical">
 
             <LinearLayout
@@ -550,7 +553,6 @@
                 android:layout_marginTop="15dp"
                 android:layout_marginRight="15dp"
                 android:layout_marginBottom="15dp"
-                android:background="#eceff1"
                 android:orientation="vertical">
 
                 <LinearLayout
@@ -672,13 +674,12 @@
                 android:id="@+id/backupLog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="0dp"
+                android:layout_marginLeft="10dp"
                 android:layout_marginTop="0dp"
-                android:layout_marginRight="0dp"
-                android:layout_marginBottom="0dp"
-                android:background="#FFFFFF"
+                android:layout_marginRight="10dp"
+                android:layout_marginBottom="5dp"
                 android:textColor="#424242"
-                android:textSize="14sp" />
+                android:textSize="12sp" />
 
         </LinearLayout>
 
@@ -746,8 +747,12 @@
             android:layout_marginRight="15dp"
             android:layout_marginBottom="15dp"
             android:background="#eceff1"
-            android:padding="7dp"
+            android:paddingRight="0dp"
+            android:paddingLeft="8dp"
+            android:paddingTop="0dp"
+            android:paddingBottom="0dp"
             android:scrollbarSize="5dp"
+            android:overScrollMode="never"
             android:scrollbarThumbVertical="@drawable/scroll_bar">
 
             <EditText
