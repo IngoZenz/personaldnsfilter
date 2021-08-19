@@ -123,6 +123,7 @@
                 android:layout_marginBottom="3dp"
                 android:background="#000000"
                 android:scrollbarSize="5dp"
+                android:overScrollMode="never"
                 android:scrollbarThumbVertical="@drawable/scroll_bar">
 
                 <LinearLayout
@@ -334,6 +335,7 @@
                     android:layout_height="match_parent"
                     android:layout_marginLeft="10dp"
                     android:scrollbarSize="5dp"
+                    android:overScrollMode="never"
                     android:scrollbarThumbVertical="@drawable/scroll_bar">
 
                     <TableLayout
@@ -486,6 +488,7 @@
             android:layout_marginRight="15dp"
             android:layout_marginBottom="15dp"
             android:scrollbarSize="5dp"
+            android:overScrollMode="never"
             android:scrollbarThumbVertical="@drawable/scroll_bar">
 
             <HorizontalScrollView
@@ -495,6 +498,7 @@
                 android:layout_marginTop="0dp"
                 android:background="#171717"
                 android:scrollbarSize="5dp"
+                android:overScrollMode="never"
                 android:scrollbarThumbHorizontal="@drawable/scroll_bar">
 
                 <EditText
@@ -519,6 +523,7 @@
             android:layout_marginBottom="15dp"
             android:background="#000000"
             android:scrollbarSize="5dp"
+            android:overScrollMode="never"
             android:scrollbarThumbVertical="@drawable/scroll_bar"
             android:visibility="gone">
 
@@ -744,8 +749,12 @@
             android:layout_marginRight="15dp"
             android:layout_marginBottom="15dp"
             android:background="#171717"
-            android:padding="7dp"
+            android:paddingRight="0dp"
+            android:paddingLeft="8dp"
+            android:paddingTop="0dp"
+            android:paddingBottom="0dp"
             android:scrollbarSize="5dp"
+            android:overScrollMode="never"
             android:scrollbarThumbVertical="@drawable/scroll_bar">
 
             <EditText
