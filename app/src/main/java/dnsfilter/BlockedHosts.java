@@ -67,62 +67,153 @@ public class BlockedHosts implements Set {
 	private static Object NOT_NULL = new Object();
 	private LRUCache okCache;
 	private LRUCache filterListCache;
-	private Hashtable hostsFilterOverRule;
 
 	private int sharedLocks = 0;
 	private boolean exclusiveLock = false;
 
-	private HugePackedSet blockedHostsHashes;
-	private Vector<String[]> blockedPatterns;
-	private Vector<String[]> allowedPatterns;
+	private Hashtable <String, Boolean> hostsFilterOverRule = new Hashtable<String, Boolean>();
 
-	public BlockedHosts(int maxCountEstimate, int okCacheSize, int filterListCacheSize, Hashtable hostsFilterOverRule) {
+	private HugePackedSet blockedHostsHashes;
+
+	private class OverrulePattern {
+		private String[] pattern;
+		private boolean filter;
+		private int hashcode;
+		private  OverrulePattern (String patternString, boolean filter){
+			this.pattern = patternString.split("\\*", -1);
+			this.filter = filter;
+			hashcode = patternString.hashCode();
+			if (!filter)
+				hashcode = ~hashcode;
+		}
+
+		@Override
+		public int hashCode() {
+			return hashcode;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj != null && hashcode == obj.hashCode() && obj instanceof OverrulePattern)
+				return patternEqual((OverrulePattern) obj);
+			else
+				return false;
+		}
+
+		private boolean patternEqual(OverrulePattern overrulePattern) {
+			if (pattern.length == overrulePattern.pattern.length) {
+				for (int i = 0; i < pattern.length; i++) {
+					if (!pattern[i].equals(overrulePattern.pattern[i]))
+						return false;
+				}
+				return true;
+			} else
+				return false;
+		}
+
+		private boolean match(String host) {
+
+			// Iterate over the parts.
+			for (int i = 0; i < pattern.length; i++) {
+				String part = pattern[i];
+
+				int idx = -1;
+				if (i < pattern.length-1)
+					idx = host.indexOf(part);
+				else
+					idx = host.lastIndexOf(part);
+
+				if (i == 0 && !part.equals("") && idx != 0) {
+					// i == 0 ==> we are on the first fixed part
+					// first fixed part is not empty ==> Matching String must start with first fixed part
+					// if not, no match!
+					return false;
+				}
+				if (i == pattern.length-1 && !part.equals("") && idx + part.length() != host.length()) {
+					// i == last part
+					// last part is not empty ==> Matching String must end with last part
+					// if not, no match
+					return false;
+				}
+				// part not detected in the text.
+				if (idx == -1) {
+					return false;
+				}
+				// Move ahead, towards the right of the text.
+				host = host.substring(idx + part.length());
+			}
+			return true;
+		}
+
+	}
+	private Vector<OverrulePattern> overrulePatterns = new Vector<OverrulePattern>();
+
+	public BlockedHosts(int maxCountEstimate, int okCacheSize, int filterListCacheSize) {
 		okCache = new LRUCache(okCacheSize);
 		filterListCache = new LRUCache(filterListCacheSize);
 
 		if (ExecutionEnvironment.getEnvironment().debug())
 			Logger.getLogger().logLine("CACHE SIZE:"+okCacheSize+", "+filterListCacheSize);
-
-		this.hostsFilterOverRule = hostsFilterOverRule;
 
 		int slots = maxCountEstimate / 6000;
 		if ((slots % 2) == 0)
 			slots++;
 
 		blockedHostsHashes = new HugePackedSet(slots, PACK_MGR);
-		buildAllowedPatternStruct();
 	}
 
-	private BlockedHosts(HugePackedSet blockedHostsHashes, Vector<String[]> blockedPatterns, int okCacheSize, int filterListCacheSize, Hashtable hostsFilterOverRule) {
+	private BlockedHosts(HugePackedSet blockedHostsHashes, int okCacheSize, int filterListCacheSize) {
 		this.blockedHostsHashes = blockedHostsHashes;
-		this.blockedPatterns = blockedPatterns;
 		okCache = new LRUCache(okCacheSize);
 		filterListCache = new LRUCache(filterListCacheSize);
 
 		if (ExecutionEnvironment.getEnvironment().debug())
 			Logger.getLogger().logLine("CACHE SIZE:"+okCacheSize+", "+filterListCacheSize);
-
-		this.hostsFilterOverRule = hostsFilterOverRule;
-		buildAllowedPatternStruct();
 	}
 
-	private void buildAllowedPatternStruct(){
-		if (hostsFilterOverRule == null)
-			return;
-		String[] entries = (String[]) hostsFilterOverRule.keySet().toArray(new String[hostsFilterOverRule.size()]);
-		for (int i = 0; i < entries.length; i++){
-			String entry = entries[i];
-			boolean filter = ((Boolean) hostsFilterOverRule.get(entry)).booleanValue();
 
-			if (!filter && entry.indexOf("*") != -1)
-				getInitializedPatternStruct(ALLOWED_PATTERN).addElement( ((String)entry).trim().toLowerCase().split("\\*", -1));
+	public void addOverrule(String host, boolean filter) {
+		host = host.toLowerCase();
+
+		if (host.indexOf("*") != -1) {
+			overrulePatterns.add(new OverrulePattern(host, filter));
+			clearCache(filter);
+		}
+		else {
+			hostsFilterOverRule.put(host, new Boolean(filter));
+			clearCache(host, filter);
 		}
 	}
 
-	public void setHostsFilterOverRule(Hashtable hostsFilterOverRule){
-		if (hostsFilterOverRule == null)
-			throw new IllegalArgumentException("Argument null not allowed!");
-		this.hostsFilterOverRule = hostsFilterOverRule;
+	public void removeOverrule (String host, boolean filter) {
+		host = host.toLowerCase();
+
+		if (host.indexOf("*") != -1) {
+			overrulePatterns.remove(new OverrulePattern(host, filter));
+			clearCache(!filter);
+		}
+		else {
+			Boolean val = hostsFilterOverRule.get(host);
+			if (val != null && val.booleanValue() == filter) {
+				hostsFilterOverRule.remove(host);
+				clearCache(host, !filter);
+			}
+		}
+	}
+
+	private void clearCache(String host, boolean filter) {
+		long hostHash = Utils.getLongStringHash((String) host);
+		if (filter)
+			okCache.remove(hostHash);
+		else
+			filterListCache.remove(hostHash);
+	}
+
+	private void clearCache(boolean filter) {
+		if (filter)
+			okCache.clear();
+		else
+			filterListCache.clear();
 	}
 
 
@@ -170,39 +261,15 @@ public class BlockedHosts implements Set {
 		return HugePackedSet.checkIndexVersion(path);
 	}
 
-	public static BlockedHosts loadPersistedIndex(String path, boolean inMemory, int okCacheSize, int filterListCacheSize, Hashtable hostsFilterOverRule) throws IOException {
-		Vector<String[]> blockedPatterns = null;
-		File patternFile = new File(path+"/blockedpatterns");
-		if (patternFile.exists()){
-			BufferedReader fin = new BufferedReader(new InputStreamReader(new FileInputStream(patternFile)));
-			blockedPatterns = new Vector<String[]>();
-			String entry;
-			while ( (entry = fin.readLine()) != null) {
-				blockedPatterns.addElement( ((String)entry).trim().split("\\*", -1));
-			}
-			fin.close();
-		}
-		return new BlockedHosts(HugePackedSet.load(path, inMemory, PACK_MGR), blockedPatterns, okCacheSize, filterListCacheSize, hostsFilterOverRule);
+	public static BlockedHosts loadPersistedIndex(String path, boolean inMemory, int okCacheSize, int filterListCacheSize) throws IOException {
+		return new BlockedHosts(HugePackedSet.load(path, inMemory, PACK_MGR), okCacheSize, filterListCacheSize);
 	}
+
 
 	public void persist(String path) throws IOException {
 		try {
 			lock(1);
 			blockedHostsHashes.persist(path);
-			if (blockedPatterns != null) {
-				OutputStream patterns = new BufferedOutputStream(new FileOutputStream(path + "/blockedpatterns"));
-				Iterator it = blockedPatterns.iterator();
-				while (it.hasNext()) {
-					String[] fixedParts = (String[]) it.next();
-					String patternStr = fixedParts[0];
-					for (int i = 1; i < fixedParts.length; i++) {
-						patternStr = patternStr + "*" + fixedParts[i];
-					}
-					patterns.write((patternStr + "\n").getBytes());
-				}
-				patterns.flush();
-				patterns.close();
-			}
 		} finally {
 			unLock(1);
 		}
@@ -232,30 +299,6 @@ public class BlockedHosts implements Set {
 	}
 
 
-
-	static int BLOCKED_PATTERN = 0;
-	static int ALLOWED_PATTERN = 1;
-	private Vector<String[]> getInitializedPatternStruct(int type) {
-		if (type == BLOCKED_PATTERN) {
-			if (blockedPatterns == null)
-				blockedPatterns = new Vector<String[]>();
-			return blockedPatterns;
-		}
-		else if (type == ALLOWED_PATTERN) {
-			if (allowedPatterns == null)
-				allowedPatterns = new Vector<String[]>();
-			return allowedPatterns;
-		}
-		else return null;
-	}
-
-
-	public void clearCache(String host) {
-		long hostHash = Utils.getLongStringHash((String) host.toLowerCase());
-		okCache.remove(hostHash);
-		filterListCache.remove(hostHash);
-	}
-
 	public boolean update(Object host) throws IOException {
 		try {
 			lock(1);
@@ -275,61 +318,21 @@ public class BlockedHosts implements Set {
 
 	@Override
 	public boolean add(Object host) {
-		if (((String) host).indexOf("*") == -1)
-			return blockedHostsHashes.add(Utils.getLongStringHash((String) ((String) host).toLowerCase()));
-		else { //Pattern
-			getInitializedPatternStruct(BLOCKED_PATTERN).addElement( ((String)host).trim().toLowerCase().split("\\*", -1));
-			return true;
-		}
+		return blockedHostsHashes.add(Utils.getLongStringHash((String) ((String) host).toLowerCase()));
 	}
 
-	private boolean containsPatternMatch(String host, int type) {
 
-		if ( (type == BLOCKED_PATTERN && blockedPatterns == null) || (type == ALLOWED_PATTERN && allowedPatterns == null))
-			return false;
+	private OverrulePattern getOverrulePattern (String host) {
 
-		Iterator it = getInitializedPatternStruct(type).iterator();
+		Iterator<OverrulePattern> it = overrulePatterns.iterator();
 		while (it.hasNext()) {
-			String[] fixedParts = (String[]) it.next();
-			if (wildCardMatch(fixedParts, host))
-				return true;
+			OverrulePattern pattern = it.next();
+			if (pattern.match(host))
+				return pattern;
 		}
-		return false;
+		return null;
 	}
 
-	private static boolean wildCardMatch(String[] fixedParts, String host) {
-
-		// Iterate over the parts.
-		for (int i = 0; i < fixedParts.length; i++) {
-			String part = fixedParts[i];
-
-			int idx = -1;
-			if (i < fixedParts.length-1)
-				idx = host.indexOf(part);
-			else
-				idx = host.lastIndexOf(part);
-
-			if (i == 0 && !part.equals("") && idx != 0) {
-				// i == 0 ==> we are on the first fixed part
-				// first fixed part is not empty ==> Matching String must start with first fixed part
-				// if not, no match!
-				return false;
-			}
-			if (i == fixedParts.length-1 && !part.equals("") && idx + part.length() != host.length()) {
-				// i == last part
-				// last part is not empty ==> Matching String must end with last part
-				// if not, no match
-				return false;
-			}
-			// part not detected in the text.
-			if (idx == -1) {
-				return false;
-			}
-			// Move ahead, towards the right of the text.
-			host = host.substring(idx + part.length());
-		}
-		return true;
-	}
 
 	@Override
 	public boolean contains(Object object) {
@@ -367,20 +370,19 @@ public class BlockedHosts implements Set {
 
 		while (idx != -1) {
 
-			if (hostsFilterOverRule != null) {
-				Object val = hostsFilterOverRule.get(hostName);
-				if (val != null)
-					return ((Boolean) val).booleanValue();
+			Boolean filter = hostsFilterOverRule.get(hostName);
+			if (filter != null)
+				return filter.booleanValue();
+
+			if (checkPattern) {
+				OverrulePattern patternMatch = getOverrulePattern(hostName);
+				if (patternMatch != null)
+					return patternMatch.filter;
 			}
-
-			if (checkPattern && containsPatternMatch(hostName, ALLOWED_PATTERN))
-				return false;
-
-			if (checkPattern && containsPatternMatch(hostName, BLOCKED_PATTERN))
-				return true;
 
 			if (blockedHostsHashes.contains(hosthash))
 				return true;
+
 			if (checkParent) {
 				idx = hostName.indexOf('.');
 
@@ -398,10 +400,7 @@ public class BlockedHosts implements Set {
 		filterListCache.clear();
 		okCache.clear();
 		hostsFilterOverRule = null; // do not clear as provided from outside and reused
-		if (blockedPatterns != null)
-			blockedPatterns.clear();
-		if (allowedPatterns != null)
-			allowedPatterns.clear();
+		overrulePatterns = null;  // do not clear as provided from outside and reused
 	}
 
 	protected void migrateTo(BlockedHosts hostFilter) {
@@ -415,8 +414,7 @@ public class BlockedHosts implements Set {
 
 		hostsFilterOverRule = hostFilter.hostsFilterOverRule;
 
-		blockedPatterns = hostFilter.blockedPatterns;
-		allowedPatterns = hostFilter.allowedPatterns;
+		overrulePatterns = hostFilter.overrulePatterns;
 
 		//blockedHostsHashes.migrateTo(hostFilter.blockedHostsHashes);
 		blockedHostsHashes = hostFilter.blockedHostsHashes;
