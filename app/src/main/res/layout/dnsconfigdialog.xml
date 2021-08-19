@@ -70,9 +70,9 @@
             android:padding="10dp"
             android:text="@string/restoreDefault"
             android:textAllCaps="true"
-            android:textColor="#000000"
-            android:textSize="12sp"
-            android:textStyle="normal" />
+            android:textColor="#ffffff"
+            android:textSize="11sp"
+            android:textStyle="bold" />
 
         <LinearLayout
             android:layout_width="wrap_content"

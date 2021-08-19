@@ -442,9 +442,9 @@
                 android:padding="10dp"
                 android:text="@string/filterReloadBtnLabel"
                 android:textAllCaps="true"
-                android:textColor="#000000"
-                android:textSize="12sp"
-                android:textStyle="normal" />
+                android:textColor="#ffffff"
+                android:textSize="11sp"
+                android:textStyle="bold" />
 
 
             <Button
@@ -459,9 +459,9 @@
                 android:padding="10dp"
                 android:text="@string/startBtnLabel"
                 android:textAllCaps="true"
-                android:textColor="#000000"
-                android:textSize="12sp"
-                android:textStyle="normal" />
+                android:textColor="#ffffff"
+                android:textSize="11sp"
+                android:textStyle="bold" />
 
             <Button
                 android:id="@+id/stopBtn"
@@ -475,9 +475,9 @@
                 android:padding="10dp"
                 android:text="@string/stopBtnLabel"
                 android:textAllCaps="true"
-                android:textColor="#000000"
-                android:textSize="12sp"
-                android:textStyle="normal" />
+                android:textColor="#ffffff"
+                android:textSize="11sp"
+                android:textStyle="bold" />
 
         </LinearLayout>
 
@@ -628,9 +628,9 @@
                     android:text="@string/backupConfig"
                     android:textAlignment="center"
                     android:textAllCaps="true"
-                    android:textColor="#000000"
-                    android:textSize="12sp"
-                    android:textStyle="normal" />
+                    android:textColor="#ffffff"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/RestoreBackupBtn"
@@ -647,9 +647,9 @@
                     android:text="@string/restoreBackup"
                     android:textAlignment="center"
                     android:textAllCaps="true"
-                    android:textColor="#000000"
-                    android:textSize="12sp"
-                    android:textStyle="normal" />
+                    android:textColor="#ffffff"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
 
             </LinearLayout>
 
@@ -668,9 +668,9 @@
                 android:text="@string/restoreDefault"
                 android:textAlignment="center"
                 android:textAllCaps="true"
-                android:textColor="#000000"
-                android:textSize="12sp"
-                android:textStyle="normal" />
+                android:textColor="#ffffff"
+                android:textSize="11sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/backupLog"
