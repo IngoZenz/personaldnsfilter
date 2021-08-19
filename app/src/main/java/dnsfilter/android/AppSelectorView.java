@@ -79,9 +79,7 @@ public class AppSelectorView extends LinearLayout {
 
 			if (iconSizePx == 0) {
 				float scale = getResources().getDisplayMetrics().density;
-				Logger.getLogger().logLine(scale+"");
 				iconSizePx = (int) (iconSizeDP * scale + 0.5f);
-				Logger.getLogger().logLine(iconSizePx+"");
 			}
 
 			if (abort)
