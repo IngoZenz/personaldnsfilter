@@ -177,11 +177,11 @@ public class BlockedHosts implements Set {
 
 		if (host.indexOf("*") != -1) {
 			overrulePatterns.add(new OverrulePattern(host, filter));
-			clearCache(filter);
+			clearCache(!filter);
 		}
 		else {
 			hostsFilterOverRule.put(host, new Boolean(filter));
-			clearCache(host, filter);
+			clearCache(host, !filter);
 		}
 	}
 
@@ -190,13 +190,13 @@ public class BlockedHosts implements Set {
 
 		if (host.indexOf("*") != -1) {
 			overrulePatterns.remove(new OverrulePattern(host, filter));
-			clearCache(!filter);
+			clearCache(filter);
 		}
 		else {
 			Boolean val = hostsFilterOverRule.get(host);
 			if (val != null && val.booleanValue() == filter) {
 				hostsFilterOverRule.remove(host);
-				clearCache(host, !filter);
+				clearCache(host, filter);
 			}
 		}
 	}
@@ -204,16 +204,16 @@ public class BlockedHosts implements Set {
 	private void clearCache(String host, boolean filter) {
 		long hostHash = Utils.getLongStringHash((String) host);
 		if (filter)
-			okCache.remove(hostHash);
-		else
 			filterListCache.remove(hostHash);
+		else
+			okCache.remove(hostHash);
 	}
 
 	private void clearCache(boolean filter) {
 		if (filter)
-			okCache.clear();
-		else
 			filterListCache.clear();
+		else
+			okCache.clear();
 	}
 
 
