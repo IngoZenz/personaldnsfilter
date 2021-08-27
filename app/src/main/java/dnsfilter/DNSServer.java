@@ -48,7 +48,7 @@ public class DNSServer {
     protected InetSocketAddress address;
     protected int timeout;
     protected long lastPerformance = -1;
-    private static int bufSize=1024;
+    protected static int bufSize=1024;
     protected static int maxBufSize= -1; //will be read in static initializer below
     public static final int UDP = 0; //Via UDP
     public static final int TCP = 1; //Via TCP
@@ -321,6 +321,9 @@ class UDP extends DNSServer {
 
     @Override
     public void resolve(DatagramPacket request, DatagramPacket response) throws IOException {
+        //need to ensure response as own data buffer in order to not overwrite the request, which  might still be needed in case of TCP fallback
+        response.setData(new byte[bufSize],response.getOffset(),bufSize-response.getOffset());
+
         DatagramSocket socket = new DatagramSocket();
         synchronized (sessions) {
             sessions.add(socket);
@@ -339,6 +342,8 @@ class UDP extends DNSServer {
                 }
                 try {
                     socket.receive(response);
+                    if (isTruncatedResponse(response))
+                        doTcpFallback (request, response);
                     return;
                 } catch (IOException eio) {
                     synchronized (sessions) {
@@ -356,6 +361,15 @@ class UDP extends DNSServer {
             }
             socket.close();
         }
+    }
+
+    private void doTcpFallback(DatagramPacket request, DatagramPacket response) throws IOException {
+        Logger.getLogger().logLine("Truncated UDP response - fallback to TCP!");
+        new TCP(address.getAddress(), address.getPort(), timeout, false, null).resolve(request, response);
+    }
+
+    private boolean isTruncatedResponse(DatagramPacket response) {
+        return ((response.getData()[response.getOffset()+2] & 0XFF) & 2) == 2;
     }
 }
 
