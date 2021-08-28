@@ -365,8 +365,6 @@ class UDP extends DNSServer {
 
     private void doTcpFallback(DatagramPacket request, DatagramPacket response) throws IOException {
         Logger.getLogger().logLine("Truncated UDP response - fallback to TCP!");
-        //use bigger buffer for receiving larger response
-        response.setData(new byte[maxBufSize],response.getOffset(),maxBufSize-response.getOffset());
         new TCP(address.getAddress(), address.getPort(), timeout, false, null).resolve(request, response);
     }
 
