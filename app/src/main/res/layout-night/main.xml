@@ -765,6 +765,7 @@
                 android:layout_height="wrap_content"
                 android:background="#171717"
                 android:fadeScrollbars="true"
+                android:overScrollMode="never"
                 android:scrollbarAlwaysDrawVerticalTrack="true"
                 android:scrollbars="vertical"
                 android:text=""

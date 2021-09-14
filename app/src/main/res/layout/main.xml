@@ -124,6 +124,7 @@
                 android:layout_marginRight="15dp"
                 android:layout_marginBottom="3dp"
                 android:scrollbarSize="5dp"
+                android:overScrollMode="never"
                 android:scrollbarThumbVertical="@drawable/scroll_bar">
 
                 <LinearLayout
@@ -674,10 +675,10 @@
                 android:id="@+id/backupLog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
+                android:layout_marginLeft="8dp"
                 android:layout_marginTop="0dp"
                 android:layout_marginRight="10dp"
-                android:layout_marginBottom="5dp"
+                android:layout_marginBottom="6dp"
                 android:textColor="#424242"
                 android:textSize="12sp" />
 
@@ -761,6 +762,7 @@
                 android:layout_height="wrap_content"
                 android:background="#eceff1"
                 android:fadeScrollbars="true"
+                android:overScrollMode="never"
                 android:scrollbarAlwaysDrawVerticalTrack="true"
                 android:scrollbars="vertical"
                 android:text=""

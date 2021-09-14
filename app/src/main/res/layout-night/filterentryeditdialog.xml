@@ -88,6 +88,7 @@
                 android:layout_marginRight="15dp"
                 android:layout_marginTop="15dp"
                 android:background="#212121"
+                android:overScrollMode="never"
                 android:scrollbars="none">
 
                 <EditText
