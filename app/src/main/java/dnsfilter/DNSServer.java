@@ -321,6 +321,7 @@ class UDP extends DNSServer {
 
     @Override
     public void resolve(DatagramPacket request, DatagramPacket response) throws IOException {
+        boolean tcpFallback = false;
         //need to ensure response as own data buffer in order to not overwrite the request, which  might still be needed in case of TCP fallback
         response.setData(new byte[bufSize],response.getOffset(),bufSize-response.getOffset());
 
@@ -342,10 +343,17 @@ class UDP extends DNSServer {
                 }
                 try {
                     socket.receive(response);
-                    if (isTruncatedResponse(response))
-                        doTcpFallback (request, response);
+                    if (isTruncatedResponse(response)) {
+                        tcpFallback = true;
+                        doTcpFallback(request, response);
+                    }
+                    checkResizeNeed(response);
                     return;
                 } catch (IOException eio) {
+
+                    if (tcpFallback)
+                        throw eio;
+
                     synchronized (sessions) {
                         if (!sessions.contains(socket))
                             throw new IOException("Sessions are closed due to network change!");
@@ -360,6 +368,24 @@ class UDP extends DNSServer {
                 sessions.remove(socket);
             }
             socket.close();
+        }
+    }
+
+    private void checkResizeNeed(DatagramPacket response) {
+        if (response.getOffset()+response.getLength() >= bufSize) {
+            synchronized (DNSServer.class) {
+                //Write access to static data, synchronization against the class is needed.
+                //Could be optimized in future by setting the buf size per DNSServer Instance and not static.
+                //However at the time the buffer is created, it is not known what will be the DNSServer used, because it be might be switched.
+
+                if (response.getOffset()+response.getLength() >= bufSize && bufSize < maxBufSize)  { //resize for future requests
+                    bufSize = (int) Math.min(bufSize*1.2, maxBufSize);
+                    Logger.getLogger().logLine("BUFFER RESIZE:"+bufSize);
+                } else if (bufSize >= maxBufSize )
+                    Logger.getLogger().logLine("MAX BUFFER SIZE reached:"+bufSize);
+
+                response.setData(new byte[bufSize],response.getOffset(),bufSize-response.getOffset());
+            }
         }
     }
 
