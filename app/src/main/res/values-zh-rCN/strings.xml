@@ -38,4 +38,5 @@
   <string name="remote_destination">目标</string>
   <string name="passphrase">口令</string>
   <string name="remoteConnectDialogTitle">远程控制</string>
+  <string name="manuallyEditConfChk">手动编辑 dnsfilter.conf (仅限专家)</string>
 </resources>
