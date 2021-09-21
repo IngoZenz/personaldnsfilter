@@ -176,6 +176,17 @@
                         android:textColor="#FFFFFF" />
 
                     <dnsfilter.android.PaddedCheckBox
+                        android:id="@+id/manuallyEditConfChk"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginTop="0dp"
+                        android:button="@drawable/custom_menu"
+                        android:checked="false"
+                        android:text="@string/manuallyEditConfChk"
+                        android:textColor="#FFFFFF"  />
+
+                    <dnsfilter.android.PaddedCheckBox
                         android:id="@+id/cloakProtectCheck"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -509,7 +520,41 @@
                     android:inputType="textMultiLine|textNoSuggestions"
                     android:padding="10dp"
                     android:textColor="#FFFFFF"
-                    android:textSize="14sp" />
+                    android:textSize="14sp"
+                    android:typeface="monospace"/>
+            </HorizontalScrollView>
+        </ScrollView>
+
+        <ScrollView
+            android:id="@+id/manuallyEditScroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="3dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginBottom="15dp"
+            android:scrollbarSize="5dp"
+            android:overScrollMode="never"
+            android:scrollbarThumbVertical="@drawable/scroll_bar">
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0dp"
+                android:scrollbarSize="5dp"
+                android:overScrollMode="never"
+                android:scrollbarThumbHorizontal="@drawable/scroll_bar">
+
+                <EditText
+                    android:id="@+id/manuallyEditField"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/text_view"
+                    android:inputType="textMultiLine|textNoSuggestions"
+                    android:padding="10dp"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:typeface="monospace"/>
             </HorizontalScrollView>
         </ScrollView>
 
