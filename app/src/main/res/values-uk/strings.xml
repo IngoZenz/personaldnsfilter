@@ -38,4 +38,5 @@
   <string name="remote_destination">Пункт призначення</string>
   <string name="passphrase">Кодова фраза</string>
   <string name="remoteConnectDialogTitle">Дистанційне керування</string>
+  <string name="manuallyEditConfChk">Відредагуйте dnsfilter.conf вручну (лише для експертів)</string>
 </resources>

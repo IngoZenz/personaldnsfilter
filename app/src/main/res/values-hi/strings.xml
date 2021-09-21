@@ -38,4 +38,5 @@
   <string name="remote_destination">गंतव्य</string>
   <string name="passphrase">पदबंध</string>
   <string name="remoteConnectDialogTitle">रिमोट कंट्रोल</string>
+  <string name="manuallyEditConfChk">मैन्युअल रूप से dnsfilter.conf संपादित करें (केवल विशेषज्ञ)</string>
 </resources>

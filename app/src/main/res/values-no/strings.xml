@@ -38,4 +38,5 @@
   <string name="remote_destination">Mål</string>
   <string name="passphrase">Passfrase</string>
   <string name="remoteConnectDialogTitle">Fjernstyring</string>
+  <string name="manuallyEditConfChk">Rediger dnsfilter.conf manuelt (bare eksperter)</string>
 </resources>

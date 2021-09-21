@@ -38,4 +38,5 @@
   <string name="remote_destination">指定先</string>
   <string name="passphrase">パスフレーズ</string>
   <string name="remoteConnectDialogTitle">リモートコントロール</string>
+  <string name="manuallyEditConfChk">dnsfilter.conf を手動で編集します (専門家のみ)</string>
 </resources>

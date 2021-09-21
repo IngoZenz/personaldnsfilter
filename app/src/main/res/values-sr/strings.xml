@@ -38,4 +38,5 @@
   <string name="remote_destination">Одредиште</string>
   <string name="passphrase">Пасспхрасе</string>
   <string name="remoteConnectDialogTitle">Даљинско управљање</string>
+  <string name="manuallyEditConfChk">Ручно уредите днсфилтер.цонф (само стручњаци)</string>
 </resources>

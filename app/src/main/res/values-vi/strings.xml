@@ -38,4 +38,5 @@
   <string name="remote_destination">Nơi Đến</string>
   <string name="passphrase">Cụm mật khẩu</string>
   <string name="remoteConnectDialogTitle">Điều khiển từ xa</string>
+  <string name="manuallyEditConfChk">Chỉnh sửa thủ công dnsfilter.conf (chỉ dành cho chuyên gia)</string>
 </resources>

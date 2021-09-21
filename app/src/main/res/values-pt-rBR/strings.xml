@@ -38,4 +38,5 @@
   <string name="remote_destination">Destino</string>
   <string name="passphrase">Palavra-chave</string>
   <string name="remoteConnectDialogTitle">Controle remoto</string>
+  <string name="manuallyEditConfChk">Edite manualmente dnsfilter.conf (somente especialistas)</string>
 </resources>

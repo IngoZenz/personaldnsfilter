@@ -8,7 +8,7 @@
   <string name="filterReloadBtnLabel">Filtreyi tekrar yükle</string>
   <string name="EnableConfigCheckBox">Gelişmiş ayarlar</string>
   <string name="editFilterLoadCheckBox">Filtre güncellemesini yapılandır</string>
-  <string name="editAdditionalHostsCheckBox">Ek hosts dosyasını yapılandır</string>
+  <string name="editAdditionalHostsCheckBox">Ek hostları yapılandır</string>
   <string name="appWhitelistCheckBox">Uygulama beyaz listesi</string>
   <string name="keepAwakeCheckBox">Cihazın uykuya geçmesini önle</string>
   <string name="EnableAutoStart">Otomatik başlatma</string>
@@ -38,4 +38,5 @@
   <string name="remote_destination">Hedef</string>
   <string name="passphrase">Parola-şifre</string>
   <string name="remoteConnectDialogTitle">Uzaktan kontrol</string>
+  <string name="manuallyEditConfChk">dnsfilter.conf\'u manuel olarak düzenleyin (yalnızca uzmanlar)</string>
 </resources>

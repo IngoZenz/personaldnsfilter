@@ -38,4 +38,5 @@
   <string name="remote_destination">Ziel</string>
   <string name="passphrase">Passwort</string>
   <string name="remoteConnectDialogTitle">Fernsteuerung</string>
+  <string name="manuallyEditConfChk">dnsfilter.conf manuell editieren (nur für Experten)</string>
 </resources>

@@ -38,4 +38,5 @@
   <string name="remote_destination">יַעַד</string>
   <string name="passphrase">ביטוי סיסמה</string>
   <string name="remoteConnectDialogTitle">שלט רחוק</string>
+  <string name="manuallyEditConfChk">ערוך ידנית dnsfilter.conf (מומחים בלבד)</string>
 </resources>

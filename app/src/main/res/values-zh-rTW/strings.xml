@@ -38,4 +38,5 @@
   <string name="remote_destination">目的地</string>
   <string name="passphrase">密碼</string>
   <string name="remoteConnectDialogTitle">遙控</string>
+  <string name="manuallyEditConfChk">手動編輯 dnsfilter.conf (僅限專家)</string>
 </resources>
