@@ -1293,6 +1293,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			openBrowser("https://www.zenz-home.com/personaldnsfilter/help/help.php");
 			return;
 		} else if (destination == dnsField) {
+			persistConfig();
 			handleDNSConfigDialog();
 			return;
 		} else if (destination == scrollLockField) {
