@@ -42,6 +42,7 @@ import android.text.Spannable;
 import android.text.Spanned;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
+import android.transition.TransitionManager;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.KeyEvent;
@@ -50,6 +51,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -1600,6 +1602,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	private void handleAdvancedConfig(CheckBox dest) {
 
+		prepareTransition((ViewGroup) findViewById(R.id.linearLayout4));
+
 		((TextView) findViewById(R.id.backupLog)).setText("");
 		if (advancedConfigCheck.isChecked()) {
 			setVisibilityForAdvCfg(View.GONE);
@@ -1747,6 +1751,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			manuallyEditField.setText("");
 			additionalHostsChanged = false;
 			manuallyConfEdited = false;
+		}
+	}
+
+	private void prepareTransition(ViewGroup v) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+			TransitionManager.beginDelayedTransition(v);
 		}
 	}
 
