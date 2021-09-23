@@ -26,7 +26,9 @@ package dnsfilter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.util.Date;
 import java.util.Set;
+import android.text.format.DateFormat;
 
 import util.Logger;
 import util.LoggerInterface;
@@ -200,6 +202,9 @@ public class DNSResponsePatcher {
 	}
 
 	protected static void logNstats(boolean result, String host) {
+		DateFormat df = new DateFormat();
+		Logger.getLogger().logLine("INFO:" + df.format("HH:mm:ss", new Date()));
+
 		if (result == true)
 			Logger.getLogger().logLine("FILTERED:" + host);
 		else
