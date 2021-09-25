@@ -38,5 +38,5 @@
   <string name="remote_destination">الوجهة</string>
   <string name="passphrase">كلمة المرور</string>
   <string name="remoteConnectDialogTitle">التحكم عن بعد</string>
-  <string name="manuallyEditConfChk">تحرير dnsfilter.conf يدويًا (للخبراء فقط)</string>
+  <string name="manuallyEditConfChk">تحرير ملف التكوين</string>
 </resources>

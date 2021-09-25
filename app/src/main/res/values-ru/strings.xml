@@ -38,5 +38,5 @@
   <string name="remote_destination">Путь</string>
   <string name="passphrase">Пароль</string>
   <string name="remoteConnectDialogTitle">Дистанционное управление</string>
-  <string name="manuallyEditConfChk">Редактирование dnsfilter.conf вручную (только для экспертов)</string>
+  <string name="manuallyEditConfChk">Редактировать файл конфигурации</string>
 </resources>

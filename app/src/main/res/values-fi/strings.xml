@@ -38,5 +38,5 @@
   <string name="remote_destination">Kohde</string>
   <string name="passphrase">Salasana</string>
   <string name="remoteConnectDialogTitle">Etähallinta</string>
-  <string name="manuallyEditConfChk">Muokkaa manuaalisesti dnsfilter.conf (vain asiantuntijat)</string>
+  <string name="manuallyEditConfChk">Muokkaa asetustiedostoa</string>
 </resources>
