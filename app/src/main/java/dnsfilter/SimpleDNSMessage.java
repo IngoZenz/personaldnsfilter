@@ -18,9 +18,14 @@ public class SimpleDNSMessage {
 
 	
 	public SimpleDNSMessage(byte[] data, int offs, int length) throws IOException {
+
 	    this.data = data;
 		this.offs = offs;
 		this.length = length;
+
+		if (length < 12)
+			return; //not a valid message, incomplete header
+
 		rqFlgs = data[offs+2]&0xFF;
 		resFlgs = data[offs+3]&0xFF;		
 		
@@ -34,7 +39,7 @@ public class SimpleDNSMessage {
 	}
 
     public boolean isStandardQuery() {
-        return ( (rqFlgs >> 3) == 0);
+		return ( length >= 12 && (rqFlgs >> 3) == 0);
     }
     
     public Object[] getQueryData() {
