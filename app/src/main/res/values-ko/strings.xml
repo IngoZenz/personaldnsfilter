@@ -38,5 +38,5 @@
   <string name="remote_destination">목적지</string>
   <string name="passphrase">암호</string>
   <string name="remoteConnectDialogTitle">리모콘</string>
-  <string name="manuallyEditConfChk">수동으로 dnsfilter.conf 편집(전문가 전용)</string>
+  <string name="manuallyEditConfChk">구성 파일 편집</string>
 </resources>

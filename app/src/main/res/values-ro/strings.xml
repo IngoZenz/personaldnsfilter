@@ -38,5 +38,5 @@
   <string name="remote_destination">Destinație</string>
   <string name="passphrase">Parolă</string>
   <string name="remoteConnectDialogTitle">Control la distanță</string>
-  <string name="manuallyEditConfChk">Editați manual dnsfilter.conf (numai experți)</string>
+  <string name="manuallyEditConfChk">Editați fișierul de configurare</string>
 </resources>

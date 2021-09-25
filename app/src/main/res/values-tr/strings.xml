@@ -38,5 +38,5 @@
   <string name="remote_destination">Hedef</string>
   <string name="passphrase">Parola-şifre</string>
   <string name="remoteConnectDialogTitle">Uzaktan kontrol</string>
-  <string name="manuallyEditConfChk">dnsfilter.conf\'u manuel olarak düzenleyin (yalnızca uzmanlar)</string>
+  <string name="manuallyEditConfChk">Yapılandırma dosyasını düzenle</string>
 </resources>

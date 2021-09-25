@@ -38,5 +38,5 @@
   <string name="remote_destination">Odredište</string>
   <string name="passphrase">Zaporka</string>
   <string name="remoteConnectDialogTitle">Daljinski upravljač</string>
-  <string name="manuallyEditConfChk">Ručno uredite dnsfilter.conf (samo stručnjaci)</string>
+  <string name="manuallyEditConfChk">Uredite konfiguracijsku datoteku</string>
 </resources>
