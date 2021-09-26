@@ -38,4 +38,5 @@
   <string name="remote_destination">Miejsce przeznaczenia</string>
   <string name="passphrase">Hasło</string>
   <string name="remoteConnectDialogTitle">Zdalne sterowanie</string>
+  <string name="manuallyEditConfChk">Edytuj plik konfiguracyjny</string>
 </resources>

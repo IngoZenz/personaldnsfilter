@@ -38,4 +38,5 @@
   <string name="remote_destination">Bestemmelse</string>
   <string name="passphrase">Adgangssætning</string>
   <string name="remoteConnectDialogTitle">Fjernbetjening</string>
+  <string name="manuallyEditConfChk">Rediger konfigurationsfil</string>
 </resources>

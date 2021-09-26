@@ -48,7 +48,7 @@ public class DNSServer {
     protected InetSocketAddress address;
     protected int timeout;
     protected long lastPerformance = -1;
-    private static int bufSize=1024;
+    protected static int bufSize=1024;
     protected static int maxBufSize= -1; //will be read in static initializer below
     public static final int UDP = 0; //Via UDP
     public static final int TCP = 1; //Via TCP
@@ -321,6 +321,10 @@ class UDP extends DNSServer {
 
     @Override
     public void resolve(DatagramPacket request, DatagramPacket response) throws IOException {
+        boolean tcpFallback = false;
+        //need to ensure response as own data buffer in order to not overwrite the request, which  might still be needed in case of TCP fallback
+        response.setData(new byte[bufSize],response.getOffset(),bufSize-response.getOffset());
+
         DatagramSocket socket = new DatagramSocket();
         synchronized (sessions) {
             sessions.add(socket);
@@ -339,8 +343,17 @@ class UDP extends DNSServer {
                 }
                 try {
                     socket.receive(response);
+                    if (isTruncatedResponse(response)) {
+                        tcpFallback = true;
+                        doTcpFallback(request, response);
+                    }
+                    checkResizeNeed(response);
                     return;
                 } catch (IOException eio) {
+
+                    if (tcpFallback)
+                        throw eio;
+
                     synchronized (sessions) {
                         if (!sessions.contains(socket))
                             throw new IOException("Sessions are closed due to network change!");
@@ -356,6 +369,33 @@ class UDP extends DNSServer {
             }
             socket.close();
         }
+    }
+
+    private void checkResizeNeed(DatagramPacket response) {
+        if (response.getOffset()+response.getLength() >= bufSize) {
+            synchronized (DNSServer.class) {
+                //Write access to static data, synchronization against the class is needed.
+                //Could be optimized in future by setting the buf size per DNSServer Instance and not static.
+                //However at the time the buffer is created, it is not known what will be the DNSServer used, because it be might be switched.
+
+                if (response.getOffset()+response.getLength() >= bufSize && bufSize < maxBufSize)  { //resize for future requests
+                    bufSize = (int) Math.min(bufSize*1.2, maxBufSize);
+                    Logger.getLogger().logLine("BUFFER RESIZE:"+bufSize);
+                } else if (bufSize >= maxBufSize )
+                    Logger.getLogger().logLine("MAX BUFFER SIZE reached:"+bufSize);
+
+                response.setData(new byte[bufSize],response.getOffset(),bufSize-response.getOffset());
+            }
+        }
+    }
+
+    private void doTcpFallback(DatagramPacket request, DatagramPacket response) throws IOException {
+        Logger.getLogger().logLine("Truncated UDP response - fallback to TCP!");
+        new TCP(address.getAddress(), address.getPort(), timeout, false, null).resolve(request, response);
+    }
+
+    private boolean isTruncatedResponse(DatagramPacket response) {
+        return ((response.getData()[response.getOffset()+2] & 0XFF) & 2) == 2;
     }
 }
 

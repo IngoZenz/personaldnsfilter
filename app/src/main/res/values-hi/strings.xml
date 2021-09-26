@@ -38,4 +38,5 @@
   <string name="remote_destination">गंतव्य</string>
   <string name="passphrase">पदबंध</string>
   <string name="remoteConnectDialogTitle">रिमोट कंट्रोल</string>
+  <string name="manuallyEditConfChk">कॉन्फ़िगरेशन फ़ाइल संपादित करें</string>
 </resources>

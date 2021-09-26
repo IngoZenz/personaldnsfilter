@@ -159,7 +159,7 @@ public class PackedSortedList implements List, RandomAccess {
 
 	}
 
-	private synchronized void  aquireDataPack() throws FileNotFoundException {
+	private synchronized void  acquireDataPack() throws FileNotFoundException {
 
 		if (persistedPackData == null) {
 			if (persistedPackDataRefs >0)
@@ -167,7 +167,7 @@ public class PackedSortedList implements List, RandomAccess {
 			persistedPackData = new RandomAccessFile(persistedPackFile, "r");
 		}
 		persistedPackDataRefs++;
-		//Logger.getLogger().logLine("Aquired reference: "+persistedPackDataRefs);
+		//Logger.getLogger().logLine("Acquired reference: "+persistedPackDataRefs);
 	}	
 
 	@Override
@@ -176,8 +176,8 @@ public class PackedSortedList implements List, RandomAccess {
 		int pos = -1;
 		if (!loaded) {
 			try {
-				//we aquire datapack here in order to ensure it does not get closed until the binarySearch completed
-				aquireDataPack();
+				//we acquire datapack here in order to ensure it does not get closed until the binarySearch completed
+				acquireDataPack();
 				pos = binarySearch(key);
 			} catch (Exception e) {
 				throw new IllegalStateException (e);
@@ -207,7 +207,7 @@ public class PackedSortedList implements List, RandomAccess {
 			return objMgr.bytesToObject(datapack, offs);			
 		else {
 			try {
-				aquireDataPack();
+				acquireDataPack();
 				byte[] obj = new byte[object_size];
 				synchronized (persistedPackData) {
 					persistedPackData.seek(offs);

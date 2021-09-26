@@ -38,4 +38,5 @@
   <string name="remote_destination">Cíl</string>
   <string name="passphrase">Přístupové heslo</string>
   <string name="remoteConnectDialogTitle">Vzdálené ovládání</string>
+  <string name="manuallyEditConfChk">Upravit konfigurační soubor</string>
 </resources>

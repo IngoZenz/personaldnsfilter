@@ -38,4 +38,5 @@
   <string name="remote_destination">Doelstelling</string>
   <string name="passphrase">Wachtwoordzin</string>
   <string name="remoteConnectDialogTitle">Bediening op afstand</string>
+  <string name="manuallyEditConfChk">Configuratiebestand bewerken</string>
 </resources>

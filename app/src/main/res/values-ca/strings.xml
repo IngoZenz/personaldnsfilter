@@ -38,4 +38,5 @@
   <string name="remote_destination">Destinació</string>
   <string name="passphrase">Contrasenya</string>
   <string name="remoteConnectDialogTitle">Control remot</string>
+  <string name="manuallyEditConfChk">Editeu el fitxer de configuració</string>
 </resources>

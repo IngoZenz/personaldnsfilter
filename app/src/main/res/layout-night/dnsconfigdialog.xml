@@ -37,6 +37,7 @@
             android:layout_marginBottom="15dp"
             android:background="#000000"
             android:padding="10dp"
+            android:overScrollMode="never"
             android:scrollbars="none">
 
             <EditText

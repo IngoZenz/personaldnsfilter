@@ -38,4 +38,5 @@
   <string name="remote_destination">Προορισμός</string>
   <string name="passphrase">Φράση πρόσβασης</string>
   <string name="remoteConnectDialogTitle">Απομακρυσμένος έλεγχος</string>
+  <string name="manuallyEditConfChk">Επεξεργασία αρχείου διαμόρφωσης</string>
 </resources>

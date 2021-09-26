@@ -17,14 +17,16 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.widget.TextView;
 
+import util.Logger;
+
 
 public class AppSelectorView extends LinearLayout {
 
 	private PackageManager pm = this.getContext().getPackageManager();
 	private boolean loaded = false;
 	private String selectedApps = "";
-	private int iconSize = 0;
-	private int corIconSize = 0;
+	private static int iconSizePx = 0;
+	private static float iconSizeDP = 96;
 	private AsyncLoader runningUpdate = null;
 
 	private ComparableAppInfoWrapper[] wrappers = null;
@@ -75,6 +77,11 @@ public class AppSelectorView extends LinearLayout {
 		@Override
 		public synchronized void run() {
 
+			if (iconSizePx == 0) {
+				float scale = getResources().getDisplayMetrics().density;
+				iconSizePx = (int) (iconSizeDP * scale + 0.5f);
+			}
+
 			if (abort)
 				return;
 
@@ -91,18 +98,6 @@ public class AppSelectorView extends LinearLayout {
 						addView(infoText);
 					}
 				});
-
-				if (iconSize == 0) {
-					try {
-						Drawable icon = pm.getApplicationIcon("dnsfilter.android");
-						iconSize = icon.getIntrinsicWidth();
-						icon = resizeDrawable(icon, iconSize);
-						float factor = (float) iconSize / (float) icon.getIntrinsicWidth();
-						corIconSize = (int) (((float) iconSize) * factor);
-					} catch (PackageManager.NameNotFoundException e) {
-						e.printStackTrace();
-					}
-				}
 
 				String selectedapppackages = ("," + selectedApps + ",").replace(" ", "");
 
@@ -128,8 +123,7 @@ public class AppSelectorView extends LinearLayout {
 
 				for (int i = 0; (i < wrappers.length && !abort); i++) {
 					Drawable icon = (wrappers[i].wrapped.loadIcon(pm));
-					if (icon.getIntrinsicWidth() != iconSize)
-						icon = resizeDrawable(icon, corIconSize);
+					icon = resizeDrawable(icon, iconSizePx);
 					post(new UIUpdate(wrappers[i].checkBox, icon, this));
 				}
 				loaded = !abort;

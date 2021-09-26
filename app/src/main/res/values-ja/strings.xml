@@ -38,4 +38,5 @@
   <string name="remote_destination">指定先</string>
   <string name="passphrase">パスフレーズ</string>
   <string name="remoteConnectDialogTitle">リモートコントロール</string>
+  <string name="manuallyEditConfChk">設定ファイルの編集</string>
 </resources>

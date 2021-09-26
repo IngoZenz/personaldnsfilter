@@ -293,6 +293,31 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
     }
 
     @Override
+    public void updateConfigMergeDefaults(byte[] config) throws IOException {
+        try {
+            InputStream in = getInputStream();
+            DataOutputStream out = new DataOutputStream(getOutputStream());
+
+            out.write("updateConfigMergeDefaults()\n".getBytes());
+            out.writeInt(config.length);
+            out.write(config);
+            out.flush();
+
+            String response = Utils.readLineFromStream(in);
+            if (!response.equals("OK")) {
+                throw new ConfigurationAccessException(response, null);
+            }
+        } catch (ConfigurationAccessException e) {
+            connectedLogger.logLine("Remote action failed! "+e.getMessage());
+            throw e;
+        } catch (IOException e) {
+            connectedLogger.logLine("Remote action updateConfig() failed! "+e.getMessage());
+            closeConnectionReconnect();
+            throw e;
+        }
+    }
+
+    @Override
     public byte[] getAdditionalHosts(int limit) throws IOException {
         try {
             DataOutputStream out = new DataOutputStream(getOutputStream());

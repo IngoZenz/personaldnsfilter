@@ -1,22 +1,31 @@
 # Add your own additional hosts here!
-# Supports Blacklist, whitelist and map to custom IP
+# Supports blacklist, whitelist and map to custom IP
 
-# Format for Blacklist: 1 host name per line (sample below).
+# WARNING! You must not add huge lists here!
+# This is only for overruling the configured filter.
+
+# Format for blacklist: 1 host name per line (sample below).
 # Wildcard Character "*" can be used for host blocking.
-# Host name and all sub domains will be blocked.
+# Host name and all sub domains will be blocked,
+# unless there is a more specific rule.
 
 sample4711.justasample.com
 sample4712.justasample.com
 
-# In order to white list a specific host, add a
-# "!" prefix in front of the host name.
-# Whitelisting does NOT support wildcards "*"
+# In order to white list a specific host, use "!" prefix.
+# Wildcard Character "*" can be used for whitelisting.
+# Host name and all sub domains will be whitelisted,
+# unless there is a more specific rule.
 
 !whitelistsample.justasample.com
 
-# In order to forward to custom ip add a ">" in front
-# of the host name followed by whitespace and mapped IP
+# PRIORITIES in case of conflicting entries
+# 1. Explicit entries without wildcards
+# 2. Wildcard entries prioritized along the sequence in this file
+# 3. Downloaded blocklist
+
+# In order to forward to custom ip add a ">" in front of the host,
+# followed by whitespace and mapped IP.
 
 >router.home 192.168.2.1
-
 
