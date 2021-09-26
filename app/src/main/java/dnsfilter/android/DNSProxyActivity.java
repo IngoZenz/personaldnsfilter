@@ -854,7 +854,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		if (!addHostsTxt.equals("")) {
 			if (manuallyConfEdited)
 				try {
-					CONFIG.updateConfig(addHostsTxt.getBytes());
+					CONFIG.updateConfigMergeDefaults(addHostsTxt.getBytes());
 					loadAndApplyConfig(false);
 				} catch (IOException eio) {
 					Logger.getLogger().logLine("Cannot persist manually edited config!\n" + eio.toString());

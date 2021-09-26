@@ -355,7 +355,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 		}
 		mergedout.flush();
 		mergedout.close();
-		Logger.getLogger().logLine("Merged configuration 'dnsfilter.conf' after update to version " + DNSFilterManager.VERSION + "!");
+		Logger.getLogger().logLine("Merged configuration 'dnsfilter.conf' with defaults of current version " + DNSFilterManager.VERSION + "!");
 		InputStream in = new FileInputStream(mergedConfig);
 		byte[] configBytes = Utils.readFully(in, 1024);
 		in.close();
@@ -410,6 +410,18 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			throw new ConfigurationAccessException(e.getMessage(), e);
 		}
 	}
+
+	@Override
+	public void updateConfigMergeDefaults(byte[] config) throws IOException {
+		try {
+			config = mergeAndPersistConfig(config);
+			this.config.load(new ByteArrayInputStream(config));
+			Logger.getLogger().message("Config changed!\nRestart might be required!");
+		} catch (IOException e) {
+			throw new ConfigurationAccessException(e.getMessage(), e);
+		}
+	}
+
 
 	@Override
 	public byte[] getAdditionalHosts(int limit) throws IOException {
