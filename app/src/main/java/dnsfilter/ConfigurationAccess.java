@@ -46,6 +46,8 @@ public abstract class ConfigurationAccess {
 
     abstract public void updateConfig(byte[] config) throws IOException;
 
+    public abstract void updateConfigMergeDefaults(byte[] config) throws IOException;
+
     abstract public byte[] getAdditionalHosts(int limit) throws IOException;
 
     abstract public void updateAdditionalHosts(byte[] bytes) throws IOException;

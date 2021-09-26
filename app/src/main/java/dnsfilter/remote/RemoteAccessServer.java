@@ -235,6 +235,12 @@ public class RemoteAccessServer implements Runnable {
                     ConfigurationAccess.getLocal().updateConfig(cfg);
                     out.write("OK\n".getBytes());
                     out.flush();
+                } else if (action.equals("updateConfigMergeDefaults()")) {
+                    byte[] cfg = new byte[in.readInt()];
+                    in.readFully(cfg);
+                    ConfigurationAccess.getLocal().updateConfigMergeDefaults(cfg);
+                    out.write("OK\n".getBytes());
+                    out.flush();
                 } else if (action.equals("getAdditionalHosts()")) {
                     int limit = in.readInt();
                     byte[] result = ConfigurationAccess.getLocal().getAdditionalHosts(limit);
