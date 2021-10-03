@@ -108,6 +108,8 @@ public class HugePackedSet implements Set {
 
 	@Override
 	public boolean contains(Object obj) {
+		if (count == 0)
+			return false;
 		return subsets[ (Math.abs( obj.hashCode() %  slotCount)) ].contains(obj);
 	}
 
