@@ -20,8 +20,7 @@
         android:theme="@style/Theme.phttpp.TitleBar">
         <activity
             android:name="dnsfilter.android.DNSProxyActivity"
-            android:label="personalDNSfilter"
-            android:screenOrientation="portrait">
+            android:label="personalDNSfilter">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
