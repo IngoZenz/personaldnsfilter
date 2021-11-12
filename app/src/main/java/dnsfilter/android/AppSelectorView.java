@@ -43,6 +43,7 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 		String searchStr = ((EditText)searchView.findViewById(R.id.searchString)).getText().toString().toLowerCase();
 
 		ComparableAppInfoWrapper[] allwrappers = wrappers;
+		int count = 0;
 
 		for (int i = 0; i < allwrappers.length; i++) {
 			boolean visible = allwrappers[i].checkBox.getText().toString().toLowerCase().indexOf(searchStr) != -1;
@@ -50,7 +51,11 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 				allwrappers[i].checkBox.setVisibility(View.VISIBLE);
 			else
 				allwrappers[i].checkBox.setVisibility(View.GONE);
+
+			if (visible)
+				count++;
 		}
+		Logger.getLogger().logLine("Found: "+count+" apps!");
 
 	}
 
