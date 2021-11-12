@@ -276,7 +276,7 @@
                         android:layout_width="42dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="15dp"
-                        android:background="#000000"
+                        android:background="#171717"
                         android:gravity="center"
                         android:inputType="number"
                         android:text="14"
