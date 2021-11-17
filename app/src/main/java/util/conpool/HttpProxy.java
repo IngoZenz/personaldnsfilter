@@ -27,6 +27,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
+import java.nio.channels.SocketChannel;
 
 import util.ExecutionEnvironment;
 import util.http.HttpHeader;
@@ -68,7 +69,7 @@ public class HttpProxy extends Proxy {
 		//get address with name of final host but IP of the proxy for SSL hostname check consistency		
 		InetSocketAddress conAdr = new InetSocketAddress(InetAddress.getByAddress(adr.getHostName(), proxyAdr.getAddress().getAddress()), proxyAdr.getPort());
 		
-		Socket proxyCon = new Socket();
+		Socket proxyCon  = SocketChannel.open().socket();
 
 		if (protect)
 			ExecutionEnvironment.getEnvironment().protectSocket(proxyCon,0);
