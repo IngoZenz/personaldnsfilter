@@ -23,11 +23,9 @@
 
 package util.conpool;
 
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -38,6 +36,7 @@ import java.net.Proxy;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -47,7 +46,6 @@ import java.util.Vector;
 import javax.net.ssl.SSLSocketFactory;
 
 import util.ExecutionEnvironment;
-import util.Logger;
 import util.TimeoutListener;
 import util.TimeoutTime;
 import util.TimoutNotificator;
@@ -201,7 +199,7 @@ public class Connection implements TimeoutListener {
 			conTimeout= 0;
 		
 		if (proxy == Proxy.NO_PROXY) {
-			socket = new Socket();
+			socket = SocketChannel.open().socket();
 			ExecutionEnvironment.getEnvironment().protectSocket(socket,0);
 			socket.connect(sadr,conTimeout);
 		} else {
