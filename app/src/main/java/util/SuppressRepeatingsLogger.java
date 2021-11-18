@@ -1,19 +1,34 @@
 package util;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class SuppressRepeatingsLogger implements LoggerInterface {
 	LoggerInterface nestedLogger;
-	private String lastLog = "";
 	private HashMap<String, Long> lastLogs = new HashMap<String, Long>();
 	private long timeRepeat = 0;
 	private long lastCleanup = 0;
+	DateFormat dateFormatter = null; //new SimpleDateFormat("H:mm:ss");
+	String lastTS="";
 
 
 	public SuppressRepeatingsLogger(LoggerInterface nestedLogger) {
 		this.nestedLogger = nestedLogger;
 	}
+
+	private void addTimeStamp() {
+		if (dateFormatter == null)
+			return;
+		String ts = dateFormatter.format(new Date());
+		if ((!ts.equals(lastTS))) {
+			nestedLogger.logLine(dateFormatter.format(new Date()));
+			lastTS=ts;
+		}
+	}
+
 
 	public void setNestedLogger(LoggerInterface nestedLogger) {
 		this.nestedLogger = nestedLogger;
@@ -25,6 +40,13 @@ public class SuppressRepeatingsLogger implements LoggerInterface {
 
 	public void setSuppressTime(long suppressTime) {
 		timeRepeat = suppressTime;
+	}
+
+	public void setTimestampFormat(String timeStampPattern) {
+		if (timeStampPattern != null)
+			dateFormatter = new SimpleDateFormat(timeStampPattern);
+		else
+			dateFormatter = null;
 	}
 
 	private boolean repeatingLog(String logStr){
@@ -58,13 +80,15 @@ public class SuppressRepeatingsLogger implements LoggerInterface {
 
 	@Override
 	public void logLine(String txt) {
-		if (!repeatingLog(txt))
+		if (!repeatingLog(txt)) {
+			addTimeStamp();
 			nestedLogger.logLine(txt);
-		lastLog = txt;
+		}
 	}
 
 	@Override
 	public void logException(Exception e) {
+		addTimeStamp();
 		nestedLogger.logException(e);
 	}
 
@@ -72,7 +96,6 @@ public class SuppressRepeatingsLogger implements LoggerInterface {
 	public void log(String txt) {
 		if (!repeatingLog(txt))
 			nestedLogger.log(txt);
-		lastLog = txt;
 	}
 
 	@Override
