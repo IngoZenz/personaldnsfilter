@@ -283,7 +283,7 @@ public class HttpHeader {
 	public boolean getConnectionClose() {
 		String value = getValue("Connection");
 		if (value == null)
-			return false;
+			return true;
 		else if (value.equalsIgnoreCase("close"))
 			return true;
 		else

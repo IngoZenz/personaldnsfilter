@@ -530,7 +530,7 @@ class DoH extends DNSServer {
                 }
                 readResponseFromStream(new DataInputStream(in), size, response);
                 response.setSocketAddress(address);
-                con.release(reuse);
+                con.release(reuse && !responseHeader.getConnectionClose());
                 return;
             } catch (EOFException eof) {
                 con.release(false);
