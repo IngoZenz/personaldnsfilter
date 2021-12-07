@@ -238,6 +238,9 @@ public class Connection implements TimeoutListener {
 
 	public void refreshConnection() throws IOException {
 
+		int sock_timeout = 0;
+		if (socket != null)
+			sock_timeout = socket.getSoTimeout();
 		// close existing connection
 		try {
 			in.invalidate();
@@ -254,10 +257,10 @@ public class Connection implements TimeoutListener {
 
 		//establish new connection
 		establishConnection();
+		socket.setSoTimeout(sock_timeout);
 
 		initStreams();
 	}
-
 
 	public static void setPoolTimeoutSeconds(int secs) {
 		POOLTIMEOUT_SECONDS=secs;
