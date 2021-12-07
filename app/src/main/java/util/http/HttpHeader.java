@@ -23,9 +23,9 @@ Contact:i.z@gmx.net
 package util.http;
 
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
@@ -40,7 +40,7 @@ public class HttpHeader {
 
 	public static final int REQUEST_HEADER = 1;
 	public static final int RESPONSE_HEADER = 2;
-	
+
 	public final static int HTTP=1;
 	public final static int HTTPS=2;
 	public final static int OTHER=3;
@@ -75,6 +75,10 @@ public class HttpHeader {
 		this.type = type;
 
 		_first = Utils.readLineFromStream(in,true);
+		
+		if (_first.equals(""))
+			throw new EOFException("HttpHeader failed to read! No Data!");
+		
 		if (type == REQUEST_HEADER) {
 			parseURI();
 			if (hostEntry != null)
@@ -181,13 +185,13 @@ public class HttpHeader {
 
 	public String getResponseMessage() {
 		if (type != RESPONSE_HEADER)
-			throw new IllegalStateException(this + " is not a ResponseHeader!");
+			throw new IllegalStateException(this + " is not a response header!");
 		return _first;
 	}
 
 	public int getResponseCode() {
 		if (type != RESPONSE_HEADER)
-			throw new IllegalStateException(this + " is not a ResponseHeader!");
+			throw new IllegalStateException(this + " is not a response header!");
 		return responsecode;
 	}
 
