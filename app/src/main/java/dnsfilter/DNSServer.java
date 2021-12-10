@@ -422,8 +422,9 @@ class TCP extends DNSServer {
 
     @Override
     public void resolve(DatagramPacket request, DatagramPacket response) throws IOException {
-        for (int i = 0; i<2; i++) { //retry once in case of EOFException (pooled connection was already closed)
-            Connection con = Connection.connect(address, timeout, ssl, null, proxy);
+
+        Connection con = Connection.connect(address, timeout, ssl, null, proxy);
+        for (int i = 0; i < 2; i++) { //retry once in case of EOFException (pooled connection was already closed)
             con.setSoTimeout(timeout);
             try {
                 DataInputStream in = new DataInputStream(con.getInputStream());
@@ -437,9 +438,13 @@ class TCP extends DNSServer {
                 con.release(true);
                 return;
             } catch (EOFException eof) {
-                con.release(false);
-                if (i == 1)
-                    throw new IOException ("EOF when reading from "+this.toString(),eof); // retried already once, now throw exception
+                if (i == 0)
+                    // pooled connection was closed in between - refresh connection and retry!
+                    con.refreshConnection();
+                else {
+                    con.release(false);
+                    throw new IOException("EOF when reading from " + this.toString(), eof); // retried already once, now throw exception
+                }
             } catch (IOException eio) {
                 con.release(false);
                 throw eio;
@@ -492,8 +497,10 @@ class DoH extends DNSServer {
 
         byte[] reqHeader = buildRequestHeader(request.getLength());
 
+        Connection con = Connection.connect(urlHostAddress, timeout, true, null, proxy);
+        con.setSoTimeout(timeout);
+
         for (int i = 0; i<2; i++) { //retry once in case of EOFException (pooled connection was already closed)
-            Connection con = Connection.connect(urlHostAddress, timeout, true, null, proxy);
 
             try {
                 OutputStream out = con.getOutputStream();
@@ -530,12 +537,16 @@ class DoH extends DNSServer {
                 }
                 readResponseFromStream(new DataInputStream(in), size, response);
                 response.setSocketAddress(address);
-                con.release(reuse);
+                con.release(reuse && !responseHeader.getConnectionClose());
                 return;
             } catch (EOFException eof) {
-                con.release(false);
-                if (i == 1)
-                    throw new IOException ("EOF when reading from "+this.toString(),eof); // retried already once, now throw exception
+                if (i == 0)
+                    // pooled connection was closed in between - refresh connection and retry!
+                    con.refreshConnection();
+                else {
+                    con.release(false);
+                    throw new IOException("EOF when reading from " + this.toString(), eof); // retried already once, now throw exception
+                }
             } catch (IOException eio) {
                 con.release(false);
                 throw eio;

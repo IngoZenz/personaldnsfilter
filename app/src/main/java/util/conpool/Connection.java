@@ -63,6 +63,10 @@ public class Connection implements TimeoutListener {
 	boolean acquired = true;
 	boolean valid = true;
 	boolean ssl = false;
+	private InetSocketAddress sadr;
+	private int conTimeout;
+	private SSLSocketFactory sslSocketFactory;
+	private Proxy proxy;
 
 	private static byte[] NO_IP = new byte[]{0,0,0,0};
 	private static HashMap connPooled = new HashMap();
@@ -192,8 +196,18 @@ public class Connection implements TimeoutListener {
 		}			
 		
 	}
-	
+
 	private void initConnection(InetSocketAddress sadr, int conTimeout, boolean ssl, SSLSocketFactory sslSocketFactory, Proxy proxy) throws IOException {
+
+		this.sadr = sadr;
+		this.conTimeout = conTimeout;
+		this.ssl = ssl;
+		this.sslSocketFactory = sslSocketFactory;
+		this.proxy = proxy;
+		establishConnection();
+	}
+	
+	private void establishConnection() throws IOException {
 		
 		if (conTimeout <0)
 			conTimeout= 0;
@@ -222,7 +236,31 @@ public class Connection implements TimeoutListener {
 			socket.setSoTimeout(0); //reset the read timeout for the SSL handshake
 	}
 
-	
+	public void refreshConnection() throws IOException {
+
+		int sock_timeout = 0;
+		if (socket != null)
+			sock_timeout = socket.getSoTimeout();
+		// close existing connection
+		try {
+			in.invalidate();
+			out.invalidate();
+
+			if (!ssl) { //SSLSocket doesn't support this
+				socket.shutdownOutput();
+				socket.shutdownInput();
+			}
+			socket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+		}
+
+		//establish new connection
+		establishConnection();
+		socket.setSoTimeout(sock_timeout);
+
+		initStreams();
+	}
 
 	public static void setPoolTimeoutSeconds(int secs) {
 		POOLTIMEOUT_SECONDS=secs;
