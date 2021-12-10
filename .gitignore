@@ -38,5 +38,3 @@ obj/
 *.log
 app/release/output-metadata.json
 app/release/
-app/build.gradle
-build.gradle
