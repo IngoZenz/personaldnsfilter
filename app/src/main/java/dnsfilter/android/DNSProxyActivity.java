@@ -1799,6 +1799,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		try {
 			long repeatingLogSuppressTime = Long.parseLong(getConfig().getProperty("repeatingLogSuppressTime", "1000"));
+			boolean liveLogTimestampEnabled = Boolean.parseBoolean(getConfig().getProperty("addLiveLogTimestamp", "false"));
+			myLogger.setTimestampFormat(null);
+			if (liveLogTimestampEnabled) {
+				String timeStampPattern = getConfig().getProperty("liveLogTimeStampFormat", "hh:mm:ss");
+				myLogger.setTimestampFormat(timeStampPattern);
+			}
 			myLogger.setSuppressTime(repeatingLogSuppressTime);
 			boolean vpnInAdditionToProxyMode = Boolean.parseBoolean(getConfig().getProperty("vpnInAdditionToProxyMode", "false"));
 			boolean vpnDisabled = !vpnInAdditionToProxyMode && Boolean.parseBoolean(getConfig().getProperty("dnsProxyOnAndroid", "false"));

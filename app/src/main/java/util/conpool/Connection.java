@@ -23,11 +23,9 @@
 
 package util.conpool;
 
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -38,6 +36,7 @@ import java.net.Proxy;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -47,7 +46,6 @@ import java.util.Vector;
 import javax.net.ssl.SSLSocketFactory;
 
 import util.ExecutionEnvironment;
-import util.Logger;
 import util.TimeoutListener;
 import util.TimeoutTime;
 import util.TimoutNotificator;
@@ -65,6 +63,10 @@ public class Connection implements TimeoutListener {
 	boolean acquired = true;
 	boolean valid = true;
 	boolean ssl = false;
+	private InetSocketAddress sadr;
+	private int conTimeout;
+	private SSLSocketFactory sslSocketFactory;
+	private Proxy proxy;
 
 	private static byte[] NO_IP = new byte[]{0,0,0,0};
 	private static HashMap connPooled = new HashMap();
@@ -194,14 +196,24 @@ public class Connection implements TimeoutListener {
 		}			
 		
 	}
-	
+
 	private void initConnection(InetSocketAddress sadr, int conTimeout, boolean ssl, SSLSocketFactory sslSocketFactory, Proxy proxy) throws IOException {
+
+		this.sadr = sadr;
+		this.conTimeout = conTimeout;
+		this.ssl = ssl;
+		this.sslSocketFactory = sslSocketFactory;
+		this.proxy = proxy;
+		establishConnection();
+	}
+	
+	private void establishConnection() throws IOException {
 		
 		if (conTimeout <0)
 			conTimeout= 0;
 		
 		if (proxy == Proxy.NO_PROXY) {
-			socket = new Socket();
+			socket = SocketChannel.open().socket();
 			ExecutionEnvironment.getEnvironment().protectSocket(socket,0);
 			socket.connect(sadr,conTimeout);
 		} else {
@@ -224,7 +236,31 @@ public class Connection implements TimeoutListener {
 			socket.setSoTimeout(0); //reset the read timeout for the SSL handshake
 	}
 
-	
+	public void refreshConnection() throws IOException {
+
+		int sock_timeout = 0;
+		if (socket != null)
+			sock_timeout = socket.getSoTimeout();
+		// close existing connection
+		try {
+			in.invalidate();
+			out.invalidate();
+
+			if (!ssl) { //SSLSocket doesn't support this
+				socket.shutdownOutput();
+				socket.shutdownInput();
+			}
+			socket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+		}
+
+		//establish new connection
+		establishConnection();
+		socket.setSoTimeout(sock_timeout);
+
+		initStreams();
+	}
 
 	public static void setPoolTimeoutSeconds(int secs) {
 		POOLTIMEOUT_SECONDS=secs;

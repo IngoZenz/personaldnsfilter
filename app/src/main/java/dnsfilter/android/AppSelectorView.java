@@ -11,7 +11,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -20,7 +22,7 @@ import android.widget.TextView;
 import util.Logger;
 
 
-public class AppSelectorView extends LinearLayout {
+public class AppSelectorView extends LinearLayout implements View.OnClickListener {
 
 	private PackageManager pm = this.getContext().getPackageManager();
 	private boolean loaded = false;
@@ -30,6 +32,36 @@ public class AppSelectorView extends LinearLayout {
 	private AsyncLoader runningUpdate = null;
 
 	private ComparableAppInfoWrapper[] wrappers = null;
+	private View searchView;
+	private View emptyResult;
+
+	@Override
+	public void onClick(View v) {
+		//search clicked
+		if (!loaded || runningUpdate != null)
+			return ;
+
+		String searchStr = ((EditText)searchView.findViewById(R.id.searchString)).getText().toString().toLowerCase();
+
+		ComparableAppInfoWrapper[] allwrappers = wrappers;
+		int count = 0;
+		emptyResult.setVisibility(View.GONE);
+
+		for (int i = 0; i < allwrappers.length; i++) {
+			boolean visible = allwrappers[i].checkBox.getText().toString().toLowerCase().indexOf(searchStr) != -1;
+			if (visible)
+				allwrappers[i].checkBox.setVisibility(View.VISIBLE);
+			else
+				allwrappers[i].checkBox.setVisibility(View.GONE);
+
+			if (visible)
+				count++;
+		}
+		if (count == 0)
+			emptyResult.setVisibility(View.VISIBLE);
+		Logger.getLogger().logLine("Found: "+count+" apps!");
+
+	}
 
 	private class ComparableAppInfoWrapper implements Comparable<ComparableAppInfoWrapper> {
 
@@ -86,7 +118,6 @@ public class AppSelectorView extends LinearLayout {
 				return;
 
 			try {
-
 				//set 'Loading apps...' info
 				final TextView infoText = new TextView(getContext());
 				infoText.setTextColor(Color.BLACK);
@@ -111,11 +142,13 @@ public class AppSelectorView extends LinearLayout {
 					sortedWrappers.add(new ComparableAppInfoWrapper(packages[i], entry));
 				}
 
-				//remove 'Loading apps...' info
+				//remove 'Loading apps...' info, add searchView
 				post(new Runnable() {
 					@Override
 					public void run() {
 						removeView(infoText);
+						addView(searchView);
+						addView(emptyResult);
 					}
 				});
 
@@ -166,6 +199,11 @@ public class AppSelectorView extends LinearLayout {
 
 	public void loadAppList() {
 
+		searchView = LayoutInflater.from(getContext()).inflate(R.layout.appselectorsearch, null);
+		searchView.findViewById(R.id.searchBtn).setOnClickListener(this);
+		emptyResult = LayoutInflater.from(getContext()).inflate(R.layout.emptyresult, null);
+		emptyResult.setVisibility(View.GONE);
+
 		if (loaded || runningUpdate != null)
 			return;
 
@@ -195,6 +233,8 @@ public class AppSelectorView extends LinearLayout {
 
 		//clear
 		wrappers = null;
+		if (searchView!= null)
+			searchView.setOnClickListener(null);
 		this.removeAllViews();
 		loaded = false;
 	}
