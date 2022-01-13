@@ -1,0 +1,17 @@
+[Unit]
+Description=personalDNSfilter Service
+Wants=network-online.target
+After=network.target
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=3
+WorkingDirectory=/var/local/personalDNSfilter/
+ExecStart=/usr/bin/java -cp /usr/local/lib/personalDNSfilter/personalDNSfilter.jar dnsfilter.DNSFilterProxy
+StandardOutput=syslog
+StandardError=null
+
+
+[Install]
+WantedBy=multi-user.target
