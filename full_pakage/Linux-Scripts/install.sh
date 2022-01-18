@@ -18,10 +18,10 @@ fi
 install -d -v /usr/local/lib/personalDNSfilter/
 install -Z -v -m 644 -t /usr/local/lib/personalDNSfilter/ ../personalDNSfilter.jar
 # Create working directory
-install -d -v /var/local/personalDNSfilter/
+install -d -v /var/lib/personalDNSfilter/
 # Copy dnsfilter.conf to working directory if exist
 if [ -w ../dnsfilter.conf ]; then
-	install -Z -v -m 644 -t /var/local/personalDNSfilter/ ../dnsfilter.conf
+	install -Z -v -m 644 -t /var/lib/personalDNSfilter/ ../dnsfilter.conf
 fi
 # Install systemd service file
 install -Z -v -m 644 -t /etc/systemd/system/ personalDNSfilter.service
