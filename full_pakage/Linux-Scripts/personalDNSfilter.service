@@ -7,11 +7,17 @@ After=network.target
 Type=simple
 Restart=on-failure
 RestartSec=3
-WorkingDirectory=/var/local/personalDNSfilter/
+WorkingDirectory=/var/lib/personalDNSfilter/
 ExecStart=/usr/bin/java -cp /usr/local/lib/personalDNSfilter/personalDNSfilter.jar dnsfilter.DNSFilterProxy
-StandardOutput=syslog
+StandardOutput=journal
 StandardError=null
 
+# Hardening
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+SystemCallArchitectures=native
+NoNewPrivileges=true
 
 [Install]
 WantedBy=multi-user.target
