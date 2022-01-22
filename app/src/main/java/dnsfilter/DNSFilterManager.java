@@ -1261,7 +1261,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			String entry = entryit.next();
 			hostFilter.removeOverrule(entry.toLowerCase(), !filter);
 			addHostOut.write( "\n"+excludePref + entry);
-			hostFilter.addOverrule(entry.toLowerCase(), false);
+			hostFilter.addOverrule(entry.toLowerCase(), filter);
 		}
 	}
 
