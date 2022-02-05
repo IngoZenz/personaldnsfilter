@@ -404,7 +404,7 @@ public class DNSFilterService extends VpnService  {
 					if (!adr.equals(VIRTUALDNS_IPV4) && !adr.equals(VIRTUALDNS_IPV6))
 						result.add(adr);
 				}
-			} else Logger.getLogger().logLine("WARNING: Cannot get link properties!");
+			} else Logger.getLogger().logLine("WARNING: Cannot get link properties for "+network.toString());
 
 		}
 		return result.toArray(new String[result.size()]);
