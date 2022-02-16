@@ -22,6 +22,7 @@
 package dnsfilter;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -68,6 +69,7 @@ public class DNSCommunicator {
 		final DNSServer[] dnsServersCopy;
 		final int[] curDNSCopy = new int[1];
 		final FileOutputStream[] dnsPerfOut = new FileOutputStream[1];
+		File dnsPerfFile= new File(ExecutionEnvironment.getEnvironment().getWorkDir()+"/dnsperf.info");
 
 		synchronized (INSTANCE) {
 			if (dnsServers.length == 1) {
@@ -79,7 +81,6 @@ public class DNSCommunicator {
 				if (currentCheckingDNServers != null && Utils.arrayEqual(currentCheckingDNServers, this.dnsServers))
 					return; // already triggered!
 
-				File dnsPerfFile= new File(ExecutionEnvironment.getEnvironment().getWorkDir()+"/dnsperf.info");
 				if (!dnsPerfFile.exists() || dnsPerfFile.delete()) {
 					dnsPerfOut[0] = new FileOutputStream(dnsPerfFile);
 					dnsPerfOut[0].write(("#DNS Response Times\r\n#Started: " + new Date() + "\r\n\r\n").getBytes());
@@ -168,7 +169,7 @@ public class DNSCommunicator {
 								}
 							} catch (IOException eio) {
 								//Logger.getLogger().logLine(dnsServer+": "+eio.getMessage());
-								writeDNSPerfInfo(dnsServer+"; "+eio.getMessage()+"\r\n");
+								writeDNSPerfInfo(dnsServer+"; "+eio.toString()+"\r\n");
 								terminated(false);
 							}
 						}
@@ -225,6 +226,9 @@ public class DNSCommunicator {
 							dnsPerfOut[0].write(("\r\n#Terminated: " + new Date() + "\r\n\r\n").getBytes());
 							dnsPerfOut[0].flush();
 							dnsPerfOut[0].close();
+							FileInputStream in = new FileInputStream(dnsPerfFile);
+							Logger.getLogger().logLine(new String(Utils.readFully(in, 1024)));
+							in.close();
 						} catch (IOException eio) {
 							Logger.getLogger().logLine("Can't close dnsperf.info file!\n"+eio);
 						}
