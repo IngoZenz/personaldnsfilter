@@ -187,12 +187,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	protected static DNSProxyActivity INSTANCE;
 
-	public static void reloadLocalConfig() {
-		DNSProxyActivity instance = INSTANCE;
-		if (instance != null && CONFIG.isLocal())
-			instance.loadAndApplyConfig(false);
-	}
-
 	private static class MsgTimeoutListener implements TimeoutListener {
 
 		long timeout = Long.MAX_VALUE;
@@ -783,8 +777,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		try {
 			CONFIG.doRestoreDefaults();
 			backupStatusView.setTextColor(Color.parseColor("#43A047"));
-			if (!CONFIG.isLocal())
-				loadAndApplyConfig(false);
+			loadAndApplyConfig(false);
 			backupStatusView.setText("Restore success!");
 		} catch (IOException eio) {
 			backupStatusView.setTextColor(Color.parseColor("#E53935"));
@@ -797,8 +790,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		try {
 			CONFIG.doRestore(getBackupSubFolder());
 			backupStatusView.setTextColor(Color.parseColor("#43A047"));
-			if (!CONFIG.isLocal())
-				loadAndApplyConfig(false);
+			loadAndApplyConfig(false);
 			backupStatusView.setText("Restore success!");
 		} catch (IOException eio) {
 			backupStatusView.setTextColor(Color.parseColor("#E53935"));
@@ -992,10 +984,9 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				public void run() {
 
 					//Link field
-					if (!MSG_ACTIVE) {
-						link_field_txt = config.getProperty("footerLink", "");
+					link_field_txt = config.getProperty("footerLink", "");
+					if (!MSG_ACTIVE)
 						link_field.setText(fromHtml(link_field_txt));
-					}
 
 					//Log formatting
 					filterLogFormat = config.getProperty("filterLogFormat", "<font color='#E53935'>($CONTENT)</font>");

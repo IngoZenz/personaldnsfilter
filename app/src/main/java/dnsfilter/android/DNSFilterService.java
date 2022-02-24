@@ -1009,7 +1009,6 @@ public class DNSFilterService extends VpnService  {
 			restartVPN(true);
 		}
 		updateNotification();
-		DNSProxyActivity.reloadLocalConfig();
 		possibleNetworkChange(true); // trigger dns detection
 	}
 
