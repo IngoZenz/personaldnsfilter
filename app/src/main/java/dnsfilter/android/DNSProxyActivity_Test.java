@@ -4,8 +4,9 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,10 +21,12 @@ public class DNSProxyActivity_Test extends Activity implements View.OnClickListe
     protected static Boolean isPowerOn = true;
     protected static TextView live_log;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.test_main_activity);
+
 
         reset_button = (ImageButton) findViewById(R.id.reset_button);
         reset_button.setOnClickListener(this);
@@ -35,6 +38,9 @@ public class DNSProxyActivity_Test extends Activity implements View.OnClickListe
         power_status = (TextView) findViewById(R.id.power_status);
         live_log = (TextView) findViewById(R.id.live_log);
         live_log.setMovementMethod(new ScrollingMovementMethod());
+
+
+
 
     }
 
