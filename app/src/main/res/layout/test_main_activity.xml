@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="#ffffff"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <LinearLayout
+        android:gravity="center"
+        android:weightSum="4"
+        android:id="@+id/linearLayout3"
+        android:layout_width="match_parent"
+        android:layout_height="102dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:background="@drawable/button_transparent_background"
+            android:src="@drawable/reset_icon"
+            android:layout_weight="1"
+            android:id="@+id/reset_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:gravity="center"
+            android:layout_weight="2"
+            android:textColor="#000000"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/connection_status"
+            android:text="personalDNSfiler\n
+V1505D0\n
+(Connections:6)"/>
+
+        <ImageButton
+            android:background="@drawable/button_transparent_background"
+            android:src="@drawable/settings_icon"
+            android:layout_weight="1"
+            android:id="@+id/settings_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:gravity="center"
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="270dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
+
+        <LinearLayout
+            android:id="@+id/power_icon_layout"
+            android:gravity="center"
+            android:background="@drawable/power_button_border_white"
+            android:layout_width="120dp"
+            android:layout_height="120dp">
+
+            <ImageButton
+
+                android:background="@drawable/power_button_border_transparent"
+                android:id="@+id/power_button"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/power_icon_white"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/power_status"
+            android:gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="62dp"
+            android:text="Off"
+            android:textSize="24sp"
+            android:textColor="#000000"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:background="#008BA3"
+        android:id="@+id/live_log_layout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/footer_layout"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+
+        <TextView
+            android:id="@+id/live_log"
+            android:textColor="#ffffff"
+            android:layout_margin="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="****This is personalDNSfilter V+1505100****\n
+Initializing …\n
+09:27:44\n
+***|nitializing personalDNSfilter Version 1505100!***\n
+Using directory: /storage/emulated/O/Android/data/\n
+dnsfilter.android/files/PersonalDNSFilter/\n
+Acquired WIFI lock and partial wake lock!\n
+Released WIF| lock and partial wake lock!\n
+Using blocking mode!\n
+VPN connected!\n
+VPN runner thread 1 started!\n
+IOEXCEPTION: java.io.I0Exception: IP header checksum\n
+error!\n
+09:27:45\n
+DNS filter: Next filter reload: Tue Mar 01 08:50:55 GMT\n
+2022\n
+09:27:48\n
+/ mtalk.google.com\n
+mobile-gtalk.I.google.com\n"
+            android:scrollbars="vertical"
+            android:scrollbarStyle="insideOverlay"
+            android:fadeScrollbars="true"
+            android:fadingEdge="vertical"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:gravity="center"
+        android:orientation="vertical"
+        android:id="@+id/footer_layout"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:text="Want to support us? Feel free to DONATE!"
+            android:textColor="#000000"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -19,7 +19,7 @@
         android:label="personalDNSfilter"
         android:theme="@style/Theme.phttpp.TitleBar">
         <activity
-            android:name="dnsfilter.android.DNSProxyActivity"
+            android:name=".DNSProxyActivity_Test"
             android:label="personalDNSfilter">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
