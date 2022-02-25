@@ -18,10 +18,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
+        <ImageButton
+            android:background="@drawable/button_transparent_background"
             android:src="@drawable/reset_icon"
             android:layout_weight="1"
-            android:id="@+id/reset_icon"
+            android:id="@+id/reset_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
@@ -36,10 +37,11 @@
 V1505D0\n
 (Connections:6)"/>
 
-        <ImageView
+        <ImageButton
+            android:background="@drawable/button_transparent_background"
             android:src="@drawable/settings_icon"
             android:layout_weight="1"
-            android:id="@+id/settings_icon"
+            android:id="@+id/settings_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
@@ -63,8 +65,9 @@ V1505D0\n
             android:layout_height="120dp">
 
             <ImageButton
+
                 android:background="@drawable/power_button_border_transparent"
-                android:id="@+id/power_icon"
+                android:id="@+id/power_button"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/power_icon_white"/>
