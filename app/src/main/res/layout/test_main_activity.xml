@@ -26,16 +26,38 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
-        <TextView
+        <LinearLayout
             android:gravity="center"
             android:layout_weight="2"
             android:textColor="#000000"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/connection_status"
-            android:text="personalDNSfiler\n
-V1505D0\n
-(Connections:6)"/>
+            android:text="">
+
+
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/dnsLabel"
+                android:textStyle="bold"
+                android:textColor="#424242" />
+
+            <TextView
+                android:id="@+id/dnsField"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="7dp"
+                android:layout_weight="0"
+                android:background="@drawable/text_view"
+                android:drawableRight="@drawable/edit_pen"
+                android:gravity="center_vertical"
+                android:maxLength="64"
+                android:padding="10dp"
+                android:textColor="#424242" />
+
+        </LinearLayout>
 
         <ImageButton
             android:background="@drawable/button_transparent_background"
@@ -86,7 +108,7 @@ V1505D0\n
     </LinearLayout>
 
     <LinearLayout
-        android:background="#008BA3"
+        android:background="#eceff1"
         android:id="@+id/live_log_layout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -95,30 +117,13 @@ V1505D0\n
         app:layout_constraintTop_toBottomOf="@+id/linearLayout">
 
         <TextView
+
             android:id="@+id/live_log"
-            android:textColor="#ffffff"
+            android:textColor="#000000"
             android:layout_margin="12dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="****This is personalDNSfilter V+1505100****\n
-Initializing …\n
-09:27:44\n
-***|nitializing personalDNSfilter Version 1505100!***\n
-Using directory: /storage/emulated/O/Android/data/\n
-dnsfilter.android/files/PersonalDNSFilter/\n
-Acquired WIFI lock and partial wake lock!\n
-Released WIF| lock and partial wake lock!\n
-Using blocking mode!\n
-VPN connected!\n
-VPN runner thread 1 started!\n
-IOEXCEPTION: java.io.I0Exception: IP header checksum\n
-error!\n
-09:27:45\n
-DNS filter: Next filter reload: Tue Mar 01 08:50:55 GMT\n
-2022\n
-09:27:48\n
-/ mtalk.google.com\n
-mobile-gtalk.I.google.com\n"
+            android:text=""
             android:scrollbars="vertical"
             android:scrollbarStyle="insideOverlay"
             android:fadeScrollbars="true"
@@ -127,6 +132,7 @@ mobile-gtalk.I.google.com\n"
     </LinearLayout>
 
     <LinearLayout
+        android:background="#008BA3"
         android:gravity="center"
         android:orientation="vertical"
         android:id="@+id/footer_layout"
@@ -138,7 +144,7 @@ mobile-gtalk.I.google.com\n"
 
         <TextView
             android:text="Want to support us? Feel free to DONATE!"
-            android:textColor="#000000"
+            android:textColor="#ffffff"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 

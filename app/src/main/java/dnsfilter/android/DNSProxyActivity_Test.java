@@ -1,14 +1,7 @@
 package dnsfilter.android;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.graphics.Color;
-import android.net.VpnService;
-import android.os.Build;
 import android.os.Bundle;
-import android.text.Html;
-import android.text.Spannable;
-import android.text.Spanned;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.ImageButton;
@@ -16,6 +9,12 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.content.Intent;
+import android.net.VpnService;
+import android.os.Build;
+import android.text.Html;
+import android.text.Spannable;
+import android.text.Spanned;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -124,6 +123,7 @@ public class DNSProxyActivity_Test extends Activity implements View.OnClickListe
 
                 logOutView.setText(logStr.subSequence(start, logStr.length()));
             }
+
             String version = "<unknown>";
             String connCnt = "-1";
             String lastDNS = "<unknown>";
