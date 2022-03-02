@@ -64,7 +64,7 @@ public class ConfigUtil {
                 String value = config.getProperty(key);
 
                 if (value == null)
-                    throw new IOException("Config is inconsistent - Missing "+key);
+                    value = "";
 
                 ln = key+" = "+value;
             }
