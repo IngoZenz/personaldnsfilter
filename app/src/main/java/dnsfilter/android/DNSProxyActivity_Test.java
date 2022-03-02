@@ -1,6 +1,9 @@
 package dnsfilter.android;
 
 import android.app.Activity;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
@@ -27,6 +30,8 @@ import util.GroupedLogger;
 import util.Logger;
 import util.LoggerInterface;
 import util.SuppressRepeatingsLogger;
+import util.TimeoutListener;
+import util.TimoutNotificator;
 
 public class DNSProxyActivity_Test extends Activity implements View.OnClickListener, LoggerInterface {
 
@@ -37,6 +42,11 @@ public class DNSProxyActivity_Test extends Activity implements View.OnClickListe
     protected static TextView power_status;
     protected static Boolean isPowerOn = true;
     protected static TextView logOutView;
+
+    protected static TextView link_field;
+    protected static int link_field_color = Color.TRANSPARENT;
+    protected static String link_field_txt = "";
+    private static boolean MSG_ACTIVE = false;
 
     protected static ConfigurationAccess CONFIG = ConfigurationAccess.getLocal();
 
@@ -51,6 +61,40 @@ public class DNSProxyActivity_Test extends Activity implements View.OnClickListe
     protected static String normalLogFormat="($CONTENT)";
 
     protected static SuppressRepeatingsLogger myLogger;
+
+    private static class MsgTimeoutListener implements TimeoutListener {
+
+        long timeout = Long.MAX_VALUE;
+
+        DNSProxyActivity_Test activity;
+
+        public void setActivity(DNSProxyActivity_Test activity) {
+            this.activity= activity;
+        }
+
+        private void setTimeout(int timeout) {
+            this.timeout = System.currentTimeMillis()+timeout;
+            TimoutNotificator.getInstance().register(this);
+        }
+
+        @Override
+        public void timeoutNotification() {
+            if (CONFIG.isLocal())
+                activity.setMessage(fromHtml(link_field_txt), link_field_color);
+            else
+                activity.setMessage(fromHtml("<font color='#F7FB0A'><strong>"+ CONFIG +"</strong></font>"), link_field_color);
+
+            MSG_ACTIVE = false;
+        }
+
+        @Override
+        public long getTimoutTime() {
+            return timeout;
+        }
+    };
+
+
+    private static MsgTimeoutListener MsgTO = new MsgTimeoutListener();
 
 
     private static Spanned fromHtml(String txt) {
@@ -157,7 +201,21 @@ public class DNSProxyActivity_Test extends Activity implements View.OnClickListe
 
     @Override
     public void message(String txt) {
-        logLine(txt);
+        setMessage(fromHtml("<strong>"+txt+"</strong>"), Color.parseColor("#FFC107"));
+        MsgTO.setTimeout(5000);
+    }
+
+
+    private void setMessage(final Spanned msg, final int backgroundColor) {
+        runOnUiThread(new Runnable () {
+
+            @Override
+            public void run() {
+                link_field.setBackgroundColor(backgroundColor);
+                link_field.setText(msg);
+                MSG_ACTIVE = true;
+            }
+        });
     }
 
 
@@ -174,6 +232,7 @@ public class DNSProxyActivity_Test extends Activity implements View.OnClickListe
         setContentView(R.layout.test_main_activity);
 
         AndroidEnvironment.initEnvironment(this);
+        MsgTO.setActivity(this);
 
         reset_button = (ImageButton) findViewById(R.id.reset_button);
         reset_button.setOnClickListener(this);
@@ -203,6 +262,18 @@ public class DNSProxyActivity_Test extends Activity implements View.OnClickListe
             myLogger = new SuppressRepeatingsLogger(this);
             Logger.setLogger(new GroupedLogger(new LoggerInterface[]{myLogger}));
         }
+
+        link_field = (TextView) findViewById(R.id.link_field);
+        link_field.setText(fromHtml(link_field_txt));
+        link_field.setOnClickListener(this);
+
+        link_field_txt = getConfig().getProperty("footerLink", "");
+        if (!MSG_ACTIVE)
+            link_field.setText(fromHtml(link_field_txt));
+
+        Drawable background = link_field.getBackground();
+        if (background instanceof ColorDrawable)
+            link_field_color = ((ColorDrawable) background).getColor();
         startup();
 
     }

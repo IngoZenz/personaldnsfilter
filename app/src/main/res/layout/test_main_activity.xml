@@ -143,10 +143,12 @@
         app:layout_constraintStart_toStartOf="parent">
 
         <TextView
-            android:text="Want to support us? Feel free to DONATE!"
-            android:textColor="#ffffff"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:id="@+id/link_field"
+            android:text=""
+            android:textColor="#455a64"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
     </LinearLayout>
 
