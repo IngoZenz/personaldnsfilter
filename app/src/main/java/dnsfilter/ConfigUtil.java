@@ -57,7 +57,7 @@ public class ConfigUtil {
             String trimLN = ln.trim();
 
             if (!trimLN.equals("") && !trimLN.startsWith("#")) {
-                int idx = trimLN.indexOf(" = ");
+                int idx = trimLN.indexOf(" =");
                 if (idx == -1)
                     throw new IOException("broken config! "+trimLN);
                 String key = trimLN.substring(0,idx).trim();
