@@ -401,6 +401,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	@Override
 	public void updateConfig(byte[] config) throws IOException {
 		try {
+			invalidate();
 			FileOutputStream out = new FileOutputStream(getPath() + "dnsfilter.conf");
 			out.write(config);
 			out.flush();
@@ -418,6 +419,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	@Override
 	public void updateConfigMergeDefaults(byte[] config) throws IOException {
 		try {
+			invalidate();
 			config = mergeAndPersistConfig(config);
 			this.config.load(new ByteArrayInputStream(config));
 			Logger.getLogger().message("Config changed!\nRestart might be required!");
@@ -524,6 +526,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				throw new IOException("Cannot stop! Pending operation!");
 
 			stop();
+			invalidate();
 			copyFromAssets("dnsfilter.conf", "dnsfilter.conf");
 			copyFromAssets("additionalHosts.txt", "additionalHosts.txt");
 
@@ -547,6 +550,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				throw new IOException("Cannot stop! Pending operation!");
 
 			stop();
+			invalidate();
 			copyLocalFile("backup/"+name+"/dnsfilter.conf", "dnsfilter.conf");
 			copyLocalFile("backup/"+name+"/additionalHosts.txt", "additionalHosts.txt");
 			copyLocalFile("backup/"+name+"/VERSION.TXT", "VERSION.TXT");
