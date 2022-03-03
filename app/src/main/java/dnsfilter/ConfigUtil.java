@@ -37,11 +37,11 @@ public class ConfigUtil {
         config.load(new ByteArrayInputStream(configBytes));
     }
 
-    boolean isChanged() {
+    public boolean isChanged() {
         return changed;
     }
 
-    byte[] getUpdatedConfigBytes() throws IOException {
+    public byte[] getConfigBytes() throws IOException {
         if (changed)
             updateConfigBytes();
         return configBytes;
