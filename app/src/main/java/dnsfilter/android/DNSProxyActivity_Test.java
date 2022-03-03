@@ -25,6 +25,7 @@ import java.io.StringWriter;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import dnsfilter.ConfigUtil;
 import dnsfilter.ConfigurationAccess;
 import util.GroupedLogger;
 import util.Logger;
@@ -246,10 +247,10 @@ public class DNSProxyActivity_Test extends Activity implements View.OnClickListe
         logOutView.setMovementMethod(new ScrollingMovementMethod());
 
         //Log formatting
-        filterLogFormat = getConfig().getProperty("filterLogFormat", "<font color='#E53935'>($CONTENT)</font>");
-        acceptLogFormat = getConfig().getProperty("acceptLogFormat", "<font color='#43A047'>($CONTENT)</font>");
-        fwdLogFormat = getConfig().getProperty("fwdLogFormat", "<font color='#FFB300'>($CONTENT)</font>");
-        normalLogFormat = getConfig().getProperty("normalLogFormat","($CONTENT)");
+        filterLogFormat = getConfig().getConfigValue("filterLogFormat", "<font color='#E53935'>($CONTENT)</font>");
+        acceptLogFormat = getConfig().getConfigValue("acceptLogFormat", "<font color='#43A047'>($CONTENT)</font>");
+        fwdLogFormat = getConfig().getConfigValue("fwdLogFormat", "<font color='#FFB300'>($CONTENT)</font>");
+        normalLogFormat = getConfig().getConfigValue("normalLogFormat","($CONTENT)");
 
         if (myLogger != null) {
             if (CONFIG.isLocal()) {
@@ -267,7 +268,7 @@ public class DNSProxyActivity_Test extends Activity implements View.OnClickListe
         link_field.setText(fromHtml(link_field_txt));
         link_field.setOnClickListener(this);
 
-        link_field_txt = getConfig().getProperty("footerLink", "");
+        link_field_txt = getConfig().getConfigValue("footerLink", "");
         if (!MSG_ACTIVE)
             link_field.setText(fromHtml(link_field_txt));
 
@@ -313,9 +314,9 @@ public class DNSProxyActivity_Test extends Activity implements View.OnClickListe
     }
 
 
-    protected Properties getConfig() {
+    protected ConfigUtil getConfig() {
         try {
-            return CONFIG.getConfig();
+            return CONFIG.getConfigUtil();
         } catch (Exception e){
             Logger.getLogger().logException(e);
             return null;
@@ -351,16 +352,16 @@ public class DNSProxyActivity_Test extends Activity implements View.OnClickListe
         }
 
         try {
-            long repeatingLogSuppressTime = Long.parseLong(getConfig().getProperty("repeatingLogSuppressTime", "1000"));
-            boolean liveLogTimestampEnabled = Boolean.parseBoolean(getConfig().getProperty("addLiveLogTimestamp", "false"));
+            long repeatingLogSuppressTime = Long.parseLong(getConfig().getConfigValue("repeatingLogSuppressTime", "1000"));
+            boolean liveLogTimestampEnabled = Boolean.parseBoolean(getConfig().getConfigValue("addLiveLogTimestamp", "false"));
             myLogger.setTimestampFormat(null);
             if (liveLogTimestampEnabled) {
-                String timeStampPattern = getConfig().getProperty("liveLogTimeStampFormat", "hh:mm:ss");
+                String timeStampPattern = getConfig().getConfigValue("liveLogTimeStampFormat", "hh:mm:ss");
                 myLogger.setTimestampFormat(timeStampPattern);
             }
             myLogger.setSuppressTime(repeatingLogSuppressTime);
-            boolean vpnInAdditionToProxyMode = Boolean.parseBoolean(getConfig().getProperty("vpnInAdditionToProxyMode", "false"));
-            boolean vpnDisabled = !vpnInAdditionToProxyMode && Boolean.parseBoolean(getConfig().getProperty("dnsProxyOnAndroid", "false"));
+            boolean vpnInAdditionToProxyMode = Boolean.parseBoolean(getConfig().getConfigValue("vpnInAdditionToProxyMode", "false"));
+            boolean vpnDisabled = !vpnInAdditionToProxyMode && Boolean.parseBoolean(getConfig().getConfigValue("dnsProxyOnAndroid", "false"));
             Intent intent = null;
             if (!vpnDisabled)
                 intent = VpnService.prepare(this.getApplicationContext());

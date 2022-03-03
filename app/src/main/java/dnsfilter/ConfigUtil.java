@@ -32,7 +32,7 @@ public class ConfigUtil {
         }
     }
 
-    public ConfigUtil(byte[] configBytes) throws IOException {
+    protected ConfigUtil(byte[] configBytes) throws IOException {
         this.configBytes = configBytes;
         config.load(new ByteArrayInputStream(configBytes));
     }
