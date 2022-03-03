@@ -38,6 +38,8 @@ public abstract class ConfigurationAccess {
         return true;
     }
 
+    public ConfigUtil getConfigUtil() throws IOException {return new ConfigUtil(readConfig());}
+
     abstract public void releaseConfiguration() ;
 
     abstract public Properties getConfig() throws IOException;
