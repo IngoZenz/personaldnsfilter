@@ -9,6 +9,8 @@ import util.LoggerInterface;
 
 public abstract class ConfigurationAccess {
 
+    protected ConfigUtil config_util = null;
+
 
     public static class ConfigurationAccessException extends IOException{
         public ConfigurationAccessException(String msg, IOException cause){
@@ -28,6 +30,10 @@ public abstract class ConfigurationAccess {
         return new RemoteAccessClient(logger, host, port, keyphrase);
     }
 
+    protected void invalidate() {
+        config_util = null;
+    }
+
     @Override
     public String toString() {
         return "LOCAL";
@@ -38,7 +44,11 @@ public abstract class ConfigurationAccess {
         return true;
     }
 
-    public ConfigUtil getConfigUtil() throws IOException {return new ConfigUtil(readConfig());}
+    public ConfigUtil getConfigUtil() throws IOException {
+        if (config_util == null)
+            config_util = new ConfigUtil(readConfig());
+        return config_util;
+    }
 
     abstract public void releaseConfiguration() ;
 
