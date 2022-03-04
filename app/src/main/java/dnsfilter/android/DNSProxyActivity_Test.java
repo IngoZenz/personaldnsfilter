@@ -1,6 +1,5 @@
 package dnsfilter.android;
 
-import android.app.Activity;
 import android.os.Bundle;
 
 import androidx.fragment.app.FragmentActivity;
