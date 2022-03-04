@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="dnsfilter.android"
     android:versionCode="1505100"
-    xmlns:tools="http://schemas.android.com/tools"
     android:versionName="1.50.51.0">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -11,41 +11,44 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission
+        android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
 
     <application
-        android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher"
         android:label="personalDNSfilter"
         android:theme="@style/Theme.phttpp.TitleBar"
+        android:usesCleartextTraffic="true"
         tools:targetApi="m">
         <activity
             android:exported="true"
-            android:theme="@style/Theme.AppCompat"
             android:name=".DNSProxyActivity_Test"
-            android:label="personalDNSfiler">
+            android:label="personalDNSfiler"
+            android:theme="@style/Theme.AppCompat">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <service
+            android:name=".DNSFilterService"
             android:exported="true"
-            android:name="dnsfilter.android.DNSFilterService"
             android:label="personalDNSfilterService"
-            android:permission="android.permission.BIND_VPN_SERVICE" >
+            android:permission="android.permission.BIND_VPN_SERVICE">
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>
         </service>
 
         <receiver
-            android:exported="true"
-            android:name="dnsfilter.android.BootUpReceiver"
+            android:name=".BootUpReceiver"
             android:enabled="true"
-            android:permission="android.permission.RECEIVE_BOOT_COMPLETED" >
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
 

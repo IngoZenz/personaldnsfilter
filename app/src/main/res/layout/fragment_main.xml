@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
+    android:clickable="true"
+    android:focusable="true"
+    android:isScrollContainer="true"
     android:background="#ffffff"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -10,7 +13,7 @@
     <LinearLayout
         android:gravity="center"
         android:weightSum="4"
-        android:id="@+id/linearLayout3"
+        android:id="@+id/layout_header"
         android:layout_width="match_parent"
         android:layout_height="102dp"
         android:orientation="horizontal"
@@ -70,10 +73,11 @@
     </LinearLayout>
 
     <LinearLayout
-        android:gravity="center"
-        android:id="@+id/linearLayout"
+        android:id="@+id/button_layout"
         android:layout_width="match_parent"
         android:layout_height="270dp"
+        android:layout_below="@id/layout_header"
+        android:gravity="center"
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -81,37 +85,38 @@
 
         <LinearLayout
             android:id="@+id/power_icon_layout"
-            android:gravity="center"
-            android:background="@drawable/power_button_border_white"
             android:layout_width="120dp"
-            android:layout_height="120dp">
+            android:layout_height="120dp"
+            android:background="@drawable/power_button_border_white"
+            android:gravity="center">
 
             <ImageButton
-
-                android:background="@drawable/power_button_border_transparent"
                 android:id="@+id/power_button"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@drawable/power_icon_white"/>
+                android:background="@drawable/power_button_border_transparent"
+                android:src="@drawable/power_icon_white" />
 
         </LinearLayout>
 
         <TextView
             android:id="@+id/power_status"
-            android:gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="62dp"
+            android:gravity="center"
             android:text="Off"
-            android:textSize="24sp"
-            android:textColor="#000000"/>
+            android:textColor="#000000"
+            android:textSize="24sp" />
 
     </LinearLayout>
 
     <LinearLayout
+        android:layout_above="@id/footer_layout"
+        android:layout_below="@id/button_layout"
         android:background="#eceff1"
         android:id="@+id/live_log_layout"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="match_parent"
         android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/footer_layout"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout">
@@ -132,6 +137,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:layout_alignParentBottom="true"
         android:background="#008BA3"
         android:gravity="center"
         android:orientation="vertical"
@@ -152,12 +158,4 @@
 
     </LinearLayout>
 
-    <FrameLayout
-        android:id="@+id/main_fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>
