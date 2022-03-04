@@ -26,7 +26,7 @@
             android:exported="true"
             android:name=".DNSProxyActivity_Test"
             android:label="personalDNSfiler"
-            android:theme="@style/Theme.AppCompat">
+            android:theme="@style/Theme.phttpp.TitleBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
