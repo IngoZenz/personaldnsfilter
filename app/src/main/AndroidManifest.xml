@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="dnsfilter.android"
     android:versionCode="1505100"
+    xmlns:tools="http://schemas.android.com/tools"
     android:versionName="1.50.51.0">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -11,14 +12,18 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
 
     <application
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher"
         android:label="personalDNSfilter"
-        android:theme="@style/Theme.phttpp.TitleBar">
+        android:theme="@style/Theme.phttpp.TitleBar"
+        tools:targetApi="m">
         <activity
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat"
             android:name=".DNSProxyActivity_Test"
             android:label="personalDNSfiler">
             <intent-filter>
@@ -27,6 +32,7 @@
             </intent-filter>
         </activity>
         <service
+            android:exported="true"
             android:name="dnsfilter.android.DNSFilterService"
             android:label="personalDNSfilterService"
             android:permission="android.permission.BIND_VPN_SERVICE" >
@@ -36,6 +42,7 @@
         </service>
 
         <receiver
+            android:exported="true"
             android:name="dnsfilter.android.BootUpReceiver"
             android:enabled="true"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED" >
