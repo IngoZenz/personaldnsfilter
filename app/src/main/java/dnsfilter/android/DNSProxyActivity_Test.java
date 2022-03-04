@@ -14,9 +14,9 @@ public class DNSProxyActivity_Test extends FragmentActivity {
         setContentView(R.layout.activity_dnsproxy_test);
 
 
-            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.add(R.id.main_fragment_container, new MainFragment()).commit();
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.add(R.id.main_fragment_container, new MainFragment()).commit();
 
 
     }
