@@ -6,6 +6,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -140,15 +141,9 @@ public class DNSProxyActivity_Test extends AppCompatActivity implements View.OnC
                 if (isPowerOn) {
                     startup();
                     isPowerOn = false;
-                    power_button_layout.setBackgroundResource(R.drawable.power_button_border);
-                    power_button.setImageResource(R.drawable.power_icon);
-                    power_status.setText("ON");
                 } else {
                     stopSyc();
                     isPowerOn = true;
-                    power_button_layout.setBackgroundResource(R.drawable.power_button_border_white);
-                    power_button.setImageResource(R.drawable.power_icon_white);
-                    power_status.setText("OFF");
                 }
                 break;
 
@@ -208,6 +203,7 @@ public class DNSProxyActivity_Test extends AppCompatActivity implements View.OnC
         power_button_layout.setBackgroundResource(R.drawable.power_button_border);
         power_button.setImageResource(R.drawable.power_icon);
         power_status.setText("ON");
+        Log.d("power_status", "on");
 
     }
 
@@ -217,7 +213,12 @@ public class DNSProxyActivity_Test extends AppCompatActivity implements View.OnC
 
 
     private void stopSyc() {
-
+        DNSFilterService.stop(true);
+        isPowerOn = false;
+        power_button_layout.setBackgroundResource(R.drawable.power_button_border_white);
+        power_button.setImageResource(R.drawable.power_icon_white);
+        power_status.setText("OFF");
+        Log.d("power_status", "off");
     }
 
 
