@@ -19,10 +19,10 @@ public class ConfigUtil {
     boolean changed = false;
 
     public static class HostFilterList {
-        boolean active;
-        String category;
-        String id;
-        String url;
+        public boolean active;
+        public String category;
+        public String id;
+        public String url;
 
         public HostFilterList(boolean active, String category, String id, String url) {
             this.active = active;
@@ -75,12 +75,17 @@ public class ConfigUtil {
         out.flush();
         out.close();
         configBytes = out.toByteArray();
+        ;
     }
 
     public void updateConfigValue(String key, String value) {
         String current = config.getProperty(key);
         config.setProperty(key, value);
         changed = changed || (value != null && !value.equals(current)) || (current != value) ;
+    }
+
+    public Properties getProperties(){
+        return config;
     }
 
     public String getConfigValue(String key, String defaultValue) {
