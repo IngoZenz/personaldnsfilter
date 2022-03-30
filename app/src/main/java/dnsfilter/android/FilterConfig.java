@@ -20,6 +20,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.TreeMap;
 
+import dnsfilter.ConfigUtil;
+
 public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListener {
 
 	static String NEW_ITEM = "<new>";
@@ -30,7 +32,7 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 
 
 	TableLayout configTable;
-	FilterConfigEntry[] filterEntries;
+	ConfigUtil.HostFilterList[] filterEntries;
 	boolean loaded = false;
 
 	TableRow editedRow;
@@ -52,19 +54,6 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 	}
 
 
-	public static class FilterConfigEntry {
-		boolean active;
-		String category;
-		String id;
-		String url;
-
-		public FilterConfigEntry(boolean active, String category, String id, String url) {
-			this.active = active;
-			this.category = category;
-			this.id = id;
-			this.url = url;
-		}
-	}
 
 	public FilterConfig(TableLayout table, Button categoryUp, Button categoryDn, TextView categoryField ) {
 
@@ -100,7 +89,7 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 		return result;
 	}
 
-	private void addItem(FilterConfigEntry entry) {
+	private void addItem(ConfigUtil.HostFilterList entry) {
 		TableRow row = (TableRow) LayoutInflater.from(configTable.getContext()).inflate(R.layout.filterconfigentry, null);
 		configTable.addView(row);
 		View[] cells = getContentCells(row);
@@ -129,7 +118,7 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 	}
 
 
-	public void setEntries(FilterConfigEntry[] entries) {
+	public void setEntries(ConfigUtil.HostFilterList[] entries) {
 
 		this.filterEntries = entries;
 		categoryMap.clear();
@@ -158,7 +147,7 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 	}
 
 	private void addEmptyEndItem() {
-		addItem(new FilterConfigEntry(false, NEW_ITEM, NEW_ITEM, NEW_ITEM));
+		addItem(new ConfigUtil.HostFilterList(false, NEW_ITEM, NEW_ITEM, NEW_ITEM));
 	}
 
 	public String getCurrentCategory() {
@@ -169,15 +158,15 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 		categoryField.setText(category);
 	}
 	
-	public FilterConfigEntry[] getFilterEntries() {
+	public ConfigUtil.HostFilterList[] getFilterEntries() {
 		if (!loaded)
 			return filterEntries;
 
 		int count = configTable.getChildCount() - 2;
-		FilterConfigEntry[] result = new FilterConfigEntry[count];
+		ConfigUtil.HostFilterList[] result = new ConfigUtil.HostFilterList[count];
 		for (int i = 0; i < count; i++) {
 			View[] rowContent = getContentCells((TableRow) configTable.getChildAt(i + 1));
-			result[i] = new FilterConfigEntry(((CheckBox) rowContent[0]).isChecked(),((TextView) rowContent[1]).getText().toString().trim(), ((TextView) rowContent[2]).getText().toString().trim(), ((TextView) rowContent[3]).getText().toString().trim());
+			result[i] = new ConfigUtil.HostFilterList(((CheckBox) rowContent[0]).isChecked(),((TextView) rowContent[1]).getText().toString().trim(), ((TextView) rowContent[2]).getText().toString().trim(), ((TextView) rowContent[3]).getText().toString().trim());
 		}
 		return result;
 	}
