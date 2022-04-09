@@ -74,8 +74,7 @@ public class ConfigUtil {
         reader.close();
         out.flush();
         out.close();
-        configBytes = out.toByteArray();
-        ;
+        configBytes = out.toByteArray();        ;
     }
 
     public void updateConfigValue(String key, String value) {
