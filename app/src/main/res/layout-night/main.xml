@@ -122,7 +122,7 @@
                 android:layout_marginTop="3dp"
                 android:layout_marginRight="15dp"
                 android:layout_marginBottom="3dp"
-                android:background="#000000"
+                android:background="#333333"
                 android:scrollbarSize="5dp"
                 android:overScrollMode="never"
                 android:scrollbarThumbVertical="@drawable/scroll_bar">
@@ -252,7 +252,7 @@
                 android:layout_marginTop="3dp"
                 android:layout_marginRight="15dp"
                 android:layout_marginBottom="15dp"
-                android:background="#000000"
+                android:background="#333333"
                 android:orientation="vertical"
                 android:paddingBottom="15dp">
 
@@ -320,7 +320,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
                         android:layout_weight="0.82"
-                        android:background="#212121"
+                        android:background="#171717"
                         android:gravity="center"
                         android:inputType="number"
                         android:text="All Active"
@@ -518,7 +518,7 @@
                     android:id="@+id/additionalHostsField"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/text_view"
+                    android:background="#333333"
                     android:inputType="textMultiLine|textNoSuggestions"
                     android:padding="10dp"
                     android:textColor="#FFFFFF"
@@ -551,7 +551,7 @@
                     android:id="@+id/manuallyEditField"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/text_view"
+                    android:background="#333333"
                     android:inputType="textMultiLine|textNoSuggestions"
                     android:padding="10dp"
                     android:textColor="#FFFFFF"
@@ -568,7 +568,7 @@
             android:layout_marginTop="3dp"
             android:layout_marginRight="15dp"
             android:layout_marginBottom="15dp"
-            android:background="#000000"
+            android:background="#333333"
             android:scrollbarSize="5dp"
             android:overScrollMode="never"
             android:scrollbarThumbVertical="@drawable/scroll_bar"
@@ -590,7 +590,7 @@
             android:layout_marginTop="3dp"
             android:layout_marginRight="15dp"
             android:layout_marginBottom="10dp"
-            android:background="#000000"
+            android:background="#333333"
             android:orientation="vertical">
 
             <LinearLayout
@@ -600,7 +600,7 @@
                 android:layout_marginTop="15dp"
                 android:layout_marginRight="15dp"
                 android:layout_marginBottom="15dp"
-                android:background="#000000"
+                android:background="#333333"
                 android:orientation="vertical">
 
                 <LinearLayout
@@ -726,7 +726,7 @@
                 android:layout_marginTop="0dp"
                 android:layout_marginRight="0dp"
                 android:layout_marginBottom="0dp"
-                android:background="#000000"
+                android:background="#333333"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp" />
 
@@ -826,11 +826,11 @@
         android:layout_height="0dp"
         android:layout_marginBottom="0dp"
         android:layout_weight="0.05"
-        android:background="#141414"
+        android:background="#00BCD4"
         android:gravity="center"
         android:maxLines="2"
         android:paddingHorizontal="3dp"
-        android:textColor="#FFFFFF"
+        android:textColor="#455a64"
         android:textSize="12dp"
         android:visibility="visible" />
 </LinearLayout>

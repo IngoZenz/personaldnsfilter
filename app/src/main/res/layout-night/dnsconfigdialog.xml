@@ -3,7 +3,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="#000000"
+    android:background="#333333"
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:orientation="vertical"
@@ -35,7 +35,7 @@
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:layout_marginBottom="15dp"
-            android:background="#000000"
+            android:background="#262626"
             android:padding="10dp"
             android:overScrollMode="never"
             android:scrollbars="none">
@@ -44,7 +44,7 @@
                 android:id="@+id/manualDNS"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="#000000"
+                android:background="#262626"
                 android:inputType="textMultiLine|textNoSuggestions"
                 android:minWidth="200dp"
                 android:textColor="#FFFFFF"
@@ -56,7 +56,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0.05"
-        android:background="#000000"
+        android:background="#333333"
         android:orientation="vertical">
 
 
@@ -80,7 +80,7 @@
             android:layout_gravity="end"
             android:layout_marginTop="15dp"
             android:layout_marginRight="15dp"
-            android:background="#000000"
+            android:background="#262626"
             android:orientation="horizontal">
 
             <Button
