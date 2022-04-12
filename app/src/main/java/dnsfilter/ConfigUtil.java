@@ -80,7 +80,7 @@ public class ConfigUtil {
     public void updateConfigValue(String key, String value) {
         String current = config.getProperty(key);
         config.setProperty(key, value);
-        changed = changed || (value != null && !value.equals(current)) || (current != value) ;
+        changed = changed || (value != null && !value.equals(current)) || (value == null && current != null) ;
     }
 
     public Properties getProperties(){
