@@ -689,14 +689,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}
 	}
 
-
-
-	protected void updateConfig(byte[] cfg ) throws IOException {
-		CONFIG.updateConfig(cfg);
-	}
-
-
-
 	protected void showFilterRate(boolean asMessage) {
 
 		try {
@@ -1150,7 +1142,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 
 			if (getConfig().isChanged()) {
-				updateConfig(getConfig().getConfigBytes());
+				CONFIG.updateConfig(getConfig().getConfigBytes());
 			}
 
 		} catch (Exception e) {
@@ -1317,28 +1309,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		} catch (Exception e) {
 			throw new Exception("Destination needed in format \"host:port\"!");
 		}
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		String ln;
 
-		BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(CONFIG.readConfig())));
-		while ((ln = reader.readLine()) != null) {
+		getConfig().updateConfigValue("client_remote_ctrl_host", host);
+		getConfig().updateConfigValue("client_remote_ctrl_port", port+"");
+		getConfig().updateConfigValue("client_remote_ctrl_keyphrase", passphrase);
 
-			if (ln.trim().startsWith("client_remote_ctrl_host"))
-				ln = "client_remote_ctrl_host = " + host;
-
-			if (ln.trim().startsWith("client_remote_ctrl_port"))
-				ln = "client_remote_ctrl_port= " + port;
-
-			if (ln.trim().startsWith("client_remote_ctrl_keyphrase"))
-				ln = "client_remote_ctrl_keyphrase = " + passphrase;
-
-			out.write((ln + "\r\n").getBytes());
-		}
-		reader.close();
-		out.flush();
-		out.close();
-
-		updateConfig(out.toByteArray());
+		if (getConfig().isChanged())
+			CONFIG.updateConfig(getConfig().getConfigBytes());
 	}
 
 	private void pepareRemoteControl() {
