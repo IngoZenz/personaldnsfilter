@@ -1104,6 +1104,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 	private void updateIndexReloadInfoConfFile(String url) {
 		try {
+			invalidate();
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(getPath() + "dnsfilter.conf")));
 			String ln;
