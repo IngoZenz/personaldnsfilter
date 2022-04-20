@@ -412,6 +412,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
     @Override
     public void restart() throws IOException {
        triggerAction("restart()", null);
+       invalidate(); //force reload of config
     }
 
     @Override
