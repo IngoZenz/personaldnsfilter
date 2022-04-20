@@ -270,6 +270,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
     @Override
     public void updateConfig(byte[] config) throws IOException {
         try {
+            invalidate();
             InputStream in = getInputStream();
             DataOutputStream out = new DataOutputStream(getOutputStream());
 
@@ -295,6 +296,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
     @Override
     public void updateConfigMergeDefaults(byte[] config) throws IOException {
         try {
+            invalidate();
             InputStream in = getInputStream();
             DataOutputStream out = new DataOutputStream(getOutputStream());
 
@@ -410,6 +412,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
     @Override
     public void restart() throws IOException {
        triggerAction("restart()", null);
+       invalidate(); //force reload of config
     }
 
     @Override
@@ -487,11 +490,13 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
 
     @Override
     public void doRestoreDefaults() throws IOException {
+        invalidate();
         triggerAction("doRestoreDefaults()", null);
     }
 
     @Override
     public void doRestore(String name) throws IOException{
+        invalidate();
         triggerAction("doRestore()", name);
     }
 

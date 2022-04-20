@@ -64,7 +64,7 @@ import util.conpool.TLSSocketFactory;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1505100";
+	public static final String VERSION = "1505200";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -401,6 +401,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	@Override
 	public void updateConfig(byte[] config) throws IOException {
 		try {
+			invalidate();
 			FileOutputStream out = new FileOutputStream(getPath() + "dnsfilter.conf");
 			out.write(config);
 			out.flush();
@@ -418,6 +419,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	@Override
 	public void updateConfigMergeDefaults(byte[] config) throws IOException {
 		try {
+			invalidate();
 			config = mergeAndPersistConfig(config);
 			this.config.load(new ByteArrayInputStream(config));
 			Logger.getLogger().message("Config changed!\nRestart might be required!");
@@ -524,6 +526,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				throw new IOException("Cannot stop! Pending operation!");
 
 			stop();
+			invalidate();
 			copyFromAssets("dnsfilter.conf", "dnsfilter.conf");
 			copyFromAssets("additionalHosts.txt", "additionalHosts.txt");
 
@@ -547,6 +550,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				throw new IOException("Cannot stop! Pending operation!");
 
 			stop();
+			invalidate();
 			copyLocalFile("backup/"+name+"/dnsfilter.conf", "dnsfilter.conf");
 			copyLocalFile("backup/"+name+"/additionalHosts.txt", "additionalHosts.txt");
 			copyLocalFile("backup/"+name+"/VERSION.TXT", "VERSION.TXT");
@@ -1100,6 +1104,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 	private void updateIndexReloadInfoConfFile(String url) {
 		try {
+			invalidate();
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(getPath() + "dnsfilter.conf")));
 			String ln;
@@ -1261,7 +1266,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			String entry = entryit.next();
 			hostFilter.removeOverrule(entry.toLowerCase(), !filter);
 			addHostOut.write( "\n"+excludePref + entry);
-			hostFilter.addOverrule(entry.toLowerCase(), false);
+			hostFilter.addOverrule(entry.toLowerCase(), filter);
 		}
 	}
 

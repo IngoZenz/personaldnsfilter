@@ -1,0 +1,44 @@
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+This is a DNS Filter Proxy writtem in Java.
+It can be used for filtering ads and other unwished hosts based on Host Name filtering.
+
+Please see dnsfilter.conf for settings and their documentation.
+ 
+
+*********ANDROID-VERSION**********
+
+- Requires Android 4.2 or newer.
+- Install DNSFilter.apk from the zip package on your Android device.
+- Start the App "DNSFilter"
+
+On Android Devices the dnsfilter.conf file will be created within in the Folder "PersonalDNSFilter"!
+In case you need to edit configuration on Android, edit this .conf file with an android text editor
+of your choice.
+
+************PC-VERSION************
+
+- You need to have Java installed
+- First unzip!
+- To run the program: 
+    
+  => NOTE: Admin rights are needed to run this software - it is opening port 53 (DNS Server)
+  => Within the install folder run "java -classpath ./personalDNSfilter.jar dnsfilter.DNSFilterProxy"
+  => Depending on the operating system, there are different options to setup an autostart script.
+     Please follow the different guidelines you can find in the web for this.  
+
+- For configuration of the software there are 2 options (The default configuration might already fit for 
+  most users):
+
+  => directly edit the conf file 
+  => Use the android app to remote control (see 'how-to-remote-control' for details
+  
+- For using the software, you need to configure your network to use it as DNS Server.
+  For local use on the PC only, you just need to configure the DNS Server on your PC to 127.0.0.1! 
+  You migtht even configure your router to use this as DNS Server. This would make your network "Ad Free".  
+
+
+For further documentation refer to http://www.zenz-solutions.de/personaldnsfilter

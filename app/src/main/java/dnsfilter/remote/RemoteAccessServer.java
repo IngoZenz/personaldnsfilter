@@ -391,6 +391,12 @@ public class RemoteAccessServer implements Runnable {
             try {
                 long repeatingLogSuppressTime = Long.parseLong(DNSFilterManager.getInstance().getConfig().getProperty("repeatingLogSuppressTime", "1000"));
                 remoteLogger.setSuppressTime(repeatingLogSuppressTime);
+                boolean liveLogTimestampEnabled = Boolean.parseBoolean(DNSFilterManager.getInstance().getConfig().getProperty("addLiveLogTimestamp", "false"));
+                remoteLogger.setTimestampFormat(null);
+                if (liveLogTimestampEnabled) {
+                    String timeStampPattern = DNSFilterManager.getInstance().getConfig().getProperty("liveLogTimeStampFormat", "hh:mm:ss");
+                    remoteLogger.setTimestampFormat(timeStampPattern);
+                }
             } catch (Exception e) {
                 throw new IOException(e);
             }

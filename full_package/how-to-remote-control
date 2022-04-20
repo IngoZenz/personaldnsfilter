@@ -1,0 +1,11 @@
+- With remote control you can manage a running pDNSf instance remotely from the Android App
+- usefull especially when running the non-Android version without UI
+- On the remote version, you want to manage, enable this feature by setting 
+  ==> server_remote_ctrl_port = 3333 
+- On the client version you want to use for remote controlling set the IP Address to connect to:
+  ==> client_remote_ctrl_host = <the IP Address or host on which the remote runs>
+- Restart remote and client instance
+- From the Android UI use the "remote control" icon to connect
+
+
+  

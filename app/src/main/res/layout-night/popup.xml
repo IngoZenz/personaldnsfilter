@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:paddingLeft="15dp"
     android:paddingRight="15dp"
-    android:background="#000000"
+    android:background="#333333"
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:orientation="vertical">
@@ -17,7 +17,7 @@
         android:layout_marginBottom="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#000000"
+        android:background="#333333"
         android:textColor="#FFFFFF"
         android:text="">
     </TextView>

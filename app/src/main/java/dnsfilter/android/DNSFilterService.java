@@ -397,12 +397,14 @@ public class DNSFilterService extends VpnService  {
 		for (Network network : networks) {
 
 			LinkProperties linkProperties = connectivityManager.getLinkProperties(network);
-			List<InetAddress> dnsList = linkProperties.getDnsServers();
-			for (int i = 0; i < dnsList.size(); i++) {
-				String adr = dnsList.get(i).getHostAddress();
-				if (!adr.equals(VIRTUALDNS_IPV4) && !adr.equals(VIRTUALDNS_IPV6))
-					result.add(adr);
-			}
+			if (linkProperties != null) {
+				List<InetAddress> dnsList = linkProperties.getDnsServers();
+				for (int i = 0; i < dnsList.size(); i++) {
+					String adr = dnsList.get(i).getHostAddress();
+					if (!adr.equals(VIRTUALDNS_IPV4) && !adr.equals(VIRTUALDNS_IPV6))
+						result.add(adr);
+				}
+			} else Logger.getLogger().logLine("WARNING: Cannot get link properties for "+network.toString());
 
 		}
 		return result.toArray(new String[result.size()]);
@@ -1007,7 +1009,6 @@ public class DNSFilterService extends VpnService  {
 			restartVPN(true);
 		}
 		updateNotification();
-		DNSProxyActivity.reloadLocalConfig();
 		possibleNetworkChange(true); // trigger dns detection
 	}
 

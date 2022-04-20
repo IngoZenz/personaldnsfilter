@@ -79,6 +79,7 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import dnsfilter.ConfigUtil;
 import dnsfilter.ConfigurationAccess;
 import dnsfilter.DNSFilterManager;
 import util.ExecutionEnvironment;
@@ -158,7 +159,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	protected static String ADDITIONAL_HOSTS_TO_LONG = "additionalHosts.txt too long to edit here!\nSize Limit: 512 KB!\nUse other editor!";
 
-	protected static Properties config = null;
+	protected static ConfigUtil config = null;
 	protected static boolean debug = false;
 
 	protected static int NO_ACTION_MENU = 0;
@@ -186,12 +187,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected static int DISPLAY_WIDTH = 0;
 
 	protected static DNSProxyActivity INSTANCE;
-
-	public static void reloadLocalConfig() {
-		DNSProxyActivity instance = INSTANCE;
-		if (instance != null && CONFIG.isLocal())
-			instance.loadAndApplyConfig(false);
-	}
 
 	private static class MsgTimeoutListener implements TimeoutListener {
 
@@ -385,7 +380,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			}
 			setTitle("personalDNSfilter V" + version + " (Connections:" + connCnt + ")");
 
-			FilterConfig.FilterConfigEntry[] cfgEntries = null;
+			ConfigUtil.HostFilterList[] cfgEntries = null;
 			String filterCategory = null;
 			if (filterCfg != null) {
 				cfgEntries = filterCfg.getFilterEntries();
@@ -685,22 +680,14 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	}
 
 
-	protected Properties getConfig() {
+	protected ConfigUtil getConfig() {
 		try {
-			return CONFIG.getConfig();
+			return CONFIG.getConfigUtil();
 		} catch (Exception e){
 			Logger.getLogger().logException(e);
 			return null;
 		}
 	}
-
-
-
-	protected void updateConfig(byte[] cfg ) throws IOException {
-		CONFIG.updateConfig(cfg);
-	}
-
-
 
 	protected void showFilterRate(boolean asMessage) {
 
@@ -783,8 +770,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		try {
 			CONFIG.doRestoreDefaults();
 			backupStatusView.setTextColor(Color.parseColor("#43A047"));
-			if (!CONFIG.isLocal())
-				loadAndApplyConfig(false);
+			loadAndApplyConfig(false);
 			backupStatusView.setText("Restore success!");
 		} catch (IOException eio) {
 			backupStatusView.setTextColor(Color.parseColor("#E53935"));
@@ -797,8 +783,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		try {
 			CONFIG.doRestore(getBackupSubFolder());
 			backupStatusView.setTextColor(Color.parseColor("#43A047"));
-			if (!CONFIG.isLocal())
-				loadAndApplyConfig(false);
+			loadAndApplyConfig(false);
 			backupStatusView.setText("Restore success!");
 		} catch (IOException eio) {
 			backupStatusView.setTextColor(Color.parseColor("#E53935"));
@@ -931,13 +916,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	private void handleInitialInfoPopUp() {
 		try {
-			Properties config = CONFIG.getConfig();
-			showInitialInfoPopUp  = Boolean.parseBoolean(config.getProperty("showInitialInfoPopUp", "true"));
+			ConfigUtil config = CONFIG.getConfigUtil();
+			showInitialInfoPopUp  = Boolean.parseBoolean(config.getConfigValue("showInitialInfoPopUp", "true"));
 			if (showInitialInfoPopUp) {
 				popUpDialog = new Dialog(DNSProxyActivity.this, R.style.Theme_dialog_TitleBar);
 				popUpDialog.setContentView(R.layout.popup);
-				popUpDialog.setTitle(config.getProperty("initialInfoPopUpTitle"));
-				((TextView)popUpDialog.findViewById(R.id.infoPopUpTxt)).setText(fromHtml(config.getProperty("initialInfoPopUpText","")));
+				popUpDialog.setTitle(config.getConfigValue("initialInfoPopUpTitle", ""));
+				((TextView)popUpDialog.findViewById(R.id.infoPopUpTxt)).setText(fromHtml(config.getConfigValue("initialInfoPopUpText","")));
 				((TextView)popUpDialog.findViewById(R.id.infoPopUpTxt)).setMovementMethod(LinkMovementMethod.getInstance());
 				initialInfoPopUpExitBtn = (Button) popUpDialog.findViewById(R.id.closeInfoPopupBtn);
 				initialInfoPopUpExitBtn.setOnClickListener(this);
@@ -983,8 +968,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		if (config != null) {
 
-			boolean dnsProxyMode = Boolean.parseBoolean(config.getProperty("dnsProxyOnAndroid", "false"));
-			boolean vpnInAdditionToProxyMode = Boolean.parseBoolean(config.getProperty("vpnInAdditionToProxyMode", "false"));
+			boolean dnsProxyMode = Boolean.parseBoolean(config.getConfigValue("dnsProxyOnAndroid", "false"));
+			boolean vpnInAdditionToProxyMode = Boolean.parseBoolean(config.getConfigValue("vpnInAdditionToProxyMode", "false"));
 			NO_VPN = dnsProxyMode && !vpnInAdditionToProxyMode;
 
 			Runnable uiUpdater = new Runnable() {
@@ -992,49 +977,48 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				public void run() {
 
 					//Link field
-					if (!MSG_ACTIVE) {
-						link_field_txt = config.getProperty("footerLink", "");
+					link_field_txt = config.getConfigValue("footerLink", "");
+					if (!MSG_ACTIVE)
 						link_field.setText(fromHtml(link_field_txt));
-					}
 
 					//Log formatting
-					filterLogFormat = config.getProperty("filterLogFormat", "<font color='#E53935'>($CONTENT)</font>");
-					acceptLogFormat = config.getProperty("acceptLogFormat", "<font color='#43A047'>($CONTENT)</font>");
-					fwdLogFormat = config.getProperty("fwdLogFormat", "<font color='#FFB300'>($CONTENT)</font>");
-					normalLogFormat = config.getProperty("normalLogFormat","($CONTENT)");
+					filterLogFormat = config.getConfigValue("filterLogFormat", "<font color='#E53935'>($CONTENT)</font>");
+					acceptLogFormat = config.getConfigValue("acceptLogFormat", "<font color='#43A047'>($CONTENT)</font>");
+					fwdLogFormat = config.getConfigValue("fwdLogFormat", "<font color='#FFB300'>($CONTENT)</font>");
+					normalLogFormat = config.getConfigValue("normalLogFormat","($CONTENT)");
 
 					try {
-						int logSize = Integer.parseInt(config.getProperty("logTextSize", "14"));
+						int logSize = Integer.parseInt(config.getConfigValue("logTextSize", "14"));
 						logOutView.setTextSize(TypedValue.COMPLEX_UNIT_SP, logSize);
 					} catch (Exception e) {
 						Logger.getLogger().logLine("Error in log text size setting! "+e.toString());
 					}
 
-					debug = Boolean.parseBoolean(config.getProperty("debug", "false"));
+					debug = Boolean.parseBoolean(config.getConfigValue("debug", "false"));
 
-					setDNSCfgDialog(config);
+					setDNSCfgDialog(config.getProperties());
 
-					FilterConfig.FilterConfigEntry[] filterEntries = buildFilterEntries(config);
+					ConfigUtil.HostFilterList[] filterEntries = config.getConfiguredFilterLists();
 					filterCfg.setEntries(filterEntries);
 
-					filterReloadIntervalView.setText(config.getProperty("reloadIntervalDays", "7"));
+					filterReloadIntervalView.setText(config.getConfigValue("reloadIntervalDays", "7"));
 
-					enableAdFilterCheck.setChecked(Boolean.parseBoolean(config.getProperty("filterActive", "true")));
+					enableAdFilterCheck.setChecked(Boolean.parseBoolean(config.getConfigValue("filterActive", "true")));
 
-					enableAutoStartCheck.setChecked(Boolean.parseBoolean(config.getProperty("AUTOSTART", "false")));
+					enableAutoStartCheck.setChecked(Boolean.parseBoolean(config.getConfigValue("AUTOSTART", "false")));
 
-					enableCloakProtectCheck.setChecked(Boolean.parseBoolean(config.getProperty("checkCNAME", "true")));
+					enableCloakProtectCheck.setChecked(Boolean.parseBoolean(config.getConfigValue("checkCNAME", "true")));
 
-					keepAwakeCheck.setChecked(Boolean.parseBoolean(config.getProperty("androidKeepAwake", "false")));
+					keepAwakeCheck.setChecked(Boolean.parseBoolean(config.getConfigValue("androidKeepAwake", "false")));
 
-					proxyModeCheck.setChecked(Boolean.parseBoolean(config.getProperty("dnsProxyOnAndroid", "false")));
+					proxyModeCheck.setChecked(Boolean.parseBoolean(config.getConfigValue("dnsProxyOnAndroid", "false")));
 
-					proxyLocalOnlyCheck.setChecked(Boolean.parseBoolean(config.getProperty("dnsProxyOnlyLocalRequests", "true")));
+					proxyLocalOnlyCheck.setChecked(Boolean.parseBoolean(config.getConfigValue("dnsProxyOnlyLocalRequests", "true")));
 
-					rootModeCheck.setChecked(Boolean.parseBoolean(config.getProperty("rootModeOnAndroid", "false")));
+					rootModeCheck.setChecked(Boolean.parseBoolean(config.getConfigValue("rootModeOnAndroid", "false")));
 
 					//set whitelisted apps into UI
-					appSelector.setSelectedApps(config.getProperty("androidAppWhiteList", ""));
+					appSelector.setSelectedApps(config.getConfigValue("androidAppWhiteList", ""));
 
 					if (!CONFIG.isLocal())
 						remoteCtrlBtn.setCompoundDrawablesWithIntrinsicBounds(null, null,getResources().getDrawable(R.drawable.remote_icon), null);
@@ -1052,62 +1036,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		} else
 			switchingConfig =false;
-	}
-
-	private FilterConfig.FilterConfigEntry[] buildFilterEntries(Properties config) {
-		String urls = config.getProperty("filterAutoUpdateURL", "");
-		String url_IDs = config.getProperty("filterAutoUpdateURL_IDs", "");
-		String url_switchs = config.getProperty("filterAutoUpdateURL_switchs", "");
-		String url_categories = config.getProperty("filterAutoUpdateURL_categories", "");
-
-		StringTokenizer urlTokens = new StringTokenizer(urls, ";");
-		StringTokenizer urlIDTokens = new StringTokenizer(url_IDs, ";");
-		StringTokenizer urlSwitchTokens = new StringTokenizer(url_switchs, ";");
-		StringTokenizer categoryTokens = new StringTokenizer(url_categories, ";");
-
-		int count = urlTokens.countTokens();
-		FilterConfig.FilterConfigEntry[] result = new FilterConfig.FilterConfigEntry[count];
-
-		for (int i = 0; i < count; i++) {
-			String urlHost = null;
-			String urlStr = urlTokens.nextToken().trim();
-			String url_id = "";
-			if (urlIDTokens.hasMoreTokens())
-				url_id = urlIDTokens.nextToken().trim();
-			else {
-				URL url = null;
-				try {
-					url = new URL(urlStr);
-					urlHost=url.getHost();
-					url_id = urlHost;
-				} catch (MalformedURLException e) {
-					Logger.getLogger().logException(e);
-					url_id = "-";
-				}
-			}
-			String url_category = "";
-			if (categoryTokens.hasMoreTokens())
-				url_category = categoryTokens.nextToken().trim();
-			else if (urlHost != null)
-				url_category = urlHost;
-			else {
-				URL url = null;
-				try {
-					url = new URL(urlStr);
-					url_category = url.getHost();
-				} catch (MalformedURLException e) {
-					Logger.getLogger().logException(e);
-					url_category = "-";
-				}
-			}
-			boolean active = true;
-			if (urlSwitchTokens.hasMoreTokens())
-				active = Boolean.parseBoolean(urlSwitchTokens.nextToken().trim());
-
-			result[i] = new FilterConfig.FilterConfigEntry(active, url_category,url_id, urlStr);
-		}
-		return result;
-	}
+	}	
 
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
@@ -1137,22 +1066,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}
 	}*/
 
-
-
-
-	public String[] getFilterCfgStrings(FilterConfig.FilterConfigEntry[] filterEntries) {
-		String[] result = {"", "", "", ""};
-		String dim = "";
-		for (int i = 0; i < filterEntries.length; i++) {
-			result[0] = result[0] + dim + filterEntries[i].active;
-			result[1] = result[1] + dim + filterEntries[i].id;
-			result[2] = result[2] + dim + filterEntries[i].url;
-			result[3] = result[3] + dim + filterEntries[i].category;
-			dim = "; ";
-		}
-		return result;
-	}
-
 	private String getFallbackDNSSettingFromUI(){
 		String uiText =  manualDNSView.getText().toString();
 		String result="";
@@ -1179,74 +1092,57 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			if (filterReloadIntervalView.getText().toString().equals(""))
 				filterReloadIntervalView.setText("7");
 
-			String[] filterCfgStrings = getFilterCfgStrings(filterCfg.getFilterEntries());
+			getConfig().setConfiguredFilterLists(filterCfg.getFilterEntries());
 
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			String ln;
 
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(CONFIG.readConfig())));
 			while ((ln = reader.readLine()) != null) {
 
-				String lnOld = ln;
-
 				if (ln.trim().startsWith("detectDNS"))
-					ln = "detectDNS = " + !manualDNSCheck.isChecked();
+					getConfig().updateConfigValue("detectDNS",!manualDNSCheck.isChecked()+"");
 
 				else if (ln.trim().startsWith("fallbackDNS"))
-					ln = "fallbackDNS = " + getFallbackDNSSettingFromUI();
-				else if (ln.trim().startsWith("filterAutoUpdateURL_IDs"))
-					ln = "filterAutoUpdateURL_IDs = " + filterCfgStrings[1];
-
-				else if (ln.trim().startsWith("filterAutoUpdateURL_switchs"))
-					ln = "filterAutoUpdateURL_switchs = " + filterCfgStrings[0];
-
-				else if (ln.trim().startsWith("filterAutoUpdateURL_categories"))
-					ln = "filterAutoUpdateURL_categories = " + filterCfgStrings[3];
-
-				else if (ln.trim().startsWith("filterAutoUpdateURL"))
-					ln = "filterAutoUpdateURL = " + filterCfgStrings[2];
+					getConfig().updateConfigValue("fallbackDNS",getFallbackDNSSettingFromUI());
 
 				else if (ln.trim().startsWith("reloadIntervalDays"))
-					ln = "reloadIntervalDays = " + filterReloadIntervalView.getText();
+					getConfig().updateConfigValue("reloadIntervalDays", filterReloadIntervalView.getText().toString());
 
 				else if (ln.trim().startsWith("AUTOSTART"))
-					ln = "AUTOSTART = " + enableAutoStartCheck.isChecked();
+					getConfig().updateConfigValue("AUTOSTART", enableAutoStartCheck.isChecked()+"");
 
 				else if (ln.trim().startsWith("androidAppWhiteList"))
-					ln = "androidAppWhiteList = " + appSelector.getSelectedAppPackages();
+					getConfig().updateConfigValue("androidAppWhiteList", appSelector.getSelectedAppPackages());
 
 				else if (ln.trim().startsWith("checkCNAME"))
-					ln = "checkCNAME = " + enableCloakProtectCheck.isChecked();
+					getConfig().updateConfigValue("checkCNAME", enableCloakProtectCheck.isChecked()+"");
 
 				else if (ln.trim().startsWith("androidKeepAwake"))
-					ln = "androidKeepAwake = " + keepAwakeCheck.isChecked();
+					getConfig().updateConfigValue("androidKeepAwake", keepAwakeCheck.isChecked()+"");
 
 				else if (ln.trim().startsWith("dnsProxyOnAndroid"))
-					ln = "dnsProxyOnAndroid = " + proxyModeCheck.isChecked();
+					getConfig().updateConfigValue("dnsProxyOnAndroid", proxyModeCheck.isChecked()+"");
 
 				else if (ln.trim().startsWith("dnsProxyOnlyLocalRequests"))
-					ln = "dnsProxyOnlyLocalRequests = " + proxyLocalOnlyCheck.isChecked();
+					getConfig().updateConfigValue("dnsProxyOnlyLocalRequests", proxyLocalOnlyCheck.isChecked()+"");
 
 				else if (ln.trim().startsWith("rootModeOnAndroid"))
-					ln = "rootModeOnAndroid = " + rootModeCheck.isChecked();
+					getConfig().updateConfigValue("rootModeOnAndroid", rootModeCheck.isChecked()+"");
 
 				else if (ln.trim().startsWith("filterActive"))
-					ln = "filterActive = " + enableAdFilterCheck.isChecked();
+					getConfig().updateConfigValue("filterActive", enableAdFilterCheck.isChecked()+"");
 
 				else if (popUpDialogChanged && ln.trim().startsWith("showInitialInfoPopUp"))
-					ln = "showInitialInfoPopUp = " + showInitialInfoPopUp;
-
-				out.write((ln + "\r\n").getBytes());
-
-				changed = changed || !lnOld.equals(ln);
+					getConfig().updateConfigValue("showInitialInfoPopUp", showInitialInfoPopUp+"");
 			}
 
 			reader.close();
-			out.flush();
-			out.close();
 
-			if (changed) {
-				updateConfig(out.toByteArray());
+			changed = changed || getConfig().isChanged();
+
+
+			if (getConfig().isChanged()) {
+				CONFIG.updateConfig(getConfig().getConfigBytes());
 			}
 
 		} catch (Exception e) {
@@ -1413,28 +1309,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		} catch (Exception e) {
 			throw new Exception("Destination needed in format \"host:port\"!");
 		}
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		String ln;
 
-		BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(CONFIG.readConfig())));
-		while ((ln = reader.readLine()) != null) {
+		getConfig().updateConfigValue("client_remote_ctrl_host", host);
+		getConfig().updateConfigValue("client_remote_ctrl_port", port+"");
+		getConfig().updateConfigValue("client_remote_ctrl_keyphrase", passphrase);
 
-			if (ln.trim().startsWith("client_remote_ctrl_host"))
-				ln = "client_remote_ctrl_host = " + host;
-
-			if (ln.trim().startsWith("client_remote_ctrl_port"))
-				ln = "client_remote_ctrl_port= " + port;
-
-			if (ln.trim().startsWith("client_remote_ctrl_keyphrase"))
-				ln = "client_remote_ctrl_keyphrase = " + passphrase;
-
-			out.write((ln + "\r\n").getBytes());
-		}
-		reader.close();
-		out.flush();
-		out.close();
-
-		updateConfig(out.toByteArray());
+		if (getConfig().isChanged())
+			CONFIG.updateConfig(getConfig().getConfigBytes());
 	}
 
 	private void pepareRemoteControl() {
@@ -1798,16 +1679,16 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		}
 
 		try {
-			long repeatingLogSuppressTime = Long.parseLong(getConfig().getProperty("repeatingLogSuppressTime", "1000"));
-			boolean liveLogTimestampEnabled = Boolean.parseBoolean(getConfig().getProperty("addLiveLogTimestamp", "false"));
+			long repeatingLogSuppressTime = Long.parseLong(getConfig().getConfigValue("repeatingLogSuppressTime", "1000"));
+			boolean liveLogTimestampEnabled = Boolean.parseBoolean(getConfig().getConfigValue("addLiveLogTimestamp", "false"));
 			myLogger.setTimestampFormat(null);
 			if (liveLogTimestampEnabled) {
-				String timeStampPattern = getConfig().getProperty("liveLogTimeStampFormat", "hh:mm:ss");
+				String timeStampPattern = getConfig().getConfigValue("liveLogTimeStampFormat", "hh:mm:ss");
 				myLogger.setTimestampFormat(timeStampPattern);
 			}
 			myLogger.setSuppressTime(repeatingLogSuppressTime);
-			boolean vpnInAdditionToProxyMode = Boolean.parseBoolean(getConfig().getProperty("vpnInAdditionToProxyMode", "false"));
-			boolean vpnDisabled = !vpnInAdditionToProxyMode && Boolean.parseBoolean(getConfig().getProperty("dnsProxyOnAndroid", "false"));
+			boolean vpnInAdditionToProxyMode = Boolean.parseBoolean(getConfig().getConfigValue("vpnInAdditionToProxyMode", "false"));
+			boolean vpnDisabled = !vpnInAdditionToProxyMode && Boolean.parseBoolean(getConfig().getConfigValue("dnsProxyOnAndroid", "false"));
 			Intent intent = null;
 			if (!vpnDisabled)
 				intent = VpnService.prepare(this.getApplicationContext());
