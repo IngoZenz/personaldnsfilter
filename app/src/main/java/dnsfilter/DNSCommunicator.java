@@ -41,17 +41,8 @@ public class DNSCommunicator {
 	DNSServer[] currentCheckingDNServers;
 	int curDNS = -1;
 	String lastDNS = "";
-	boolean dumpDNSPerf = false;
+	Boolean dumpDNSPerf = null;
 
-
-	private DNSCommunicator() {
-		try {
-			dumpDNSPerf = Boolean.parseBoolean(ConfigurationAccess.getLocal().getConfig().getProperty("dumpDNSPerfInfo", "false"));
-		} catch (Exception eio){
-			Logger.getLogger().logException(eio);
-		}
-
-	}
 
 	public static DNSCommunicator getInstance() {
 		return INSTANCE;
@@ -236,6 +227,14 @@ public class DNSCommunicator {
 							dnsPerfOut[0].write(("\r\n#Terminated: " + new Date() + "\r\n\r\n").getBytes());
 							dnsPerfOut[0].flush();
 							dnsPerfOut[0].close();
+
+							if (dumpDNSPerf == null){
+								try {
+									dumpDNSPerf = Boolean.parseBoolean(ConfigurationAccess.getLocal().getConfig().getProperty("dumpDNSPerfInfo", "false"));
+								} catch (Exception eio){
+									Logger.getLogger().logException(eio);
+								}
+							}
 							if (dumpDNSPerf) {
 								FileInputStream in = new FileInputStream(dnsPerfFile);
 								Logger.getLogger().logLine(new String(Utils.readFully(in, 1024)));
