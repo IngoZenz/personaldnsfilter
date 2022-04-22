@@ -864,10 +864,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		String entries = "";
 		while (entryTokens.hasMoreTokens()) {
 			String token = entryTokens.nextToken();
-			if (token.startsWith(IN_FILTER_PREF)) {
+			if (token.startsWith(IN_FILTER_PREF) && filter == false) {
 				entries = entries+token.substring(IN_FILTER_PREF.length()).trim()+"\n";
 			}
-			if (token.startsWith(NO_FILTER_PREF)) {
+			if (token.startsWith(NO_FILTER_PREF) && filter == true) {
 				entries = entries+token.substring(NO_FILTER_PREF.length()).trim()+"\n";
 			}
 		}
