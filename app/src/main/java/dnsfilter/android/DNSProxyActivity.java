@@ -64,15 +64,12 @@ import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -163,6 +160,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected static boolean debug = false;
 
 	protected static int NO_ACTION_MENU = 0;
+	protected boolean ACTION_MENU_FALLBACK = false;
 
 
 	protected static String IN_FILTER_PREF = "✗\u2002\u2009";
@@ -866,10 +864,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		String entries = "";
 		while (entryTokens.hasMoreTokens()) {
 			String token = entryTokens.nextToken();
-			if (token.startsWith(IN_FILTER_PREF)) {
+			if (token.startsWith(IN_FILTER_PREF) && filter == false) {
 				entries = entries+token.substring(IN_FILTER_PREF.length()).trim()+"\n";
 			}
-			if (token.startsWith(NO_FILTER_PREF)) {
+			if (token.startsWith(NO_FILTER_PREF) && filter == true) {
 				entries = entries+token.substring(NO_FILTER_PREF.length()).trim()+"\n";
 			}
 		}
@@ -883,6 +881,11 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	private void initAppAndStartup() {
 		logLine("Initializing ...");
+		try {
+			ACTION_MENU_FALLBACK = Boolean.parseBoolean(ConfigurationAccess.getLocal().getConfigUtil().getConfigValue("useActionMenuFallback", "false"));
+		} catch (IOException e) {
+			Logger.getLogger().logLine("Cannot get Config for useActionMenuFallback "+e.toString());
+		}
 		if (BOOT_START) {
 			Logger.getLogger().logLine("Running on SDK" + Build.VERSION.SDK_INT);
 			if (Build.VERSION.SDK_INT >= 20) //on older Android we have to keep the app in forground due to the VPN accept dialog popping up after each reboot.
@@ -1848,8 +1851,33 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		super.onActionModeStarted(mode);
 	}
 
+	public boolean onTouchActionMenuFallback(View v, MotionEvent event) {
+
+		if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+			findViewById(R.id.copyfromlog).setVisibility(View.GONE);
+			logOutView.setSelection(logOutView.getText().length());
+			return false;
+		}
+		if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
+
+			String selection = getSelectedText(true);
+
+			if (selection.startsWith(IN_FILTER_PREF) || selection.startsWith(NO_FILTER_PREF)) {
+				int start= logOutView.getSelectionStart();
+				int end = logOutView.getSelectionEnd();
+				findViewById(R.id.copyfromlog).setVisibility(View.VISIBLE);
+				logOutView.setSelection(start, end);
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
+
+		if (ACTION_MENU_FALLBACK)
+			return onTouchActionMenuFallback(v,event);
 
 		if (Build.VERSION.SDK_INT < 23)
 			return false; // for old devices anyhow the fallback option is used
