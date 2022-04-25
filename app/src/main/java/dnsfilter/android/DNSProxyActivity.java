@@ -186,6 +186,12 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	protected static DNSProxyActivity INSTANCE;
 
+	public static void reloadLocalConfig() {
+		DNSProxyActivity instance = INSTANCE;
+		if (instance != null && CONFIG.isLocal())
+			instance.loadAndApplyConfig(false);
+	}
+
 	private static class MsgTimeoutListener implements TimeoutListener {
 
 		long timeout = Long.MAX_VALUE;

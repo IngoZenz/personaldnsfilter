@@ -765,6 +765,7 @@ public class DNSFilterService extends VpnService  {
 
 	public void pause_resume() throws IOException {
 		DNSFilterManager.getInstance().switchBlockingActive();
+		DNSProxyActivity.reloadLocalConfig();
 		updateNotification();
 	}
 
