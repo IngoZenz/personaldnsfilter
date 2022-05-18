@@ -1859,7 +1859,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	public boolean onTouchActionMenuFallback(View v, MotionEvent event) {
 
-		if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+		if (event.getAction() == android.view.MotionEvent.ACTION_DOWN && findViewById(R.id.copyfromlog).getVisibility() == View.VISIBLE)   {
 			findViewById(R.id.copyfromlog).setVisibility(View.GONE);
 			logOutView.setSelection(logOutView.getText().length());
 			return false;
@@ -1873,7 +1873,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				int end = logOutView.getSelectionEnd();
 				findViewById(R.id.copyfromlog).setVisibility(View.VISIBLE);
 				logOutView.setSelection(start, end);
-				return true;
+				return false;
 			}
 		}
 		return false;
@@ -1885,8 +1885,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		if (ACTION_MENU_FALLBACK)
 			return onTouchActionMenuFallback(v,event);
 
-		if (Build.VERSION.SDK_INT < 23)
+		if (Build.VERSION.SDK_INT < 23) {
+			getSelectedText(true);
 			return false; // for old devices anyhow the fallback option is used
+		}
 
 		if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
 
