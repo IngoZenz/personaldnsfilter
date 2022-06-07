@@ -778,7 +778,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 				r = in.read();
 
-				if (r == 9 || r == 32 || r == 13) {
+				if (r == 9 || r == 32 ) {
 					if (token == 1) {
 						r = Utils.skipLine(in);
 						return new int[]{wildcard, pos};
