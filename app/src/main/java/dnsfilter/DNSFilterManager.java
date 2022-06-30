@@ -760,6 +760,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				r = Utils.skipWhitespace(in, r);
 		}
 
+		r = Utils.skipWhitespace(in, r);
+
 		if (r == -1)
 			return new int[]{wildcard, -1};
 
@@ -783,10 +785,12 @@ public class DNSFilterManager extends ConfigurationAccess  {
 						r = Utils.skipLine(in);
 						return new int[]{wildcard, pos};
 					} else {
-						token = 1;
-						wildcard = 0;
 						r = Utils.skipWhitespace(in, r);
-						pos = 0;
+						if (r!= 10 && r != -1) { //format IP <whitespace> host => ship IP part
+							pos = 0;
+							token = 1;
+							wildcard = 0;
+						} else return new int[]{wildcard, pos}; //format host <whitespaces> => return host
 					}
 				}
 
@@ -805,7 +809,11 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				}
 			}
 		}
-		return new int[]{wildcard, pos-1}; //skip linefeed
+		if (r!= -1)
+			pos = pos-1; //skip linefeed
+		if (buf[pos] == 13)
+			pos = pos-1; // skip carriage return
+		return new int[]{wildcard, pos};
 	}
 
 
