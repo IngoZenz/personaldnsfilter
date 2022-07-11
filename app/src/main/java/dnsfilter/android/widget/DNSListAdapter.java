@@ -13,11 +13,12 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import java.util.List;
-import java.util.Objects;
 
 import dnsfilter.android.R;
 
 public class DNSListAdapter extends ArrayAdapter<DNSRecord> {
+
+    EventsListener listener = null;
 
     private final ArrayAdapter<DNSType> spinnerAdapter = new ArrayAdapter<>(
             getContext(),
@@ -25,10 +26,16 @@ public class DNSListAdapter extends ArrayAdapter<DNSRecord> {
             DNSType.values()
     );
 
-    private final View.OnClickListener addButtonListener = v -> add(new DNSRecord());
+    private final View.OnClickListener addButtonListener = v -> {
+        add(new DNSRecord());
+        if (listener != null) {
+            listener.onItemAdded();
+        }
+    };
 
-    public DNSListAdapter(Context context, List<DNSRecord> objects) {
+    public DNSListAdapter(Context context, List<DNSRecord> objects, EventsListener listener) {
         super(context, 0, objects);
+        this.listener = listener;
     }
 
     @Override
@@ -183,5 +190,9 @@ public class DNSListAdapter extends ArrayAdapter<DNSRecord> {
         EditText endpointView;
         View deleteRecordButton;
         CheckBox isActiveRecordCheckbox;
+    }
+
+    public interface EventsListener {
+        void onItemAdded();
     }
 }

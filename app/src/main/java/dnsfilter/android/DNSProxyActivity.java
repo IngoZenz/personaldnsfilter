@@ -444,7 +444,15 @@ public class DNSProxyActivity extends Activity
 			}
 
 			manualDNSView = advDNSConfigDia.findViewById(R.id.manualDNS);
-			manualDNSView.setAdapter(new DNSListAdapter(this, records));
+
+			DNSListAdapter.EventsListener listener = new DNSListAdapter.EventsListener() {
+				@Override
+				public void onItemAdded() {
+					manualDNSView.smoothScrollToPosition(manualDNSView.getAdapter().getCount());
+				}
+			};
+
+			manualDNSView.setAdapter(new DNSListAdapter(this, records, listener));
 			manualDNSViewResDefBtn = (Button) advDNSConfigDia.findViewById(R.id.RestoreDefaultBtn);
 			manualDNSViewResDefBtn.setOnClickListener(this);
 			exitDNSCfgBtn = (Button) advDNSConfigDia.findViewById(R.id.closeDnsCfg);
