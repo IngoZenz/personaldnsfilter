@@ -166,7 +166,7 @@
             android:layout_marginLeft="18dp"
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_button"
-            android:drawableLeft="@drawable/delete"
+            android:drawableLeft="@drawable/ic_delete"
             android:padding="5dp" />
 
 

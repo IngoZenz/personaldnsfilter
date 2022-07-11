@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="70dp"
+    android:background="@drawable/rounded_card"
+    android:clipChildren="true"
+    android:clipToPadding="true">
+
+    <CheckBox
+        android:id="@+id/isActiveRecordCheckbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/portEditText"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginHorizontal="4dp"
+        android:button="@drawable/custom_checkbox"
+        android:checked="false" />
+
+    <Spinner
+        android:id="@+id/dnsProtocolSpinner"
+        android:layout_width="60dp"
+        android:layout_height="40dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="4dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        android:layout_toEndOf="@id/isActiveRecordCheckbox"
+        android:layout_toRightOf="@id/isActiveRecordCheckbox"
+        android:background="@drawable/ripple_transparent_button"
+        android:foreground="@drawable/edit_text"
+        android:minWidth="40dp"
+        android:spinnerMode="dropdown" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/dnsProtocolSpinner"
+        android:layout_alignEnd="@+id/dnsProtocolSpinner"
+        android:layout_alignRight="@+id/dnsProtocolSpinner"
+        android:layout_alignBottom="@id/dnsProtocolSpinner"
+        android:src="@drawable/ic_dropdown"
+        android:layout_marginEnd="2dp"/>
+
+    <EditText
+        android:id="@+id/ipEditText"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_alignTop="@id/dnsProtocolSpinner"
+        android:layout_toStartOf="@id/portEditText"
+        android:layout_toLeftOf="@id/portEditText"
+        android:layout_alignBottom="@id/dnsProtocolSpinner"
+        android:layout_toEndOf="@id/dnsProtocolSpinner"
+        android:layout_toRightOf="@id/dnsProtocolSpinner"
+        android:gravity="center_vertical"
+        android:hint="@string/ip"
+        android:importantForAutofill="no" />
+
+    <EditText
+        android:id="@+id/portEditText"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_alignTop="@id/dnsProtocolSpinner"
+        android:layout_alignEnd="@id/endpointEditText"
+        android:layout_alignRight="@id/endpointEditText"
+        android:layout_alignBottom="@id/dnsProtocolSpinner"
+        android:gravity="center_vertical"
+        android:hint="@string/port"
+        android:importantForAutofill="no"
+        android:inputType="numberDecimal" />
+
+    <EditText
+        android:id="@+id/endpointEditText"
+        android:layout_width="wrap_content"
+        android:layout_height="24dp"
+        android:layout_below="@id/ipEditText"
+        android:layout_marginStart="4dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        android:layout_toStartOf="@id/deleteRecordButton"
+        android:layout_toLeftOf="@id/deleteRecordButton"
+        android:layout_toEndOf="@+id/isActiveRecordCheckbox"
+        android:layout_toRightOf="@id/isActiveRecordCheckbox"
+        android:gravity="center"
+        android:hint="@string/endpoint"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:paddingVertical="0dp"
+        android:textSize="12sp" />
+
+    <ImageButton
+        android:id="@+id/deleteRecordButton"
+        android:layout_width="40dp"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/ripple_transparent_button"
+        android:contentDescription="remove line"
+        android:paddingHorizontal="4dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_delete" />
+</RelativeLayout>

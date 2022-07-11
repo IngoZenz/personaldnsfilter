@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="70dp">
+
+    <ImageButton
+        android:id="@+id/addNewItemButton"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/custom_button"
+        android:contentDescription="@string/add_new_item_to_dns_list"
+        android:src="@drawable/ic_plus_circle" />
+</FrameLayout>

@@ -4,4 +4,8 @@
     <color name="colorPrimaryDark">#008ba3</color>
     <color name="colorAccent">#33c9dc</color>
     <color name="colorGray">#008ba3</color>
+    <color name="colorGrayRipple">#B4B9BA</color>
+    <color name="colorGrayIcon">#A3000000</color>
+    <color name="colorWhite">#FFFFFF</color>
+    <color name="colorGrayBorder">#A3E3E2E2</color>
 </resources>
