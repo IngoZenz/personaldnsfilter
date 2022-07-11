@@ -12,7 +12,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.95"
+        android:layout_weight="1"
         android:orientation="vertical">
 
         <dnsfilter.android.PaddedCheckBox
@@ -27,30 +27,14 @@
             android:text="@string/manualDNSCheck"
             android:textColor="#424242" />
 
+        <ListView
+            android:id="@+id/manualDNS"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="6dp"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="12dp" />
 
-        <HorizontalScrollView
-            android:id="@+id/manualDNSScroll"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginBottom="15dp"
-            android:background="#eceff1"
-            android:padding="10dp"
-            android:overScrollMode="never"
-            android:scrollbars="none">
-
-            <EditText
-                android:id="@+id/manualDNS"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#eceff1"
-                android:inputType="textMultiLine|textNoSuggestions"
-                android:minWidth="200dp"
-                android:textColor="#424242"
-                android:textSize="14dp" />
-
-        </HorizontalScrollView>
     </LinearLayout>
 
     <LinearLayout

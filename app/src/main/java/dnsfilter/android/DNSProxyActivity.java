@@ -57,7 +57,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.HorizontalScrollView;
+import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TextView;
@@ -73,12 +73,16 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
 import dnsfilter.ConfigUtil;
 import dnsfilter.ConfigurationAccess;
 import dnsfilter.DNSFilterManager;
+import dnsfilter.android.widget.DNSListAdapter;
+import dnsfilter.android.widget.DNSRecord;
+import dnsfilter.android.widget.DNSRecordSerializer;
 import util.ExecutionEnvironment;
 import util.SuppressRepeatingsLogger;
 import util.GroupedLogger;
@@ -132,7 +136,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected static TextView scrollLockField;
 	protected static Dialog advDNSConfigDia;
 	protected static CheckBox manualDNSCheck;
-	protected static EditText manualDNSView;
+	protected static ListView manualDNSView;
 	protected static boolean advDNSConfigDia_open = false;
 	protected static String SCROLL_PAUSE = "II  ";
 	protected static String SCROLL_CONTINUE = " ▶ ";
@@ -409,8 +413,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			filterReloadIntervalView = (EditText) findViewById(R.id.filterloadinterval);
 			filterReloadIntervalView.setText(uiText);
 
-			uiText = "";
-
 			advDNSConfigDia = new Dialog(DNSProxyActivity.this, R.style.Theme_dialog_TitleBar);
 			advDNSConfigDia.setContentView(R.layout.dnsconfigdialog);
 			advDNSConfigDia.setTitle(getResources().getString(R.string.dnsCfgConfigDialogTitle));
@@ -425,11 +427,16 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			manualDNSCheck = (CheckBox) advDNSConfigDia.findViewById(R.id.manualDNSCheck);
 			manualDNSCheck.setChecked(checked);
 
-			if (manualDNSView != null)
-				uiText = manualDNSView.getText().toString();
+			List<DNSRecord> records = new ArrayList<>();
+			if (manualDNSView != null) {
+				DNSListAdapter adapter = (DNSListAdapter) manualDNSView.getAdapter();
+				for (int i = 0; i <= adapter.getObjectsCount() - 1; i++) {
+					records.add(adapter.getItem(i));
+				}
+			}
 
-			manualDNSView = (EditText) advDNSConfigDia.findViewById(R.id.manualDNS);
-			manualDNSView.setText(uiText);
+			manualDNSView = advDNSConfigDia.findViewById(R.id.manualDNS);
+			manualDNSView.setAdapter(new DNSListAdapter(this, records));
 			manualDNSViewResDefBtn = (Button) advDNSConfigDia.findViewById(R.id.RestoreDefaultBtn);
 			manualDNSViewResDefBtn.setOnClickListener(this);
 			exitDNSCfgBtn = (Button) advDNSConfigDia.findViewById(R.id.closeDnsCfg);
@@ -611,7 +618,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			super.onResume();
 			if (advDNSConfigDia_open) {
 				advDNSConfigDia.show();
-				((HorizontalScrollView) advDNSConfigDia.findViewById(R.id.manualDNSScroll)).fullScroll(ScrollView.FOCUS_LEFT);
 			}
 			checkPasscode();
 		} catch (Exception e){
@@ -947,13 +953,16 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	}
 
 	protected void setDNSCfgDialog(Properties config) {
-		String manualDNS_Help =
-				"# Format: <IP>::<PORT>::<PROTOCOL>::<URL END POINT>\n"+
-						"# IPV6 addresses with '::' must be in brackets '[IPV6]'!\n\n" +
-						"# The default list contains following entries:\n" +
-						"# adguard1 (UDP); adguard2 (UDP); uncensoreddns.org (Dot); libredns.gr (DoT); libredns.gr (DoH);  nixnet.services Luxembourg (DoT); nixnet.services Las Vegas(DoT); nixnet.services New York(DoT)\n\n";
-
-		manualDNSView.setText(manualDNS_Help+config.getProperty("fallbackDNS","").replace(";", "\n").replace(" ", ""));
+		DNSRecordSerializer serializer = new DNSRecordSerializer();
+		DNSListAdapter adapter = (DNSListAdapter) manualDNSView.getAdapter();
+		String dnsText = config.getProperty("fallbackDNS","").replace(";", "\n").replace(" ", "");
+		adapter.clear();
+		String[] dnsRecords = dnsText.split(System.getProperty("line.separator"));
+		for (String record : dnsRecords) {
+			if (!record.isEmpty()) {
+				adapter.add(serializer.deserialize(record));
+			}
+		}
 		manualDNSCheck.setChecked(!Boolean.parseBoolean(config.getProperty("detectDNS", "true")));
 
 	}
@@ -1076,7 +1085,15 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	}*/
 
 	private String getFallbackDNSSettingFromUI(){
-		String uiText =  manualDNSView.getText().toString();
+		DNSListAdapter adapter = ((DNSListAdapter) manualDNSView.getAdapter());
+
+		StringBuilder recordsBuilder = new StringBuilder();
+		for (int i = 0; i <= adapter.getObjectsCount() - 1; i++) {
+			recordsBuilder.append(adapter.getItem(i).toString());
+			recordsBuilder.append(System.getProperty("line.separator"));
+		}
+
+		String uiText = recordsBuilder.toString();
 		String result="";
 		StringTokenizer entries = new StringTokenizer(uiText,"\n");
 		while (entries.hasMoreTokens()) {
@@ -1465,7 +1482,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	private void handleDNSConfigDialog() {
 		advDNSConfigDia.show();
-		((HorizontalScrollView) advDNSConfigDia.findViewById(R.id.manualDNSScroll)).fullScroll(ScrollView.FOCUS_LEFT);
 		advDNSConfigDia_open = true;
 	}
 
