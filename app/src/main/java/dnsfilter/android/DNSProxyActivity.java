@@ -84,15 +84,23 @@ import dnsfilter.android.widget.DNSListAdapter;
 import dnsfilter.android.widget.DNSRecord;
 import dnsfilter.android.widget.DNSRecordSerializer;
 import util.ExecutionEnvironment;
-import util.SuppressRepeatingsLogger;
 import util.GroupedLogger;
 import util.Logger;
 import util.LoggerInterface;
+import util.SuppressRepeatingsLogger;
 import util.TimeoutListener;
 import util.TimoutNotificator;
 
 
-public class DNSProxyActivity extends Activity implements OnClickListener, LoggerInterface, TextWatcher, DialogInterface.OnKeyListener, ActionMode.Callback, MenuItem.OnMenuItemClickListener,View.OnTouchListener, View.OnFocusChangeListener {
+public class DNSProxyActivity extends Activity
+		implements OnClickListener,
+		LoggerInterface,
+		TextWatcher,
+		DialogInterface.OnKeyListener,
+		ActionMode.Callback,
+		MenuItem.OnMenuItemClickListener,
+		View.OnTouchListener,
+		View.OnFocusChangeListener {
 
 
 	protected static boolean BOOT_START = false;

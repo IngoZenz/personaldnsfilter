@@ -65,6 +65,7 @@
             android:layout_gravity="end"
             android:layout_marginTop="15dp"
             android:layout_marginRight="15dp"
+            android:layout_marginBottom="4dp"
             android:background="#ffffff"
             android:orientation="horizontal">
 

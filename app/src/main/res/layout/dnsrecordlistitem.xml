@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="70dp"
+    android:layout_height="80dp"
     android:background="@drawable/rounded_card"
     android:clipChildren="true"
     android:clipToPadding="true">
@@ -21,7 +21,7 @@
 
     <Spinner
         android:id="@+id/dnsProtocolSpinner"
-        android:layout_width="60dp"
+        android:layout_width="70dp"
         android:layout_height="40dp"
         android:layout_alignParentTop="true"
         android:layout_marginStart="4dp"
@@ -44,17 +44,17 @@
         android:layout_alignEnd="@+id/dnsProtocolSpinner"
         android:layout_alignRight="@+id/dnsProtocolSpinner"
         android:layout_alignBottom="@id/dnsProtocolSpinner"
-        android:src="@drawable/ic_dropdown"
-        android:layout_marginEnd="2dp"/>
+        android:layout_marginEnd="2dp"
+        android:src="@drawable/ic_dropdown" />
 
     <EditText
         android:id="@+id/ipEditText"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
         android:layout_alignTop="@id/dnsProtocolSpinner"
+        android:layout_alignBottom="@id/dnsProtocolSpinner"
         android:layout_toStartOf="@id/portEditText"
         android:layout_toLeftOf="@id/portEditText"
-        android:layout_alignBottom="@id/dnsProtocolSpinner"
         android:layout_toEndOf="@id/dnsProtocolSpinner"
         android:layout_toRightOf="@id/dnsProtocolSpinner"
         android:gravity="center_vertical"
@@ -77,7 +77,7 @@
     <EditText
         android:id="@+id/endpointEditText"
         android:layout_width="wrap_content"
-        android:layout_height="24dp"
+        android:layout_height="36dp"
         android:layout_below="@id/ipEditText"
         android:layout_marginStart="4dp"
         android:layout_marginLeft="4dp"
@@ -94,7 +94,7 @@
         android:importantForAutofill="no"
         android:inputType="text"
         android:paddingVertical="0dp"
-        android:textSize="12sp" />
+        android:textSize="16sp" />
 
     <ImageButton
         android:id="@+id/deleteRecordButton"
