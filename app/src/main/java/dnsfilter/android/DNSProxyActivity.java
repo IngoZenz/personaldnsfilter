@@ -81,8 +81,8 @@ import dnsfilter.ConfigUtil;
 import dnsfilter.ConfigurationAccess;
 import dnsfilter.DNSFilterManager;
 import dnsfilter.android.widget.DNSListAdapter;
-import dnsfilter.android.widget.DNSRecord;
-import dnsfilter.android.widget.DNSRecordSerializer;
+import dnsfilter.android.widget.DNSServerConfigEntry;
+import dnsfilter.android.widget.DNSServerConfigEntrySerializer;
 import util.ExecutionEnvironment;
 import util.GroupedLogger;
 import util.Logger;
@@ -435,11 +435,11 @@ public class DNSProxyActivity extends Activity
 			manualDNSCheck = (CheckBox) advDNSConfigDia.findViewById(R.id.manualDNSCheck);
 			manualDNSCheck.setChecked(checked);
 
-			List<DNSRecord> records = new ArrayList<>();
+			List<DNSServerConfigEntry> entries = new ArrayList<>();
 			if (manualDNSView != null) {
 				DNSListAdapter adapter = (DNSListAdapter) manualDNSView.getAdapter();
 				for (int i = 0; i <= adapter.getObjectsCount() - 1; i++) {
-					records.add(adapter.getItem(i));
+					entries.add(adapter.getItem(i));
 				}
 			}
 
@@ -452,7 +452,7 @@ public class DNSProxyActivity extends Activity
 				}
 			};
 
-			manualDNSView.setAdapter(new DNSListAdapter(this, records, listener));
+			manualDNSView.setAdapter(new DNSListAdapter(this, entries, listener));
 			manualDNSViewResDefBtn = (Button) advDNSConfigDia.findViewById(R.id.RestoreDefaultBtn);
 			manualDNSViewResDefBtn.setOnClickListener(this);
 			exitDNSCfgBtn = (Button) advDNSConfigDia.findViewById(R.id.closeDnsCfg);
@@ -969,14 +969,14 @@ public class DNSProxyActivity extends Activity
 	}
 
 	protected void setDNSCfgDialog(Properties config) {
-		DNSRecordSerializer serializer = new DNSRecordSerializer();
+		DNSServerConfigEntrySerializer serializer = new DNSServerConfigEntrySerializer();
 		DNSListAdapter adapter = (DNSListAdapter) manualDNSView.getAdapter();
 		String dnsText = config.getProperty("fallbackDNS","").replace(";", "\n").replace(" ", "");
 		adapter.clear();
-		String[] dnsRecords = dnsText.split(System.getProperty("line.separator"));
-		for (String record : dnsRecords) {
-			if (!record.isEmpty()) {
-				adapter.add(serializer.deserialize(record));
+		String[] dnsEntries = dnsText.split(System.getProperty("line.separator"));
+		for (String entry : dnsEntries) {
+			if (!entry.isEmpty()) {
+				adapter.add(serializer.deserialize(entry));
 			}
 		}
 		manualDNSCheck.setChecked(!Boolean.parseBoolean(config.getProperty("detectDNS", "true")));
@@ -1103,13 +1103,13 @@ public class DNSProxyActivity extends Activity
 	private String getFallbackDNSSettingFromUI(){
 		DNSListAdapter adapter = ((DNSListAdapter) manualDNSView.getAdapter());
 
-		StringBuilder recordsBuilder = new StringBuilder();
+		StringBuilder entriesBuilder = new StringBuilder();
 		for (int i = 0; i <= adapter.getObjectsCount() - 1; i++) {
-			recordsBuilder.append(adapter.getItem(i).toString());
-			recordsBuilder.append(System.getProperty("line.separator"));
+			entriesBuilder.append(adapter.getItem(i).toString());
+			entriesBuilder.append(System.getProperty("line.separator"));
 		}
 
-		String uiText = recordsBuilder.toString();
+		String uiText = entriesBuilder.toString();
 		String result="";
 		StringTokenizer entries = new StringTokenizer(uiText,"\n");
 		while (entries.hasMoreTokens()) {

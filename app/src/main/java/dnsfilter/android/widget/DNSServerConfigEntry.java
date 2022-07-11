@@ -3,7 +3,7 @@ package dnsfilter.android.widget;
 
 import java.util.Objects;
 
-public class DNSRecord {
+public class DNSServerConfigEntry {
 
     private static final String DEFAULT_IP = "127.0.0.1";
     private static final Byte DEFAULT_DNS_SELECTION = 0;
@@ -11,8 +11,8 @@ public class DNSRecord {
     private static final String DEFAULT_ENDPOINT = "";
     private static final Boolean DEFAULT_IS_ACTIVE = true;
     public static final String CHAR_LINE_COMMENTED = "#";
-    private static final String EMPTY_STRING = "";
-    public static final String RECORD_PARTS_SEPARATOR = "::";
+    public static final String EMPTY_STRING = "";
+    public static final String ENTRY_PARTS_SEPARATOR = "::";
     public static final String SHORTER_IP_V6_SEPARATOR = "::";
     public static final String IP_V6_START_BRACER = "[";
     public static final String IP_V6_END_BRACER = "]";
@@ -44,7 +44,7 @@ public class DNSRecord {
 
     private Boolean isActive;
 
-    public DNSRecord(String ip, String port, DNSType protocol, String endpoint, Boolean isActive) {
+    public DNSServerConfigEntry(String ip, String port, DNSType protocol, String endpoint, Boolean isActive) {
         this.ip = ip;
         this.port = port;
         this.protocol = protocol;
@@ -52,19 +52,19 @@ public class DNSRecord {
         this.isActive = isActive;
     }
 
-    public DNSRecord() {
+    public DNSServerConfigEntry() {
         this(DEFAULT_IP, DEFAULT_PORT, getDefaultDNSType(), DEFAULT_ENDPOINT, DEFAULT_IS_ACTIVE);
     }
 
-    public DNSRecord(String ip, boolean isActive) {
+    public DNSServerConfigEntry(String ip, boolean isActive) {
         this(ip, DEFAULT_PORT, getDefaultDNSType(), DEFAULT_ENDPOINT, isActive);
     }
 
-    public DNSRecord(String ip, String port, boolean isActive) {
+    public DNSServerConfigEntry(String ip, String port, boolean isActive) {
         this(ip, port, getDefaultDNSType(), DEFAULT_ENDPOINT, isActive);
     }
 
-    public DNSRecord(String ip, String port, DNSType protocol, boolean isActive) {
+    public DNSServerConfigEntry(String ip, String port, DNSType protocol, boolean isActive) {
         this(ip, port, protocol, DEFAULT_ENDPOINT, isActive);
     }
 
@@ -88,9 +88,9 @@ public class DNSRecord {
     public String toString() {
         return getIsActiveAsCommented(this.isActive)
                 + highlightShorterIPv6(this.ip)
-                + RECORD_PARTS_SEPARATOR
+                + ENTRY_PARTS_SEPARATOR
                 + port
-                + RECORD_PARTS_SEPARATOR
+                + ENTRY_PARTS_SEPARATOR
                 + protocol.toString()
                 + getEndpointAsString(endpoint);
     }
@@ -107,7 +107,7 @@ public class DNSRecord {
         if (endpoint == null || endpoint.isEmpty()) {
             return EMPTY_STRING;
         } else {
-            return RECORD_PARTS_SEPARATOR + endpoint;
+            return ENTRY_PARTS_SEPARATOR + endpoint;
         }
     }
 
@@ -119,8 +119,8 @@ public class DNSRecord {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        DNSRecord dnsRecord = (DNSRecord) o;
-        return Objects.equals(ip, dnsRecord.ip) && Objects.equals(port, dnsRecord.port) && protocol == dnsRecord.protocol && Objects.equals(endpoint, dnsRecord.endpoint) && Objects.equals(isActive, dnsRecord.isActive);
+        DNSServerConfigEntry dnsServerConfigEntry = (DNSServerConfigEntry) o;
+        return Objects.equals(ip, dnsServerConfigEntry.ip) && Objects.equals(port, dnsServerConfigEntry.port) && protocol == dnsServerConfigEntry.protocol && Objects.equals(endpoint, dnsServerConfigEntry.endpoint) && Objects.equals(isActive, dnsServerConfigEntry.isActive);
     }
 
     @Override

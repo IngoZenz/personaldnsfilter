@@ -7,7 +7,7 @@
     android:clipToPadding="true">
 
     <CheckBox
-        android:id="@+id/isActiveRecordCheckbox"
+        android:id="@+id/isActiveEntryCheckbox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/portEditText"
@@ -30,11 +30,12 @@
         android:layout_marginEnd="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
-        android:layout_toEndOf="@id/isActiveRecordCheckbox"
-        android:layout_toRightOf="@id/isActiveRecordCheckbox"
+        android:layout_toEndOf="@id/isActiveEntryCheckbox"
+        android:layout_toRightOf="@id/isActiveEntryCheckbox"
         android:background="@drawable/ripple_transparent_button"
         android:foreground="@drawable/edit_text"
         android:minWidth="40dp"
+        android:popupBackground="#333333"
         android:spinnerMode="dropdown" />
 
     <ImageView
@@ -59,7 +60,8 @@
         android:layout_toRightOf="@id/dnsProtocolSpinner"
         android:gravity="center_vertical"
         android:hint="@string/ip"
-        android:importantForAutofill="no" />
+        android:importantForAutofill="no"
+        android:textColor="#FFFFFF" />
 
     <EditText
         android:id="@+id/portEditText"
@@ -72,7 +74,8 @@
         android:gravity="center_vertical"
         android:hint="@string/port"
         android:importantForAutofill="no"
-        android:inputType="numberDecimal" />
+        android:inputType="numberDecimal"
+        android:textColor="#FFFFFF" />
 
     <EditText
         android:id="@+id/endpointEditText"
@@ -85,19 +88,20 @@
         android:layout_marginEnd="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
-        android:layout_toStartOf="@id/deleteRecordButton"
-        android:layout_toLeftOf="@id/deleteRecordButton"
-        android:layout_toEndOf="@+id/isActiveRecordCheckbox"
-        android:layout_toRightOf="@id/isActiveRecordCheckbox"
+        android:layout_toStartOf="@id/deleteEntryButton"
+        android:layout_toLeftOf="@id/deleteEntryButton"
+        android:layout_toEndOf="@+id/isActiveEntryCheckbox"
+        android:layout_toRightOf="@id/isActiveEntryCheckbox"
         android:gravity="center"
         android:hint="@string/endpoint"
         android:importantForAutofill="no"
         android:inputType="text"
         android:paddingVertical="0dp"
+        android:textColor="#FFFFFF"
         android:textSize="16sp" />
 
     <ImageButton
-        android:id="@+id/deleteRecordButton"
+        android:id="@+id/deleteEntryButton"
         android:layout_width="40dp"
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"

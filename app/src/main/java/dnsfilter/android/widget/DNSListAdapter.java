@@ -16,9 +16,9 @@ import java.util.List;
 
 import dnsfilter.android.R;
 
-public class DNSListAdapter extends ArrayAdapter<DNSRecord> {
+public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
 
-    EventsListener listener = null;
+    EventsListener listener;
 
     private final ArrayAdapter<DNSType> spinnerAdapter = new ArrayAdapter<>(
             getContext(),
@@ -27,13 +27,13 @@ public class DNSListAdapter extends ArrayAdapter<DNSRecord> {
     );
 
     private final View.OnClickListener addButtonListener = v -> {
-        add(new DNSRecord());
+        add(new DNSServerConfigEntry());
         if (listener != null) {
             listener.onItemAdded();
         }
     };
 
-    public DNSListAdapter(Context context, List<DNSRecord> objects, EventsListener listener) {
+    public DNSListAdapter(Context context, List<DNSServerConfigEntry> objects, EventsListener listener) {
         super(context, 0, objects);
         this.listener = listener;
     }
@@ -69,27 +69,27 @@ public class DNSListAdapter extends ArrayAdapter<DNSRecord> {
     }
 
     private View getAddButton(ViewGroup parent) {
-        View view = LayoutInflater.from(getContext()).inflate(R.layout.dnsrecordlistnewitem, parent, false);
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.dnsserverconfigentrylistnewitem, parent, false);
         view.findViewById(R.id.addNewItemButton).setOnClickListener(addButtonListener);
         return view;
     }
 
     private View getItem(int position, View convertView, ViewGroup parent) {
-        DNSRecord record = getItem(position);
+        DNSServerConfigEntry entry = getItem(position);
 
-        DNSRecordViewHolder holder;
+        DNSServerConfigEntryViewHolder holder;
 
-        if (convertView == null || !(convertView.getTag() instanceof DNSRecordViewHolder)) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.dnsrecordlistitem, parent, false);
+        if (convertView == null || !(convertView.getTag() instanceof DNSServerConfigEntryViewHolder)) {
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.dnsserverconfigentrylistitem, parent, false);
 
-            holder = new DNSRecordViewHolder();
+            holder = new DNSServerConfigEntryViewHolder();
 
             holder.protocolSpinner = convertView.findViewById(R.id.dnsProtocolSpinner);
             holder.protocolSpinner.setAdapter(spinnerAdapter);
             holder.protocolSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    holder.dnsRecord.setProtocol(DNSType.values()[position]);
+                    holder.dnsServerConfigEntry.setProtocol(DNSType.values()[position]);
                 }
 
                 @Override
@@ -111,7 +111,7 @@ public class DNSListAdapter extends ArrayAdapter<DNSRecord> {
 
                 @Override
                 public void afterTextChanged(Editable s) {
-                    holder.dnsRecord.setIp(s.toString());
+                    holder.dnsServerConfigEntry.setIp(s.toString());
                 }
             });
             holder.portView = convertView.findViewById(R.id.portEditText);
@@ -129,7 +129,7 @@ public class DNSListAdapter extends ArrayAdapter<DNSRecord> {
 
                         @Override
                         public void afterTextChanged(Editable s) {
-                            holder.dnsRecord.setPort(s.toString());
+                            holder.dnsServerConfigEntry.setPort(s.toString());
                         }
                     }
             );
@@ -148,48 +148,48 @@ public class DNSListAdapter extends ArrayAdapter<DNSRecord> {
 
                         @Override
                         public void afterTextChanged(Editable s) {
-                            holder.dnsRecord.setEndpoint(s.toString());
+                            holder.dnsServerConfigEntry.setEndpoint(s.toString());
                         }
                     }
             );
-            holder.deleteRecordButton = convertView.findViewById(R.id.deleteRecordButton);
-            holder.isActiveRecordCheckbox = convertView.findViewById(R.id.isActiveRecordCheckbox);
+            holder.deleteEntryButton = convertView.findViewById(R.id.deleteEntryButton);
+            holder.isActiveEntryCheckbox = convertView.findViewById(R.id.isActiveEntryCheckbox);
 
         } else {
-            holder = (DNSRecordViewHolder) convertView.getTag();
+            holder = (DNSServerConfigEntryViewHolder) convertView.getTag();
         }
 
-        if (record.getProtocol() != null) {
-            holder.protocolSpinner.setSelection(record.getProtocol().ordinal());
+        if (entry.getProtocol() != null) {
+            holder.protocolSpinner.setSelection(entry.getProtocol().ordinal());
         }
 
-        holder.dnsRecord = record;
-        holder.ipView.setText(record.getIp());
-        holder.portView.setText(record.getPort());
-        holder.endpointView.setText(record.getEndpoint());
-        holder.deleteRecordButton.setOnClickListener(v -> remove(getItem(position)));
-        holder.isActiveRecordCheckbox.setChecked(record.getIsActive());
+        holder.dnsServerConfigEntry = entry;
+        holder.ipView.setText(entry.getIp());
+        holder.portView.setText(entry.getPort());
+        holder.endpointView.setText(entry.getEndpoint());
+        holder.deleteEntryButton.setOnClickListener(v -> remove(getItem(position)));
+        holder.isActiveEntryCheckbox.setChecked(entry.getIsActive());
 
-        convertView.setEnabled(record.getIsActive());
+        convertView.setEnabled(entry.getIsActive());
 
         View finalConvertView = convertView;
-        holder.isActiveRecordCheckbox.setOnCheckedChangeListener(
+        holder.isActiveEntryCheckbox.setOnCheckedChangeListener(
                 (buttonView, isChecked) -> {
-                    record.setIsActive(isChecked);
-                    finalConvertView.setEnabled(record.getIsActive());
+                    entry.setIsActive(isChecked);
+                    finalConvertView.setEnabled(entry.getIsActive());
                 }
         );
         return convertView;
     }
 
-    static class DNSRecordViewHolder {
-        DNSRecord dnsRecord;
+    static class DNSServerConfigEntryViewHolder {
+        DNSServerConfigEntry dnsServerConfigEntry;
         Spinner protocolSpinner;
         EditText ipView;
         EditText portView;
         EditText endpointView;
-        View deleteRecordButton;
-        CheckBox isActiveRecordCheckbox;
+        View deleteEntryButton;
+        CheckBox isActiveEntryCheckbox;
     }
 
     public interface EventsListener {
