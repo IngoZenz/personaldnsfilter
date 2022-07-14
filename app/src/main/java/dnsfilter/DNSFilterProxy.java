@@ -68,11 +68,13 @@ public class DNSFilterProxy implements Runnable {
 			int cnt = fallbackDNS.countTokens();
 			for (int i = 0; i < cnt; i++) {
 				String dnsEntry = fallbackDNS.nextToken().trim();
-				Logger.getLogger().logLine("DNS:" + dnsEntry);
-				try {
-					dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry, timeout));
-				} catch (IOException e) {
-					Logger.getLogger().logException(e);
+				if (!dnsEntry.startsWith("#")) {
+					Logger.getLogger().logLine("DNS:" + dnsEntry);
+					try {
+						dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry, timeout));
+					} catch (IOException e) {
+						Logger.getLogger().logException(e);
+					}
 				}
 			}
 			DNSCommunicator.getInstance().setDNSServers(dnsAdrs.toArray(new DNSServer[dnsAdrs.size()]));

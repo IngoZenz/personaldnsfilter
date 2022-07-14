@@ -1119,8 +1119,8 @@ public class DNSProxyActivity extends Activity
 		StringTokenizer entries = new StringTokenizer(uiText,"\n");
 		while (entries.hasMoreTokens()) {
 			String entry = entries.nextToken().trim();
-			if (!entry.startsWith("#")&& !entry.equals(""))
-				result = result+entry+" ;";
+			if (!entry.equals(""))
+				result = result+entry+"; ";
 		}
 		if (!result.equals(""))
 			result = result.substring(0,result.length()-2); // cut last seperator;
