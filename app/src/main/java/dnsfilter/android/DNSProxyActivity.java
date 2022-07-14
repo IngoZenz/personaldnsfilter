@@ -450,6 +450,11 @@ public class DNSProxyActivity extends Activity
 				public void onItemAdded() {
 					manualDNSView.smoothScrollToPosition(manualDNSView.getAdapter().getCount());
 				}
+
+				@Override
+				public void onTestEntry() {
+
+				}
 			};
 
 			manualDNSView.setAdapter(new DNSListAdapter(this, entries, listener));

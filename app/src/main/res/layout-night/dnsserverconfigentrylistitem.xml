@@ -88,8 +88,8 @@
         android:layout_marginEnd="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
-        android:layout_toStartOf="@id/deleteEntryButton"
-        android:layout_toLeftOf="@id/deleteEntryButton"
+        android:layout_toStartOf="@id/moreOptionsButton"
+        android:layout_toLeftOf="@id/moreOptionsButton"
         android:layout_toEndOf="@+id/isActiveEntryCheckbox"
         android:layout_toRightOf="@id/isActiveEntryCheckbox"
         android:gravity="center"
@@ -101,7 +101,7 @@
         android:textSize="16sp" />
 
     <ImageButton
-        android:id="@+id/deleteEntryButton"
+        android:id="@+id/moreOptionsButton"
         android:layout_width="40dp"
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
