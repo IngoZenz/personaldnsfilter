@@ -9,9 +9,13 @@ import android.os.Build;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
@@ -30,10 +34,10 @@ import dnsfilter.android.R;
 
 public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
 
-    final Float shift;
-    EventsListener listener;
-    LayoutTransition layoutTransition = new LayoutTransition();
-    List<DNSServerConfigEntry> expandedEntries = new ArrayList<>();
+    private final Float shift;
+    private EventsListener listener;
+    private final LayoutTransition layoutTransition = new LayoutTransition();
+    private final Animation progressBarAnim;
     private final Dialog testResultDialog;
     private final ImageView testResultImage;
     private final TextView testResultText;
@@ -56,11 +60,15 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
         this.listener = listener;
         this.shift = 44 * ((float) context.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setInverseBackgroundForced(true);
+        AlertDialog.Builder builder = new AlertDialog.Builder(
+                new ContextThemeWrapper(context, android.R.style.Theme_Holo));
         LayoutInflater inflater = LayoutInflater.from(context);
         View dialogView = inflater.inflate(R.layout.dnsserverconfigtestresult, null);
         builder.setView(dialogView);
+
+        progressBarAnim = AnimationUtils.loadAnimation(context, R.anim.progress_rotation);
+        progressBarAnim.setRepeatCount(Animation.INFINITE);
+
 
         this.testResultDialog = builder.create();
         this.testResultImage = dialogView.findViewById(R.id.resultIconImageView);
@@ -189,6 +197,12 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
                     finalConvertView.setEnabled(entry.getIsActive());
                 }
         );
+
+        if (holder.testEntryProgressBar.getVisibility() == View.VISIBLE) {
+            holder.testEntryProgressBar.startAnimation(progressBarAnim);
+        } else {
+            holder.testEntryProgressBar.clearAnimation();
+        }
         return convertView;
     }
 
@@ -284,7 +298,6 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
             @Override
             public void onClick(View v) {
                 if (listener != null) {
-                    expandedEntries.remove(holder.dnsServerConfigEntry);
                     remove(holder.dnsServerConfigEntry);
                 }
             }
@@ -359,7 +372,7 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
         ImageButton moreOptionsButton;
         CheckBox isActiveEntryCheckbox;
         ImageButton testEntryButton;
-        ProgressBar testEntryProgressBar;
+        ImageView testEntryProgressBar;
         ImageButton testEntryResultButton;
         ImageButton deleteEntryButton;
         RelativeLayout root;

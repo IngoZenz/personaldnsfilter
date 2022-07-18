@@ -138,8 +138,9 @@
         android:scaleType="fitCenter"
         android:src="@drawable/ic_delete" />
 
-    <ProgressBar
+    <ImageView
         android:id="@+id/testEntryProgressBar"
+        android:src="@drawable/ic_progress"
         android:layout_width="44dp"
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
