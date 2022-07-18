@@ -1,24 +1,46 @@
 package dnsfilter.android.widget;
 
+
+import android.animation.LayoutTransition;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.os.Build;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.DisplayMetrics;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import dnsfilter.android.R;
 
 public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
 
-    EventsListener listener;
+    private final Float shift;
+    private EventsListener listener;
+    private final LayoutTransition layoutTransition = new LayoutTransition();
+    private final Animation progressBarAnim;
+    private final Dialog testResultDialog;
+    private final ImageView testResultImage;
+    private final TextView testResultText;
 
     private final ArrayAdapter<DNSType> spinnerAdapter = new ArrayAdapter<>(
             getContext(),
@@ -36,6 +58,21 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
     public DNSListAdapter(Context context, List<DNSServerConfigEntry> objects, EventsListener listener) {
         super(context, 0, objects);
         this.listener = listener;
+        this.shift = 44 * ((float) context.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(
+                new ContextThemeWrapper(context, android.R.style.Theme_Holo));
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View dialogView = inflater.inflate(R.layout.dnsserverconfigtestresult, null);
+        builder.setView(dialogView);
+
+        progressBarAnim = AnimationUtils.loadAnimation(context, R.anim.progress_rotation);
+        progressBarAnim.setRepeatCount(Animation.INFINITE);
+
+
+        this.testResultDialog = builder.create();
+        this.testResultImage = dialogView.findViewById(R.id.resultIconImageView);
+        this.testResultText = dialogView.findViewById(R.id.resultTextView);
     }
 
     @Override
@@ -62,7 +99,7 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
         if (getItemViewType(position) == 1) {
             convertView = getAddButton(parent);
         } else {
-            convertView = getItem(position, convertView, parent);
+            convertView = getItemView(position, convertView, parent);
         }
 
         return convertView;
@@ -74,7 +111,7 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
         return view;
     }
 
-    private View getItem(int position, View convertView, ViewGroup parent) {
+    private View getItemView(int position, View convertView, ViewGroup parent) {
         DNSServerConfigEntry entry = getItem(position);
 
         DNSServerConfigEntryViewHolder holder;
@@ -83,80 +120,14 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.dnsserverconfigentrylistitem, parent, false);
 
             holder = new DNSServerConfigEntryViewHolder();
-
-            holder.protocolSpinner = convertView.findViewById(R.id.dnsProtocolSpinner);
-            holder.protocolSpinner.setAdapter(spinnerAdapter);
-            holder.protocolSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    holder.dnsServerConfigEntry.setProtocol(DNSType.values()[position]);
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {
-
-                }
-            });
-            holder.ipView = convertView.findViewById(R.id.ipEditText);
-            holder.ipView.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-                    holder.dnsServerConfigEntry.setIp(s.toString());
-                }
-            });
-            holder.portView = convertView.findViewById(R.id.portEditText);
-            holder.portView.addTextChangedListener(
-                    new TextWatcher() {
-                        @Override
-                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                        }
-
-                        @Override
-                        public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                        }
-
-                        @Override
-                        public void afterTextChanged(Editable s) {
-                            holder.dnsServerConfigEntry.setPort(s.toString());
-                        }
-                    }
-            );
-            holder.endpointView = convertView.findViewById(R.id.endpointEditText);
-            holder.endpointView.addTextChangedListener(
-                    new TextWatcher() {
-                        @Override
-                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                        }
-
-                        @Override
-                        public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                        }
-
-                        @Override
-                        public void afterTextChanged(Editable s) {
-                            holder.dnsServerConfigEntry.setEndpoint(s.toString());
-                        }
-                    }
-            );
-            holder.deleteEntryButton = convertView.findViewById(R.id.deleteEntryButton);
-            holder.isActiveEntryCheckbox = convertView.findViewById(R.id.isActiveEntryCheckbox);
+            setupNewViewHolder(holder, convertView);
 
         } else {
             holder = (DNSServerConfigEntryViewHolder) convertView.getTag();
+        }
+
+        if (holder.dnsServerConfigEntry == entry) {
+            return convertView;
         }
 
         if (entry.getProtocol() != null) {
@@ -164,10 +135,57 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
         }
 
         holder.dnsServerConfigEntry = entry;
+        updateOptionMenu(holder.optionMenuButtons, entry.isExpanded());
+
+        switch (entry.getTestResult().getTestState()) {
+            case FAIL:
+                if (entry.isExpanded()) {
+                    holder.testEntryResultButton.setImageResource(R.drawable.ic_exclamation_circle);
+                    holder.testEntryResultButton.setVisibility(View.VISIBLE);
+                    holder.testEntryProgressBar.setVisibility(View.INVISIBLE);
+                    holder.testEntryButton.setVisibility(View.INVISIBLE);
+                } else {
+                    holder.testEntryResultButton.setVisibility(View.INVISIBLE);
+                    holder.testEntryProgressBar.setVisibility(View.INVISIBLE);
+                    holder.testEntryButton.setVisibility(View.VISIBLE);
+                    holder.dnsServerConfigEntry.setTestResult(new DNSServerConfigTestResult());
+                }
+                break;
+            case STARTED:
+                if (entry.isExpanded()) {
+                    holder.testEntryResultButton.setVisibility(View.INVISIBLE);
+                    holder.testEntryProgressBar.setVisibility(View.VISIBLE);
+                    holder.testEntryButton.setVisibility(View.INVISIBLE);
+                } else {
+                    holder.testEntryResultButton.setVisibility(View.INVISIBLE);
+                    holder.testEntryProgressBar.setVisibility(View.INVISIBLE);
+                    holder.testEntryButton.setVisibility(View.VISIBLE);
+                    holder.dnsServerConfigEntry.setTestResult(new DNSServerConfigTestResult());
+                }
+                break;
+            case SUCCESS:
+                if (entry.isExpanded()) {
+                    holder.testEntryResultButton.setImageResource(R.drawable.ic_check_circle);
+                    holder.testEntryResultButton.setVisibility(View.VISIBLE);
+                    holder.testEntryProgressBar.setVisibility(View.INVISIBLE);
+                    holder.testEntryButton.setVisibility(View.INVISIBLE);
+                } else {
+                    holder.testEntryResultButton.setVisibility(View.INVISIBLE);
+                    holder.testEntryProgressBar.setVisibility(View.INVISIBLE);
+                    holder.testEntryButton.setVisibility(View.VISIBLE);
+                    holder.dnsServerConfigEntry.setTestResult(new DNSServerConfigTestResult());
+                }
+                break;
+            case NOT_STARTED:
+                holder.testEntryResultButton.setVisibility(View.INVISIBLE);
+                holder.testEntryProgressBar.setVisibility(View.INVISIBLE);
+                holder.testEntryButton.setVisibility(View.VISIBLE);
+                break;
+        }
+
         holder.ipView.setText(entry.getIp());
         holder.portView.setText(entry.getPort());
         holder.endpointView.setText(entry.getEndpoint());
-        holder.deleteEntryButton.setOnClickListener(v -> remove(getItem(position)));
         holder.isActiveEntryCheckbox.setChecked(entry.getIsActive());
 
         convertView.setEnabled(entry.getIsActive());
@@ -179,7 +197,170 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
                     finalConvertView.setEnabled(entry.getIsActive());
                 }
         );
+
+        if (holder.testEntryProgressBar.getVisibility() == View.VISIBLE) {
+            holder.testEntryProgressBar.startAnimation(progressBarAnim);
+        } else {
+            holder.testEntryProgressBar.clearAnimation();
+        }
         return convertView;
+    }
+
+    private void setupNewViewHolder(DNSServerConfigEntryViewHolder holder, View convertView) {
+        findViews(holder, convertView);
+
+        holder.root.setLayoutTransition(layoutTransition);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            layoutTransition.enableTransitionType(LayoutTransition.CHANGING);
+            layoutTransition.disableTransitionType(LayoutTransition.APPEARING);
+            layoutTransition.disableTransitionType(LayoutTransition.DISAPPEARING);
+        }
+
+        holder.protocolSpinner.setAdapter(spinnerAdapter);
+        holder.protocolSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                holder.dnsServerConfigEntry.setProtocol(DNSType.values()[position]);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        holder.ipView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                holder.dnsServerConfigEntry.setIp(s.toString());
+            }
+        });
+
+        holder.portView.addTextChangedListener(
+                new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        holder.dnsServerConfigEntry.setPort(s.toString());
+                    }
+                }
+        );
+
+        holder.endpointView.addTextChangedListener(
+                new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        holder.dnsServerConfigEntry.setEndpoint(s.toString());
+                    }
+                }
+        );
+
+        holder.testEntryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    holder.dnsServerConfigEntry.setTestResult(new DNSServerConfigTestResult(DNSServerConfigEntryTestState.STARTED));
+                    notifyDataSetChanged();
+                    listener.onTestEntry(holder.dnsServerConfigEntry);
+                }
+            }
+        });
+        holder.deleteEntryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    remove(holder.dnsServerConfigEntry);
+                }
+            }
+        });
+        holder.moreOptionsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                holder.dnsServerConfigEntry.setExpanded(!holder.dnsServerConfigEntry.isExpanded());
+                if (!holder.dnsServerConfigEntry.isExpanded()) {
+                    holder.dnsServerConfigEntry.setTestResult(new DNSServerConfigTestResult(DNSServerConfigEntryTestState.NOT_STARTED));
+                }
+                notifyDataSetChanged();
+            }
+        });
+
+        holder.testEntryResultButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (holder.dnsServerConfigEntry.getTestResult().getTestState() == DNSServerConfigEntryTestState.SUCCESS) {
+                    testResultImage.setImageResource(R.drawable.ic_check_circle);
+                    testResultText.setText(v.getContext().getString(R.string.testDNSResultSuccess, holder.dnsServerConfigEntry.getTestResult().getPerf()));
+                    testResultDialog.show();
+                } else if (holder.dnsServerConfigEntry.getTestResult().getTestState() == DNSServerConfigEntryTestState.FAIL) {
+                    testResultImage.setImageResource(R.drawable.ic_exclamation_circle);
+                    testResultText.setText(v.getContext().getString(R.string.testDNSResultFailure, holder.dnsServerConfigEntry.getTestResult().getMessage()));
+                    testResultDialog.show();
+                }
+                holder.dnsServerConfigEntry.setTestResult(new DNSServerConfigTestResult(DNSServerConfigEntryTestState.NOT_STARTED));
+                notifyDataSetChanged();
+            }
+        });
+    }
+
+    private void updateOptionMenu(View[] buttonsToHide, boolean isExpandedMenu) {
+
+        ViewGroup.LayoutParams[] layoutParams = new ViewGroup.LayoutParams[buttonsToHide.length];
+        for (int i = 0; i <= buttonsToHide.length - 1; i++) {
+            layoutParams[i] = buttonsToHide[i].getLayoutParams();
+            if (isExpandedMenu) {
+                layoutParams[i].width = Math.round(shift);
+            } else {
+                layoutParams[i].width = 0;
+            }
+        }
+
+        for (int i = 0; i <= buttonsToHide.length - 1; i++) {
+            buttonsToHide[i].setLayoutParams(layoutParams[i]);
+        }
+    }
+
+    private void findViews(DNSServerConfigEntryViewHolder holder, View convertView) {
+        holder.root = convertView.findViewById(R.id.container);
+        holder.protocolSpinner = convertView.findViewById(R.id.dnsProtocolSpinner);
+        holder.ipView = convertView.findViewById(R.id.ipEditText);
+        holder.portView = convertView.findViewById(R.id.portEditText);
+        holder.endpointView = convertView.findViewById(R.id.endpointEditText);
+        holder.testEntryButton = convertView.findViewById(R.id.testEntryButton);
+        holder.deleteEntryButton = convertView.findViewById(R.id.deleteEntryButton);
+        holder.moreOptionsButton = convertView.findViewById(R.id.moreOptionsButton);
+        holder.isActiveEntryCheckbox = convertView.findViewById(R.id.isActiveEntryCheckbox);
+        holder.testEntryProgressBar = convertView.findViewById(R.id.testEntryProgressBar);
+        holder.testEntryResultButton = convertView.findViewById(R.id.testEntryResultButton);
+        holder.optionMenuButtons = new View[]{holder.testEntryButton, holder.deleteEntryButton};
     }
 
     static class DNSServerConfigEntryViewHolder {
@@ -188,11 +369,19 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
         EditText ipView;
         EditText portView;
         EditText endpointView;
-        View deleteEntryButton;
+        ImageButton moreOptionsButton;
         CheckBox isActiveEntryCheckbox;
+        ImageButton testEntryButton;
+        ImageView testEntryProgressBar;
+        ImageButton testEntryResultButton;
+        ImageButton deleteEntryButton;
+        RelativeLayout root;
+        View[] optionMenuButtons;
     }
 
     public interface EventsListener {
         void onItemAdded();
+
+        void onTestEntry(DNSServerConfigEntry entry);
     }
 }
