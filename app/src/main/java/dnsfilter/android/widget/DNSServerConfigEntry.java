@@ -21,6 +21,24 @@ public class DNSServerConfigEntry {
     private String port;
     private DNSType protocol;
     private String endpoint;
+    private DNSServerConfigTestResult testResult;
+    private boolean isExpanded;
+
+    public void setExpanded(boolean expanded) {
+        isExpanded = expanded;
+    }
+
+    public boolean isExpanded() {
+        return isExpanded;
+    }
+
+    public void setTestResult(DNSServerConfigTestResult testState) {
+        this.testResult = testState;
+    }
+
+    public DNSServerConfigTestResult getTestResult() {
+        return testResult;
+    }
 
     public void setIp(String ip) {
         this.ip = ip;
@@ -50,6 +68,8 @@ public class DNSServerConfigEntry {
         this.protocol = protocol;
         this.endpoint = endpoint;
         this.isActive = isActive;
+        this.testResult = new DNSServerConfigTestResult();
+        this.isExpanded = false;
     }
 
     public DNSServerConfigEntry() {
@@ -120,12 +140,18 @@ public class DNSServerConfigEntry {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DNSServerConfigEntry dnsServerConfigEntry = (DNSServerConfigEntry) o;
-        return Objects.equals(ip, dnsServerConfigEntry.ip) && Objects.equals(port, dnsServerConfigEntry.port) && protocol == dnsServerConfigEntry.protocol && Objects.equals(endpoint, dnsServerConfigEntry.endpoint) && Objects.equals(isActive, dnsServerConfigEntry.isActive);
+        return Objects.equals(ip, dnsServerConfigEntry.ip)
+                && Objects.equals(port, dnsServerConfigEntry.port)
+                && protocol == dnsServerConfigEntry.protocol
+                && Objects.equals(endpoint, dnsServerConfigEntry.endpoint)
+                && Objects.equals(isActive, dnsServerConfigEntry.isActive)
+                && Objects.equals(testResult, dnsServerConfigEntry.testResult)
+                && Objects.equals(isExpanded, dnsServerConfigEntry.isExpanded);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ip, port, protocol, endpoint, isActive);
+        return Objects.hash(ip, port, protocol, endpoint, isActive, testResult, isExpanded);
     }
 
     public static String getIsActiveAsCommented(boolean isActive) {

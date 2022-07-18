@@ -45,4 +45,6 @@
   <string name="dnsProtocol">DNS protocol</string>
   <string name="endpoint">endpoint</string>
   <string name="add_new_item_to_dns_list">Add new item to dns list</string>
+  <string name="testDNSResultSuccess">Success:\nAverage ping ~ %1$d"</string>
+  <string name="testDNSResultFailure">Failed: %1$s</string>
 </resources>

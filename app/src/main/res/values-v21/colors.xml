@@ -8,4 +8,6 @@
     <color name="colorGrayIcon">#A3000000</color>
     <color name="colorWhite">#FFFFFF</color>
     <color name="colorGrayBorder">#A3E3E2E2</color>
+    <color name="colorSuccess">#81C784</color>
+    <color name="colorFailure">#E57373</color>
 </resources>

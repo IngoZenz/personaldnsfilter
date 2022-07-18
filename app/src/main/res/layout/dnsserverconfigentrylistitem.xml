@@ -3,9 +3,7 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="80dp"
-    android:background="@drawable/rounded_card"
-    android:clipChildren="true"
-    android:clipToPadding="true">
+    android:background="@drawable/rounded_card">
 
     <CheckBox
         android:id="@+id/isActiveEntryCheckbox"
@@ -91,7 +89,7 @@
         android:layout_toLeftOf="@id/moreOptionsButton"
         android:layout_toEndOf="@+id/isActiveEntryCheckbox"
         android:layout_toRightOf="@id/isActiveEntryCheckbox"
-        android:gravity="center"
+        android:gravity="center_vertical"
         android:hint="@string/endpoint"
         android:importantForAutofill="no"
         android:inputType="text"
@@ -124,7 +122,7 @@
         android:paddingHorizontal="4dp"
         android:paddingVertical="10dp"
         android:scaleType="fitCenter"
-        android:src="@drawable/ic_play" />
+        android:src="@drawable/ic_play_circle" />
 
     <ImageButton
         android:id="@+id/deleteEntryButton"
@@ -139,5 +137,31 @@
         android:paddingVertical="10dp"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_delete" />
+
+    <ProgressBar
+        android:id="@+id/testEntryProgressBar"
+        android:layout_width="44dp"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:layout_toStartOf="@+id/deleteEntryButton"
+        android:paddingHorizontal="4dp"
+        android:paddingVertical="10dp"
+        android:visibility="invisible" />
+
+    <ImageButton
+        android:id="@+id/testEntryResultButton"
+        android:layout_width="44dp"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:layout_toStartOf="@+id/deleteEntryButton"
+        android:background="@drawable/ripple_transparent_button"
+        android:contentDescription="remove line"
+        android:paddingHorizontal="4dp"
+        android:paddingVertical="10dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_check_circle"
+        android:visibility="invisible" />
 
 </RelativeLayout>

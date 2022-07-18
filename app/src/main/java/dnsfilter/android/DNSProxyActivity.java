@@ -76,13 +76,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import dnsfilter.ConfigUtil;
 import dnsfilter.ConfigurationAccess;
 import dnsfilter.DNSFilterManager;
+import dnsfilter.DNSServer;
 import dnsfilter.android.widget.DNSListAdapter;
 import dnsfilter.android.widget.DNSServerConfigEntry;
 import dnsfilter.android.widget.DNSServerConfigEntrySerializer;
+import dnsfilter.android.widget.DNSServerConfigEntryTestState;
+import dnsfilter.android.widget.DNSServerConfigTestResult;
 import util.ExecutionEnvironment;
 import util.GroupedLogger;
 import util.Logger;
@@ -104,6 +109,7 @@ public class DNSProxyActivity extends Activity
 
 
 	protected static boolean BOOT_START = false;
+	private static final int DEFAULT_DNS_TIMEOUT = 15000;
 
 	protected Button startBtn;
 	protected Button stopBtn;
@@ -157,6 +163,8 @@ public class DNSProxyActivity extends Activity
 	protected static String[] availableBackups;
 	protected static int selectedBackup;
 
+	private final ThreadPoolExecutor testTasksPool = (ThreadPoolExecutor) Executors.newScheduledThreadPool(2);
+	private volatile DNSListAdapter dnsRecordsAdapter = null;
 
 	protected static boolean additionalHostsChanged = false;
 	protected static boolean manuallyConfEdited = false;
@@ -437,9 +445,9 @@ public class DNSProxyActivity extends Activity
 
 			List<DNSServerConfigEntry> entries = new ArrayList<>();
 			if (manualDNSView != null) {
-				DNSListAdapter adapter = (DNSListAdapter) manualDNSView.getAdapter();
-				for (int i = 0; i <= adapter.getObjectsCount() - 1; i++) {
-					entries.add(adapter.getItem(i));
+				dnsRecordsAdapter = (DNSListAdapter) manualDNSView.getAdapter();
+				for (int i = 0; i <= dnsRecordsAdapter.getObjectsCount() - 1; i++) {
+					entries.add(dnsRecordsAdapter.getItem(i));
 				}
 			}
 
@@ -448,16 +456,46 @@ public class DNSProxyActivity extends Activity
 			DNSListAdapter.EventsListener listener = new DNSListAdapter.EventsListener() {
 				@Override
 				public void onItemAdded() {
-					manualDNSView.smoothScrollToPosition(manualDNSView.getAdapter().getCount());
+					manualDNSView.smoothScrollToPosition(dnsRecordsAdapter.getCount());
 				}
 
 				@Override
-				public void onTestEntry() {
+				public void onTestEntry(DNSServerConfigEntry entry) {
+					Runnable testTask = new Runnable() {
+						@Override
+						public void run() {
+							try {
+								long result = DNSServer.getInstance()
+										.createDNSServer(entry.toString(), DEFAULT_DNS_TIMEOUT)
+										.testDNS(5);
+									runOnUiThread(
+											new Runnable() {
+												@Override
+												public void run() {
+													entry.setTestResult(new DNSServerConfigTestResult(DNSServerConfigEntryTestState.SUCCESS, result));
+													((DNSListAdapter) manualDNSView.getAdapter()).notifyDataSetChanged();
+												}
+											}
+									);
 
+							} catch (IOException e) {
+									runOnUiThread(new Runnable() {
+										@Override
+										public void run() {
+											entry.setTestResult(new DNSServerConfigTestResult(DNSServerConfigEntryTestState.FAIL, e.getMessage()));
+											((DNSListAdapter) manualDNSView.getAdapter()).notifyDataSetChanged();
+										}
+									});
+							}
+						}
+					};
+					testTasksPool.submit(testTask);
 				}
 			};
 
-			manualDNSView.setAdapter(new DNSListAdapter(this, entries, listener));
+			dnsRecordsAdapter = new DNSListAdapter(this, entries, listener);
+
+			manualDNSView.setAdapter(dnsRecordsAdapter);
 			manualDNSViewResDefBtn = (Button) advDNSConfigDia.findViewById(R.id.RestoreDefaultBtn);
 			manualDNSViewResDefBtn.setOnClickListener(this);
 			exitDNSCfgBtn = (Button) advDNSConfigDia.findViewById(R.id.closeDnsCfg);
@@ -695,7 +733,7 @@ public class DNSProxyActivity extends Activity
 			logException(eio);
 		}
 	}
-	
+
 	private void dump(Exception e) {
 		StringWriter str = new StringWriter();
 		e.printStackTrace(new PrintWriter(str));
@@ -1075,7 +1113,7 @@ public class DNSProxyActivity extends Activity
 
 		} else
 			switchingConfig =false;
-	}	
+	}
 
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
