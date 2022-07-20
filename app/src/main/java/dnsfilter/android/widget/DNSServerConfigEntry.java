@@ -63,10 +63,10 @@ public class DNSServerConfigEntry {
     private Boolean isActive;
 
     public DNSServerConfigEntry(String ip, String port, DNSType protocol, String endpoint, Boolean isActive) {
-        this.ip = ip;
-        this.port = port;
+        this.ip = ip.trim();
+        this.port = port.trim();
         this.protocol = protocol;
-        this.endpoint = endpoint;
+        this.endpoint = endpoint.trim();
         this.isActive = isActive;
         this.testResult = new DNSServerConfigTestResult();
         this.isExpanded = false;

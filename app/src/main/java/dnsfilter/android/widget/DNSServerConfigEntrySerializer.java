@@ -45,9 +45,9 @@ public class DNSServerConfigEntrySerializer {
             } else if (splittedEntry.length == 2) {
                 newEntry = new DNSServerConfigEntry(splittedEntry[0], splittedEntry[1], isActive);
             } else if (splittedEntry.length == 3) {
-                newEntry = new DNSServerConfigEntry(splittedEntry[0], splittedEntry[1], DNSType.valueOf(splittedEntry[2]), isActive);
+                newEntry = new DNSServerConfigEntry(splittedEntry[0], splittedEntry[1], DNSType.valueOf(splittedEntry[2].toUpperCase()), isActive);
             } else {
-                newEntry = new DNSServerConfigEntry(splittedEntry[0], splittedEntry[1], DNSType.valueOf(splittedEntry[2]), splittedEntry[3], isActive);
+                newEntry = new DNSServerConfigEntry(splittedEntry[0], splittedEntry[1], DNSType.valueOf(splittedEntry[2].toUpperCase()), splittedEntry[3], isActive);
             }
         } catch (RuntimeException e) {
             newEntry = new DNSServerConfigEntry();
