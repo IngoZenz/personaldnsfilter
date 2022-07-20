@@ -5,7 +5,7 @@ import java.util.Objects;
 
 public class DNSServerConfigEntry {
 
-    private static final String DEFAULT_IP = "192.168.1.100";
+    private static final String DEFAULT_IP = "";
     private static final Byte DEFAULT_DNS_SELECTION = 0;
     private static final String DEFAULT_PORT = "53";
     private static final String DEFAULT_ENDPOINT = "";
@@ -63,10 +63,10 @@ public class DNSServerConfigEntry {
     private Boolean isActive;
 
     public DNSServerConfigEntry(String ip, String port, DNSType protocol, String endpoint, Boolean isActive) {
-        this.ip = ip;
-        this.port = port;
+        this.ip = ip.trim();
+        this.port = port.trim();
         this.protocol = protocol;
-        this.endpoint = endpoint;
+        this.endpoint = endpoint.trim();
         this.isActive = isActive;
         this.testResult = new DNSServerConfigTestResult();
         this.isExpanded = false;
