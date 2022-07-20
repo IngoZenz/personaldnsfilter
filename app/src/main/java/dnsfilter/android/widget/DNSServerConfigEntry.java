@@ -5,7 +5,7 @@ import java.util.Objects;
 
 public class DNSServerConfigEntry {
 
-    private static final String DEFAULT_IP = "192.168.1.100";
+    private static final String DEFAULT_IP = "";
     private static final Byte DEFAULT_DNS_SELECTION = 0;
     private static final String DEFAULT_PORT = "53";
     private static final String DEFAULT_ENDPOINT = "";
