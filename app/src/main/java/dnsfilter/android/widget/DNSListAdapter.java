@@ -221,6 +221,8 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 holder.dnsServerConfigEntry.setProtocol(DNSType.values()[position]);
+                holder.dnsServerConfigEntry.setPort(Integer.toString(DNSType.values()[position].defaultPort));
+                holder.portView.setText(holder.dnsServerConfigEntry.getPort());
             }
 
             @Override
