@@ -39,4 +39,7 @@
   <string name="passphrase">Пароль</string>
   <string name="remoteConnectDialogTitle">Дистанционное управление</string>
   <string name="manuallyEditConfChk">Редактировать файл конфигурации</string>
+  <string name="add_new_item_to_dns_list">Добавить новую запись</string>
+  <string name="testDNSResultSuccess">Успех:\nСредний пинг ~ %1$d"</string>
+  <string name="testDNSResultFailure">Ошибка: %1$s</string>
 </resources>
