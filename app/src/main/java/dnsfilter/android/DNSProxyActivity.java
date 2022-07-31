@@ -1678,15 +1678,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	}
 
 	protected void startup() {
-
-		if (DNSFilterService.SERVICE != null) {
-			Logger.getLogger().logLine("DNS filter service is running!");
-			Logger.getLogger().logLine("Filter statistic since last restart:");
-			showFilterRate(false);
-			//Logger.getLogger().message("Attached already running Service!");
-			return;
-		}
-
 		try {
 			long repeatingLogSuppressTime = Long.parseLong(getConfig().getConfigValue("repeatingLogSuppressTime", "1000"));
 			boolean liveLogTimestampEnabled = Boolean.parseBoolean(getConfig().getConfigValue("addLiveLogTimestamp", "false"));
@@ -1695,7 +1686,14 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				String timeStampPattern = getConfig().getConfigValue("liveLogTimeStampFormat", "hh:mm:ss");
 				myLogger.setTimestampFormat(timeStampPattern);
 			}
-			myLogger.setSuppressTime(repeatingLogSuppressTime);
+
+			if (DNSFilterService.SERVICE != null) {
+				Logger.getLogger().logLine("DNS filter service is running!");
+				Logger.getLogger().logLine("Filter statistic since last restart:");
+				showFilterRate(false);
+				//Logger.getLogger().message("Attached already running Service!");
+				return;
+			}
 			boolean vpnInAdditionToProxyMode = Boolean.parseBoolean(getConfig().getConfigValue("vpnInAdditionToProxyMode", "false"));
 			boolean vpnDisabled = !vpnInAdditionToProxyMode && Boolean.parseBoolean(getConfig().getConfigValue("dnsProxyOnAndroid", "false"));
 			Intent intent = null;
