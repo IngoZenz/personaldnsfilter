@@ -1301,6 +1301,11 @@ public class DNSProxyActivity extends Activity
 			restoreDefaultDNSConfig();
 			return;
 		} else if (destination == exitDNSCfgBtn){
+			boolean result = dnsRecordsAdapter.validate();
+			if (!result) {
+				dnsRecordsAdapter.notifyDataSetChanged();
+				return;
+			}
 			advDNSConfigDia.dismiss();
 			advDNSConfigDia_open = false;
 			persistConfig();

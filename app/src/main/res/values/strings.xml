@@ -46,4 +46,6 @@
   <string name="endpoint" translatable="false">endpoint</string>
   <string name="testDNSResultSuccess">Success:\nAverage ping ~ %1$d"</string>
   <string name="testDNSResultFailure">Failed: %1$s</string>
+  <string name="ipEmptyError">IP should not be empty</string>
+  <string name="portEmptyError">port should not be empty</string>
 </resources>
