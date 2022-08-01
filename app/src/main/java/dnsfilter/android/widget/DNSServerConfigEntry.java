@@ -23,6 +23,15 @@ public class DNSServerConfigEntry {
     private String endpoint;
     private DNSServerConfigTestResult testResult;
     private boolean isExpanded;
+    private DNSServerConfigEntryValidationResult validationResult;
+
+    public DNSServerConfigEntryValidationResult getValidationResult() {
+        return validationResult;
+    }
+
+    public void setValidationResult(DNSServerConfigEntryValidationResult validationResult) {
+        this.validationResult = validationResult;
+    }
 
     public void setExpanded(boolean expanded) {
         isExpanded = expanded;
@@ -69,6 +78,7 @@ public class DNSServerConfigEntry {
         this.endpoint = endpoint.trim();
         this.isActive = isActive;
         this.testResult = new DNSServerConfigTestResult();
+        this.validationResult = new DNSServerConfigEntryValidationResult();
         this.isExpanded = false;
     }
 
@@ -146,12 +156,13 @@ public class DNSServerConfigEntry {
                 && Objects.equals(endpoint, dnsServerConfigEntry.endpoint)
                 && Objects.equals(isActive, dnsServerConfigEntry.isActive)
                 && Objects.equals(testResult, dnsServerConfigEntry.testResult)
-                && Objects.equals(isExpanded, dnsServerConfigEntry.isExpanded);
+                && Objects.equals(isExpanded, dnsServerConfigEntry.isExpanded)
+                && Objects.equals(validationResult, dnsServerConfigEntry.validationResult);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ip, port, protocol, endpoint, isActive, testResult, isExpanded);
+        return Objects.hash(ip, port, protocol, endpoint, isActive, testResult, isExpanded, validationResult);
     }
 
     public static String getIsActiveAsCommented(boolean isActive) {

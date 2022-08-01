@@ -1,11 +1,9 @@
 package dnsfilter.android.widget;
 
 
-import android.animation.LayoutTransition;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.os.Build;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
@@ -13,7 +11,6 @@ import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
@@ -22,12 +19,10 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import dnsfilter.android.R;
@@ -36,11 +31,11 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
 
     private final Float shift;
     private EventsListener listener;
-    private final LayoutTransition layoutTransition = new LayoutTransition();
     private final Animation progressBarAnim;
     private final Dialog testResultDialog;
     private final ImageView testResultImage;
     private final TextView testResultText;
+    private final DNSConfigEntryValidator validator = new DNSConfigEntryValidator();
 
     private final ArrayAdapter<DNSType> spinnerAdapter = new ArrayAdapter<>(
             getContext(),
@@ -68,7 +63,6 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
 
         progressBarAnim = AnimationUtils.loadAnimation(context, R.anim.progress_rotation);
         progressBarAnim.setRepeatCount(Animation.INFINITE);
-
 
         this.testResultDialog = builder.create();
         this.testResultImage = dialogView.findViewById(R.id.resultIconImageView);
@@ -121,13 +115,10 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
 
             holder = new DNSServerConfigEntryViewHolder();
             setupNewViewHolder(holder, convertView);
+            convertView.setTag(holder);
 
         } else {
             holder = (DNSServerConfigEntryViewHolder) convertView.getTag();
-        }
-
-        if (holder.dnsServerConfigEntry == entry) {
-            return convertView;
         }
 
         if (entry.getProtocol() != null) {
@@ -184,7 +175,9 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
         }
 
         holder.ipView.setText(entry.getIp());
+        holder.ipView.setError(entry.getValidationResult().getIpError());
         holder.portView.setText(entry.getPort());
+        holder.portView.setError(entry.getValidationResult().getPortError());
         holder.endpointView.setText(entry.getEndpoint());
         holder.isActiveEntryCheckbox.setChecked(entry.getIsActive());
 
@@ -209,20 +202,15 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
     private void setupNewViewHolder(DNSServerConfigEntryViewHolder holder, View convertView) {
         findViews(holder, convertView);
 
-        holder.root.setLayoutTransition(layoutTransition);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            layoutTransition.enableTransitionType(LayoutTransition.CHANGING);
-            layoutTransition.disableTransitionType(LayoutTransition.APPEARING);
-            layoutTransition.disableTransitionType(LayoutTransition.DISAPPEARING);
-        }
-
         holder.protocolSpinner.setAdapter(spinnerAdapter);
         holder.protocolSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                holder.dnsServerConfigEntry.setProtocol(DNSType.values()[position]);
-                holder.dnsServerConfigEntry.setPort(Integer.toString(DNSType.values()[position].defaultPort));
-                holder.portView.setText(holder.dnsServerConfigEntry.getPort());
+                if (holder.dnsServerConfigEntry.getProtocol() != DNSType.values()[position]) {
+                    holder.dnsServerConfigEntry.setProtocol(DNSType.values()[position]);
+                    holder.dnsServerConfigEntry.setPort(Integer.toString(DNSType.values()[position].defaultPort));
+                    holder.portView.setText(holder.dnsServerConfigEntry.getPort());
+                }
             }
 
             @Override
@@ -292,6 +280,16 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
                 if (listener != null) {
                     holder.dnsServerConfigEntry.setTestResult(new DNSServerConfigTestResult(DNSServerConfigEntryTestState.STARTED));
                     notifyDataSetChanged();
+                    DNSServerConfigEntryValidationResult validationResult = validator.validate(
+                            holder.dnsServerConfigEntry,
+                            getContext()
+                    );
+                    holder.dnsServerConfigEntry.setValidationResult(validationResult);
+                    if (validationResult.hasError()) {
+                        holder.dnsServerConfigEntry.setTestResult(new DNSServerConfigTestResult(DNSServerConfigEntryTestState.NOT_STARTED));
+                        notifyDataSetChanged();
+                        return;
+                    }
                     listener.onTestEntry(holder.dnsServerConfigEntry);
                 }
             }
@@ -301,6 +299,8 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
             public void onClick(View v) {
                 if (listener != null) {
                     remove(holder.dnsServerConfigEntry);
+                    holder.ipView.setError(null);
+                    holder.portView.setError(null);
                 }
             }
         });
@@ -348,6 +348,18 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> {
         for (int i = 0; i <= buttonsToHide.length - 1; i++) {
             buttonsToHide[i].setLayoutParams(layoutParams[i]);
         }
+    }
+
+    public boolean validate() {
+        boolean result = true;
+        for (int i = 0; i <= getObjectsCount() - 1; i++) {
+            DNSServerConfigEntry item = getItem(i);
+            item.setValidationResult(validator.validate(item, this.getContext()));
+            if (item.getValidationResult().hasError()) {
+                result = false;
+            }
+        }
+        return result;
     }
 
     private void findViews(DNSServerConfigEntryViewHolder holder, View convertView) {
