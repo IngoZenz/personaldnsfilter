@@ -40,7 +40,7 @@
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
         android:layout_gravity="right"
-        android:background="@drawable/custom_button"
+        android:background="@drawable/custom_round_button"
         android:drawableLeft="@drawable/done"
         android:drawableTint="#000000"
         android:padding="3dp"/>

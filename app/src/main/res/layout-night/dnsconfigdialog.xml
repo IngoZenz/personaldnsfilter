@@ -65,7 +65,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:background="@drawable/custom_button"
+            android:background="@drawable/custom_round_button"
             android:fontFamily="sans-serif-medium"
             android:padding="10dp"
             android:text="@string/restoreDefault"
@@ -87,7 +87,7 @@
                 android:id="@+id/closeDnsCfg"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/custom_button"
+                android:background="@drawable/custom_round_button"
                 android:drawableLeft="@drawable/done"
                 android:fontFamily="sans-serif-medium"
                 android:padding="3dp" />

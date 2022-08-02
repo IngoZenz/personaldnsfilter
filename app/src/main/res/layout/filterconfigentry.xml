@@ -70,7 +70,7 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:layout_weight="0"
-        android:background="@drawable/custom_button"
+        android:background="@drawable/custom_round_button"
         android:drawableLeft="@drawable/edit_pen"
         android:drawableTint="#000000"
         android:gravity="center"

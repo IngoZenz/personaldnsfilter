@@ -86,7 +86,7 @@
             android:layout_marginBottom="4dp"
             android:layout_marginLeft="15dp"
             android:layout_marginTop="5dp"
-            android:background="@drawable/custom_button"
+            android:background="@drawable/custom_round_button"
             android:drawableLeft="@drawable/done"
             android:fontFamily="sans-serif-medium"
             android:padding="5dp" />
@@ -97,7 +97,7 @@
             android:layout_marginBottom="4dp"
             android:layout_marginLeft="18dp"
             android:layout_marginTop="5dp"
-            android:background="@drawable/custom_button"
+            android:background="@drawable/custom_round_button"
             android:drawableLeft="@drawable/cancel"
             android:padding="5dp"/>
 
