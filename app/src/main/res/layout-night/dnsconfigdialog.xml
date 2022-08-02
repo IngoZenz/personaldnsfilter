@@ -80,7 +80,6 @@
             android:layout_gravity="end"
             android:layout_marginTop="15dp"
             android:layout_marginRight="15dp"
-            android:background="#262626"
             android:orientation="horizontal">
 
             <Button
