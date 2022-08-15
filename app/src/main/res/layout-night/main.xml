@@ -336,7 +336,7 @@
                         android:layout_marginBottom="3dp"
                         android:layout_weight="0.09"
                         android:background="@drawable/custom_button"
-                        android:drawableEnd="@drawable/arrow_right"
+                        android:drawableEnd="@drawable/arrow_left"
                         android:paddingTop="4dp"
                         android:paddingBottom="4dp"
                         android:paddingRight="7dp"/>
@@ -509,7 +509,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="0dp"
-                android:background="#151e27"
                 android:scrollbarSize="5dp"
                 android:overScrollMode="never"
                 android:scrollbarThumbHorizontal="@drawable/scroll_bar">
