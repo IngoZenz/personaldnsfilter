@@ -91,7 +91,7 @@
                         android:layout_marginBottom="4dp"
                         android:background="@drawable/custom_round_button"
                         android:drawableLeft="@drawable/remote_icon"
-                        android:drawableTint="#000000"
+                        android:drawableTint="#1d2733"
                         android:gravity="center"
                         android:padding="2dp"
                         android:textColor="#424242"></Button>
@@ -108,7 +108,7 @@
                         android:padding="2dp"
                         android:text="?"
                         android:includeFontPadding="false"
-                        android:textColor="#000000"
+                        android:textColor="#1d2733"
                         android:textSize="16dp"
                         android:textStyle="bold"></Button>
                 </LinearLayout>
@@ -217,7 +217,7 @@
                         android:layout_marginTop="0dp"
                         android:button="@drawable/custom_switch"
                         android:checked="false"
-                        android:text= "@string/proxyLocalOnlyCheckbox"
+                        android:text="@string/proxyLocalOnlyCheckbox"
                         android:textColor="#424242" />
 
                     <dnsfilter.android.PaddedCheckBox

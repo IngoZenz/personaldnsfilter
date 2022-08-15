@@ -3,7 +3,7 @@
     android:layout_width="fill_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
-    android:background="#000000"
+    android:background="#1d2733"
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:orientation="vertical"
@@ -42,7 +42,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_toRightOf="@+id/textView1"
                 android:layout_weight="0"
-                android:background="#373737"
+                android:background="#263343"
                 android:drawableRight="@drawable/edit_pen"
                 android:drawableTint="#ffffff"
                 android:gravity="center_vertical"
@@ -108,7 +108,7 @@
                         android:padding="2dp"
                         android:text="?"
                         android:includeFontPadding="false"
-                        android:textColor="#000000"
+                        android:textColor="#1d2733"
                         android:textSize="16dp"
                         android:textStyle="bold"></Button>
                 </LinearLayout>
@@ -276,7 +276,7 @@
                         android:layout_width="42dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="15dp"
-                        android:background="#171717"
+                        android:background="#151e27"
                         android:gravity="center"
                         android:inputType="number"
                         android:text="14"
@@ -320,7 +320,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
                         android:layout_weight="0.82"
-                        android:background="#171717"
+                        android:background="#151e27"
                         android:gravity="center"
                         android:inputType="number"
                         android:text="All Active"
@@ -453,7 +453,7 @@
                 android:padding="10dp"
                 android:text="@string/filterReloadBtnLabel"
                 android:textAllCaps="true"
-                android:textColor="#000000"
+                android:textColor="#1d2733"
                 android:textSize="11sp"
                 android:textStyle="bold" />
 
@@ -470,7 +470,7 @@
                 android:padding="10dp"
                 android:text="@string/startBtnLabel"
                 android:textAllCaps="true"
-                android:textColor="#000000"
+                android:textColor="#1d2733"
                 android:textSize="11sp"
                 android:textStyle="bold" />
 
@@ -486,7 +486,7 @@
                 android:padding="10dp"
                 android:text="@string/stopBtnLabel"
                 android:textAllCaps="true"
-                android:textColor="#000000"
+                android:textColor="#1d2733"
                 android:textSize="11sp"
                 android:textStyle="bold"/>
 
@@ -509,7 +509,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="0dp"
-                android:background="#171717"
+                android:background="#151e27"
                 android:scrollbarSize="5dp"
                 android:overScrollMode="never"
                 android:scrollbarThumbHorizontal="@drawable/scroll_bar">
@@ -518,7 +518,7 @@
                     android:id="@+id/additionalHostsField"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="#333333"
+                    android:background="#151e27"
                     android:inputType="textMultiLine|textNoSuggestions"
                     android:padding="10dp"
                     android:textColor="#FFFFFF"
@@ -551,7 +551,7 @@
                     android:id="@+id/manuallyEditField"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="#333333"
+                    android:background="#151e27"
                     android:inputType="textMultiLine|textNoSuggestions"
                     android:padding="10dp"
                     android:textColor="#FFFFFF"
@@ -600,7 +600,7 @@
                 android:layout_marginTop="15dp"
                 android:layout_marginRight="15dp"
                 android:layout_marginBottom="15dp"
-                android:background="#333333"
+                android:background="#263343"
                 android:orientation="vertical">
 
                 <LinearLayout
@@ -639,7 +639,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
                         android:layout_weight="0.83"
-                        android:background="#212121"
+                        android:background="#151e27"
                         android:gravity="center"
                         android:text="."
                         android:textColor="#FFFFFF"
@@ -674,7 +674,7 @@
                     android:text="@string/backupConfig"
                     android:textAlignment="center"
                     android:textAllCaps="true"
-                    android:textColor="#000000"
+                    android:textColor="#1d2733"
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
@@ -693,7 +693,7 @@
                     android:text="@string/restoreBackup"
                     android:textAlignment="center"
                     android:textAllCaps="true"
-                    android:textColor="#000000"
+                    android:textColor="#1d2733"
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
@@ -714,7 +714,7 @@
                 android:text="@string/restoreDefault"
                 android:textAlignment="center"
                 android:textAllCaps="true"
-                android:textColor="#000000"
+                android:textColor="#1d2733"
                 android:textSize="11sp"
                 android:textStyle="bold" />
 
@@ -740,7 +740,7 @@
             android:layout_marginRight="0dp"
             android:layout_marginBottom="2dp"
             android:includeFontPadding="false"
-            android:background="#000000"
+            android:background="#1d2733"
             android:gravity="right"
             android:textColor="#FFFFFF"
             android:textStyle="bold" />
@@ -794,7 +794,7 @@
             android:layout_marginTop="3dp"
             android:layout_marginRight="15dp"
             android:layout_marginBottom="15dp"
-            android:background="#171717"
+            android:background="#151e27"
             android:paddingRight="0dp"
             android:paddingLeft="8dp"
             android:paddingTop="0dp"
@@ -807,7 +807,7 @@
                 android:id="@+id/logOutput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#171717"
+                android:background="#151e27"
                 android:fadeScrollbars="true"
                 android:overScrollMode="never"
                 android:scrollbarAlwaysDrawVerticalTrack="true"

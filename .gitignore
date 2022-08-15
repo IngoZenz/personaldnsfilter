@@ -42,3 +42,4 @@ build.gradle
 gradle.properties
 gradle/wrapper/gradle-wrapper.properties
 *.gradle
+crowdin.properties

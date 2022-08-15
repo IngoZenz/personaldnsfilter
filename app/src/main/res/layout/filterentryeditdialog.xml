@@ -144,7 +144,7 @@
             android:layout_marginLeft="15dp"
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_round_button"
-            android:drawableTint="#000000"
+            android:drawableTint="#1d2733"
             android:drawableLeft="@drawable/done"
             android:fontFamily="sans-serif-medium"
             android:padding="5dp" />
@@ -157,7 +157,7 @@
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_round_button"
             android:drawableLeft="@drawable/cancel"
-            android:drawableTint="#000000"
+            android:drawableTint="#1d2733"
             android:padding="5dp"/>
 
         <Button
@@ -169,7 +169,7 @@
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_round_button"
             android:drawableLeft="@drawable/delete"
-            android:drawableTint="#000000"
+            android:drawableTint="#1d2733"
             android:padding="5dp" />
 
 

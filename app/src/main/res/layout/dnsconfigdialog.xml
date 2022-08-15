@@ -90,7 +90,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/custom_round_button"
                 android:drawableLeft="@drawable/done"
-                android:drawableTint="#000000"
+                android:drawableTint="#1d2733"
                 android:fontFamily="sans-serif-medium"
                 android:padding="3dp" />
         </LinearLayout>

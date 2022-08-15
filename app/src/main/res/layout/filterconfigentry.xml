@@ -72,7 +72,7 @@
         android:layout_weight="0"
         android:background="@drawable/custom_round_button"
         android:drawableLeft="@drawable/edit_pen"
-        android:drawableTint="#000000"
+        android:drawableTint="#1d2733"
         android:gravity="center"
         android:textColor="#424242"
         android:textSize="14dp"
