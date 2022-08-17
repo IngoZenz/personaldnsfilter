@@ -7,10 +7,12 @@
         <item name="android:windowTitleSize">50dip</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:editTextBackground">@drawable/edit_text</item>
+        <item name="android:textColor">#4E4848</item>
     </style>
 
     <style name="Theme.dialog.TitleBar" parent="@android:style/Theme.Dialog">
         <item name="android:windowTitleStyle">@style/windowTitleStyle</item>
         <item name="android:windowTitleSize">50dip</item>
-    </style>
+    </style>c
+
 </resources>
