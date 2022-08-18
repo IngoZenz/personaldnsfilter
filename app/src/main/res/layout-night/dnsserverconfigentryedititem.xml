@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="#333333"
+    android:padding="8dp">
+
+    <Spinner
+        android:id="@+id/editProtocolSpinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginVertical="8dp"
+        android:background="@drawable/ripple_transparent_button"
+        android:foreground="@drawable/edit_text"
+        android:padding="6dp"
+        android:spinnerMode="dropdown" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/editProtocolSpinner"
+        android:layout_alignEnd="@+id/editProtocolSpinner"
+        android:layout_alignRight="@+id/editProtocolSpinner"
+        android:layout_alignBottom="@id/editProtocolSpinner"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:src="@drawable/ic_dropdown" />
+
+    <EditText
+        android:id="@+id/editIpText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/editProtocolSpinner"
+        android:layout_alignParentLeft="true"
+        android:layout_marginEnd="8dp"
+        android:layout_toStartOf="@id/editPortText"
+        android:background="#212121"
+        android:gravity="center_vertical"
+        android:hint="@string/ip"
+        android:importantForAutofill="no"
+        android:singleLine="true"
+        android:textColor="#FFFFFF" />
+
+    <EditText
+        android:id="@+id/editPortText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/editIpText"
+        android:layout_alignBottom="@id/editIpText"
+        android:layout_alignParentEnd="true"
+        android:background="#212121"
+        android:gravity="center_vertical"
+        android:hint="@string/port"
+        android:importantForAutofill="no"
+        android:inputType="numberDecimal"
+        android:textColor="#FFFFFF" />
+
+    <EditText
+        android:id="@+id/editEndpointText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/editIpText"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginVertical="8dp"
+        android:background="#212121"
+        android:gravity="center_vertical"
+        android:hint="@string/endpoint"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:singleLine="true"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp" />
+
+    <Button
+        android:id="@+id/editCancelChanges"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/editEndpointText"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginHorizontal="6dp"
+        android:background="@drawable/ripple_outlined_button"
+        android:drawableStart="@drawable/cancel"
+        android:drawableLeft="@drawable/cancel"
+        android:fontFamily="sans-serif-medium"
+        android:padding="10dp" />
+
+
+    <Button
+        android:id="@+id/editApplyChanges"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/editEndpointText"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginHorizontal="6dp"
+        android:background="@drawable/custom_button"
+        android:drawableStart="@drawable/done"
+        android:drawableLeft="@drawable/done"
+        android:fontFamily="sans-serif-medium"
+        android:padding="10dp" />
+
+</RelativeLayout>
