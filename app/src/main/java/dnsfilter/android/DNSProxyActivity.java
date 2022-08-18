@@ -209,8 +209,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		@Override
 		public void timeoutNotification() {
-			if (CONFIG.isLocal())
+			if (CONFIG.isLocal()) {
 				activity.setMessage(fromHtml(link_field_txt), link_field_color);
+				link_field.setMovementMethod(LinkMovementMethod.getInstance());
+			}
 			else
 				activity.setMessage(fromHtml("<font color='#F7FB0A'><strong>"+ CONFIG +"</strong></font>"), link_field_color);
 
@@ -987,8 +989,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 					//Link field
 					link_field_txt = config.getConfigValue("footerLink", "");
-					if (!MSG_ACTIVE)
+					if (!MSG_ACTIVE) {
 						link_field.setText(fromHtml(link_field_txt));
+						link_field.setMovementMethod(LinkMovementMethod.getInstance());
+					}
 
 					//Log formatting
 					filterLogFormat = config.getConfigValue("filterLogFormat", "<font color='#E53935'>($CONTENT)</font>");
@@ -1192,9 +1196,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			return;
 		} else if (destination == removeFilterBtn) {
 			onCopyFilterFromLogView(false);
-			return;
-		} else if (destination == link_field) {
-			handleFooterClick();
 			return;
 		} else if (destination == helpBtn) {
 			openBrowser("https://www.zenz-home.com/personaldnsfilter/help/help.php");
@@ -1443,24 +1444,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			logLine("=>CONNECTED to "+ CONFIG +"<=");
 			checkPasscode();
 		}
-	}
-
-
-	private void handleFooterClick() {
-		String linkTxt = link_field_txt;
-		String link = "";
-		int linkStart = linkTxt.indexOf("a href='");
-		if (linkStart!=-1){
-			linkTxt = linkTxt.substring(linkStart+8);
-			int linkEnd = linkTxt.indexOf("'>");
-			if (linkEnd != -1)
-				link = linkTxt.substring(0,linkEnd);
-		}
-
-		if (!link.equals("")) {
-			openBrowser(link);
-		}
-
 	}
 
 	private void handleDNSConfigDialog() {
