@@ -346,8 +346,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				Window window = this.getWindow();
 				window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
 				window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-				window.setStatusBarColor(this.getResources().getColor(R.color.colorPrimaryDark));
-				getWindow().setNavigationBarColor(getResources().getColor(R.color.colorPrimaryDark));
+				window.setStatusBarColor(this.getResources().getColor(R.color.colorPrimary));
+				getWindow().setNavigationBarColor(getResources().getColor(R.color.colorPrimary));
 			}
 
 			setContentView(R.layout.main);

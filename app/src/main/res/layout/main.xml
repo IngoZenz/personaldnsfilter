@@ -313,8 +313,7 @@
                         android:drawableStart="@drawable/arrow_left"
                         android:paddingTop="4dp"
                         android:paddingBottom="4dp"
-                        android:paddingLeft="7dp"
-                        />
+                        android:paddingLeft="7dp" />
 
                     <TextView
                         android:id="@+id/categoryFilter"
@@ -823,8 +822,8 @@
         android:id="@+id/link_field"
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
-        android:layout_marginBottom="-1dp"
-        android:layout_weight="0.05"
+        android:layout_marginBottom="0dp"
+        android:layout_weight="0.051"
         android:background="#00BCD4"
         android:gravity="center"
         android:maxLines="2"
