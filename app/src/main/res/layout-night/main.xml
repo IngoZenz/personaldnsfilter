@@ -829,5 +829,6 @@
         android:paddingHorizontal="3dp"
         android:textColor="#455a64"
         android:textSize="12dp"
+        android:textColorHighlight="#00ffffff"
         android:visibility="visible" />
 </LinearLayout>
