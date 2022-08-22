@@ -364,7 +364,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	}
 
 	private boolean useDefaultConfig(String currentKey) {
-		return ( currentKey.equals("initialInfoPopUpText") || currentKey.equals("initialInfoPopUpTitle"));
+		return ( currentKey.equals("initialInfoPopUpText") || currentKey.equals("initialInfoPopUpTitle") || currentKey.equals("footerLink"));
 	}
 
 
