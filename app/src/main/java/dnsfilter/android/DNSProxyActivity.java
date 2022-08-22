@@ -468,8 +468,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			removeFilterBtn.setOnClickListener(this);
 			link_field = (TextView) findViewById(R.id.link_field);
 			link_field.setText(fromHtml(link_field_txt));
-			link_field.setOnClickListener(this);
-
+			link_field.setMovementMethod(LinkMovementMethod.getInstance());
+			
 			Drawable background = link_field.getBackground();
 			if (background instanceof ColorDrawable)
 				link_field_color = ((ColorDrawable) background).getColor();
