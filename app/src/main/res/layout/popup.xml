@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:paddingLeft="15dp"
     android:paddingRight="15dp"
-    android:background="#FFFFFF"
+    android:background="#ffffff"
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:orientation="vertical">
@@ -17,8 +17,9 @@
         android:layout_marginBottom="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FFFFFF"
+        android:background="#ffffff"
         android:textColor="#424242"
+        android:textColorLink="#00BCD4"
         android:text="">
     </TextView>
 
@@ -38,9 +39,10 @@
         android:layout_height="wrap_content"
         android:layout_marginRight="10dp"
         android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="18dp"
         android:layout_gravity="right"
-        android:background="@drawable/custom_button"
+        android:background="@drawable/custom_round_button"
         android:drawableLeft="@drawable/done"
+        android:drawableTint="#1d2733"
         android:padding="3dp"/>
 </LinearLayout>

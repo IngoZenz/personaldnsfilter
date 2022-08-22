@@ -9,7 +9,7 @@
     <Spinner
         android:id="@+id/editProtocolSpinner"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="46dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
@@ -19,6 +19,7 @@
         android:background="@drawable/ripple_transparent_button"
         android:foreground="@drawable/edit_text"
         android:padding="6dp"
+        android:popupBackground="@android:drawable/dialog_holo_light_frame"
         android:spinnerMode="dropdown" />
 
     <ImageView
@@ -95,7 +96,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_marginHorizontal="6dp"
-        android:background="@drawable/custom_button"
+        android:background="@drawable/custom_round_button"
         android:drawableStart="@drawable/done"
         android:drawableLeft="@drawable/done"
         android:fontFamily="sans-serif-medium"

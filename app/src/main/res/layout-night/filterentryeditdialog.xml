@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
-    android:background="#333333"
+    android:background="#263343"
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:orientation="vertical">
@@ -41,9 +41,9 @@
                 android:id="@+id/url"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="15dp"
                 android:layout_marginLeft="15dp"
                 android:layout_marginTop="15dp"
+                android:layout_marginBottom="15dp"
                 android:text="@string/URL"
                 android:textColor="#FFFFFF" />
         </LinearLayout>
@@ -58,13 +58,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="15dp"
-                android:layout_marginRight="15dp"
                 android:layout_marginTop="15dp"
-                android:background="#212121"
+                android:layout_marginRight="15dp"
+                android:background="#151e27"
+                android:inputType="textNoSuggestions"
                 android:text="blah"
                 android:textColor="#FFFFFF"
-                android:textSize="14dp"
-                android:inputType="textNoSuggestions"/>
+                android:textSize="14dp" />
 
 
             <EditText
@@ -72,62 +72,63 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="15dp"
-                android:layout_marginRight="15dp"
                 android:layout_marginTop="15dp"
-                android:background="#212121"
+                android:layout_marginRight="15dp"
+                android:background="#151e27"
+                android:inputType="textNoSuggestions"
                 android:text="blah"
                 android:textColor="#FFFFFF"
-                android:textSize="14dp"
-                android:inputType="textNoSuggestions"/>
+                android:textSize="14dp" />
 
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="15dp"
                 android:layout_marginLeft="15dp"
-                android:layout_marginRight="15dp"
                 android:layout_marginTop="15dp"
-                android:background="#212121"
+                android:layout_marginRight="15dp"
+                android:layout_marginBottom="15dp"
+                android:background="#151e27"
                 android:overScrollMode="never"
                 android:scrollbars="none">
 
                 <EditText
                     android:id="@+id/filterUrl"
                     android:layout_width="match_parent"
-                    android:minWidth="200dp"
                     android:layout_height="wrap_content"
-                    android:background="#212121"
+                    android:background="#151e27"
+                    android:inputType="textNoSuggestions"
+                    android:minWidth="200dp"
                     android:text="blah"
                     android:textColor="#FFFFFF"
-                    android:textSize="14dp"
-                    android:inputType="textNoSuggestions"/>
+                    android:textSize="14dp" />
             </HorizontalScrollView>
 
         </LinearLayout>
 
     </LinearLayout>
+
     <dnsfilter.android.PaddedCheckBox
         android:id="@+id/activeChk"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
         android:button="@drawable/custom_checkbox"
         android:checked="true"
         android:text="@string/active"
-        android:textSize="14dp"
         android:textColor="#FFFFFF"
-        android:layout_gravity="right"
-        android:layout_marginRight="15dp"
-        android:layout_marginLeft="15dp"/>
+        android:textSize="14dp" />
 
     <TextView
         android:id="@+id/errorMsg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="15dp"
         android:layout_marginLeft="15dp"
         android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
         android:textColor="#E53935"
-        android:visibility="gone"/>
+        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/linearLayout2"
@@ -140,36 +141,35 @@
             android:id="@+id/filterEditOkBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
             android:layout_marginLeft="15dp"
             android:layout_marginTop="5dp"
-            android:background="@drawable/custom_button"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/custom_round_button"
             android:drawableLeft="@drawable/done"
             android:fontFamily="sans-serif-medium"
             android:padding="5dp" />
+
         <Button
             android:id="@+id/filterEditCancelBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
             android:layout_marginLeft="18dp"
             android:layout_marginTop="5dp"
-            android:background="@drawable/custom_button"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/custom_round_button"
             android:drawableLeft="@drawable/cancel"
-            android:padding="5dp"/>
+            android:padding="5dp" />
 
         <Button
             android:id="@+id/filterEditDelBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
             android:layout_marginLeft="18dp"
             android:layout_marginTop="5dp"
-            android:background="@drawable/custom_button"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/custom_round_button"
             android:drawableLeft="@drawable/ic_delete"
             android:padding="5dp" />
-
-
     </LinearLayout>
 
 </LinearLayout>

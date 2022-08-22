@@ -35,7 +35,8 @@
         android:layout_toEndOf="@id/isActiveEntryCheckbox"
         android:layout_toRightOf="@id/isActiveEntryCheckbox"
         android:background="@drawable/ripple_transparent_button"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:textColor="#424242"/>
 
     <TextView
         android:id="@+id/ipText"
@@ -49,7 +50,8 @@
         android:layout_toEndOf="@id/protocolText"
         android:layout_toRightOf="@id/protocolText"
         android:gravity="center_vertical"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:textColor="#424242"/>
 
     <TextView
         android:id="@+id/portText"
@@ -61,7 +63,8 @@
         android:layout_toStartOf="@id/editEntryButton"
         android:layout_toLeftOf="@id/editEntryButton"
         android:gravity="center_vertical"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:textColor="#424242"/>
 
     <ImageButton
         android:id="@+id/editEntryButton"

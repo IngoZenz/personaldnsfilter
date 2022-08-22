@@ -11,9 +11,4 @@
     <item name="android:background">#00BCD4</item>
     <item name="android:maxLines">1</item>
   </style>
-
-  <style name="phttpEditTextStyle" parent="@android:style/Widget.EditText">
-    <item name="android:background">@drawable/edit_text</item>
-  </style>
-
 </resources>

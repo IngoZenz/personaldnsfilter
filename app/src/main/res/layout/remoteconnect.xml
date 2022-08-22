@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
-    android:background="#FFFFFF"
+    android:background="#ffffff"
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:orientation="vertical">
@@ -49,7 +49,7 @@
                 android:layout_marginLeft="15dp"
                 android:layout_marginRight="15dp"
                 android:layout_marginTop="15dp"
-                android:background="#eceff1"
+                android:background="#DEE2E6"
                 android:textColor="#424242"
                 android:textSize="14dp"
                 android:inputType="textNoSuggestions"/>
@@ -62,7 +62,7 @@
                 android:layout_marginLeft="15dp"
                 android:layout_marginRight="15dp"
                 android:layout_marginTop="15dp"
-                android:background="#eceff1"
+                android:background="#DEE2E6"
                 android:textColor="#424242"
                 android:textSize="14dp"
                 android:inputType="textNoSuggestions"/>
@@ -86,8 +86,9 @@
             android:layout_marginBottom="4dp"
             android:layout_marginLeft="15dp"
             android:layout_marginTop="5dp"
-            android:background="@drawable/custom_button"
+            android:background="@drawable/custom_round_button"
             android:drawableLeft="@drawable/done"
+            android:drawableTint="#1d2733"
             android:fontFamily="sans-serif-medium"
             android:padding="5dp" />
         <Button
@@ -97,8 +98,9 @@
             android:layout_marginBottom="4dp"
             android:layout_marginLeft="18dp"
             android:layout_marginTop="5dp"
-            android:background="@drawable/custom_button"
+            android:background="@drawable/custom_round_button"
             android:drawableLeft="@drawable/cancel"
+            android:drawableTint="#1d2733"
             android:padding="5dp"/>
 
     </LinearLayout>

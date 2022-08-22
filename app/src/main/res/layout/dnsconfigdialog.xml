@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -50,15 +49,17 @@
             android:layout_alignParentStart="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
+            android:layout_gravity="center_horizontal"
             android:layout_marginHorizontal="6dp"
             android:layout_toStartOf="@id/closeDnsCfg"
             android:layout_toLeftOf="@id/closeDnsCfg"
-            android:background="@drawable/custom_button"
+            android:background="@drawable/custom_round_button"
             android:fontFamily="sans-serif-medium"
             android:padding="10dp"
             android:text="@string/restoreDefault"
             android:textAllCaps="true"
             android:textColor="#FFFFFF"
+            android:textSize="11sp"
             android:textStyle="bold" />
 
         <Button
@@ -70,9 +71,10 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:layout_marginHorizontal="6dp"
-            android:background="@drawable/custom_button"
+            android:background="@drawable/custom_round_button"
             android:drawableStart="@drawable/done"
             android:drawableLeft="@drawable/done"
+            android:drawableTint="#1d2733"
             android:fontFamily="sans-serif-medium"
             android:padding="10dp" />
     </RelativeLayout>

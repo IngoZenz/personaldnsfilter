@@ -986,6 +986,7 @@ public class DNSFilterService extends VpnService  {
 
 		if (runningVPN != null) {
 			runningVPN.stop(explicitOp);
+			Utils.sleep(100);
 		}
 		DNSFILTER = DNSFilterManager.getInstance();
 		ParcelFileDescriptor vpnInterface = null;

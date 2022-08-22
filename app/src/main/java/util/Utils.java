@@ -122,7 +122,18 @@ public class Utils {
 			return true;
 	}
 
-		public static void closeSocket(Socket s){
+	public static void sleep(long millis){
+		Object obj = new Object();
+		synchronized (obj) {
+			try {
+				obj.wait(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public static void closeSocket(Socket s){
 		try {
 			s.shutdownOutput();
 		} catch (IOException e) {

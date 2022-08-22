@@ -9,7 +9,7 @@
         android:id="@+id/searchString"
         android:layout_width="120dp"
         android:layout_height="wrap_content"
-        android:background="#cfd8dc"
+        android:background="#DEE2E6"
         android:gravity="left"
         android:text=""
         android:singleLine="true"
@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="10dp"
-        android:background="@drawable/custom_button"
+        android:background="@drawable/custom_round_button"
         android:drawableLeft="@drawable/search_icon"
         android:gravity="center" />
 </LinearLayout>

@@ -9,7 +9,7 @@
     <Spinner
         android:id="@+id/editProtocolSpinner"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="46dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
@@ -19,6 +19,7 @@
         android:background="@drawable/ripple_transparent_button"
         android:foreground="@drawable/edit_text"
         android:padding="6dp"
+        android:popupBackground="@android:drawable/dialog_holo_dark_frame"
         android:spinnerMode="dropdown" />
 
     <ImageView
@@ -40,7 +41,7 @@
         android:layout_alignParentLeft="true"
         android:layout_marginEnd="8dp"
         android:layout_toStartOf="@id/editPortText"
-        android:background="#212121"
+        android:backgroundTint="#212121"
         android:gravity="center_vertical"
         android:hint="@string/ip"
         android:importantForAutofill="no"
@@ -54,7 +55,7 @@
         android:layout_alignTop="@id/editIpText"
         android:layout_alignBottom="@id/editIpText"
         android:layout_alignParentEnd="true"
-        android:background="#212121"
+        android:backgroundTint="#212121"
         android:gravity="center_vertical"
         android:hint="@string/port"
         android:importantForAutofill="no"
@@ -69,7 +70,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_marginVertical="8dp"
-        android:background="#212121"
+        android:backgroundTint="#212121"
         android:gravity="center_vertical"
         android:hint="@string/endpoint"
         android:importantForAutofill="no"
@@ -101,7 +102,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_marginHorizontal="6dp"
-        android:background="@drawable/custom_button"
+        android:background="@drawable/custom_round_button"
         android:drawableStart="@drawable/done"
         android:drawableLeft="@drawable/done"
         android:fontFamily="sans-serif-medium"
