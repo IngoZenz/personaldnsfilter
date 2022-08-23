@@ -11,7 +11,7 @@
         android:id="@android:id/mask"
         android:state_pressed="true">
         <shape android:shape="rectangle">
-            <corners android:radius="4dp" />
+            <corners android:radius="40dp" />
             <solid android:color="#B4B9BA" />
         </shape>
     </item>
