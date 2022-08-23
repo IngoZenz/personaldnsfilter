@@ -106,7 +106,7 @@
                         android:background="@drawable/custom_round_button"
                         android:gravity="center"
                         android:padding="2dp"
-                        android:text="?"
+                        android:drawableLeft="@drawable/help"
                         android:includeFontPadding="false"
                         android:textColor="#1d2733"
                         android:textSize="16dp"
