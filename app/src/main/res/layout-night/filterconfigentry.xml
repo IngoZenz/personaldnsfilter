@@ -13,7 +13,7 @@
     <CheckBox
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="0dp"
+        android:layout_marginStart="0dp"
         android:layout_weight=".14"
         android:button="@drawable/custom_checkbox">
     </CheckBox>
@@ -27,7 +27,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight=".3"
-        android:paddingLeft="10dp"
+        android:paddingStart="10dp"
         android:overScrollMode="never"
         android:scrollbars="none">
 
@@ -36,9 +36,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="#263343"
-            android:paddingLeft="0dp"
+            android:paddingStart="0dp"
             android:textColor="#FFFFFF"
-            android:textSize="14dp">
+            android:textSize="14sp">
         </TextView>
     </HorizontalScrollView>
 
@@ -47,7 +47,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight=".6"
-        android:paddingLeft="10dp"
+        android:paddingStart="10dp"
         android:overScrollMode="never"
         android:scrollbars="none">
 
@@ -56,9 +56,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="#263343"
-            android:paddingLeft="0dp"
+            android:paddingStart="0dp"
             android:textColor="#FFFFFF"
-            android:textSize="14dp">
+            android:textSize="14sp">
         </TextView>
 
     </HorizontalScrollView>
@@ -67,14 +67,14 @@
         android:layout_width="28dp"
         android:layout_height="28dp"
         android:padding="2dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
         android:layout_weight="0"
         android:background="@drawable/custom_round_button"
-        android:drawableLeft="@drawable/edit_pen"
+        android:drawableStart="@drawable/edit_pen"
         android:gravity="center"
         android:textColor="#FFFFFF"
-        android:textSize="14dp"
+        android:textSize="14sp"
         android:textStyle="bold">
     </Button>
 

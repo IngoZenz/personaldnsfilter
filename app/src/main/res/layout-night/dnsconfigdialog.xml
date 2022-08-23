@@ -19,9 +19,9 @@
             android:id="@+id/manualDNSCheck"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
+            android:layout_marginStart="15dp"
             android:layout_marginTop="0dp"
-            android:layout_marginRight="15dp"
+            android:layout_marginEnd="15dp"
             android:button="@drawable/custom_checkbox"
             android:checked="false"
             android:text="@string/manualDNSCheck"
@@ -32,8 +32,8 @@
             android:id="@+id/manualDNSScroll"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
             android:layout_marginBottom="15dp"
             android:background="#151e27"
             android:padding="10dp"
@@ -48,7 +48,7 @@
                 android:inputType="textMultiLine|textNoSuggestions"
                 android:minWidth="200dp"
                 android:textColor="#FFFFFF"
-                android:textSize="14dp" />
+                android:textSize="14sp" />
 
         </HorizontalScrollView>
     </LinearLayout>
@@ -79,7 +79,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_marginTop="15dp"
-            android:layout_marginRight="15dp"
+            android:layout_marginEnd="15dp"
             android:orientation="horizontal">
 
             <Button
@@ -87,7 +87,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/custom_round_button"
-                android:drawableLeft="@drawable/done"
+                android:drawableStart="@drawable/done"
                 android:fontFamily="sans-serif-medium"
                 android:padding="3dp" />
         </LinearLayout>

@@ -27,7 +27,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:layout_marginLeft="15dp"
+                android:layout_marginStart="15dp"
                 android:layout_marginTop="10dp"
                 android:text="@string/dnsLabel"
                 android:textStyle="bold"
@@ -38,12 +38,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:layout_marginLeft="7dp"
+                android:layout_marginStart="7dp"
                 android:layout_marginTop="10dp"
-                android:layout_toRightOf="@+id/textView1"
+                android:layout_toEndOf="@+id/textView1"
                 android:layout_weight="0"
                 android:background="@drawable/text_view"
-                android:drawableRight="@drawable/edit_pen"
+                android:drawableEnd="@drawable/edit_pen"
                 android:gravity="center_vertical"
                 android:maxLength="64"
                 android:padding="10dp"
@@ -69,7 +69,7 @@
                     android:id="@+id/advancedConfigCheck"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="15dp"
+                    android:layout_marginStart="15dp"
                     android:layout_marginTop="2dp"
                     android:button="@drawable/custom_menu"
                     android:checked="false"
@@ -80,37 +80,37 @@
                     android:id="@+id/linearLayout5"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
                     android:orientation="horizontal">
 
                     <Button
                         android:id="@+id/remoteCtrlBtn"
                         android:layout_width="28dp"
                         android:layout_height="28dp"
-                        android:layout_marginRight="10dp"
+                        android:layout_marginEnd="10dp"
                         android:layout_marginBottom="4dp"
                         android:background="@drawable/custom_round_button"
-                        android:drawableLeft="@drawable/remote_icon"
+                        android:drawableStart="@drawable/remote_icon"
                         android:drawableTint="#1d2733"
                         android:gravity="center"
                         android:padding="2dp"
-                        android:textColor="#424242"></Button>
+                        android:textColor="#424242">
+			
+			</Button>
 
 
                     <Button
                         android:id="@+id/helpBtn"
                         android:layout_width="28dp"
                         android:layout_height="28dp"
-                        android:layout_marginRight="15dp"
+                        android:layout_marginEnd="15dp"
                         android:layout_marginBottom="4dp"
                         android:background="@drawable/custom_round_button"
                         android:gravity="center"
                         android:padding="2dp"
-                        android:text="?"
-                        android:includeFontPadding="false"
-                        android:textColor="#1d2733"
-                        android:textSize="16dp"
-                        android:textStyle="bold"></Button>
+                        android:drawableStart="@drawable/help">
+
+                    </Button>
                 </LinearLayout>
             </RelativeLayout>
 
@@ -119,9 +119,9 @@
                 android:background="@drawable/box_background"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
+                android:layout_marginStart="15dp"
                 android:layout_marginTop="3dp"
-                android:layout_marginRight="15dp"
+                android:layout_marginEnd="15dp"
                 android:layout_marginBottom="3dp"
                 android:scrollbarSize="5dp"
                 android:overScrollMode="never"
@@ -136,7 +136,7 @@
                         android:id="@+id/editFilterLoad"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="10dp"
+                        android:layout_marginStart="10dp"
                         android:layout_marginTop="2dp"
                         android:button="@drawable/custom_menu"
                         android:checked="false"
@@ -147,7 +147,7 @@
                         android:id="@+id/editAdditionalHosts"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="10dp"
+                        android:layout_marginStart="10dp"
                         android:layout_marginTop="0dp"
                         android:button="@drawable/custom_menu"
                         android:checked="false"
@@ -158,7 +158,7 @@
                         android:id="@+id/appWhitelist"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="10dp"
+                        android:layout_marginStart="10dp"
                         android:layout_marginTop="0dp"
                         android:button="@drawable/custom_menu"
                         android:checked="false"
@@ -169,7 +169,7 @@
                         android:id="@+id/backupRestoreChk"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="10dp"
+                        android:layout_marginStart="10dp"
                         android:layout_marginTop="0dp"
                         android:button="@drawable/custom_menu"
                         android:checked="false"
@@ -180,7 +180,7 @@
                         android:id="@+id/manuallyEditConfChk"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="10dp"
+                        android:layout_marginStart="10dp"
                         android:layout_marginTop="0dp"
                         android:button="@drawable/custom_menu"
                         android:checked="false"
@@ -191,7 +191,7 @@
                         android:id="@+id/cloakProtectCheck"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="10dp"
+                        android:layout_marginStart="10dp"
                         android:layout_marginTop="0dp"
                         android:button="@drawable/custom_switch"
                         android:checked="false"
@@ -202,7 +202,7 @@
                         android:id="@+id/proxyModeCheck"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="10dp"
+                        android:layout_marginStart="10dp"
                         android:layout_marginTop="0dp"
                         android:button="@drawable/custom_switch"
                         android:checked="false"
@@ -213,7 +213,7 @@
                         android:id="@+id/proxyLocalOnlyCheck"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="10dp"
+                        android:layout_marginStart="10dp"
                         android:layout_marginTop="0dp"
                         android:button="@drawable/custom_switch"
                         android:checked="false"
@@ -224,7 +224,7 @@
                         android:id="@+id/rootModeCheck"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="10dp"
+                        android:layout_marginStart="10dp"
                         android:layout_marginTop="0dp"
                         android:button="@drawable/custom_switch"
                         android:checked="false"
@@ -235,7 +235,7 @@
                         android:id="@+id/keepAwakeCheck"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="10dp"
+                        android:layout_marginStart="10dp"
                         android:layout_marginTop="0dp"
                         android:layout_marginBottom="2dp"
                         android:button="@drawable/custom_switch"
@@ -250,9 +250,9 @@
                 android:background="@drawable/box_background"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
+                android:layout_marginStart="15dp"
                 android:layout_marginTop="3dp"
-                android:layout_marginRight="15dp"
+                android:layout_marginEnd="15dp"
                 android:layout_marginBottom="15dp"
                 android:orientation="vertical"
                 android:paddingBottom="15dp">
@@ -264,13 +264,13 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="10dp"
+                        android:layout_marginStart="10dp"
                         android:layout_marginTop="15dp"
                         android:layout_marginBottom="15dp"
-                        android:paddingRight="7dp"
+                        android:paddingEnd="7dp"
                         android:text="@string/filterUpdateDays"
                         android:textColor="#424242"
-                        android:textSize="14dp" />
+                        android:textSize="14sp" />
 
                     <EditText
                         android:id="@+id/filterloadinterval"
@@ -282,30 +282,30 @@
                         android:inputType="number"
                         android:text="14"
                         android:textColor="#424242"
-                        android:textSize="14dp" />
+                        android:textSize="14sp" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp">
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="0dp"
+                        android:layout_marginStart="0dp"
                         android:layout_marginTop="5dp"
-                        android:paddingRight="7dp"
+                        android:paddingEnd="7dp"
                         android:text="@string/category"
                         android:textColor="#424242"
-                        android:textSize="14dp" />
+                        android:textSize="14sp" />
 
                     <Button
                         android:id="@+id/CategoryDown"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="0dp"
+                        android:layout_marginStart="0dp"
                         android:layout_marginTop="5dp"
                         android:layout_marginBottom="3dp"
                         android:layout_weight="0.09"
@@ -313,7 +313,7 @@
                         android:drawableStart="@drawable/arrow_left"
                         android:paddingTop="4dp"
                         android:paddingBottom="4dp"
-                        android:paddingLeft="7dp" />
+                        android:paddingStart="7dp" />
 
                     <TextView
                         android:id="@+id/categoryFilter"
@@ -326,13 +326,13 @@
                         android:inputType="number"
                         android:text="All Active"
                         android:textColor="#424242"
-                        android:textSize="14dp" />
+                        android:textSize="14sp" />
 
                     <Button
                         android:id="@+id/CategoryUp"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="0dp"
+                        android:layout_marginStart="0dp"
                         android:layout_marginTop="5dp"
                         android:layout_marginBottom="3dp"
                         android:layout_weight="0.09"
@@ -340,13 +340,13 @@
                         android:drawableEnd="@drawable/arrow_right"
                         android:paddingTop="4dp"
                         android:paddingBottom="4dp"
-                        android:paddingRight="7dp"/>
+                        android:paddingEnd="7dp"/>
                 </LinearLayout>
 
                 <ScrollView
                     android:layout_width="fill_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginLeft="10dp"
+                    android:layout_marginStart="10dp"
                     android:scrollbarSize="5dp"
                     android:overScrollMode="never"
                     android:scrollbarThumbVertical="@drawable/scroll_bar">
@@ -366,11 +366,11 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight=".14"
-                                android:paddingLeft="0dp"
+                                android:paddingStart="0dp"
                                 android:text="@string/active"
                                 android:singleLine="true"
                                 android:textColor="#424242"
-                                android:textSize="14dp"
+                                android:textSize="14sp"
                                 android:textStyle="bold" />
 
                             <TextView android:visibility="gone"></TextView>
@@ -379,29 +379,29 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight=".3"
-                                android:paddingLeft="10dp"
+                                android:paddingStart="10dp"
                                 android:text="@string/name"
                                 android:textColor="#424242"
-                                android:textSize="14dp"
+                                android:textSize="14sp"
                                 android:textStyle="bold" />
 
                             <TextView
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight=".6"
-                                android:paddingLeft="10dp"
+                                android:paddingStart="10dp"
                                 android:text="@string/URL"
                                 android:textColor="#424242"
-                                android:textSize="14dp"
+                                android:textSize="14sp"
                                 android:textStyle="bold" />
 
                             <TextView
                                 android:layout_width="28dp"
                                 android:layout_height="28dp"
-                                android:layout_marginLeft="10dp"
-                                android:layout_marginRight="10dp"
+                                android:layout_marginStart="10dp"
+                                android:layout_marginEnd="10dp"
                                 android:layout_weight="0"
-                                android:drawableLeft="@drawable/edit_pen"
+                                android:drawableStart="@drawable/edit_pen"
                                 android:gravity="center"
                                 android:padding="2dp"
                                 android:textColor="#424242"
@@ -416,7 +416,7 @@
                 android:id="@+id/enableAddFilter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
+                android:layout_marginStart="15dp"
                 android:layout_marginTop="0dp"
                 android:button="@drawable/custom_switch"
                 android:checked="true"
@@ -427,7 +427,7 @@
                 android:id="@+id/enableAutoStart"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
+                android:layout_marginStart="15dp"
                 android:layout_marginTop="0dp"
                 android:button="@drawable/custom_switch"
                 android:checked="true"
@@ -445,7 +445,7 @@
                 android:id="@+id/filterReloadBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
+                android:layout_marginStart="15dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="4dp"
                 android:background="@drawable/custom_round_button"
@@ -462,7 +462,7 @@
                 android:id="@+id/startBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="6dp"
+                android:layout_marginStart="6dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="4dp"
                 android:background="@drawable/custom_round_button"
@@ -478,7 +478,7 @@
                 android:id="@+id/stopBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="6dp"
+                android:layout_marginStart="6dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="4dp"
                 android:background="@drawable/custom_round_button"
@@ -488,7 +488,7 @@
                 android:textAllCaps="true"
                 android:textColor="#ffffff"
                 android:textSize="11sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"/>
 
         </LinearLayout>
 
@@ -496,9 +496,9 @@
             android:id="@+id/addHostsScroll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
+            android:layout_marginStart="15dp"
             android:layout_marginTop="3dp"
-            android:layout_marginRight="15dp"
+            android:layout_marginEnd="15dp"
             android:layout_marginBottom="15dp"
             android:scrollbarSize="5dp"
             android:overScrollMode="never"
@@ -530,9 +530,9 @@
             android:id="@+id/manuallyEditScroll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
+            android:layout_marginStart="15dp"
             android:layout_marginTop="3dp"
-            android:layout_marginRight="15dp"
+            android:layout_marginEnd="15dp"
             android:layout_marginBottom="15dp"
             android:scrollbarSize="5dp"
             android:overScrollMode="never"
@@ -563,9 +563,9 @@
             android:id="@+id/appWhiteListScroll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
+            android:layout_marginStart="15dp"
             android:layout_marginTop="3dp"
-            android:layout_marginRight="15dp"
+            android:layout_marginEnd="15dp"
             android:layout_marginBottom="15dp"
             android:background="@drawable/box_background"
             android:overScrollMode="never"
@@ -577,7 +577,7 @@
                 android:id="@+id/appSelector"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp"
                 android:orientation="vertical" />
         </ScrollView>
 
@@ -585,9 +585,9 @@
             android:id="@+id/backupRestoreView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
+            android:layout_marginStart="15dp"
             android:layout_marginTop="3dp"
-            android:layout_marginRight="15dp"
+            android:layout_marginEnd="15dp"
             android:layout_marginBottom="10dp"
             android:background="@drawable/box_background"
             android:orientation="vertical">
@@ -595,33 +595,33 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
+                android:layout_marginStart="15dp"
                 android:layout_marginTop="15dp"
-                android:layout_marginRight="15dp"
+                android:layout_marginEnd="15dp"
                 android:layout_marginBottom="15dp"
                 android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp">
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="0dp"
+                        android:layout_marginStart="0dp"
                         android:layout_marginTop="5dp"
-                        android:paddingRight="7dp"
+                        android:paddingEnd="7dp"
                         android:text="ID"
                         android:textColor="#424242"
-                        android:textSize="14dp" />
+                        android:textSize="14sp" />
 
                     <Button
                         android:id="@+id/BackupIdDn"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="0dp"
+                        android:layout_marginStart="0dp"
                         android:layout_marginTop="5dp"
                         android:layout_marginBottom="3dp"
                         android:layout_weight="0.09"
@@ -629,7 +629,7 @@
                         android:drawableStart="@drawable/arrow_left"
                         android:paddingTop="4dp"
                         android:paddingBottom="4dp"
-                        android:paddingLeft="6.5dp" />
+                        android:paddingStart="6.5dp" />
 
                     <EditText
                         android:id="@+id/BackupId"
@@ -641,13 +641,13 @@
                         android:gravity="center"
                         android:text="."
                         android:textColor="#424242"
-                        android:textSize="14dp" />
+                        android:textSize="14sp" />
 
                     <Button
                         android:id="@+id/BackupIdUp"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="0dp"
+                        android:layout_marginStart="0dp"
                         android:layout_marginTop="5dp"
                         android:layout_marginBottom="3dp"
                         android:layout_weight="0.09"
@@ -655,18 +655,17 @@
                         android:drawableEnd="@drawable/arrow_right"
                         android:paddingTop="4dp"
                         android:paddingBottom="4dp"
-                        android:paddingRight="6.5dp"/>
+                        android:paddingEnd="6.5dp"/>
                 </LinearLayout>
-
 
                 <Button
                     android:id="@+id/backupBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginLeft="10dp"
+                    android:layout_marginStart="10dp"
                     android:layout_marginTop="10dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginEnd="10dp"
                     android:background="@drawable/custom_round_button"
                     android:fontFamily="sans-serif-medium"
                     android:padding="10dp"
@@ -682,9 +681,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginLeft="10dp"
+                    android:layout_marginStart="10dp"
                     android:layout_marginTop="10dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginEnd="10dp"
                     android:layout_marginBottom="10dp"
                     android:background="@drawable/custom_round_button"
                     android:fontFamily="sans-serif-medium"
@@ -703,9 +702,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp"
                 android:layout_marginBottom="15dp"
                 android:background="@drawable/custom_round_button"
                 android:fontFamily="sans-serif-medium"
@@ -721,9 +720,9 @@
                 android:id="@+id/backupLog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
                 android:layout_marginTop="0dp"
-                android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp"
                 android:layout_marginBottom="6dp"
                 android:textColor="#424242"
                 android:textSize="12sp" />
@@ -734,13 +733,13 @@
             android:id="@+id/scrolllock"
             android:layout_width="match_parent"
             android:layout_height="15dp"
-            android:layout_marginLeft="0dp"
+            android:layout_marginStart="0dp"
             android:layout_marginTop="0dp"
-            android:layout_marginRight="0dp"
+            android:layout_marginEnd="0dp"
             android:layout_marginBottom="2dp"
             android:includeFontPadding="false"
             android:background="#ffffff"
-            android:gravity="right"
+            android:gravity="end"
             android:textColor="#424242"
             android:textStyle="bold" />
 
@@ -754,7 +753,7 @@
                 android:id="@+id/addFilterBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
+                android:layout_marginStart="15dp"
                 android:layout_marginTop="0dp"
                 android:layout_marginBottom="0dp"
                 android:background="#777474"
@@ -771,7 +770,7 @@
                 android:id="@+id/removeFilterBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="0dp"
+                android:layout_marginStart="0dp"
                 android:layout_marginTop="0dp"
                 android:layout_marginBottom="0dp"
                 android:background="#777474"
@@ -789,13 +788,13 @@
             android:id="@+id/logScroll"
             android:layout_width="fill_parent"
             android:layout_height="match_parent"
-            android:layout_marginLeft="15dp"
+            android:layout_marginStart="15dp"
             android:layout_marginTop="3dp"
-            android:layout_marginRight="15dp"
+            android:layout_marginEnd="15dp"
             android:layout_marginBottom="15dp"
             android:background="#E8EBED"
-            android:paddingRight="0dp"
-            android:paddingLeft="8dp"
+            android:paddingEnd="0dp"
+            android:paddingStart="8dp"
             android:paddingTop="0dp"
             android:paddingBottom="0dp"
             android:scrollbarSize="5dp"
@@ -829,7 +828,7 @@
         android:maxLines="2"
         android:paddingHorizontal="3dp"
         android:textColor="#455a64"
-        android:textSize="12dp"
+        android:textSize="12sp"
         android:textColorHighlight="#00ffffff"
         android:visibility="visible" />
 </LinearLayout>

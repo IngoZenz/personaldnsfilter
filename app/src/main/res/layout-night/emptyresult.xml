@@ -11,6 +11,6 @@
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
         android:background="#263343"
-        android:drawableRight="@drawable/noresult" />
+        android:drawableEnd="@drawable/noresult" />
 
 </LinearLayout>
