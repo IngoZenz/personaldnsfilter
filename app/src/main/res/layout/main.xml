@@ -627,9 +627,9 @@
                         android:layout_weight="0.09"
                         android:background="@drawable/custom_button"
                         android:drawableStart="@drawable/arrow_left"
+                        android:paddingStart="6.5dp"
                         android:paddingTop="4dp"
-                        android:paddingBottom="4dp"
-                        android:paddingStart="6.5dp" />
+                        android:paddingBottom="4dp" />
 
                     <EditText
                         android:id="@+id/BackupId"
@@ -654,17 +654,16 @@
                         android:background="@drawable/custom_button"
                         android:drawableEnd="@drawable/arrow_right"
                         android:paddingTop="4dp"
-                        android:paddingBottom="4dp"
-                        android:paddingEnd="6.5dp"/>
+                        android:paddingEnd="6.5dp"
+                        android:paddingBottom="4dp" />
                 </LinearLayout>
 
                 <Button
                     android:id="@+id/backupBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
                     android:layout_marginStart="10dp"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="15dp"
                     android:layout_marginEnd="10dp"
                     android:background="@drawable/custom_round_button"
                     android:fontFamily="sans-serif-medium"
@@ -680,7 +679,6 @@
                     android:id="@+id/RestoreBackupBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
                     android:layout_marginStart="10dp"
                     android:layout_marginTop="10dp"
                     android:layout_marginEnd="10dp"
@@ -701,9 +699,8 @@
                 android:id="@+id/RestoreDefaultBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginStart="25dp"
+                android:layout_marginTop="5dp"
                 android:layout_marginEnd="10dp"
                 android:layout_marginBottom="15dp"
                 android:background="@drawable/custom_round_button"
@@ -720,10 +717,10 @@
                 android:id="@+id/backupLog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="25dp"
                 android:layout_marginTop="0dp"
                 android:layout_marginEnd="10dp"
-                android:layout_marginBottom="6dp"
+                android:layout_marginBottom="10dp"
                 android:textColor="#424242"
                 android:textSize="12sp" />
 
