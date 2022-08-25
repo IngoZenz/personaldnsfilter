@@ -42,7 +42,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_toEndOf="@+id/textView1"
                 android:layout_weight="0"
-                android:background="#263343"
+                android:background="#2a3440"
                 android:drawableEnd="@drawable/edit_pen"
                 android:drawableTint="#ffffff"
                 android:gravity="center_vertical"
