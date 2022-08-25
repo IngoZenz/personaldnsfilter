@@ -48,6 +48,7 @@
                 android:inputType="textMultiLine|textNoSuggestions"
                 android:minWidth="200dp"
                 android:textColor="#FFFFFF"
+                android:typeface="monospace"
                 android:textSize="14sp" />
 
         </HorizontalScrollView>
