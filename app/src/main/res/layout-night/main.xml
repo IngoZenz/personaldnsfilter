@@ -323,7 +323,6 @@
                         android:layout_weight="0.82"
                         android:background="#151e27"
                         android:gravity="center"
-                        android:inputType="number"
                         android:text="All Active"
                         android:textColor="#FFFFFF"
                         android:textSize="14sp" />
@@ -349,7 +348,7 @@
                     android:layout_marginStart="10dp"
                     android:scrollbarSize="5dp"
                     android:overScrollMode="never"
-                    android:scrollbarThumbVertical="@drawable/scroll_bar">
+                    android:scrollbars="none">
 
                     <TableLayout
                         android:id="@+id/filtercfgtable"
