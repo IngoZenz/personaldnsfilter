@@ -16,10 +16,11 @@
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher"
         android:label="personalDNSfilter"
-        android:theme="@style/Theme.phttpp.TitleBar">
+        android:theme="@style/Theme.phttpp.TitleBar" >
         <activity
             android:name="dnsfilter.android.DNSProxyActivity"
-            android:label="personalDNSfilter">
+            android:label="personalDNSfilter"
+            android:windowSoftInputMode="adjustPan" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
