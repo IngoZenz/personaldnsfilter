@@ -510,8 +510,7 @@
             android:layout_marginBottom="15dp"
             android:scrollbarSize="5dp"
             android:overScrollMode="never"
-            android:scrollbarThumbVertical="@drawable/scroll_bar"
-            android:scrollbarThumbHorizontal="@null">
+            android:scrollbarThumbVertical="@drawable/scroll_bar">
 
             <HorizontalScrollView
                 android:id="@+id/scrollView2"
@@ -520,7 +519,7 @@
                 android:layout_marginTop="0dp"
                 android:scrollbarSize="5dp"
                 android:overScrollMode="never"
-                android:scrollbars="none">
+                android:scrollbarThumbHorizontal="@drawable/scroll_bar_alt">
 
                 <EditText
                     android:id="@+id/additionalHostsField"
@@ -545,8 +544,7 @@
             android:layout_marginBottom="15dp"
             android:scrollbarSize="5dp"
             android:overScrollMode="never"
-            android:scrollbarThumbVertical="@drawable/scroll_bar"
-            android:scrollbarThumbHorizontal="@null">
+            android:scrollbarThumbVertical="@drawable/scroll_bar">
 
             <HorizontalScrollView
                 android:layout_width="match_parent"
@@ -554,7 +552,7 @@
                 android:layout_marginTop="0dp"
                 android:scrollbarSize="5dp"
                 android:overScrollMode="never"
-                android:scrollbars="none">
+                android:scrollbarThumbHorizontal="@drawable/scroll_bar_alt">
 
                 <EditText
                     android:id="@+id/manuallyEditField"

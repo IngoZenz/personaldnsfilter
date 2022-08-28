@@ -37,11 +37,11 @@
         android:id="@+id/closeInfoPopupBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="10dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="18dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginBottom="15dp"
         android:layout_gravity="end"
         android:background="@drawable/custom_round_button"
         android:drawableStart="@drawable/done"
         android:padding="3dp"/>
+
 </LinearLayout>
