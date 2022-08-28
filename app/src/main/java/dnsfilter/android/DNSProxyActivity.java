@@ -27,6 +27,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -183,6 +184,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected static boolean MSG_ACTIVE = false;
 
 	protected static int DISPLAY_WIDTH = 0;
+	protected static int DISPLAY_HEIGTH = 0;
 
 	protected static DNSProxyActivity INSTANCE;
 
@@ -331,8 +333,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().build());
 
 			super.onCreate(savedInstanceState);
+
+			if(getResources().getBoolean(R.bool.portrait_only)){
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+			}
 			AndroidEnvironment.initEnvironment(this);
 			DISPLAY_WIDTH = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getWidth();
+			DISPLAY_HEIGTH= ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getHeight();
 
 			MsgTO.setActivity(this);
 			INSTANCE = this;
@@ -419,7 +426,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			advDNSConfigDia.setOnKeyListener(this);
 
 			Window window = advDNSConfigDia.getWindow();
-			window.setLayout((int) (DISPLAY_WIDTH * 0.9), WindowManager.LayoutParams.WRAP_CONTENT);
+			window.setLayout((int) (Math.min(DISPLAY_WIDTH, DISPLAY_HEIGTH)* 0.9), WindowManager.LayoutParams.WRAP_CONTENT);
 			window.setBackgroundDrawableResource(android.R.color.transparent);
 
 			boolean checked = manualDNSCheck != null && manualDNSCheck.isChecked();
@@ -939,7 +946,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				initialInfoPopUpExitBtn.setOnClickListener(this);
 				popUpDialog.show();
 				Window window = popUpDialog.getWindow();
-				window.setLayout((int) (DISPLAY_WIDTH*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
+				window.setLayout((int) (Math.min(DISPLAY_WIDTH, DISPLAY_HEIGTH)*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
 				window.setBackgroundDrawableResource(android.R.color.transparent);
 			}
 		} catch (Exception e) {
@@ -1379,7 +1386,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		((EditText)remoteConnectDialog.findViewById(R.id.passphrase)).setText(passphrase);
 		remoteConnectDialog.show();
 		Window window = remoteConnectDialog.getWindow();
-		window.setLayout((int) (DNSProxyActivity.DISPLAY_WIDTH*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
+		window.setLayout((int) (Math.min(DISPLAY_WIDTH, DISPLAY_HEIGTH)*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
 		window.setBackgroundDrawableResource(android.R.color.transparent);
 	}
 
