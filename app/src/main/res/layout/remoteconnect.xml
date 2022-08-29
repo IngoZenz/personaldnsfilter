@@ -88,7 +88,6 @@
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_round_button"
             android:drawableStart="@drawable/done"
-            android:drawableTint="#1d2733"
             android:fontFamily="sans-serif-medium"
             android:padding="5dp" />
         <Button
@@ -100,7 +99,6 @@
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_round_button"
             android:drawableStart="@drawable/cancel"
-            android:drawableTint="#1d2733"
             android:padding="5dp"/>
 
     </LinearLayout>
