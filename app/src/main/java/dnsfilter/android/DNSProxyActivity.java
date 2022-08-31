@@ -27,6 +27,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -183,6 +184,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	protected static boolean MSG_ACTIVE = false;
 
 	protected static int DISPLAY_WIDTH = 0;
+	protected static int DISPLAY_HEIGTH = 0;
 
 	protected static DNSProxyActivity INSTANCE;
 
@@ -209,8 +211,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 		@Override
 		public void timeoutNotification() {
-			if (CONFIG.isLocal())
+			if (CONFIG.isLocal()) {
 				activity.setMessage(fromHtml(link_field_txt), link_field_color);
+				link_field.setMovementMethod(LinkMovementMethod.getInstance());
+			}
 			else
 				activity.setMessage(fromHtml("<font color='#F7FB0A'><strong>"+ CONFIG +"</strong></font>"), link_field_color);
 
@@ -329,8 +333,13 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().build());
 
 			super.onCreate(savedInstanceState);
+
+			if(getResources().getBoolean(R.bool.portrait_only)){
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+			}
 			AndroidEnvironment.initEnvironment(this);
 			DISPLAY_WIDTH = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getWidth();
+			DISPLAY_HEIGTH= ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getHeight();
 
 			MsgTO.setActivity(this);
 			INSTANCE = this;
@@ -344,8 +353,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				Window window = this.getWindow();
 				window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
 				window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-				window.setStatusBarColor(this.getResources().getColor(R.color.colorPrimaryDark));
-				getWindow().setNavigationBarColor(getResources().getColor(R.color.colorPrimaryDark));
+				window.setStatusBarColor(this.getResources().getColor(R.color.colorPrimary));
+				getWindow().setNavigationBarColor(getResources().getColor(R.color.colorPrimary));
 			}
 
 			setContentView(R.layout.main);
@@ -417,7 +426,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			advDNSConfigDia.setOnKeyListener(this);
 
 			Window window = advDNSConfigDia.getWindow();
-			window.setLayout((int) (DISPLAY_WIDTH * 0.9), WindowManager.LayoutParams.WRAP_CONTENT);
+			window.setLayout((int) (Math.min(DISPLAY_WIDTH, DISPLAY_HEIGTH)* 0.9), WindowManager.LayoutParams.WRAP_CONTENT);
 			window.setBackgroundDrawableResource(android.R.color.transparent);
 
 			boolean checked = manualDNSCheck != null && manualDNSCheck.isChecked();
@@ -466,8 +475,8 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			removeFilterBtn.setOnClickListener(this);
 			link_field = (TextView) findViewById(R.id.link_field);
 			link_field.setText(fromHtml(link_field_txt));
-			link_field.setOnClickListener(this);
-
+			link_field.setMovementMethod(LinkMovementMethod.getInstance());
+			
 			Drawable background = link_field.getBackground();
 			if (background instanceof ColorDrawable)
 				link_field_color = ((ColorDrawable) background).getColor();
@@ -937,7 +946,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				initialInfoPopUpExitBtn.setOnClickListener(this);
 				popUpDialog.show();
 				Window window = popUpDialog.getWindow();
-				window.setLayout((int) (DISPLAY_WIDTH*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
+				window.setLayout((int) (Math.min(DISPLAY_WIDTH, DISPLAY_HEIGTH)*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
 				window.setBackgroundDrawableResource(android.R.color.transparent);
 			}
 		} catch (Exception e) {
@@ -987,8 +996,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 					//Link field
 					link_field_txt = config.getConfigValue("footerLink", "");
-					if (!MSG_ACTIVE)
+					if (!MSG_ACTIVE) {
 						link_field.setText(fromHtml(link_field_txt));
+						link_field.setMovementMethod(LinkMovementMethod.getInstance());
+					}
 
 					//Log formatting
 					filterLogFormat = config.getConfigValue("filterLogFormat", "<font color='#E53935'>($CONTENT)</font>");
@@ -1193,9 +1204,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		} else if (destination == removeFilterBtn) {
 			onCopyFilterFromLogView(false);
 			return;
-		} else if (destination == link_field) {
-			handleFooterClick();
-			return;
 		} else if (destination == helpBtn) {
 			openBrowser("https://www.zenz-home.com/personaldnsfilter/help/help.php");
 			return;
@@ -1378,7 +1386,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		((EditText)remoteConnectDialog.findViewById(R.id.passphrase)).setText(passphrase);
 		remoteConnectDialog.show();
 		Window window = remoteConnectDialog.getWindow();
-		window.setLayout((int) (DNSProxyActivity.DISPLAY_WIDTH*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
+		window.setLayout((int) (Math.min(DISPLAY_WIDTH, DISPLAY_HEIGTH)*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
 		window.setBackgroundDrawableResource(android.R.color.transparent);
 	}
 
@@ -1443,24 +1451,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 			logLine("=>CONNECTED to "+ CONFIG +"<=");
 			checkPasscode();
 		}
-	}
-
-
-	private void handleFooterClick() {
-		String linkTxt = link_field_txt;
-		String link = "";
-		int linkStart = linkTxt.indexOf("a href='");
-		if (linkStart!=-1){
-			linkTxt = linkTxt.substring(linkStart+8);
-			int linkEnd = linkTxt.indexOf("'>");
-			if (linkEnd != -1)
-				link = linkTxt.substring(0,linkEnd);
-		}
-
-		if (!link.equals("")) {
-			openBrowser(link);
-		}
-
 	}
 
 	private void handleDNSConfigDialog() {
@@ -1678,15 +1668,6 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 	}
 
 	protected void startup() {
-
-		if (DNSFilterService.SERVICE != null) {
-			Logger.getLogger().logLine("DNS filter service is running!");
-			Logger.getLogger().logLine("Filter statistic since last restart:");
-			showFilterRate(false);
-			//Logger.getLogger().message("Attached already running Service!");
-			return;
-		}
-
 		try {
 			long repeatingLogSuppressTime = Long.parseLong(getConfig().getConfigValue("repeatingLogSuppressTime", "1000"));
 			boolean liveLogTimestampEnabled = Boolean.parseBoolean(getConfig().getConfigValue("addLiveLogTimestamp", "false"));
@@ -1695,7 +1676,14 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				String timeStampPattern = getConfig().getConfigValue("liveLogTimeStampFormat", "hh:mm:ss");
 				myLogger.setTimestampFormat(timeStampPattern);
 			}
-			myLogger.setSuppressTime(repeatingLogSuppressTime);
+
+			if (DNSFilterService.SERVICE != null) {
+				Logger.getLogger().logLine("DNS filter service is running!");
+				Logger.getLogger().logLine("Filter statistic since last restart:");
+				showFilterRate(false);
+				//Logger.getLogger().message("Attached already running Service!");
+				return;
+			}
 			boolean vpnInAdditionToProxyMode = Boolean.parseBoolean(getConfig().getConfigValue("vpnInAdditionToProxyMode", "false"));
 			boolean vpnDisabled = !vpnInAdditionToProxyMode && Boolean.parseBoolean(getConfig().getConfigValue("dnsProxyOnAndroid", "false"));
 			Intent intent = null;
@@ -1859,7 +1847,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 
 	public boolean onTouchActionMenuFallback(View v, MotionEvent event) {
 
-		if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+		if (event.getAction() == android.view.MotionEvent.ACTION_DOWN && findViewById(R.id.copyfromlog).getVisibility() == View.VISIBLE)   {
 			findViewById(R.id.copyfromlog).setVisibility(View.GONE);
 			logOutView.setSelection(logOutView.getText().length());
 			return false;
@@ -1873,7 +1861,7 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 				int end = logOutView.getSelectionEnd();
 				findViewById(R.id.copyfromlog).setVisibility(View.VISIBLE);
 				logOutView.setSelection(start, end);
-				return true;
+				return false;
 			}
 		}
 		return false;
@@ -1885,8 +1873,10 @@ public class DNSProxyActivity extends Activity implements OnClickListener, Logge
 		if (ACTION_MENU_FALLBACK)
 			return onTouchActionMenuFallback(v,event);
 
-		if (Build.VERSION.SDK_INT < 23)
+		if (Build.VERSION.SDK_INT < 23) {
+			getSelectedText(true);
 			return false; // for old devices anyhow the fallback option is used
+		}
 
 		if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
 

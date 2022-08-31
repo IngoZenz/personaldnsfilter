@@ -9,21 +9,22 @@
         android:id="@+id/searchString"
         android:layout_width="120dp"
         android:layout_height="wrap_content"
-        android:background="#171717"
-        android:gravity="left"
+        android:background="#151e27"
+        android:gravity="start"
         android:text=""
         android:singleLine="true"
         android:textColor="#FFFFFF"
-        android:textSize="14dp" />
+        android:textSize="14sp" />
 
     <Button
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:padding="2dp"
         android:id="@+id/searchBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
         android:layout_marginTop="10dp"
-        android:background="@drawable/custom_button"
-        android:drawableLeft="@drawable/search_icon"
+        android:background="@drawable/custom_round_button"
+        android:drawableStart="@drawable/search_icon"
         android:gravity="center" />
 </LinearLayout>
 
