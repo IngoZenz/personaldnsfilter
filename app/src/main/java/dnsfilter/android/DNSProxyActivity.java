@@ -27,6 +27,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -151,7 +152,6 @@ public class DNSProxyActivity extends Activity
 	protected static Dialog advDNSConfigDia;
 	protected static CheckBox manualDNSCheck;
 	protected static ListView manualDNSView;
-	protected static boolean advDNSConfigDia_open = false;
 	protected static String SCROLL_PAUSE = "II  ";
 	protected static String SCROLL_CONTINUE = " ▶ ";
 	protected static boolean scroll_locked = false;
@@ -203,6 +203,7 @@ public class DNSProxyActivity extends Activity
 	protected static boolean MSG_ACTIVE = false;
 
 	protected static int DISPLAY_WIDTH = 0;
+	protected static int DISPLAY_HEIGTH = 0;
 
 	protected static DNSProxyActivity INSTANCE;
 
@@ -351,8 +352,10 @@ public class DNSProxyActivity extends Activity
 			StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().build());
 
 			super.onCreate(savedInstanceState);
+
 			AndroidEnvironment.initEnvironment(this);
 			DISPLAY_WIDTH = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getWidth();
+			DISPLAY_HEIGTH= ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getHeight();
 
 			MsgTO.setActivity(this);
 			INSTANCE = this;
@@ -437,7 +440,7 @@ public class DNSProxyActivity extends Activity
 			advDNSConfigDia.setOnKeyListener(this);
 
 			Window window = advDNSConfigDia.getWindow();
-			window.setLayout((int) (DISPLAY_WIDTH * 0.9), WindowManager.LayoutParams.WRAP_CONTENT);
+			window.setLayout((int) (Math.min(DISPLAY_WIDTH, DISPLAY_HEIGTH)* 0.9), WindowManager.LayoutParams.WRAP_CONTENT);
 			window.setBackgroundDrawableResource(android.R.color.transparent);
 
 			boolean checked = manualDNSCheck != null && manualDNSCheck.isChecked();
@@ -677,9 +680,6 @@ public class DNSProxyActivity extends Activity
 	public void onResume() {
 		try {
 			super.onResume();
-			if (advDNSConfigDia_open) {
-				advDNSConfigDia.show();
-			}
 			checkPasscode();
 		} catch (Exception e){
 			e.printStackTrace();
@@ -1004,7 +1004,7 @@ public class DNSProxyActivity extends Activity
 				initialInfoPopUpExitBtn.setOnClickListener(this);
 				popUpDialog.show();
 				Window window = popUpDialog.getWindow();
-				window.setLayout((int) (DISPLAY_WIDTH*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
+				window.setLayout((int) (Math.min(DISPLAY_WIDTH, DISPLAY_HEIGTH)*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
 				window.setBackgroundDrawableResource(android.R.color.transparent);
 			}
 		} catch (Exception e) {
@@ -1128,25 +1128,6 @@ public class DNSProxyActivity extends Activity
 		}
 	}
 
-	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		try {
-			if (advDNSConfigDia_open)
-				advDNSConfigDia.dismiss();
-		} catch (Exception e){
-			e.printStackTrace();
-			Logger.getLogger().logLine("onSaveInstanceState() failed! "+e.toString());
-		}
-	}
-
-/*	@Override
-	protected void onRestoreInstanceState(Bundle outState) {
-		if (advDNSConfigDia_open) {
-			advDNSConfigDia.show();
-			((HorizontalScrollView) advDNSConfigDia.findViewById(R.id.manualDNSScroll)).fullScroll(ScrollView.FOCUS_LEFT);
-		}
-	}*/
-
 	private String getFallbackDNSSettingFromUI(){
 		DNSListAdapter adapter = ((DNSListAdapter) manualDNSView.getAdapter());
 
@@ -1244,7 +1225,6 @@ public class DNSProxyActivity extends Activity
 	public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_HOME) {
 			dialog.dismiss();
-			advDNSConfigDia_open = false;
 			persistConfig();
 		}
 		return false;
@@ -1308,7 +1288,6 @@ public class DNSProxyActivity extends Activity
 				return;
 			}
 			advDNSConfigDia.dismiss();
-			advDNSConfigDia_open = false;
 			persistConfig();
 			return;
 		}
@@ -1460,7 +1439,7 @@ public class DNSProxyActivity extends Activity
 		((EditText)remoteConnectDialog.findViewById(R.id.passphrase)).setText(passphrase);
 		remoteConnectDialog.show();
 		Window window = remoteConnectDialog.getWindow();
-		window.setLayout((int) (DNSProxyActivity.DISPLAY_WIDTH*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
+		window.setLayout((int) (Math.min(DISPLAY_WIDTH, DISPLAY_HEIGTH)*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
 		window.setBackgroundDrawableResource(android.R.color.transparent);
 	}
 
@@ -1529,7 +1508,6 @@ public class DNSProxyActivity extends Activity
 
 	private void handleDNSConfigDialog() {
 		advDNSConfigDia.show();
-		advDNSConfigDia_open = true;
 	}
 
 	private void handleScrollLock() {
@@ -1749,6 +1727,7 @@ public class DNSProxyActivity extends Activity
 				String timeStampPattern = getConfig().getConfigValue("liveLogTimeStampFormat", "hh:mm:ss");
 				myLogger.setTimestampFormat(timeStampPattern);
 			}
+			myLogger.setSuppressTime(repeatingLogSuppressTime);
 
 			if (DNSFilterService.SERVICE != null) {
 				Logger.getLogger().logLine("DNS filter service is running!");

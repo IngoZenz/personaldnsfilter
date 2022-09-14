@@ -64,8 +64,7 @@ import util.conpool.TLSSocketFactory;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-
-	public static final String VERSION = "1505300";
+	public static final String VERSION = "1505305";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -365,7 +364,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	}
 
 	private boolean useDefaultConfig(String currentKey) {
-		return ( currentKey.equals("initialInfoPopUpText") || currentKey.equals("initialInfoPopUpTitle") || currentKey.equals("footerLink"));
+		return ( currentKey.equals("initialInfoPopUpText") || currentKey.equals("initialInfoPopUpTitle") || currentKey.equals("footerLink") || currentKey.equals("showInitialInfoPopUp")) ;
 	}
 
 
