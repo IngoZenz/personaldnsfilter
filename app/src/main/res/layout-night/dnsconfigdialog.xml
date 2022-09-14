@@ -10,7 +10,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.98"
+        android:layout_weight="0.99"
         android:orientation="vertical">
 
         <dnsfilter.android.PaddedCheckBox
@@ -39,7 +39,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0.02"
+        android:layout_weight="0.01"
         android:background="#2a3440"
         android:layout_marginBottom="8dp"
         android:orientation="vertical">

@@ -10,7 +10,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.98"
+        android:layout_weight="0.99"
         android:orientation="vertical">
 
         <dnsfilter.android.PaddedCheckBox
@@ -41,7 +41,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:layout_weight="0.02"
+        android:layout_weight="0.01"
         android:background="#ffffff"
         android:orientation="vertical">
 
@@ -51,12 +51,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
-            android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
             android:layout_gravity="center_horizontal"
             android:layout_marginHorizontal="6dp"
             android:layout_toStartOf="@id/closeDnsCfg"
-            android:layout_toLeftOf="@id/closeDnsCfg"
             android:background="@drawable/custom_round_button"
             android:fontFamily="sans-serif-medium"
             android:padding="10dp"
@@ -80,6 +78,6 @@
             android:drawableLeft="@drawable/done"
             android:drawableTint="#1d2733"
             android:fontFamily="sans-serif-medium"
-            android:padding="3dp" />
+            android:padding="4dp" />
     </RelativeLayout>
 </LinearLayout>

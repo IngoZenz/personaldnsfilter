@@ -18,7 +18,6 @@
         android:icon="@mipmap/ic_launcher"
         android:label="personalDNSfilter"
         android:theme="@style/Theme.phttpp.TitleBar"
-        android:screenOrientation = "portrait"
         android:usesCleartextTraffic="true">
         <activity
             android:name="dnsfilter.android.DNSProxyActivity"
