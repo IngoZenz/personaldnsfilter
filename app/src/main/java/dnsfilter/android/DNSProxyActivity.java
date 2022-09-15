@@ -352,12 +352,18 @@ public class DNSProxyActivity extends Activity
 			StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().build());
 
 			super.onCreate(savedInstanceState);
-			
-			if(getResources().getBoolean(R.bool.portrait_only)){
+
+			AndroidEnvironment.initEnvironment(this);
+
+			String forcedDisplayMode = ConfigurationAccess.getLocal().getConfigUtil().getConfigValue("forceAndroidDisplayMode", "none").trim();
+			if (forcedDisplayMode.equalsIgnoreCase("portrait"))
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+			else if (forcedDisplayMode.equalsIgnoreCase("landscape"))
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+			else if(getResources().getBoolean(R.bool.portrait_only)){
 				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 			}
 
-			AndroidEnvironment.initEnvironment(this);
 			DISPLAY_WIDTH = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getWidth();
 			DISPLAY_HEIGTH= ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getHeight();
 
