@@ -1267,7 +1267,7 @@ public class DNSProxyActivity extends Activity
 			openBrowser("https://www.zenz-home.com/personaldnsfilter/help/help.php");
 			return;
 		} else if (destination == dnsField) {
-			// persistConfig();
+			persistConfig();
 			handleDNSConfigDialog();
 			return;
 		} else if (destination == scrollLockField) {
