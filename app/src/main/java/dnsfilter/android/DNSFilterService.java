@@ -522,15 +522,17 @@ public class DNSFilterService extends VpnService  {
 				int cnt = fallbackDNS.countTokens();
 				for (int i = 0; i < cnt; i++) {
 					String dnsEntry = fallbackDNS.nextToken().trim();
-					if (DNSProxyActivity.debug) Logger.getLogger().logLine("DNS:" + dnsEntry);
-					try {
-						DNSServer dnsServer = DNSServer.getInstance().createDNSServer(dnsEntry, timeout);
-						if (rootMode && dnsServer.getPort() == 53)
-							throw new IOException("Port 53 not allowed when running in root mode! Use DoT or DoH!");
-						dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry, timeout));
-					} catch (Exception e) {
-						Logger.getLogger().logLine("Cannot create DNS server for " + dnsEntry + "!\n" + e.toString());
-						Logger.getLogger().message("Invalid DNS server entry: '" + dnsEntry+"'");
+					if (!dnsEntry.startsWith("#")) {
+						if (DNSProxyActivity.debug) Logger.getLogger().logLine("DNS:" + dnsEntry);
+						try {
+							DNSServer dnsServer = DNSServer.getInstance().createDNSServer(dnsEntry, timeout);
+							if (rootMode && dnsServer.getPort() == 53)
+								throw new IOException("Port 53 not allowed when running in root mode! Use DoT or DoH!");
+							dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry, timeout));
+						} catch (Exception e) {
+							Logger.getLogger().logLine("Cannot create DNS server for " + dnsEntry + "!\n" + e.toString());
+							Logger.getLogger().message("Invalid DNS server entry: '" + dnsEntry + "'");
+						}
 					}
 				}
 			}

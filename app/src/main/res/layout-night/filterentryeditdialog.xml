@@ -106,6 +106,7 @@
         </LinearLayout>
 
     </LinearLayout>
+
     <dnsfilter.android.PaddedCheckBox
         android:id="@+id/activeChk"
         android:layout_width="wrap_content"
@@ -147,6 +148,7 @@
             android:drawableStart="@drawable/done"
             android:fontFamily="sans-serif-medium"
             android:padding="5dp" />
+
         <Button
             android:id="@+id/filterEditCancelBtn"
             android:layout_width="wrap_content"
@@ -163,13 +165,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
-            android:layout_marginStart="25dp"
+            android:layout_marginStart="18dp"
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_round_button"
-            android:drawableStart="@drawable/delete"
+            android:drawableStart="@drawable/ic_delete"
             android:padding="5dp" />
-
-
     </LinearLayout>
 
 </LinearLayout>

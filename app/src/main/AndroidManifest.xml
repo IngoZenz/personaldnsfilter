@@ -9,18 +9,18 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
     <application
-        android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher"
         android:label="personalDNSfilter"
-        android:theme="@style/Theme.phttpp.TitleBar" >
+        android:theme="@style/Theme.phttpp.TitleBar"
+        android:usesCleartextTraffic="true">
         <activity
             android:name="dnsfilter.android.DNSProxyActivity"
             android:label="personalDNSfilter"
-            android:windowSoftInputMode="adjustPan" >
+            android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -29,7 +29,7 @@
         <service
             android:name="dnsfilter.android.DNSFilterService"
             android:label="personalDNSfilterService"
-            android:permission="android.permission.BIND_VPN_SERVICE" >
+            android:permission="android.permission.BIND_VPN_SERVICE">
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>
@@ -38,7 +38,7 @@
         <receiver
             android:name="dnsfilter.android.BootUpReceiver"
             android:enabled="true"
-            android:permission="android.permission.RECEIVE_BOOT_COMPLETED" >
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
 

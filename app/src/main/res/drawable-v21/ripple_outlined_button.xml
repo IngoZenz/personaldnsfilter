@@ -1,0 +1,19 @@
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="#B4B9BA">
+
+    <item>
+        <selector>
+            <item android:drawable="@drawable/transparent_outlined_button_default" />
+        </selector>
+    </item>
+
+    <item
+        android:id="@android:id/mask"
+        android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="40dp" />
+            <solid android:color="#B4B9BA" />
+        </shape>
+    </item>
+
+</ripple>

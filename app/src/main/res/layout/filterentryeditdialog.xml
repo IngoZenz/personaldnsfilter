@@ -145,8 +145,10 @@
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_round_button"
             android:drawableStart="@drawable/done"
+            android:drawableTint="#1d2733"
             android:fontFamily="sans-serif-medium"
             android:padding="5dp" />
+
         <Button
             android:id="@+id/filterEditCancelBtn"
             android:layout_width="wrap_content"
@@ -156,7 +158,8 @@
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_round_button"
             android:drawableStart="@drawable/cancel"
-            android:padding="5dp"/>
+            android:drawableTint="#1d2733"
+            android:padding="5dp" />
 
         <Button
             android:id="@+id/filterEditDelBtn"
@@ -166,10 +169,9 @@
             android:layout_marginStart="25dp"
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_round_button"
-            android:drawableStart="@drawable/delete"
+            android:drawableStart="@drawable/ic_delete"
+            android:drawableTint="#1d2733"
             android:padding="5dp" />
-
-
     </LinearLayout>
 
 </LinearLayout>
