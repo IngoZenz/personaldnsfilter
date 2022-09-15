@@ -96,10 +96,6 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
         holder.protocolView.setText(entry.getProtocol().toString());
         holder.ipView.setText(entry.getIp());
         holder.portView.setText(entry.getPort());
-        holder.isActiveEntryCheckbox.setChecked(entry.getIsActive());
-
-        convertView.setEnabled(entry.getIsActive());
-
         View finalConvertView = convertView;
         holder.isActiveEntryCheckbox.setOnCheckedChangeListener(
                 (buttonView, isChecked) -> {
@@ -107,6 +103,11 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
                     finalConvertView.setEnabled(entry.getIsActive());
                 }
         );
+        holder.isActiveEntryCheckbox.setChecked(entry.getIsActive());
+
+        convertView.setEnabled(entry.getIsActive());
+
+
 
         return convertView;
     }
