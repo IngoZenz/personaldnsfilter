@@ -82,7 +82,7 @@
         android:layout_below="@+id/editEndpointText"
         android:layout_alignParentStart="true"
         android:layout_marginHorizontal="6dp"
-        android:background="@drawable/ripple_outlined_button"
+        android:background="@drawable/custom_round_button"
         android:drawableStart="@drawable/cancel"
         android:fontFamily="sans-serif-medium"
         android:padding="10dp" />
