@@ -22,7 +22,6 @@ public class DNSServerConfigEntry {
     private DNSType protocol;
     private String endpoint;
     private DNSServerConfigTestResult testResult;
-    private boolean isExpanded;
     private DNSServerConfigEntryValidationResult validationResult;
 
     public DNSServerConfigEntryValidationResult getValidationResult() {
@@ -31,14 +30,6 @@ public class DNSServerConfigEntry {
 
     public void setValidationResult(DNSServerConfigEntryValidationResult validationResult) {
         this.validationResult = validationResult;
-    }
-
-    public void setExpanded(boolean expanded) {
-        isExpanded = expanded;
-    }
-
-    public boolean isExpanded() {
-        return isExpanded;
     }
 
     public void setTestResult(DNSServerConfigTestResult testState) {
@@ -79,7 +70,6 @@ public class DNSServerConfigEntry {
         this.isActive = isActive;
         this.testResult = new DNSServerConfigTestResult();
         this.validationResult = new DNSServerConfigEntryValidationResult();
-        this.isExpanded = false;
     }
 
     public DNSServerConfigEntry() {
@@ -125,18 +115,6 @@ public class DNSServerConfigEntry {
                 + getEndpointAsString(endpoint);
     }
 
-    public String toString(Boolean isTesting) {
-        if (isTesting) {
-            return highlightShorterIPv6(this.ip)
-                    + ENTRY_PARTS_SEPARATOR
-                    + port
-                    + ENTRY_PARTS_SEPARATOR
-                    + protocol.toString()
-                    + getEndpointAsString(endpoint);
-        } else {
-            return toString();
-        }
-    }
     private static String highlightShorterIPv6(String ip) {
         if (ip.contains(SHORTER_IP_V6_SEPARATOR)) {
             return IP_V6_START_BRACER + ip + IP_V6_END_BRACER;
@@ -168,13 +146,12 @@ public class DNSServerConfigEntry {
                 && Objects.equals(endpoint, dnsServerConfigEntry.endpoint)
                 && Objects.equals(isActive, dnsServerConfigEntry.isActive)
                 && Objects.equals(testResult, dnsServerConfigEntry.testResult)
-                && Objects.equals(isExpanded, dnsServerConfigEntry.isExpanded)
                 && Objects.equals(validationResult, dnsServerConfigEntry.validationResult);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ip, port, protocol, endpoint, isActive, testResult, isExpanded, validationResult);
+        return Objects.hash(ip, port, protocol, endpoint, isActive, testResult, validationResult);
     }
 
     public static String getIsActiveAsCommented(boolean isActive) {

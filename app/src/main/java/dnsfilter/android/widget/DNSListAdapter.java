@@ -17,8 +17,7 @@ import dnsfilter.android.R;
 
 public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implements DNSServerConfigEntryView.EditEventsListener {
 
-    private EventsListener listener;
-    private final DNSConfigEntryValidator validator = new DNSConfigEntryValidator();
+    private final EventsListener listener;
 
     private final DNSServerConfigEntryView dnsServerConfigEntryView;
 

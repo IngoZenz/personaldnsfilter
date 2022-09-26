@@ -2,6 +2,7 @@ package dnsfilter.android.widget;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,6 +51,7 @@ public class DNSServerConfigEntryView {
 
     private final ExecutorService testTasksPool = Executors.newSingleThreadExecutor();
     private final Handler handler = new Handler();
+    private final DNSConfigEntryValidator validator;
 
     DNSServerConfigEntryView(Context context, EditEventsListener listener) {
         this.listener = listener;
@@ -83,6 +85,7 @@ public class DNSServerConfigEntryView {
         testResultDialog.setContentView(dialogView);
         testResultImage = dialogView.findViewById(R.id.resultIconImageView);
         testResultText = dialogView.findViewById(R.id.resultTextView);
+        validator = new DNSConfigEntryValidator(context);
     }
 
     public void showEntry(DNSServerConfigEntry entry, boolean isNew) {
@@ -101,62 +104,103 @@ public class DNSServerConfigEntryView {
 
             }
         });
+        editEntryDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                entry.setValidationResult(new DNSServerConfigEntryValidationResult());
+                entry.setTestResult(new DNSServerConfigTestResult());
+                if (isNew && listener != null) {
+                    listener.onNewCancelled(entry);
+                }
+            }
+        });
         setupTestButtons(entry.getTestResult().getTestState());
         editEntryDialog.show();
         applyChangesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                entry.setIp(editIpView.getText().toString());
-                entry.setPort(editPortView.getText().toString());
-                entry.setEndpoint(editEndpointView.getText().toString());
-                entry.setProtocol(DNSType.values()[editProtocolSpinner.getSelectedItemPosition()]);
-                if (listener != null) {
-                    listener.onApplyChanges();
+                DNSServerConfigEntry testingValue = new DNSServerConfigEntry(
+                        editIpView.getText().toString(),
+                        editPortView.getText().toString(),
+                        DNSType.values()[editProtocolSpinner.getSelectedItemPosition()],
+                        editEndpointView.getText().toString(),
+                        true
+                );
+                entry.setValidationResult(validator.validate(testingValue));
+                if (entry.getValidationResult().hasError()) {
+                    setupErrors(entry.getValidationResult());
+                } else {
+                    entry.setIp(editIpView.getText().toString());
+                    entry.setPort(editPortView.getText().toString());
+                    entry.setEndpoint(editEndpointView.getText().toString());
+                    entry.setProtocol(DNSType.values()[editProtocolSpinner.getSelectedItemPosition()]);
+                    if (listener != null) {
+                        listener.onApplyChanges();
+                    }
+                    editEntryDialog.dismiss();
                 }
-                editEntryDialog.dismiss();
             }
         });
         cancelChangesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isNew && listener != null) {
-                    listener.onNewCancelled(entry);
-                }
                 editEntryDialog.cancel();
             }
         });
+        editEntryDialog.setOnDismissListener(
+                new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        entry.setValidationResult(new DNSServerConfigEntryValidationResult());
+                        entry.setTestResult(new DNSServerConfigTestResult());
+                    }
+                }
+        );
         testChangesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 entry.getTestResult().setTestState(DNSServerConfigEntryTestState.STARTED);
                 setupTestButtons(entry.getTestResult().getTestState());
-
-                Runnable testTask = new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            long result = DNSServer.getInstance()
-                                    .createDNSServer(entry.toString(true), DEFAULT_DNS_TIMEOUT)
-                                    .testDNS(5);
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    entry.setTestResult(new DNSServerConfigTestResult(DNSServerConfigEntryTestState.SUCCESS, result));
-                                    setupTestButtons(entry.getTestResult().getTestState());
-                                }
-                            });
-                        } catch (IOException e) {
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    entry.setTestResult(new DNSServerConfigTestResult(DNSServerConfigEntryTestState.FAIL, e.getMessage()));
-                                    setupTestButtons(entry.getTestResult().getTestState());
-                                }
-                            });
+                DNSServerConfigEntry testingValue = new DNSServerConfigEntry(
+                        editIpView.getText().toString(),
+                        editPortView.getText().toString(),
+                        DNSType.values()[editProtocolSpinner.getSelectedItemPosition()],
+                        editEndpointView.getText().toString(),
+                        true
+                );
+                entry.setValidationResult(validator.validate(testingValue));
+                if (entry.getValidationResult().hasError()) {
+                    entry.getTestResult().setTestState(DNSServerConfigEntryTestState.NOT_STARTED);
+                    setupTestButtons(entry.getTestResult().getTestState());
+                    setupErrors(entry.getValidationResult());
+                } else {
+                    Runnable testTask = new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                long result = DNSServer.getInstance()
+                                        .createDNSServer(testingValue.toString(), DEFAULT_DNS_TIMEOUT)
+                                        .testDNS(5);
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        entry.setTestResult(new DNSServerConfigTestResult(DNSServerConfigEntryTestState.SUCCESS, result));
+                                        setupTestButtons(entry.getTestResult().getTestState());
+                                    }
+                                });
+                            } catch (IOException e) {
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        entry.setTestResult(new DNSServerConfigTestResult(DNSServerConfigEntryTestState.FAIL, e.getMessage()));
+                                        setupTestButtons(entry.getTestResult().getTestState());
+                                    }
+                                });
+                            }
                         }
-                    }
-                };
-                testTasksPool.execute(testTask);
+                    };
+                    testTasksPool.execute(testTask);
+                }
             }
         });
         testEntryResultFailure.setOnClickListener(new View.OnClickListener() {
@@ -179,6 +223,7 @@ public class DNSServerConfigEntryView {
                 setupTestButtons(entry.getTestResult().getTestState());
             }
         });
+        setupErrors(entry.getValidationResult());
     }
 
     private void setupTestButtons(DNSServerConfigEntryTestState testState) {
@@ -222,8 +267,22 @@ public class DNSServerConfigEntryView {
         }
     }
 
+    private void setupErrors(DNSServerConfigEntryValidationResult validationResult) {
+        if (validationResult.getIpError() != null && !validationResult.getIpError().isEmpty()) {
+            editIpView.setError(validationResult.getIpError());
+        } else {
+            editIpView.setError(null);
+        }
+        if (validationResult.getPortError() != null && !validationResult.getPortError().isEmpty()) {
+            editPortView.setError(validationResult.getPortError());
+        } else {
+            editPortView.setError(null);
+        }
+    }
+
     interface EditEventsListener {
         void onApplyChanges();
+
         void onNewCancelled(DNSServerConfigEntry entry);
     }
 }

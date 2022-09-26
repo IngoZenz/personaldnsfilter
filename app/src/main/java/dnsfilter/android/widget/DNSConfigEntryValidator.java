@@ -2,33 +2,38 @@ package dnsfilter.android.widget;
 
 
 import android.content.Context;
-import android.widget.EditText;
-
-import java.util.Map;
 
 import dnsfilter.android.R;
 
 public class DNSConfigEntryValidator {
 
-    public DNSServerConfigEntryValidationResult validate(DNSServerConfigEntry dnsEntry, Context context) {
+    private final String emptyIpErrorResult;
+    private final String emptyPortErrorResult;
+
+    public DNSConfigEntryValidator(Context context) {
+        emptyIpErrorResult = context.getString(R.string.ipEmptyError);
+        emptyPortErrorResult = context.getString(R.string.portEmptyError);
+    }
+
+    public DNSServerConfigEntryValidationResult validate(DNSServerConfigEntry dnsEntry) {
         DNSServerConfigEntryValidationResult result = new DNSServerConfigEntryValidationResult();
-        result.setIpError(checkIp(dnsEntry.getIp(), context));
-        result.setPortError(checkPort(dnsEntry.getPort(), context));
+        result.setIpError(checkIp(dnsEntry.getIp()));
+        result.setPortError(checkPort(dnsEntry.getPort()));
         return result;
     }
 
-    private String checkIp(String ip, Context context) {
+    private String checkIp(String ip) {
         String result = null;
         if (ip.trim().isEmpty()) {
-            result = context.getString(R.string.ipEmptyError);
+            result = emptyIpErrorResult;
         }
         return result;
     }
 
-    private String checkPort(String port, Context context) {
+    private String checkPort(String port) {
         String result = null;
         if (port.trim().isEmpty()) {
-            result = context.getString(R.string.portEmptyError);
+            result = emptyPortErrorResult;
         }
         return result;
     }
