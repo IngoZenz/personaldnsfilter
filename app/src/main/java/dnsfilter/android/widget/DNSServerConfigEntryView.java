@@ -1,8 +1,10 @@
 package dnsfilter.android.widget;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Handler;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -11,7 +13,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
@@ -37,6 +41,10 @@ public class DNSServerConfigEntryView {
     private final Button testEntryProgressBar;
     private final ImageButton testEntryResultSuccess;
     private final ImageButton testEntryResultFailure;
+
+    private final Dialog testResultDialog;
+    private final ImageView testResultImage;
+    private final TextView testResultText;
 
     private final Animation progressBarAnim;
 
@@ -67,6 +75,13 @@ public class DNSServerConfigEntryView {
         editEntryDialog.setTitle("Edit entry");
         progressBarAnim = AnimationUtils.loadAnimation(context, R.anim.progress_rotation);
         progressBarAnim.setRepeatCount(Animation.INFINITE);
+
+        testResultDialog = new Dialog(context);
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View dialogView = inflater.inflate(R.layout.dnsentrytestresult, null);
+        testResultDialog.setContentView(dialogView);
+        testResultImage = dialogView.findViewById(R.id.resultIconImageView);
+        testResultText = dialogView.findViewById(R.id.resultTextView);
     }
 
     public void showEntry(DNSServerConfigEntry entry, boolean isNew) {
@@ -120,7 +135,7 @@ public class DNSServerConfigEntryView {
                     public void run() {
                         try {
                             long result = DNSServer.getInstance()
-                                    .createDNSServer(entry.toString(), DEFAULT_DNS_TIMEOUT)
+                                    .createDNSServer(entry.toString(true), DEFAULT_DNS_TIMEOUT)
                                     .testDNS(5);
                             handler.post(new Runnable() {
                                 @Override
@@ -146,6 +161,9 @@ public class DNSServerConfigEntryView {
         testEntryResultFailure.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                testResultImage.setImageResource(R.drawable.ic_exclamation_circle);
+                testResultText.setText(v.getContext().getString(R.string.testDNSResultFailure, entry.getTestResult().getMessage()));
+                testResultDialog.show();
                 entry.setTestResult(new DNSServerConfigTestResult(DNSServerConfigEntryTestState.NOT_STARTED));
                 setupTestButtons(entry.getTestResult().getTestState());
             }
@@ -153,6 +171,9 @@ public class DNSServerConfigEntryView {
         testEntryResultSuccess.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                testResultImage.setImageResource(R.drawable.ic_check_circle);
+                testResultText.setText(v.getContext().getString(R.string.testDNSResultSuccess, entry.getTestResult().getPerf()));
+                testResultDialog.show();
                 entry.setTestResult(new DNSServerConfigTestResult(DNSServerConfigEntryTestState.NOT_STARTED));
                 setupTestButtons(entry.getTestResult().getTestState());
             }

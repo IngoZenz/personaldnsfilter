@@ -125,6 +125,18 @@ public class DNSServerConfigEntry {
                 + getEndpointAsString(endpoint);
     }
 
+    public String toString(Boolean isTesting) {
+        if (isTesting) {
+            return toString();
+        } else {
+            return highlightShorterIPv6(this.ip)
+                    + ENTRY_PARTS_SEPARATOR
+                    + port
+                    + ENTRY_PARTS_SEPARATOR
+                    + protocol.toString()
+                    + getEndpointAsString(endpoint);
+        }
+    }
     private static String highlightShorterIPv6(String ip) {
         if (ip.contains(SHORTER_IP_V6_SEPARATOR)) {
             return IP_V6_START_BRACER + ip + IP_V6_END_BRACER;
