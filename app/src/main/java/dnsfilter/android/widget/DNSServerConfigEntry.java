@@ -127,14 +127,14 @@ public class DNSServerConfigEntry {
 
     public String toString(Boolean isTesting) {
         if (isTesting) {
-            return toString();
-        } else {
             return highlightShorterIPv6(this.ip)
                     + ENTRY_PARTS_SEPARATOR
                     + port
                     + ENTRY_PARTS_SEPARATOR
                     + protocol.toString()
                     + getEndpointAsString(endpoint);
+        } else {
+            return toString();
         }
     }
     private static String highlightShorterIPv6(String ip) {

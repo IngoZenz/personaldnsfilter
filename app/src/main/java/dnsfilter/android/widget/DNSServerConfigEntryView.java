@@ -1,11 +1,11 @@
 package dnsfilter.android.widget;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
@@ -72,11 +72,12 @@ public class DNSServerConfigEntryView {
                 DNSType.values()
         );
         editProtocolSpinner.setAdapter(spinnerAdapter);
-        editEntryDialog.setTitle("Edit entry");
+        editEntryDialog.setTitle(R.string.editEntry);
         progressBarAnim = AnimationUtils.loadAnimation(context, R.anim.progress_rotation);
         progressBarAnim.setRepeatCount(Animation.INFINITE);
 
         testResultDialog = new Dialog(context);
+        testResultDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         LayoutInflater inflater = LayoutInflater.from(context);
         View dialogView = inflater.inflate(R.layout.dnsentrytestresult, null);
         testResultDialog.setContentView(dialogView);
