@@ -473,39 +473,6 @@ public class DNSProxyActivity extends Activity
 				public void onItemAdded() {
 					manualDNSView.smoothScrollToPosition(dnsRecordsAdapter.getCount());
 				}
-
-				@Override
-				public void onTestEntry(DNSServerConfigEntry entry) {
-					Runnable testTask = new Runnable() {
-						@Override
-						public void run() {
-							try {
-								long result = DNSServer.getInstance()
-										.createDNSServer(entry.toString(), DEFAULT_DNS_TIMEOUT)
-										.testDNS(5);
-									runOnUiThread(
-											new Runnable() {
-												@Override
-												public void run() {
-													entry.setTestResult(new DNSServerConfigTestResult(DNSServerConfigEntryTestState.SUCCESS, result));
-													((DNSListAdapter) manualDNSView.getAdapter()).notifyDataSetChanged();
-												}
-											}
-									);
-
-							} catch (IOException e) {
-									runOnUiThread(new Runnable() {
-										@Override
-										public void run() {
-											entry.setTestResult(new DNSServerConfigTestResult(DNSServerConfigEntryTestState.FAIL, e.getMessage()));
-											((DNSListAdapter) manualDNSView.getAdapter()).notifyDataSetChanged();
-										}
-									});
-							}
-						}
-					};
-					testTasksPool.submit(testTask);
-				}
 			};
 
 			dnsRecordsAdapter = new DNSListAdapter(this, entries, listener);
@@ -1292,11 +1259,6 @@ public class DNSProxyActivity extends Activity
 			restoreDefaultDNSConfig();
 			return;
 		} else if (destination == exitDNSCfgBtn){
-			boolean result = dnsRecordsAdapter.validate();
-			if (!result) {
-				dnsRecordsAdapter.notifyDataSetChanged();
-				return;
-			}
 			advDNSConfigDia.dismiss();
 			persistConfig();
 			return;

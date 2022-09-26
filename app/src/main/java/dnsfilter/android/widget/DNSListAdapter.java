@@ -132,18 +132,6 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
         });
     }
 
-    public boolean validate() {
-        boolean result = true;
-        for (int i = 0; i <= getObjectsCount() - 1; i++) {
-            DNSServerConfigEntry item = getItem(i);
-            item.setValidationResult(validator.validate(item, this.getContext()));
-            if (item.getValidationResult().hasError()) {
-                result = false;
-            }
-        }
-        return result;
-    }
-
     private void findViews(DNSServerConfigEntryViewHolder holder, View convertView) {
         holder.root = convertView.findViewById(R.id.container);
         holder.protocolView = convertView.findViewById(R.id.protocolText);
@@ -177,7 +165,5 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
 
     public interface EventsListener {
         void onItemAdded();
-
-        void onTestEntry(DNSServerConfigEntry entry);
     }
 }
