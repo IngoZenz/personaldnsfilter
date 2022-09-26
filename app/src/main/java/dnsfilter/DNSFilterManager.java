@@ -751,7 +751,9 @@ public class DNSFilterManager extends ConfigurationAccess  {
 		int token = 0;
 		int wildcard = 0;
 
-		int r = in.read();
+		int r = 0;
+		r = Utils.skipWhitespace(in, 9);
+
 		while (r == 35) {
 			//lines starts with # - ignore line!
 			r = Utils.skipLine(in);
