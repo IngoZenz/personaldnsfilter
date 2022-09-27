@@ -20,9 +20,21 @@
             android:layout_marginStart="15dp"
             android:layout_marginTop="0dp"
             android:layout_marginEnd="15dp"
+            android:layout_marginBottom="15dp"
             android:button="@drawable/custom_checkbox"
             android:checked="false"
             android:text="@string/manualDNSCheck"
+            android:textColor="#FFFFFF" />
+
+        <dnsfilter.android.PaddedCheckBox
+            android:id="@+id/manualDNSRawModeCheckbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:button="@drawable/custom_switch"
+            android:checked="false"
+            android:singleLine="true"
+            android:text="@string/rawEditMode"
             android:textColor="#FFFFFF" />
 
         <ListView
@@ -34,6 +46,33 @@
             android:dividerHeight="10dp"
             android:fadeScrollbars="false"
             android:smoothScrollbar="true" />
+
+        <HorizontalScrollView
+            android:id="@+id/manualDNSScroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:layout_marginBottom="15dp"
+            android:background="#151e27"
+            android:overScrollMode="never"
+            android:padding="10dp"
+            android:scrollbars="none"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/manualDNSEditText"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="#151e27"
+                android:inputType="textMultiLine|textNoSuggestions"
+                android:minWidth="200dp"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:typeface="monospace" />
+
+        </HorizontalScrollView>
+
     </LinearLayout>
 
     <RelativeLayout

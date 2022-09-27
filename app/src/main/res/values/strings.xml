@@ -49,4 +49,5 @@
   <string name="ipEmptyError">IP should not be empty</string>
   <string name="portEmptyError">port should not be empty</string>
   <string name="editEntry">Edit entry</string>
+  <string name="rawEditMode">Raw edit mode</string>
 </resources>

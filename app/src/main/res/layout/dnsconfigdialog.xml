@@ -34,7 +34,7 @@
             android:button="@drawable/custom_switch"
             android:checked="false"
             android:singleLine="true"
-            android:text="Raw edit mode"
+            android:text="@string/rawEditMode"
             android:textColor="#424242" />
 
         <ListView
