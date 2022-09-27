@@ -111,7 +111,6 @@ public class DNSProxyActivity extends Activity
 
 
 	protected static boolean BOOT_START = false;
-	private static final int DEFAULT_DNS_TIMEOUT = 15000;
 
 	protected Button startBtn;
 	protected Button stopBtn;
@@ -167,7 +166,6 @@ public class DNSProxyActivity extends Activity
 	protected static String[] availableBackups;
 	protected static int selectedBackup;
 
-	private final ThreadPoolExecutor testTasksPool = (ThreadPoolExecutor) Executors.newScheduledThreadPool(2);
 	private volatile DNSListAdapter dnsRecordsAdapter = null;
 
 	protected static boolean additionalHostsChanged = false;
@@ -999,20 +997,8 @@ public class DNSProxyActivity extends Activity
 	}
 
 	protected void setDNSCfgDialog(Properties config) {
-		DNSServerConfigEntrySerializer serializer = new DNSServerConfigEntrySerializer();
-		DNSListAdapter adapter = (DNSListAdapter) manualDNSList.getAdapter();
-		String dnsText = config.getProperty("fallbackDNS","").replace(";", "\n").replace(" ", "");
-		adapter.clear();
-		String[] dnsEntries = dnsText.split(System.getProperty("line.separator"));
-		for (String entry : dnsEntries) {
-			if (!entry.isEmpty()) {
-				adapter.add(serializer.deserializeSafe(entry));
-			}
-		}
-		manualDNSRawModeCheckBox.setChecked(false);
-		manualDNSScroll.setVisibility(View.GONE);
-		manualDNSList.setVisibility(View.VISIBLE);
-		hideKeyboard(manualDNSEditText);
+		rawEntriesToAdapter(config.getProperty("fallbackDNS","").replace(";", "\n").replace(" ", ""), true);
+		resetManualDNSScreen();
 		manualDNSCheck.setChecked(!Boolean.parseBoolean(config.getProperty("detectDNS", "true")));
 	}
 
@@ -1283,8 +1269,16 @@ public class DNSProxyActivity extends Activity
 			restoreDefaultDNSConfig();
 			return;
 		} else if (destination == exitDNSCfgBtn) {
-			advDNSConfigDia.dismiss();
-			persistConfig();
+			boolean convertRawEntriesResult = true;
+			if (manualDNSRawModeCheckBox.isChecked()) {
+				convertRawEntriesResult = rawEntriesToAdapter(manualDNSEditText.getText().toString(), false);
+			}
+			if (convertRawEntriesResult) {
+				resetManualDNSScreen();
+				advDNSConfigDia.dismiss();
+				persistConfig();
+			}
+
 			return;
 		}
 
@@ -1299,23 +1293,8 @@ public class DNSProxyActivity extends Activity
 				manualDNSList.setVisibility(View.GONE);
 				manualDNSScroll.setVisibility(View.VISIBLE);
 			} else {
-				DNSServerConfigEntrySerializer serializer = new DNSServerConfigEntrySerializer();
-				DNSListAdapter adapter = (DNSListAdapter) manualDNSList.getAdapter();
-				String dnsText = manualDNSEditText.getText().toString();
-				adapter.clear();
-				String[] dnsEntries = dnsText.split(System.getProperty("line.separator"));
-				try {
-					for (String entry : dnsEntries) {
-						if (!entry.isEmpty()) {
-							adapter.add(serializer.deserialize(entry));
-						}
-					}
-					manualDNSScroll.setVisibility(View.GONE);
-					manualDNSList.setVisibility(View.VISIBLE);
-					hideKeyboard(manualDNSEditText);
-				} catch (NotDeserializableException e) {
-					manualDNSRawModeCheckBox.setChecked(true);
-					manualDNSEditText.setError(e.getMessage());
+				if (rawEntriesToAdapter(manualDNSEditText.getText().toString(), false)) {
+					resetManualDNSScreen();
 				}
 			}
 		}
@@ -1355,6 +1334,39 @@ public class DNSProxyActivity extends Activity
 				remoteReleaseWakeLock();
 			}
 		}
+	}
+
+	private Boolean rawEntriesToAdapter(String source, boolean safe) {
+		DNSServerConfigEntrySerializer serializer = new DNSServerConfigEntrySerializer();
+		DNSListAdapter adapter = (DNSListAdapter) manualDNSList.getAdapter();
+		adapter.clear();
+		String[] dnsEntries = source.split(System.getProperty("line.separator"));
+		try {
+			for (String entry : dnsEntries) {
+				if (!entry.isEmpty()) {
+					if (safe) {
+						adapter.add(serializer.deserializeSafe(entry));
+					} else {
+						adapter.add(serializer.deserialize(entry));
+					}
+				}
+			}
+		} catch (NotDeserializableException e) {
+			manualDNSRawModeCheckBox.setChecked(true);
+			manualDNSEditText.setError(e.getMessage());
+			return false;
+		}
+		return true;
+	}
+
+	private void resetManualDNSScreen() {
+		manualDNSScroll.setVisibility(View.GONE);
+		manualDNSList.setVisibility(View.VISIBLE);
+		if (manualDNSRawModeCheckBox.isChecked()) {
+			manualDNSRawModeCheckBox.setChecked(false);
+		}
+		manualDNSEditText.setError(null);
+		hideKeyboard(manualDNSEditText);
 	}
 
 	private void openBrowser(String url) {
