@@ -25,6 +25,7 @@ package dnsfilter.android;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -55,9 +56,11 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.HorizontalScrollView;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
@@ -83,12 +86,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 import dnsfilter.ConfigUtil;
 import dnsfilter.ConfigurationAccess;
 import dnsfilter.DNSFilterManager;
-import dnsfilter.DNSServer;
 import dnsfilter.android.widget.DNSListAdapter;
 import dnsfilter.android.widget.DNSServerConfigEntry;
 import dnsfilter.android.widget.DNSServerConfigEntrySerializer;
-import dnsfilter.android.widget.DNSServerConfigEntryTestState;
-import dnsfilter.android.widget.DNSServerConfigTestResult;
+import dnsfilter.android.widget.NotDeserializableException;
 import util.ExecutionEnvironment;
 import util.GroupedLogger;
 import util.Logger;
@@ -151,7 +152,10 @@ public class DNSProxyActivity extends Activity
 	protected static TextView scrollLockField;
 	protected static Dialog advDNSConfigDia;
 	protected static CheckBox manualDNSCheck;
-	protected static ListView manualDNSView;
+	protected static ListView manualDNSList;
+	protected static EditText manualDNSEditText;
+	protected static CheckBox manualDNSRawModeCheckBox;
+	protected static HorizontalScrollView manualDNSScroll;
 	protected static String SCROLL_PAUSE = "II  ";
 	protected static String SCROLL_CONTINUE = " ▶ ";
 	protected static boolean scroll_locked = false;
@@ -459,25 +463,29 @@ public class DNSProxyActivity extends Activity
 			manualDNSCheck.setChecked(checked);
 
 			List<DNSServerConfigEntry> entries = new ArrayList<>();
-			if (manualDNSView != null) {
-				dnsRecordsAdapter = (DNSListAdapter) manualDNSView.getAdapter();
+			if (manualDNSList != null) {
+				dnsRecordsAdapter = (DNSListAdapter) manualDNSList.getAdapter();
 				for (int i = 0; i <= dnsRecordsAdapter.getObjectsCount() - 1; i++) {
 					entries.add(dnsRecordsAdapter.getItem(i));
 				}
 			}
 
-			manualDNSView = advDNSConfigDia.findViewById(R.id.manualDNS);
+			manualDNSList = advDNSConfigDia.findViewById(R.id.manualDNSList);
+			manualDNSEditText = advDNSConfigDia.findViewById(R.id.manualDNSEditText);
+			manualDNSRawModeCheckBox = advDNSConfigDia.findViewById(R.id.manualDNSRawModeCheckbox);
+			manualDNSRawModeCheckBox.setOnClickListener(this);
+			manualDNSScroll = advDNSConfigDia.findViewById(R.id.manualDNSScroll);
 
 			DNSListAdapter.EventsListener listener = new DNSListAdapter.EventsListener() {
 				@Override
 				public void onItemAdded() {
-					manualDNSView.smoothScrollToPosition(dnsRecordsAdapter.getCount());
+					manualDNSList.smoothScrollToPosition(dnsRecordsAdapter.getCount());
 				}
 			};
 
 			dnsRecordsAdapter = new DNSListAdapter(this, entries, listener);
 
-			manualDNSView.setAdapter(dnsRecordsAdapter);
+			manualDNSList.setAdapter(dnsRecordsAdapter);
 			manualDNSViewResDefBtn = (Button) advDNSConfigDia.findViewById(R.id.RestoreDefaultBtn);
 			manualDNSViewResDefBtn.setOnClickListener(this);
 			exitDNSCfgBtn = (Button) advDNSConfigDia.findViewById(R.id.closeDnsCfg);
@@ -992,17 +1000,20 @@ public class DNSProxyActivity extends Activity
 
 	protected void setDNSCfgDialog(Properties config) {
 		DNSServerConfigEntrySerializer serializer = new DNSServerConfigEntrySerializer();
-		DNSListAdapter adapter = (DNSListAdapter) manualDNSView.getAdapter();
+		DNSListAdapter adapter = (DNSListAdapter) manualDNSList.getAdapter();
 		String dnsText = config.getProperty("fallbackDNS","").replace(";", "\n").replace(" ", "");
 		adapter.clear();
 		String[] dnsEntries = dnsText.split(System.getProperty("line.separator"));
 		for (String entry : dnsEntries) {
 			if (!entry.isEmpty()) {
-				adapter.add(serializer.deserialize(entry));
+				adapter.add(serializer.deserializeSafe(entry));
 			}
 		}
+		manualDNSRawModeCheckBox.setChecked(false);
+		manualDNSScroll.setVisibility(View.GONE);
+		manualDNSList.setVisibility(View.VISIBLE);
+		hideKeyboard(manualDNSEditText);
 		manualDNSCheck.setChecked(!Boolean.parseBoolean(config.getProperty("detectDNS", "true")));
-
 	}
 
 	protected void restoreDefaultDNSConfig() {
@@ -1106,7 +1117,27 @@ public class DNSProxyActivity extends Activity
 	}
 
 	private String getFallbackDNSSettingFromUI(){
-		DNSListAdapter adapter = ((DNSListAdapter) manualDNSView.getAdapter());
+		String uiText;
+		if (manualDNSRawModeCheckBox.isChecked()) {
+			uiText = getValuesFromText();
+		} else {
+			uiText = getValuesFromAdapter();
+		}
+		String result = "";
+		StringTokenizer entries = new StringTokenizer(uiText, "\n");
+		while (entries.hasMoreTokens()) {
+			String entry = entries.nextToken().trim();
+			if (!entry.equals(""))
+				result = result + entry + "; ";
+		}
+		if (!result.equals(""))
+			result = result.substring(0, result.length() - 2); // cut last seperator;
+
+		return result;
+	}
+
+	private String getValuesFromAdapter() {
+		DNSListAdapter adapter = ((DNSListAdapter) manualDNSList.getAdapter());
 
 		StringBuilder entriesBuilder = new StringBuilder();
 		for (int i = 0; i <= adapter.getObjectsCount() - 1; i++) {
@@ -1114,18 +1145,11 @@ public class DNSProxyActivity extends Activity
 			entriesBuilder.append(System.getProperty("line.separator"));
 		}
 
-		String uiText = entriesBuilder.toString();
-		String result="";
-		StringTokenizer entries = new StringTokenizer(uiText,"\n");
-		while (entries.hasMoreTokens()) {
-			String entry = entries.nextToken().trim();
-			if (!entry.equals(""))
-				result = result+entry+"; ";
-		}
-		if (!result.equals(""))
-			result = result.substring(0,result.length()-2); // cut last seperator;
+		return entriesBuilder.toString();
+	}
 
-		return result;
+	private String getValuesFromText() {
+		return manualDNSEditText.getText().toString();
 	}
 
 	private void persistConfig() {
@@ -1212,7 +1236,7 @@ public class DNSProxyActivity extends Activity
 	@Override
 	public void onClick(View destination) {
 
-		if (switchingConfig ) {
+		if (switchingConfig) {
 			advancedConfigCheck.setChecked(false);
 			Logger.getLogger().logLine("Config switch in progress - Wait!");
 			return;
@@ -1258,7 +1282,7 @@ public class DNSProxyActivity extends Activity
 		} else if (destination == manualDNSViewResDefBtn){
 			restoreDefaultDNSConfig();
 			return;
-		} else if (destination == exitDNSCfgBtn){
+		} else if (destination == exitDNSCfgBtn) {
 			advDNSConfigDia.dismiss();
 			persistConfig();
 			return;
@@ -1267,6 +1291,33 @@ public class DNSProxyActivity extends Activity
 		if (destination == rootModeCheck && rootModeCheck.isChecked() && !proxyModeCheck.isChecked()) {
 			proxyModeCheck.setChecked(true);
 			Logger.getLogger().logLine("Enabled also DNS proxy mode as required by root mode!");
+		}
+
+		if (destination == manualDNSRawModeCheckBox) {
+			if (manualDNSRawModeCheckBox.isChecked()) {
+				manualDNSEditText.setText(getValuesFromAdapter());
+				manualDNSList.setVisibility(View.GONE);
+				manualDNSScroll.setVisibility(View.VISIBLE);
+			} else {
+				DNSServerConfigEntrySerializer serializer = new DNSServerConfigEntrySerializer();
+				DNSListAdapter adapter = (DNSListAdapter) manualDNSList.getAdapter();
+				String dnsText = manualDNSEditText.getText().toString();
+				adapter.clear();
+				String[] dnsEntries = dnsText.split(System.getProperty("line.separator"));
+				try {
+					for (String entry : dnsEntries) {
+						if (!entry.isEmpty()) {
+							adapter.add(serializer.deserialize(entry));
+						}
+					}
+					manualDNSScroll.setVisibility(View.GONE);
+					manualDNSList.setVisibility(View.VISIBLE);
+					hideKeyboard(manualDNSEditText);
+				} catch (NotDeserializableException e) {
+					manualDNSRawModeCheckBox.setChecked(true);
+					manualDNSEditText.setError(e.getMessage());
+				}
+			}
 		}
 
 		if (destination == proxyModeCheck && !proxyModeCheck.isChecked() && rootModeCheck.isChecked()) {
@@ -2017,7 +2068,10 @@ public class DNSProxyActivity extends Activity
 		}
 	}
 
-
-
+	public void hideKeyboard(View view) {
+		view.clearFocus();
+		InputMethodManager manager = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+		manager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+	}
 
 }

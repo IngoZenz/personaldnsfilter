@@ -20,20 +20,60 @@
             android:layout_marginStart="15dp"
             android:layout_marginTop="0dp"
             android:layout_marginEnd="15dp"
+            android:layout_marginBottom="15dp"
             android:button="@drawable/custom_checkbox"
             android:checked="false"
             android:text="@string/manualDNSCheck"
             android:textColor="#424242" />
 
+        <dnsfilter.android.PaddedCheckBox
+            android:id="@+id/manualDNSRawModeCheckbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:button="@drawable/custom_switch"
+            android:checked="false"
+            android:singleLine="true"
+            android:text="Raw edit mode"
+            android:textColor="#424242" />
+
         <ListView
-            android:id="@+id/manualDNS"
+            android:id="@+id/manualDNSList"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_margin="6dp"
             android:divider="@drawable/divider_custom"
             android:dividerHeight="10dp"
             android:fadeScrollbars="false"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             android:smoothScrollbar="true" />
+
+        <HorizontalScrollView
+            android:id="@+id/manualDNSScroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:layout_marginBottom="15dp"
+            android:background="#E8EBED"
+            android:overScrollMode="never"
+            android:padding="10dp"
+            android:scrollbars="none"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/manualDNSEditText"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="#E8EBED"
+                android:inputType="textMultiLine|textNoSuggestions"
+                android:minWidth="200dp"
+                android:textColor="#424242"
+                android:textSize="14sp"
+                android:typeface="monospace" />
+
+        </HorizontalScrollView>
 
     </LinearLayout>
 
@@ -44,7 +84,6 @@
         android:layout_weight="0.01"
         android:background="#ffffff"
         android:orientation="vertical">
-
 
         <Button
             android:id="@+id/RestoreDefaultBtn"

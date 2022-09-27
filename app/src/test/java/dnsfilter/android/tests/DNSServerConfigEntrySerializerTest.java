@@ -37,7 +37,7 @@ public class DNSServerConfigEntrySerializerTest {
         }};
 
         for (Map.Entry<String, DNSServerConfigEntry> entry : testResults.entrySet()) {
-            DNSServerConfigEntry deserializationResult = serializer.deserialize(entry.getKey());
+            DNSServerConfigEntry deserializationResult = serializer.deserializeSafe(entry.getKey());
             Assert.assertEquals(entry.getValue(), deserializationResult);
         }
     }
