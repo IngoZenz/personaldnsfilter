@@ -58,7 +58,6 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TextView;
@@ -67,28 +66,20 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import dnsfilter.ConfigUtil;
 import dnsfilter.ConfigurationAccess;
 import dnsfilter.DNSFilterManager;
-import dnsfilter.DNSServer;
-import dnsfilter.android.widget.DNSListAdapter;
-import dnsfilter.android.widget.DNSServerConfigEntry;
-import dnsfilter.android.widget.DNSServerConfigEntrySerializer;
-import dnsfilter.android.widget.DNSServerConfigEntryTestState;
-import dnsfilter.android.widget.DNSServerConfigTestResult;
+import dnsfilter.dnsserverconfig.DNSServerConfigActivity;
 import util.ExecutionEnvironment;
 import util.GroupedLogger;
 import util.Logger;
@@ -110,7 +101,6 @@ public class DNSProxyActivity extends Activity
 
 
 	protected static boolean BOOT_START = false;
-	private static final int DEFAULT_DNS_TIMEOUT = 15000;
 
 	protected Button startBtn;
 	protected Button stopBtn;
@@ -128,8 +118,6 @@ public class DNSProxyActivity extends Activity
 	protected static Button restoreDefaultsBtn;
 	protected static Button backupDnBtn;
 	protected static Button backupUpBtn;
-	protected static Button manualDNSViewResDefBtn;
-	protected static Button exitDNSCfgBtn;
 	protected static TextView addFilterBtn;
 	protected static TextView removeFilterBtn;
 	protected static CheckBox appWhiteListCheck;
@@ -149,9 +137,6 @@ public class DNSProxyActivity extends Activity
 	protected static EditText additionalHostsField;
 	protected static EditText manuallyEditField;
 	protected static TextView scrollLockField;
-	protected static Dialog advDNSConfigDia;
-	protected static CheckBox manualDNSCheck;
-	protected static ListView manualDNSView;
 	protected static String SCROLL_PAUSE = "II  ";
 	protected static String SCROLL_CONTINUE = " ▶ ";
 	protected static boolean scroll_locked = false;
@@ -162,9 +147,6 @@ public class DNSProxyActivity extends Activity
 	protected static MenuItem remove_filter;
 	protected static String[] availableBackups;
 	protected static int selectedBackup;
-
-	private final ThreadPoolExecutor testTasksPool = (ThreadPoolExecutor) Executors.newScheduledThreadPool(2);
-	private volatile DNSListAdapter dnsRecordsAdapter = null;
 
 	protected static boolean additionalHostsChanged = false;
 	protected static boolean manuallyConfEdited = false;
@@ -244,11 +226,9 @@ public class DNSProxyActivity extends Activity
 		public long getTimoutTime() {
 			return timeout;
 		}
-	};
-
+	}
 
 	private static MsgTimeoutListener MsgTO = new MsgTimeoutListener();
-
 
 	private static Spanned fromHtml(String txt) {
 		if (Build.VERSION.SDK_INT >= 24)
@@ -353,8 +333,6 @@ public class DNSProxyActivity extends Activity
 
 			super.onCreate(savedInstanceState);
 
-			AndroidEnvironment.initEnvironment(this);
-
 			String forcedDisplayMode = ConfigurationAccess.getLocal().getConfigUtil().getConfigValue("forceAndroidDisplayMode", "none").trim();
 			if (forcedDisplayMode.equalsIgnoreCase("portrait"))
 				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -444,45 +422,6 @@ public class DNSProxyActivity extends Activity
 			filterReloadIntervalView = (EditText) findViewById(R.id.filterloadinterval);
 			filterReloadIntervalView.setText(uiText);
 
-			advDNSConfigDia = new Dialog(DNSProxyActivity.this, R.style.Theme_dialog_TitleBar);
-			advDNSConfigDia.setContentView(R.layout.dnsconfigdialog);
-			advDNSConfigDia.setTitle(getResources().getString(R.string.dnsCfgConfigDialogTitle));
-			advDNSConfigDia.setOnKeyListener(this);
-
-			Window window = advDNSConfigDia.getWindow();
-			window.setLayout((int) (Math.min(DISPLAY_WIDTH, DISPLAY_HEIGTH)* 0.9), WindowManager.LayoutParams.WRAP_CONTENT);
-			window.setBackgroundDrawableResource(android.R.color.transparent);
-
-			boolean checked = manualDNSCheck != null && manualDNSCheck.isChecked();
-
-			manualDNSCheck = (CheckBox) advDNSConfigDia.findViewById(R.id.manualDNSCheck);
-			manualDNSCheck.setChecked(checked);
-
-			List<DNSServerConfigEntry> entries = new ArrayList<>();
-			if (manualDNSView != null) {
-				dnsRecordsAdapter = (DNSListAdapter) manualDNSView.getAdapter();
-				for (int i = 0; i <= dnsRecordsAdapter.getObjectsCount() - 1; i++) {
-					entries.add(dnsRecordsAdapter.getItem(i));
-				}
-			}
-
-			manualDNSView = advDNSConfigDia.findViewById(R.id.manualDNS);
-
-			DNSListAdapter.EventsListener listener = new DNSListAdapter.EventsListener() {
-				@Override
-				public void onItemAdded() {
-					manualDNSView.smoothScrollToPosition(dnsRecordsAdapter.getCount());
-				}
-			};
-
-			dnsRecordsAdapter = new DNSListAdapter(this, entries, listener);
-
-			manualDNSView.setAdapter(dnsRecordsAdapter);
-			manualDNSViewResDefBtn = (Button) advDNSConfigDia.findViewById(R.id.RestoreDefaultBtn);
-			manualDNSViewResDefBtn.setOnClickListener(this);
-			exitDNSCfgBtn = (Button) advDNSConfigDia.findViewById(R.id.closeDnsCfg);
-			exitDNSCfgBtn.setOnClickListener(this);
-
 			startBtn = (Button) findViewById(R.id.startBtn);
 			startBtn.setOnClickListener(this);
 			stopBtn = (Button) findViewById(R.id.stopBtn);
@@ -539,7 +478,7 @@ public class DNSProxyActivity extends Activity
 			dnsField.setEnabled(true);
 			dnsField.setOnClickListener(this);
 
-			checked = enableAdFilterCheck != null && enableAdFilterCheck.isChecked();
+			boolean checked = enableAdFilterCheck != null && enableAdFilterCheck.isChecked();
 			enableAdFilterCheck = (CheckBox) findViewById(R.id.enableAddFilter);
 			enableAdFilterCheck.setChecked(checked);
 			enableAdFilterCheck.setOnClickListener(this);
@@ -774,8 +713,7 @@ public class DNSProxyActivity extends Activity
 
 				//new entry => add to list
 				ArrayList<String> list = new ArrayList<String>();
-				for (int i = 0; i < availableBackups.length; i++)
-					list.add(availableBackups[i]);
+                list.addAll(Arrays.asList(availableBackups));
 
 				list.add(txt);
 
@@ -989,35 +927,6 @@ public class DNSProxyActivity extends Activity
 			showInitialInfoPopUp = false; //some issue => do not try again for future starts of app
 		}
 	}
-
-	protected void setDNSCfgDialog(Properties config) {
-		DNSServerConfigEntrySerializer serializer = new DNSServerConfigEntrySerializer();
-		DNSListAdapter adapter = (DNSListAdapter) manualDNSView.getAdapter();
-		String dnsText = config.getProperty("fallbackDNS","").replace(";", "\n").replace(" ", "");
-		adapter.clear();
-		String[] dnsEntries = dnsText.split(System.getProperty("line.separator"));
-		for (String entry : dnsEntries) {
-			if (!entry.isEmpty()) {
-				adapter.add(serializer.deserialize(entry));
-			}
-		}
-		manualDNSCheck.setChecked(!Boolean.parseBoolean(config.getProperty("detectDNS", "true")));
-
-	}
-
-	protected void restoreDefaultDNSConfig() {
-		try {
-			InputStream defIn = ExecutionEnvironment.getEnvironment().getAsset("dnsfilter.conf");
-			Properties defaults = new Properties();
-			defaults.load(defIn);
-			defIn.close();
-			setDNSCfgDialog(defaults);
-			message("Restored DNS defaults!");
-		} catch (Exception e ){
-			message(e.getMessage());
-		}
-	}
-
 	protected void loadAndApplyConfig(final boolean startApp) {
 
 		config = getConfig();
@@ -1053,8 +962,6 @@ public class DNSProxyActivity extends Activity
 					}
 
 					debug = Boolean.parseBoolean(config.getConfigValue("debug", "false"));
-
-					setDNSCfgDialog(config.getProperties());
 
 					ConfigUtil.HostFilterList[] filterEntries = config.getConfiguredFilterLists();
 					filterCfg.setEntries(filterEntries);
@@ -1105,29 +1012,6 @@ public class DNSProxyActivity extends Activity
 		}
 	}
 
-	private String getFallbackDNSSettingFromUI(){
-		DNSListAdapter adapter = ((DNSListAdapter) manualDNSView.getAdapter());
-
-		StringBuilder entriesBuilder = new StringBuilder();
-		for (int i = 0; i <= adapter.getObjectsCount() - 1; i++) {
-			entriesBuilder.append(adapter.getItem(i).toString());
-			entriesBuilder.append(System.getProperty("line.separator"));
-		}
-
-		String uiText = entriesBuilder.toString();
-		String result="";
-		StringTokenizer entries = new StringTokenizer(uiText,"\n");
-		while (entries.hasMoreTokens()) {
-			String entry = entries.nextToken().trim();
-			if (!entry.equals(""))
-				result = result+entry+"; ";
-		}
-		if (!result.equals(""))
-			result = result.substring(0,result.length()-2); // cut last seperator;
-
-		return result;
-	}
-
 	private void persistConfig() {
 		try {
 
@@ -1146,13 +1030,7 @@ public class DNSProxyActivity extends Activity
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(CONFIG.readConfig())));
 			while ((ln = reader.readLine()) != null) {
 
-				if (ln.trim().startsWith("detectDNS"))
-					getConfig().updateConfigValue("detectDNS",!manualDNSCheck.isChecked()+"");
-
-				else if (ln.trim().startsWith("fallbackDNS"))
-					getConfig().updateConfigValue("fallbackDNS",getFallbackDNSSettingFromUI());
-
-				else if (ln.trim().startsWith("reloadIntervalDays"))
+                if (ln.trim().startsWith("reloadIntervalDays"))
 					getConfig().updateConfigValue("reloadIntervalDays", filterReloadIntervalView.getText().toString());
 
 				else if (ln.trim().startsWith("AUTOSTART"))
@@ -1212,7 +1090,7 @@ public class DNSProxyActivity extends Activity
 	@Override
 	public void onClick(View destination) {
 
-		if (switchingConfig ) {
+		if (switchingConfig) {
 			advancedConfigCheck.setChecked(false);
 			Logger.getLogger().logLine("Config switch in progress - Wait!");
 			return;
@@ -1234,8 +1112,7 @@ public class DNSProxyActivity extends Activity
 			openBrowser("https://www.zenz-home.com/personaldnsfilter/help/help.php");
 			return;
 		} else if (destination == dnsField) {
-			persistConfig();
-			handleDNSConfigDialog();
+            startActivity(new Intent(this, DNSServerConfigActivity.class));
 			return;
 		} else if (destination == scrollLockField) {
 			handleScrollLock();
@@ -1254,13 +1131,6 @@ public class DNSProxyActivity extends Activity
 			return;
 		} else if (destination == initialInfoPopUpExitBtn) {
 			closeInitialInfoPopUp();
-			return;
-		} else if (destination == manualDNSViewResDefBtn){
-			restoreDefaultDNSConfig();
-			return;
-		} else if (destination == exitDNSCfgBtn){
-			advDNSConfigDia.dismiss();
-			persistConfig();
 			return;
 		}
 
@@ -1476,10 +1346,6 @@ public class DNSProxyActivity extends Activity
 			logLine("=>CONNECTED to "+ CONFIG +"<=");
 			checkPasscode();
 		}
-	}
-
-	private void handleDNSConfigDialog() {
-		advDNSConfigDia.show();
 	}
 
 	private void handleScrollLock() {
@@ -2016,8 +1882,4 @@ public class DNSProxyActivity extends Activity
 			Logger.getLogger().logLine("releaseWakeLock failed! " + e);
 		}
 	}
-
-
-
-
 }

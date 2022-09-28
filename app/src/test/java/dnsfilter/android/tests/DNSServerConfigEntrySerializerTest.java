@@ -6,9 +6,9 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import dnsfilter.android.widget.DNSServerConfigEntry;
-import dnsfilter.android.widget.DNSServerConfigEntrySerializer;
-import dnsfilter.android.widget.DNSType;
+import dnsfilter.dnsserverconfig.widget.DNSServerConfigEntry;
+import dnsfilter.dnsserverconfig.widget.DNSServerConfigEntrySerializer;
+import dnsfilter.dnsserverconfig.widget.DNSType;
 
 public class DNSServerConfigEntrySerializerTest {
 
@@ -37,7 +37,7 @@ public class DNSServerConfigEntrySerializerTest {
         }};
 
         for (Map.Entry<String, DNSServerConfigEntry> entry : testResults.entrySet()) {
-            DNSServerConfigEntry deserializationResult = serializer.deserialize(entry.getKey());
+            DNSServerConfigEntry deserializationResult = serializer.deserializeSafe(entry.getKey());
             Assert.assertEquals(entry.getValue(), deserializationResult);
         }
     }

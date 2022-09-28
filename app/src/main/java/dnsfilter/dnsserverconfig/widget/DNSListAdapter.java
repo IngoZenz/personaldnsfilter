@@ -1,4 +1,4 @@
-package dnsfilter.android.widget;
+package dnsfilter.dnsserverconfig.widget;
 
 
 import android.content.Context;
@@ -17,13 +17,11 @@ import dnsfilter.android.R;
 
 public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implements DNSServerConfigEntryView.EditEventsListener {
 
-    private final EventsListener listener;
 
     private final DNSServerConfigEntryView dnsServerConfigEntryView;
 
-    public DNSListAdapter(Context context, List<DNSServerConfigEntry> objects, EventsListener listener) {
+    public DNSListAdapter(Context context, List<DNSServerConfigEntry> objects) {
         super(context, 0, objects);
-        this.listener = listener;
 
         dnsServerConfigEntryView = new DNSServerConfigEntryView(context, this);
     }
@@ -65,9 +63,6 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
             public void onClick(View v) {
                 DNSServerConfigEntry newEntry = new DNSServerConfigEntry();
                 add(newEntry);
-                if (listener != null) {
-                    listener.onItemAdded();
-                }
                 dnsServerConfigEntryView.showEntry(newEntry, true);
             }
         });
@@ -107,7 +102,6 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
         convertView.setEnabled(entry.getIsActive());
 
 
-
         return convertView;
     }
 
@@ -117,9 +111,7 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
         holder.deleteEntryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (listener != null) {
-                    remove(holder.dnsServerConfigEntry);
-                }
+                remove(holder.dnsServerConfigEntry);
             }
         });
 

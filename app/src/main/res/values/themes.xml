@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.phttpp.TitleBar" parent="android:Theme">
+    <style name="Theme.phttpp.TitleBar" parent="android:Theme.Holo">
         <item name="android:windowTitleBackgroundStyle">@style/windowTitleBackgroundStyle</item>
+        <item name="android:actionBarStyle">@style/appActionBarStyle</item>
         <item name="android:windowTitleStyle">@style/windowTitleStyle</item>
         <item name="android:windowTitleSize">50dip</item>
+        <item name="android:homeAsUpIndicator">@drawable/nav_back_icon</item>
     </style>
 
     <style name="Theme.dialog.TitleBar" parent="@android:style/Theme.Dialog">

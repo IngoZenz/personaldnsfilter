@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:background="#FFFFFF"
     android:focusable="true"
     android:focusableInTouchMode="true"
@@ -20,20 +20,51 @@
             android:layout_marginStart="15dp"
             android:layout_marginTop="0dp"
             android:layout_marginEnd="15dp"
+            android:layout_marginBottom="15dp"
             android:button="@drawable/custom_checkbox"
             android:checked="false"
             android:text="@string/manualDNSCheck"
             android:textColor="#424242" />
 
+        <dnsfilter.android.PaddedCheckBox
+            android:id="@+id/manualDNSRawModeCheckbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:button="@drawable/custom_switch"
+            android:checked="false"
+            android:singleLine="true"
+            android:text="@string/rawEditMode"
+            android:textColor="#424242" />
+
         <ListView
-            android:id="@+id/manualDNS"
+            android:id="@+id/manualDNSList"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_margin="6dp"
             android:divider="@drawable/divider_custom"
             android:dividerHeight="10dp"
             android:fadeScrollbars="false"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             android:smoothScrollbar="true" />
+
+        <EditText
+            android:id="@+id/manualDNSEditText"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:layout_marginBottom="15dp"
+            android:background="#E8EBED"
+            android:gravity="top"
+            android:inputType="textMultiLine|textNoSuggestions"
+            android:minWidth="200dp"
+            android:padding="8dp"
+            android:scrollHorizontally="true"
+            android:textColor="#424242"
+            android:textSize="14sp"
+            android:typeface="monospace" />
 
     </LinearLayout>
 
@@ -45,16 +76,15 @@
         android:background="#ffffff"
         android:orientation="vertical">
 
-
         <Button
-            android:id="@+id/RestoreDefaultBtn"
+            android:id="@+id/restoreDefaultBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:layout_gravity="center_horizontal"
             android:layout_marginHorizontal="6dp"
-            android:layout_toStartOf="@id/closeDnsCfg"
+            android:layout_toStartOf="@id/applyNewConfigurationButton"
             android:background="@drawable/custom_round_button"
             android:fontFamily="sans-serif-medium"
             android:padding="10dp"
@@ -64,20 +94,17 @@
             android:textSize="11sp"
             android:textStyle="bold" />
 
-        <Button
-            android:id="@+id/closeDnsCfg"
+        <ImageButton
+            android:id="@+id/applyNewConfigurationButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/RestoreDefaultBtn"
-            android:layout_alignBottom="@+id/RestoreDefaultBtn"
+            android:layout_alignTop="@+id/restoreDefaultBtn"
+            android:layout_alignBottom="@+id/restoreDefaultBtn"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
             android:layout_marginHorizontal="6dp"
             android:background="@drawable/custom_round_button"
-            android:drawableStart="@drawable/done"
-            android:drawableLeft="@drawable/done"
-            android:drawableTint="#1d2733"
             android:fontFamily="sans-serif-medium"
-            android:padding="4dp" />
+            android:padding="14dp"
+            android:src="@drawable/done" />
     </RelativeLayout>
 </LinearLayout>
