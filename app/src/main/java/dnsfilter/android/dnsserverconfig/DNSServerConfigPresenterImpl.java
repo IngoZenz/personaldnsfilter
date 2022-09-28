@@ -1,4 +1,4 @@
-package dnsfilter.dnsserverconfig;
+package dnsfilter.android.dnsserverconfig;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -12,10 +12,10 @@ import java.util.StringTokenizer;
 
 import dnsfilter.ConfigUtil;
 import dnsfilter.ConfigurationAccess;
-import dnsfilter.dnsserverconfig.widget.DNSListAdapter;
-import dnsfilter.dnsserverconfig.widget.DNSServerConfigEntry;
-import dnsfilter.dnsserverconfig.widget.DNSServerConfigEntrySerializer;
-import dnsfilter.dnsserverconfig.widget.NotDeserializableException;
+import dnsfilter.android.dnsserverconfig.widget.DNSListAdapter;
+import dnsfilter.android.dnsserverconfig.widget.DNSServerConfigEntry;
+import dnsfilter.android.dnsserverconfig.widget.DNSServerConfigEntrySerializer;
+import dnsfilter.android.dnsserverconfig.widget.NotDeserializableException;
 import util.ExecutionEnvironment;
 
 public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {

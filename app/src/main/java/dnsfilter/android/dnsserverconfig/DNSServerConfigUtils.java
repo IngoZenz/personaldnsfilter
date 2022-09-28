@@ -1,4 +1,4 @@
-package dnsfilter.dnsserverconfig;
+package dnsfilter.android.dnsserverconfig;
 
 import android.content.Context;
 import android.view.View;

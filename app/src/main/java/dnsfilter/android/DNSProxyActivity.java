@@ -79,7 +79,7 @@ import java.util.StringTokenizer;
 import dnsfilter.ConfigUtil;
 import dnsfilter.ConfigurationAccess;
 import dnsfilter.DNSFilterManager;
-import dnsfilter.dnsserverconfig.DNSServerConfigActivity;
+import dnsfilter.android.dnsserverconfig.DNSServerConfigActivity;
 import util.ExecutionEnvironment;
 import util.GroupedLogger;
 import util.Logger;

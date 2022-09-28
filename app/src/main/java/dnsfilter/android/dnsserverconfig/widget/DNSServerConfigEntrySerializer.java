@@ -1,10 +1,10 @@
-package dnsfilter.dnsserverconfig.widget;
+package dnsfilter.android.dnsserverconfig.widget;
 
-import static dnsfilter.dnsserverconfig.widget.DNSServerConfigEntry.CHAR_LINE_COMMENTED;
-import static dnsfilter.dnsserverconfig.widget.DNSServerConfigEntry.EMPTY_STRING;
-import static dnsfilter.dnsserverconfig.widget.DNSServerConfigEntry.ENTRY_PARTS_SEPARATOR;
-import static dnsfilter.dnsserverconfig.widget.DNSServerConfigEntry.IP_V6_END_BRACER;
-import static dnsfilter.dnsserverconfig.widget.DNSServerConfigEntry.IP_V6_START_BRACER;
+import static dnsfilter.android.dnsserverconfig.widget.DNSServerConfigEntry.CHAR_LINE_COMMENTED;
+import static dnsfilter.android.dnsserverconfig.widget.DNSServerConfigEntry.EMPTY_STRING;
+import static dnsfilter.android.dnsserverconfig.widget.DNSServerConfigEntry.ENTRY_PARTS_SEPARATOR;
+import static dnsfilter.android.dnsserverconfig.widget.DNSServerConfigEntry.IP_V6_END_BRACER;
+import static dnsfilter.android.dnsserverconfig.widget.DNSServerConfigEntry.IP_V6_START_BRACER;
 
 public class DNSServerConfigEntrySerializer {
 

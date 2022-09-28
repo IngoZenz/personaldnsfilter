@@ -21,7 +21,7 @@
         android:name="dnsfilter.PersonalDNSFilterApp">
 
         <activity
-            android:name="dnsfilter.dnsserverconfig.DNSServerConfigActivity"
+            android:name=".dnsserverconfig.DNSServerConfigActivity"
             android:exported="false"
             android:parentActivityName=".DNSProxyActivity">
         </activity>
