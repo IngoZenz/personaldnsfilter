@@ -14,7 +14,6 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import dnsfilter.android.AndroidEnvironment;
 import dnsfilter.android.PaddedCheckBox;
 import dnsfilter.android.R;
 
@@ -34,7 +33,7 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_dnsserver_config);
+        setContentView(R.layout.activitydnsserverconfig);
 
         setupActionBar();
         findViews();
