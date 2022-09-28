@@ -75,7 +75,7 @@
         android:orientation="vertical">
 
         <Button
-            android:id="@+id/RestoreDefaultBtn"
+            android:id="@+id/restoreDefaultBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
