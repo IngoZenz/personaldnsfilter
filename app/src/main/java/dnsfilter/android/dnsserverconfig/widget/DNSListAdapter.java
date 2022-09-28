@@ -153,8 +153,4 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
         ImageButton editEntryButton;
         RelativeLayout root;
     }
-
-    public interface EventsListener {
-        void onItemAdded();
-    }
 }

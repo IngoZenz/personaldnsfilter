@@ -52,6 +52,7 @@ public class DNSServerConfigEntryView {
     private final ExecutorService testTasksPool = Executors.newSingleThreadExecutor();
     private final Handler handler = new Handler();
     private final DNSConfigEntryValidator validator;
+    private final String serverIsUnreachableMessage;
 
     DNSServerConfigEntryView(Context context, EditEventsListener listener) {
         this.listener = listener;
@@ -67,6 +68,8 @@ public class DNSServerConfigEntryView {
         testEntryProgressBar = editEntryDialog.findViewById(R.id.testEntryProgressBar);
         testEntryResultSuccess = editEntryDialog.findViewById(R.id.testEntryButtonResultSuccess);
         testEntryResultFailure = editEntryDialog.findViewById(R.id.testEntryButtonResultFailure);
+
+        this.serverIsUnreachableMessage = context.getString(R.string.serverUnreachable);
 
         ArrayAdapter<DNSType> spinnerAdapter = new ArrayAdapter<>(
                 context,
@@ -192,7 +195,11 @@ public class DNSServerConfigEntryView {
                                 handler.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        entry.setTestResult(new DNSServerConfigTestResult(DNSServerConfigEntryTestState.FAIL, e.getMessage()));
+                                        String errorMessage = e.getMessage();
+                                        if (errorMessage == null) {
+                                            errorMessage = serverIsUnreachableMessage;
+                                        }
+                                        entry.setTestResult(new DNSServerConfigTestResult(DNSServerConfigEntryTestState.FAIL, errorMessage));
                                         setupTestButtons(entry.getTestResult().getTestState());
                                     }
                                 });
