@@ -17,7 +17,8 @@
         android:icon="@mipmap/ic_launcher"
         android:label="personalDNSfilter"
         android:theme="@style/Theme.phttpp.TitleBar"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:name="dnsfilter.PersonalDNSFilterApp">
 
         <activity
             android:name="dnsfilter.dnsserverconfig.DNSServerConfigActivity"

@@ -14,6 +14,7 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import dnsfilter.android.AndroidEnvironment;
 import dnsfilter.android.PaddedCheckBox;
 import dnsfilter.android.R;
 
@@ -38,7 +39,7 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
         setupActionBar();
         findViews();
 
-        presenter = new DNSServerConfigPresenterImpl(this, this);
+        presenter = new DNSServerConfigPresenterImpl(this, this, savedInstanceState);
 
         configureManualDNSValue();
         configureDNSList();
@@ -79,7 +80,7 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
     }
 
     private void configureManualDNSValue() {
-        setManualDDNSServers(presenter.getIsManualDNSServers());
+        setManualDNSServers(presenter.getIsManualDNSServers());
         manualDNSCheck.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -93,7 +94,6 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
     }
 
     private void configureRawMode() {
-        resetToDefaultMode();
         manualDNSRawModeCheckbox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -112,7 +112,7 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
     }
 
     @Override
-    public void setManualDDNSServers(boolean isManual) {
+    public void setManualDNSServers(boolean isManual) {
         manualDNSCheck.setChecked(isManual);
     }
 
@@ -154,14 +154,27 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
 
     @Override
     public void showRawMode(String rawModeText) {
+        if (!manualDNSRawModeCheckbox.isChecked()) {
+            manualDNSRawModeCheckbox.setChecked(true);
+        }
         manualDNSEditText.setText(rawModeText);
         manualDNSList.setVisibility(View.GONE);
         manualDNSEditText.setVisibility(View.VISIBLE);
     }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        presenter.saveState(
+                outState,
+                manualDNSRawModeCheckbox.isChecked(),
+                manualDNSEditText.getText().toString()
+        );
+        super.onSaveInstanceState(outState);
+    }
 }
 
 interface DNSServerConfigView {
-    void setManualDDNSServers(boolean isManual);
+    void setManualDNSServers(boolean isManual);
 
     void showRawModeError(String errorMessage);
 

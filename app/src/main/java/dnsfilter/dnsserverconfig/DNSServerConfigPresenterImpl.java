@@ -1,6 +1,7 @@
 package dnsfilter.dnsserverconfig;
 
 import android.content.Context;
+import android.os.Bundle;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +34,10 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
     private static final String FALLBACK_DNS_PROPERTY_NAME = "fallbackDNS";
     private static final String ASSETS_FILE_NAME = "dnsfilter.conf";
 
+    private static final String SAVE_STATE_DETECT_DNS = "detectDNS";
+    private static final String SAVE_STATE_DNS_LIST = "fallbackDNS";
+    private static final String SAVE_STATE_IS_RAW_MODE = "isRadModeDNS";
+
     private final ConfigurationAccess CONFIG = ConfigurationAccess.getLocal();
     private final DNSServerConfigEntrySerializer serializer = new DNSServerConfigEntrySerializer();
     private final DNSServerConfigView view;
@@ -49,15 +54,26 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
         return isManualDNSServers;
     }
 
-    DNSServerConfigPresenterImpl(DNSServerConfigView view, Context context) {
+    DNSServerConfigPresenterImpl(DNSServerConfigView view, Context context, Bundle savedInstanceState) {
         this.view = view;
+
         List<DNSServerConfigEntry> entries = new ArrayList<>();
-        ConfigUtil config = getConfig();
-        if (config != null) {
-            entries = readDNSServerConfigFrom(
-                    DNSServerConfigUtils.formatSerializedProperties(config.getProperties().getProperty(FALLBACK_DNS_PROPERTY_NAME, ""))
-            );
-            this.isManualDNSServers = !Boolean.parseBoolean(config.getProperties().getProperty(DETECT_DNS_PROPERTY_NAME, "true"));
+
+        if (savedInstanceState != null) {
+            isManualDNSServers = savedInstanceState.getBoolean(SAVE_STATE_DETECT_DNS);
+            if (savedInstanceState.getBoolean(SAVE_STATE_IS_RAW_MODE)) {
+                view.showRawMode(savedInstanceState.getString(SAVE_STATE_DNS_LIST));
+            } else {
+                entries = readDNSServerConfigFrom(savedInstanceState.getString(SAVE_STATE_DNS_LIST));
+            }
+        } else {
+            ConfigUtil config = getConfig();
+            if (config != null) {
+                entries = readDNSServerConfigFrom(
+                        DNSServerConfigUtils.formatSerializedProperties(config.getProperties().getProperty(FALLBACK_DNS_PROPERTY_NAME, ""))
+                );
+                this.isManualDNSServers = !Boolean.parseBoolean(config.getProperties().getProperty(DETECT_DNS_PROPERTY_NAME, "true"));
+            }
         }
         this.listAdapter = new DNSListAdapter(context, entries);
     }
@@ -99,7 +115,7 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
             view.showToast("DNS configuration is is reset to default");
 
             isManualDNSServers = !Boolean.parseBoolean(defaultProperties.getProperty(DETECT_DNS_PROPERTY_NAME, "true"));
-            view.setManualDDNSServers(isManualDNSServers);
+            view.setManualDNSServers(isManualDNSServers);
         } catch (Exception e) {
             view.showToast(e.getMessage());
         }
@@ -140,6 +156,18 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
             config.updateConfigValue(DETECT_DNS_PROPERTY_NAME, Boolean.toString(!isManualDNSServers));
         }
         view.showToastAndCloseScreen(null);
+    }
+
+    @Override
+    public void saveState(Bundle outState, boolean isRawMode, String rawModeTextValue) {
+        outState.putBoolean(SAVE_STATE_DETECT_DNS, isManualDNSServers);
+        if (isRawMode) {
+            outState.putString(SAVE_STATE_DNS_LIST, rawModeTextValue);
+            outState.putBoolean(SAVE_STATE_IS_RAW_MODE, true);
+        } else {
+            outState.putString(SAVE_STATE_DNS_LIST, DNSServerEntriesToRawEntries());
+            outState.putBoolean(SAVE_STATE_IS_RAW_MODE, false);
+        }
     }
 
     private Properties readDefaultDNSConfig() throws IOException {
@@ -212,4 +240,6 @@ interface DNSServerConfigPresenter {
     void onChangedManualDNSServers(boolean isManualDNSServers);
 
     void applyNewConfiguration(boolean isRawMode, String rawModeTextValue);
+
+    void saveState(Bundle outState, boolean isRawNode, String rawModeTextValue);
 }

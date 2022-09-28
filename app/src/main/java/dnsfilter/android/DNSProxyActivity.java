@@ -333,8 +333,6 @@ public class DNSProxyActivity extends Activity
 
 			super.onCreate(savedInstanceState);
 
-			AndroidEnvironment.initEnvironment(this);
-
 			String forcedDisplayMode = ConfigurationAccess.getLocal().getConfigUtil().getConfigValue("forceAndroidDisplayMode", "none").trim();
 			if (forcedDisplayMode.equalsIgnoreCase("portrait"))
 				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
