@@ -11,4 +11,11 @@
     <item name="android:background">#00BCD4</item>
     <item name="android:maxLines">1</item>
   </style>
+
+  <style name="appActionBarStyle" parent="@android:style/Widget.Holo.ActionBar">
+    <item name="android:displayOptions">showTitle|useLogo</item>
+    <item name="android:icon">@android:color/transparent</item>
+    <item name="android:background">#00BCD4</item>
+    <item name="android:titleTextStyle">@style/windowTitleStyle</item>
+  </style>
 </resources>

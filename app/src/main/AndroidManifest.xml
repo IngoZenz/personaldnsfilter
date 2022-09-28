@@ -3,6 +3,7 @@
     package="dnsfilter.android"
     android:versionCode="1505306"
     android:versionName="1.50.53.6">
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -17,17 +18,26 @@
         android:label="personalDNSfilter"
         android:theme="@style/Theme.phttpp.TitleBar"
         android:usesCleartextTraffic="true">
+
         <activity
-            android:name="dnsfilter.android.DNSProxyActivity"
+            android:name="dnsfilter.dnsserverconfig.DNSServerConfigActivity"
+            android:exported="false"
+            android:parentActivityName=".DNSProxyActivity">
+        </activity>
+
+        <activity
+            android:name=".DNSProxyActivity"
             android:label="personalDNSfilter"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <service
-            android:name="dnsfilter.android.DNSFilterService"
+            android:name=".DNSFilterService"
             android:label="personalDNSfilterService"
             android:permission="android.permission.BIND_VPN_SERVICE">
             <intent-filter>
@@ -36,7 +46,7 @@
         </service>
 
         <receiver
-            android:name="dnsfilter.android.BootUpReceiver"
+            android:name=".BootUpReceiver"
             android:enabled="true"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>

@@ -1,4 +1,4 @@
-package dnsfilter.android.widget;
+package dnsfilter.dnsserverconfig.widget;
 
 
 import java.util.Objects;
