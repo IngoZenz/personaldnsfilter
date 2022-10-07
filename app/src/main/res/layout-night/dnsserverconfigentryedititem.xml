@@ -77,12 +77,24 @@
         android:textSize="16sp" />
 
     <Button
-        android:id="@+id/editCancelChanges"
+        android:id="@+id/editApplyChanges"
         android:layout_width="50dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/editEndpointText"
         android:layout_alignParentStart="true"
         android:layout_marginHorizontal="6dp"
+        android:background="@drawable/custom_round_button"
+        android:drawableStart="@drawable/done"
+        android:fontFamily="sans-serif-medium"
+        android:padding="12dp" />
+
+    <Button
+        android:id="@+id/editCancelChanges"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/editEndpointText"
+        android:layout_marginHorizontal="6dp"
+        android:layout_toEndOf="@+id/editApplyChanges"
         android:background="@drawable/custom_round_button"
         android:drawableStart="@drawable/cancel"
         android:fontFamily="sans-serif-medium"
@@ -93,23 +105,11 @@
         android:layout_width="50dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/editEndpointText"
-        android:layout_marginHorizontal="6dp"
+        android:layout_marginHorizontal="24dp"
         android:layout_toEndOf="@+id/editCancelChanges"
         android:background="@drawable/custom_round_button"
         android:drawableStart="@drawable/ic_delete"
-        android:fontFamily="sans-serif-medium"
-        android:padding="12dp"
-        android:drawableTint="#1d2733"/>
-
-    <Button
-        android:id="@+id/editApplyChanges"
-        android:layout_width="50dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/editEndpointText"
-        android:layout_alignParentEnd="true"
-        android:layout_marginHorizontal="6dp"
-        android:background="@drawable/custom_round_button"
-        android:drawableStart="@drawable/done"
+        android:drawableTint="#1d2733"
         android:fontFamily="sans-serif-medium"
         android:padding="12dp" />
 
