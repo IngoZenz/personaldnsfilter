@@ -49,4 +49,5 @@
   <string name="portEmptyError">port should not be empty</string>
   <string name="editEntry">Edit entry</string>
   <string name="rawEditMode">Raw edit mode</string>
+  <string name="serverUnreachable">Server is unreachable</string>
 </resources>

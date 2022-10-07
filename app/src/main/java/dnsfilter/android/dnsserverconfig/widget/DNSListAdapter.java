@@ -1,4 +1,4 @@
-package dnsfilter.dnsserverconfig.widget;
+package dnsfilter.android.dnsserverconfig.widget;
 
 
 import android.content.Context;
@@ -152,9 +152,5 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
         ImageButton deleteEntryButton;
         ImageButton editEntryButton;
         RelativeLayout root;
-    }
-
-    public interface EventsListener {
-        void onItemAdded();
     }
 }
