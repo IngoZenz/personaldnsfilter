@@ -9,7 +9,7 @@
     <Spinner
         android:id="@+id/editProtocolSpinner"
         android:layout_width="wrap_content"
-        android:layout_height="46dp"
+        android:layout_height="50dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
@@ -78,7 +78,7 @@
 
     <Button
         android:id="@+id/editCancelChanges"
-        android:layout_width="wrap_content"
+        android:layout_width="50dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/editEndpointText"
         android:layout_alignParentStart="true"
@@ -86,59 +86,24 @@
         android:background="@drawable/custom_round_button"
         android:drawableStart="@drawable/cancel"
         android:fontFamily="sans-serif-medium"
-        android:padding="10dp" />
+        android:padding="12dp" />
 
     <Button
-        android:id="@+id/testEntryButton"
-        android:layout_width="wrap_content"
+        android:id="@+id/deleteEntryButton"
+        android:layout_width="50dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/editEndpointText"
         android:layout_marginHorizontal="6dp"
-        android:layout_toStartOf="@+id/editApplyChanges"
+        android:layout_toEndOf="@+id/editCancelChanges"
         android:background="@drawable/custom_round_button"
-        android:drawableStart="@drawable/ic_play_circle"
+        android:drawableStart="@drawable/ic_delete"
         android:fontFamily="sans-serif-medium"
-        android:padding="10dp" />
-
-    <Button
-        android:id="@+id/testEntryProgressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/editEndpointText"
-        android:layout_marginHorizontal="6dp"
-        android:layout_toStartOf="@+id/editApplyChanges"
-        android:background="@drawable/custom_round_button"
-        android:drawableStart="@drawable/ic_progress"
-        android:padding="10dp"
-        android:visibility="invisible" />
-
-    <ImageButton
-        android:id="@+id/testEntryButtonResultSuccess"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/testEntryButton"
-        android:layout_alignTop="@+id/testEntryButton"
-        android:layout_alignEnd="@+id/testEntryButton"
-        android:layout_alignBottom="@+id/testEntryButton"
-        android:background="@drawable/ripple_transparent_button"
-        android:src="@drawable/ic_check_circle"
-        android:visibility="invisible" />
-
-    <ImageButton
-        android:id="@+id/testEntryButtonResultFailure"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/testEntryButton"
-        android:layout_alignTop="@+id/testEntryButton"
-        android:layout_alignEnd="@+id/testEntryButton"
-        android:layout_alignBottom="@+id/testEntryButton"
-        android:background="@drawable/ripple_transparent_button"
-        android:src="@drawable/ic_exclamation_circle"
-        android:visibility="invisible" />
+        android:padding="12dp"
+        android:drawableTint="#1d2733"/>
 
     <Button
         android:id="@+id/editApplyChanges"
-        android:layout_width="wrap_content"
+        android:layout_width="50dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/editEndpointText"
         android:layout_alignParentEnd="true"
@@ -146,6 +111,6 @@
         android:background="@drawable/custom_round_button"
         android:drawableStart="@drawable/done"
         android:fontFamily="sans-serif-medium"
-        android:padding="10dp" />
+        android:padding="12dp" />
 
 </RelativeLayout>

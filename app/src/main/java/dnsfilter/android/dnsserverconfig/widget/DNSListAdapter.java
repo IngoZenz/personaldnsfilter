@@ -108,13 +108,6 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
     private void setupNewViewHolder(DNSServerConfigEntryViewHolder holder, View convertView) {
         findViews(holder, convertView);
 
-        holder.deleteEntryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                remove(holder.dnsServerConfigEntry);
-            }
-        });
-
         holder.editEntryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -128,7 +121,7 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
         holder.protocolView = convertView.findViewById(R.id.protocolText);
         holder.ipView = convertView.findViewById(R.id.ipText);
         holder.portView = convertView.findViewById(R.id.portText);
-        holder.deleteEntryButton = convertView.findViewById(R.id.deleteEntryButton);
+        holder.testEntryButton = convertView.findViewById(R.id.testEntryButton);
         holder.editEntryButton = convertView.findViewById(R.id.editEntryButton);
         holder.isActiveEntryCheckbox = convertView.findViewById(R.id.isActiveEntryCheckbox);
     }
@@ -143,13 +136,18 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
         remove(entry);
     }
 
+    @Override
+    public void onDeleteItem(DNSServerConfigEntry entry) {
+        remove(entry);
+    }
+
     static class DNSServerConfigEntryViewHolder {
         DNSServerConfigEntry dnsServerConfigEntry;
         TextView protocolView;
         TextView ipView;
         TextView portView;
         CheckBox isActiveEntryCheckbox;
-        ImageButton deleteEntryButton;
+        ImageButton testEntryButton;
         ImageButton editEntryButton;
         RelativeLayout root;
     }
