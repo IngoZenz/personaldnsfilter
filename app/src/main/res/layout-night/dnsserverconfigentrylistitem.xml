@@ -54,32 +54,70 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentBottom="true"
         android:layout_centerVertical="true"
-        android:layout_toStartOf="@id/editEntryButton"
+        android:layout_toStartOf="@id/testEntryButton"
         android:gravity="center_vertical"
         android:textSize="16sp"
         android:textColor="#FFFFFF"/>
+
+    <ImageButton
+        android:id="@+id/testEntryButton"
+        android:layout_width="36dp"
+        android:layout_height="48dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:layout_toStartOf="@id/editEntryButton"
+        android:background="@drawable/ripple_transparent_button"
+        android:padding="6dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_play_circle" />
+
+    <ImageButton
+        android:id="@+id/testEntryProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/testEntryButton"
+        android:layout_alignTop="@+id/testEntryButton"
+        android:layout_alignEnd="@+id/testEntryButton"
+        android:layout_alignBottom="@+id/testEntryButton"
+        android:background="@drawable/ripple_transparent_button"
+        android:src ="@drawable/ic_progress"
+        android:visibility="invisible" />
+
+    <ImageButton
+        android:id="@+id/testEntryButtonResultSuccess"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/testEntryButton"
+        android:layout_alignTop="@+id/testEntryButton"
+        android:layout_alignEnd="@+id/testEntryButton"
+        android:layout_alignBottom="@+id/testEntryButton"
+        android:background="@drawable/ripple_transparent_button"
+        android:src="@drawable/ic_check_circle"
+        android:visibility="invisible" />
+
+    <ImageButton
+        android:id="@+id/testEntryButtonResultFailure"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/testEntryButton"
+        android:layout_alignTop="@+id/testEntryButton"
+        android:layout_alignEnd="@+id/testEntryButton"
+        android:layout_alignBottom="@+id/testEntryButton"
+        android:background="@drawable/ripple_transparent_button"
+        android:src="@drawable/ic_exclamation_circle"
+        android:visibility="invisible" />
 
     <ImageButton
         android:id="@+id/editEntryButton"
         android:layout_width="36dp"
         android:layout_height="48dp"
         android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_toStartOf="@id/deleteEntryButton"
         android:background="@drawable/ripple_transparent_button"
         android:padding="6dp"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_edit" />
 
 
-    <ImageButton
-        android:id="@+id/deleteEntryButton"
-        android:layout_width="36dp"
-        android:layout_height="48dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:background="@drawable/ripple_transparent_button"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_delete" />
 </RelativeLayout>
