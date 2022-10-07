@@ -133,8 +133,7 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
             finalMessage = message;
         }
         Toast.makeText(this, finalMessage, Toast.LENGTH_SHORT).show();
-        final Handler handler = new Handler(getMainLooper());
-        handler.postDelayed(new Runnable() {
+        new Handler(getMainLooper()).postDelayed(new Runnable() {
             @Override
             public void run() {
                 finish();
@@ -169,6 +168,12 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
                 manualDNSEditText.getText().toString()
         );
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onDestroy() {
+        presenter.onDestroy();
+        super.onDestroy();
     }
 }
 

@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import dnsfilter.ConfigUtil;
 import dnsfilter.ConfigurationAccess;
@@ -43,6 +45,7 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
     private final DNSServerConfigView view;
     private final DNSListAdapter listAdapter;
     private boolean isManualDNSServers = false;
+    private final ExecutorService testTasksPool = Executors.newSingleThreadExecutor();
 
     @Override
     public DNSListAdapter getListAdapter() {
@@ -75,7 +78,7 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
                 this.isManualDNSServers = !Boolean.parseBoolean(config.getProperties().getProperty(DETECT_DNS_PROPERTY_NAME, "true"));
             }
         }
-        this.listAdapter = new DNSListAdapter(context, entries);
+        this.listAdapter = new DNSListAdapter(context, entries, testTasksPool);
     }
 
     private List<DNSServerConfigEntry> readDNSServerConfigFrom(String source) {
@@ -170,6 +173,11 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
         }
     }
 
+    @Override
+    public void onDestroy() {
+        testTasksPool.shutdownNow();
+    }
+
     private Properties readDefaultDNSConfig() throws IOException {
         InputStream defIn = ExecutionEnvironment.getEnvironment().getAsset(ASSETS_FILE_NAME);
         Properties defaults = new Properties();
@@ -242,4 +250,6 @@ interface DNSServerConfigPresenter {
     void applyNewConfiguration(boolean isRawMode, String rawModeTextValue);
 
     void saveState(Bundle outState, boolean isRawNode, String rawModeTextValue);
+
+    void onDestroy();
 }

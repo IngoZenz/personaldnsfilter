@@ -72,6 +72,42 @@
         android:src="@drawable/ic_play_circle" />
 
     <ImageButton
+        android:id="@+id/testEntryProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/testEntryButton"
+        android:layout_alignTop="@+id/testEntryButton"
+        android:layout_alignEnd="@+id/testEntryButton"
+        android:layout_alignBottom="@+id/testEntryButton"
+        android:background="@drawable/ripple_transparent_button"
+        android:src ="@drawable/ic_progress"
+        android:visibility="invisible" />
+
+    <ImageButton
+        android:id="@+id/testEntryButtonResultSuccess"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/testEntryButton"
+        android:layout_alignTop="@+id/testEntryButton"
+        android:layout_alignEnd="@+id/testEntryButton"
+        android:layout_alignBottom="@+id/testEntryButton"
+        android:background="@drawable/ripple_transparent_button"
+        android:src="@drawable/ic_check_circle"
+        android:visibility="invisible" />
+
+    <ImageButton
+        android:id="@+id/testEntryButtonResultFailure"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/testEntryButton"
+        android:layout_alignTop="@+id/testEntryButton"
+        android:layout_alignEnd="@+id/testEntryButton"
+        android:layout_alignBottom="@+id/testEntryButton"
+        android:background="@drawable/ripple_transparent_button"
+        android:src="@drawable/ic_exclamation_circle"
+        android:visibility="invisible" />
+
+    <ImageButton
         android:id="@+id/editEntryButton"
         android:layout_width="36dp"
         android:layout_height="48dp"
