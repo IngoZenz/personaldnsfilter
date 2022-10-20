@@ -50,6 +50,13 @@
   => Now you can use "sudo systemctl status personalDNSfilter" to inspect or "sudo journalctl -u personalDNSfilter -f" to examine the logs, like other services.
 - Done!
 
+- Special note if running as the primary DNS resolver in network:
+ => By the nature of DNS services, the running logs from personalDNSfilter could be HUGE. Hence the size of "/var/log/syslog" could grow tremendously. To remedy this:
+       => Disable log put by directing output to "/dev/null", you can still monitor using mobile app remotely if configured so.
+       => Add an override to systemd unit file: "sudo systemctl edit personalDNSfilter"
+       => Add a "[Service]" section containing "StandardOutput=journal".
+       => Reload and restart the personalDNSfilter: "sudo systemctl daemon-reload && sudo systemctl restart personalDNSfilter"
+
 - To stop automatically start and even uninstall from system locations:
  => Use "sudo systemd disable --now personalDNSfilter" to stop the service and disable auto start.
  => Run "sudo bash uninstall.sh" to uninstall components from various locations in system.
