@@ -45,8 +45,8 @@
   => Run "sudo bash install.sh" to install components into proper locations in system.
        => Require bash and systemd. 
        => Note: The script has only been tested on Fedora and Debian. Hence it is still in pre-Alpha status and may not work properly.
-  => Execute "sudo systemd daemon-reload" to detect the installed service file.
-  => Use "sudo systemd enable --now personalDNSfilter" to run the service and enable auto start.
+  => Execute "sudo systemctl daemon-reload" to detect the installed service file.
+  => Use "sudo systemctl enable --now personalDNSfilter" to run the service and enable auto start.
   => Now you can use "sudo systemctl status personalDNSfilter" to inspect or "sudo journalctl -u personalDNSfilter -f" to examine the logs, like other services.
 - Done!
 
@@ -58,7 +58,7 @@
        => Reload and restart the personalDNSfilter: "sudo systemctl daemon-reload && sudo systemctl restart personalDNSfilter"
 
 - To stop automatically start and even uninstall from system locations:
- => Use "sudo systemd disable --now personalDNSfilter" to stop the service and disable auto start.
+ => Use "sudo systemctl disable --now personalDNSfilter" to stop the service and disable auto start.
  => Run "sudo bash uninstall.sh" to uninstall components from various locations in system.
        => Above action will also remove configuartion files and logs that related with personalDNSfilter. Backup first if you still need them.
        => Note: The script has only been tested on Fedora and Debian. Hence it is still in pre-Alpha status and may not work properly.
