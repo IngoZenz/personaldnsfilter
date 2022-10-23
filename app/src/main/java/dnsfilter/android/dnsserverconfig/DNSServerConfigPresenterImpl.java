@@ -37,6 +37,7 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
     private static final String ASSETS_FILE_NAME = "dnsfilter.conf";
 
     private static final String SAVE_STATE_DETECT_DNS = "detectDNS";
+    private static final String SAVE_STATE_SHOW_COMMENTED_LINES = "showCommentedLines";
     private static final String SAVE_STATE_DNS_LIST = "fallbackDNS";
     private static final String SAVE_STATE_IS_RAW_MODE = "isRadModeDNS";
 
@@ -79,6 +80,13 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
             }
         }
         this.listAdapter = new DNSListAdapter(context, entries, testTasksPool);
+        if (savedInstanceState != null) {
+            if (savedInstanceState.getBoolean(SAVE_STATE_SHOW_COMMENTED_LINES)) {
+                onChangedShowCommentedLinesCheckbox(true);
+            }
+        } else {
+            onChangedShowCommentedLinesCheckbox(false);
+        }
     }
 
     private List<DNSServerConfigBaseEntry> readDNSServerConfigFrom(String source) {
@@ -167,7 +175,7 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
     }
 
     @Override
-    public void saveState(Bundle outState, boolean isRawMode, String rawModeTextValue) {
+    public void saveState(Bundle outState, boolean isRawMode, String rawModeTextValue, boolean showCommentedLines) {
         outState.putBoolean(SAVE_STATE_DETECT_DNS, isManualDNSServers);
         if (isRawMode) {
             outState.putString(SAVE_STATE_DNS_LIST, rawModeTextValue);
@@ -176,6 +184,7 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
             outState.putString(SAVE_STATE_DNS_LIST, DNSServerEntriesToRawEntries());
             outState.putBoolean(SAVE_STATE_IS_RAW_MODE, false);
         }
+        outState.putBoolean(SAVE_STATE_SHOW_COMMENTED_LINES, showCommentedLines);
     }
 
     @Override
@@ -256,7 +265,7 @@ interface DNSServerConfigPresenter {
 
     void applyNewConfiguration(boolean isRawMode, String rawModeTextValue);
 
-    void saveState(Bundle outState, boolean isRawNode, String rawModeTextValue);
+    void saveState(Bundle outState, boolean isRawNode, String rawModeTextValue, boolean showCommentedLines);
 
     void onDestroy();
 }

@@ -106,7 +106,6 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
     }
 
     private void configureShowCommentedLines() {
-        presenter.onChangedShowCommentedLinesCheckbox(showCommentedLinesCheckbox.isChecked());
         showCommentedLinesCheckbox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -182,7 +181,8 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
         presenter.saveState(
                 outState,
                 manualDNSRawModeCheckbox.isChecked(),
-                manualDNSEditText.getText().toString()
+                manualDNSEditText.getText().toString(),
+                showCommentedLinesCheckbox.isChecked()
         );
         super.onSaveInstanceState(outState);
     }
