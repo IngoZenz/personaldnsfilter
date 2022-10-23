@@ -1,4 +1,4 @@
-package dnsfilter;
+package dnsfilter.android;
 
 import android.app.Application;
 
