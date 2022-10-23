@@ -15,8 +15,8 @@ import java.util.concurrent.Executors;
 import dnsfilter.ConfigUtil;
 import dnsfilter.ConfigurationAccess;
 import dnsfilter.android.dnsserverconfig.widget.DNSListAdapter;
-import dnsfilter.android.dnsserverconfig.widget.DNSServerConfigEntry;
 import dnsfilter.android.dnsserverconfig.widget.DNSServerConfigEntrySerializer;
+import dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigBaseEntry;
 import dnsfilter.android.dnsserverconfig.widget.NotDeserializableException;
 import util.ExecutionEnvironment;
 
@@ -60,7 +60,7 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
     DNSServerConfigPresenterImpl(DNSServerConfigView view, Context context, Bundle savedInstanceState) {
         this.view = view;
 
-        List<DNSServerConfigEntry> entries = new ArrayList<>();
+        List<DNSServerConfigBaseEntry> entries = new ArrayList<>();
 
         if (savedInstanceState != null) {
             isManualDNSServers = savedInstanceState.getBoolean(SAVE_STATE_DETECT_DNS);
@@ -81,8 +81,8 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
         this.listAdapter = new DNSListAdapter(context, entries, testTasksPool);
     }
 
-    private List<DNSServerConfigEntry> readDNSServerConfigFrom(String source) {
-        List<DNSServerConfigEntry> entries = new ArrayList<>();
+    private List<DNSServerConfigBaseEntry> readDNSServerConfigFrom(String source) {
+        List<DNSServerConfigBaseEntry> entries = new ArrayList<>();
         ConfigUtil config = getConfig();
         if (config != null) {
             assert LINE_SEPARATOR != null;
@@ -109,7 +109,7 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
     public void resetDNSConfigToDefault() {
         try {
             Properties defaultProperties = readDefaultDNSConfig();
-            List<DNSServerConfigEntry> entries = readDNSServerConfigFrom(
+            List<DNSServerConfigBaseEntry> entries = readDNSServerConfigFrom(
                     DNSServerConfigUtils.formatSerializedProperties(defaultProperties.getProperty(FALLBACK_DNS_PROPERTY_NAME, ""))
             );
             view.resetToDefaultMode();
@@ -133,7 +133,7 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
             }
             view.showRawMode(entriesBuilder.toString());
         } else {
-            ArrayList<DNSServerConfigEntry> entries = new ArrayList<>();
+            ArrayList<DNSServerConfigBaseEntry> entries = new ArrayList<>();
             if (rawEntriesToDNSServerEntries(rawModeTextValue, entries)) {
                 listAdapter.clear();
                 listAdapter.addAll(entries);
@@ -216,13 +216,13 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
         return entriesBuilder.toString();
     }
 
-    private boolean rawEntriesToDNSServerEntries(String source, ArrayList<DNSServerConfigEntry> entries) {
+    private boolean rawEntriesToDNSServerEntries(String source, ArrayList<DNSServerConfigBaseEntry> entries) {
         DNSServerConfigEntrySerializer serializer = new DNSServerConfigEntrySerializer();
         String[] dnsEntries = source.split(LINE_SEPARATOR);
         try {
             for (String entry : dnsEntries) {
                 if (!entry.isEmpty()) {
-                    DNSServerConfigEntry deserializedValue = serializer.deserialize(entry);
+                    DNSServerConfigBaseEntry deserializedValue = serializer.deserialize(entry);
                     if (entries != null) {
                         entries.add(deserializedValue);
                     }

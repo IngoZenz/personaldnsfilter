@@ -1,23 +1,32 @@
 package dnsfilter.android.dnsserverconfig.widget;
 
-import static dnsfilter.android.dnsserverconfig.widget.DNSServerConfigEntry.CHAR_LINE_COMMENTED;
-import static dnsfilter.android.dnsserverconfig.widget.DNSServerConfigEntry.EMPTY_STRING;
-import static dnsfilter.android.dnsserverconfig.widget.DNSServerConfigEntry.ENTRY_PARTS_SEPARATOR;
-import static dnsfilter.android.dnsserverconfig.widget.DNSServerConfigEntry.IP_V6_END_BRACER;
-import static dnsfilter.android.dnsserverconfig.widget.DNSServerConfigEntry.IP_V6_START_BRACER;
+import static dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigEntry.CHAR_ENTRY_INACTIVE;
+import static dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigEntry.EMPTY_STRING;
+import static dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigEntry.ENTRY_PARTS_SEPARATOR;
+import static dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigEntry.IP_V6_END_BRACER;
+import static dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigEntry.IP_V6_START_BRACER;
+import static dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigBaseEntry.CHAR_LINE_COMMENTED;
+
+import dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigCommentedEntry;
+import dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigEntry;
+import dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigBaseEntry;
 
 public class DNSServerConfigEntrySerializer {
 
-    private DNSServerConfigEntry deserializeImpl(String entry) {
+    private DNSServerConfigBaseEntry deserializeImpl(String entry) {
 
         if (entry == null || entry.isEmpty()) {
             return new DNSServerConfigEntry();
         }
 
+        if (entry.startsWith(CHAR_LINE_COMMENTED)) {
+            return new DNSServerConfigCommentedEntry(entry.replaceFirst(CHAR_LINE_COMMENTED, EMPTY_STRING));
+        }
+
         DNSServerConfigEntry newEntry;
-        boolean isActive = !entry.startsWith(CHAR_LINE_COMMENTED);
+        boolean isActive = !entry.startsWith(CHAR_ENTRY_INACTIVE);
         if (!isActive) {
-            entry = entry.replace(CHAR_LINE_COMMENTED, EMPTY_STRING);
+            entry = entry.replaceFirst(CHAR_ENTRY_INACTIVE, EMPTY_STRING);
         }
 
         String shortIpV6 = getShortIPV6(entry);
@@ -51,8 +60,8 @@ public class DNSServerConfigEntrySerializer {
         return newEntry;
     }
 
-    public DNSServerConfigEntry deserializeSafe(String entry) {
-        DNSServerConfigEntry newEntry;
+    public DNSServerConfigBaseEntry deserializeSafe(String entry) {
+        DNSServerConfigBaseEntry newEntry;
         try {
             newEntry = deserializeImpl(entry);
         } catch (RuntimeException e) {
@@ -62,8 +71,8 @@ public class DNSServerConfigEntrySerializer {
         return newEntry;
     }
 
-    public DNSServerConfigEntry deserialize(String entry) throws NotDeserializableException {
-        DNSServerConfigEntry newEntry;
+    public DNSServerConfigBaseEntry deserialize(String entry) throws NotDeserializableException {
+        DNSServerConfigBaseEntry newEntry;
         try {
             newEntry = deserializeImpl(entry);
         } catch (RuntimeException e) {
