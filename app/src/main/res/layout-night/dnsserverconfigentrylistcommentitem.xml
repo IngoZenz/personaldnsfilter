@@ -14,6 +14,6 @@
         android:minHeight="48dp"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
-        android:typeface="monospace"
-        android:textStyle="italic"/>
+        android:textStyle="italic"
+        android:typeface="monospace" />
 </FrameLayout>

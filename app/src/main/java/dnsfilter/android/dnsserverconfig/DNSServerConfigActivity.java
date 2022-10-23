@@ -27,6 +27,8 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
     private ListView manualDNSList;
     private EditText manualDNSEditText;
 
+    private PaddedCheckBox showCommentedLinesCheckbox;
+
     private Button restoreDefaultConfigurationButton;
     private ImageButton applyNewConfigurationButton;
 
@@ -45,6 +47,7 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
         configureRawMode();
         configureRestoreDefaultsButton();
         configureApplyNewConfigurationButton();
+        configureShowCommentedLines();
     }
 
     private void setupActionBar() {
@@ -63,6 +66,7 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
     private void findViews() {
         manualDNSList = findViewById(R.id.manualDNSList);
         manualDNSRawModeCheckbox = findViewById(R.id.manualDNSRawModeCheckbox);
+        showCommentedLinesCheckbox = findViewById(R.id.showCommentedLinesCheckbox);
         manualDNSEditText = findViewById(R.id.manualDNSEditText);
         manualDNSCheck = findViewById(R.id.manualDNSCheck);
         restoreDefaultConfigurationButton = findViewById(R.id.restoreDefaultBtn);
@@ -97,6 +101,16 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
             @Override
             public void onClick(View v) {
                 presenter.onChangedEditModeValue(manualDNSRawModeCheckbox.isChecked(), manualDNSEditText.getText().toString());
+            }
+        });
+    }
+
+    private void configureShowCommentedLines() {
+        presenter.onChangedShowCommentedLinesCheckbox(showCommentedLinesCheckbox.isChecked());
+        showCommentedLinesCheckbox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                presenter.onChangedShowCommentedLinesCheckbox(showCommentedLinesCheckbox.isChecked());
             }
         });
     }
@@ -148,6 +162,8 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
         manualDNSList.setVisibility(View.VISIBLE);
         manualDNSEditText.setVisibility(View.GONE);
         manualDNSEditText.setError(null);
+        showCommentedLinesCheckbox.setVisibility(View.VISIBLE);
+        presenter.onChangedShowCommentedLinesCheckbox(showCommentedLinesCheckbox.isChecked());
     }
 
     @Override
@@ -158,6 +174,7 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
         manualDNSEditText.setText(rawModeText);
         manualDNSList.setVisibility(View.GONE);
         manualDNSEditText.setVisibility(View.VISIBLE);
+        showCommentedLinesCheckbox.setVisibility(View.GONE);
     }
 
     @Override

@@ -12,6 +12,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -61,6 +62,21 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigBaseEntry> imple
         this.progressBarAnim.setRepeatCount(Animation.INFINITE);
 
         this.testTasksPool = executor;
+    }
+
+    public void changeCommentedLinesVisibility(boolean isVisible) {
+        boolean updateList = false;
+        for (int i = 0; i < this.getObjectsCount(); i++) {
+            DNSServerConfigBaseEntry entry = this.getItem(i);
+            if (entry instanceof DNSServerConfigCommentedEntry && ((DNSServerConfigCommentedEntry) entry).isVisible() != isVisible) {
+                ((DNSServerConfigCommentedEntry) entry).setVisible(isVisible);
+                updateList = true;
+            }
+        }
+
+        if (updateList) {
+            this.notifyDataSetChanged();
+        }
     }
 
     @Override
@@ -114,11 +130,14 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigBaseEntry> imple
         return view;
     }
 
-
     private View getCommentView(int position, View convertView, ViewGroup parent) {
         DNSServerConfigCommentedEntry entry = (DNSServerConfigCommentedEntry) getItem(position);
 
         DNSServerCommentEntryViewHolder holder;
+
+        if (!entry.isVisible()) {
+            return new View(this.getContext());
+        }
 
         if (convertView == null || !(convertView.getTag() instanceof DNSServerCommentEntryViewHolder)) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.dnsserverconfigentrylistcommentitem, parent, false);

@@ -148,6 +148,11 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
     }
 
     @Override
+    public void onChangedShowCommentedLinesCheckbox(boolean isCommentedLinesVisible) {
+        listAdapter.changeCommentedLinesVisibility(isCommentedLinesVisible);
+    }
+
+    @Override
     public void applyNewConfiguration(boolean isRawMode, String rawModeTextValue) {
         if (isRawMode && !rawEntriesToDNSServerEntries(rawModeTextValue, null)) {
             view.showToast("Raw text is not possibly to convert");
@@ -246,6 +251,8 @@ interface DNSServerConfigPresenter {
     void onChangedEditModeValue(boolean isRawMode, String rawModeTextValue);
 
     void onChangedManualDNSServers(boolean isManualDNSServers);
+
+    void onChangedShowCommentedLinesCheckbox(boolean isCommentedLinesVisible);
 
     void applyNewConfiguration(boolean isRawMode, String rawModeTextValue);
 
