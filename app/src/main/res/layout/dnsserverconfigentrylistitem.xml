@@ -1,122 +1,130 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/rounded_card"
     tools:ignore="ContentDescription">
 
-    <CheckBox
-        android:id="@+id/isActiveEntryCheckbox"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true"
-        android:layout_centerVertical="true"
-        android:layout_marginStart="6dp"
-        android:button="@drawable/custom_checkbox"
-        android:checked="false"
-        android:gravity="center"
-        android:scaleType="fitCenter" />
-
-    <TextView
-        android:id="@+id/protocolText"
-        android:layout_width="46dp"
+    <RelativeLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true"
-        android:layout_centerVertical="true"
-        android:layout_marginStart="8dp"
-        android:layout_toEndOf="@id/isActiveEntryCheckbox"
-        android:background="@drawable/ripple_transparent_button"
-        android:textColor="#424242"
-        android:textSize="16sp" />
+        android:layout_marginVertical="4dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/rounded_card">
 
-    <TextView
-        android:id="@+id/ipText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true"
-        android:layout_centerVertical="true"
-        android:layout_toStartOf="@id/portText"
-        android:layout_toEndOf="@id/protocolText"
-        android:gravity="center_vertical"
-        android:textColor="#424242"
-        android:textSize="16sp" />
+        <CheckBox
+            android:id="@+id/isActiveEntryCheckbox"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentBottom="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="6dp"
+            android:button="@drawable/custom_checkbox"
+            android:checked="false"
+            android:gravity="center"
+            android:scaleType="fitCenter" />
 
-    <TextView
-        android:id="@+id/portText"
-        android:layout_width="46dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true"
-        android:layout_centerVertical="true"
-        android:layout_toStartOf="@id/testEntryButton"
-        android:gravity="center_vertical"
-        android:textColor="#424242"
-        android:textSize="16sp" />
+        <TextView
+            android:id="@+id/protocolText"
+            android:layout_width="46dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentBottom="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="8dp"
+            android:layout_toEndOf="@id/isActiveEntryCheckbox"
+            android:background="@drawable/ripple_transparent_button"
+            android:textColor="#424242"
+            android:textSize="16sp" />
 
-    <ImageButton
-        android:id="@+id/testEntryButton"
-        android:layout_width="36dp"
-        android:layout_height="48dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true"
-        android:layout_toStartOf="@id/editEntryButton"
-        android:background="@drawable/ripple_transparent_button"
-        android:padding="6dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_play_circle" />
+        <TextView
+            android:id="@+id/ipText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentBottom="true"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/portText"
+            android:layout_toEndOf="@id/protocolText"
+            android:gravity="center_vertical"
+            android:textColor="#424242"
+            android:textSize="16sp" />
 
-    <ImageButton
-        android:id="@+id/testEntryProgressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/testEntryButton"
-        android:layout_alignTop="@+id/testEntryButton"
-        android:layout_alignEnd="@+id/testEntryButton"
-        android:layout_alignBottom="@+id/testEntryButton"
-        android:background="@drawable/ripple_transparent_button"
-        android:src ="@drawable/ic_progress"
-        android:visibility="invisible" />
+        <TextView
+            android:id="@+id/portText"
+            android:layout_width="46dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentBottom="true"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/testEntryButton"
+            android:gravity="center_vertical"
+            android:textColor="#424242"
+            android:textSize="16sp" />
 
-    <ImageButton
-        android:id="@+id/testEntryButtonResultSuccess"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/testEntryButton"
-        android:layout_alignTop="@+id/testEntryButton"
-        android:layout_alignEnd="@+id/testEntryButton"
-        android:layout_alignBottom="@+id/testEntryButton"
-        android:background="@drawable/ripple_transparent_button"
-        android:src="@drawable/ic_check_circle"
-        android:visibility="invisible" />
+        <ImageButton
+            android:id="@+id/testEntryButton"
+            android:layout_width="36dp"
+            android:layout_height="48dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentBottom="true"
+            android:layout_toStartOf="@id/editEntryButton"
+            android:background="@drawable/ripple_transparent_button"
+            android:padding="6dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_play_circle" />
 
-    <ImageButton
-        android:id="@+id/testEntryButtonResultFailure"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/testEntryButton"
-        android:layout_alignTop="@+id/testEntryButton"
-        android:layout_alignEnd="@+id/testEntryButton"
-        android:layout_alignBottom="@+id/testEntryButton"
-        android:background="@drawable/ripple_transparent_button"
-        android:src="@drawable/ic_exclamation_circle"
-        android:visibility="invisible" />
+        <ImageButton
+            android:id="@+id/testEntryProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/testEntryButton"
+            android:layout_alignTop="@+id/testEntryButton"
+            android:layout_alignEnd="@+id/testEntryButton"
+            android:layout_alignBottom="@+id/testEntryButton"
+            android:background="@drawable/ripple_transparent_button"
+            android:src="@drawable/ic_progress"
+            android:visibility="invisible" />
 
-    <ImageButton
-        android:id="@+id/editEntryButton"
-        android:layout_width="36dp"
-        android:layout_height="48dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:background="@drawable/ripple_transparent_button"
-        android:padding="6dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_edit" />
+        <ImageButton
+            android:id="@+id/testEntryButtonResultSuccess"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/testEntryButton"
+            android:layout_alignTop="@+id/testEntryButton"
+            android:layout_alignEnd="@+id/testEntryButton"
+            android:layout_alignBottom="@+id/testEntryButton"
+            android:background="@drawable/ripple_transparent_button"
+            android:src="@drawable/ic_check_circle"
+            android:visibility="invisible" />
+
+        <ImageButton
+            android:id="@+id/testEntryButtonResultFailure"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/testEntryButton"
+            android:layout_alignTop="@+id/testEntryButton"
+            android:layout_alignEnd="@+id/testEntryButton"
+            android:layout_alignBottom="@+id/testEntryButton"
+            android:background="@drawable/ripple_transparent_button"
+            android:src="@drawable/ic_exclamation_circle"
+            android:visibility="invisible" />
+
+        <ImageButton
+            android:id="@+id/editEntryButton"
+            android:layout_width="36dp"
+            android:layout_height="48dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:background="@drawable/ripple_transparent_button"
+            android:padding="6dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_edit" />
+
+    </RelativeLayout>
 
 </RelativeLayout>
