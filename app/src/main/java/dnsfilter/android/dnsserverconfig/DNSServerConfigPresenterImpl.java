@@ -16,8 +16,8 @@ import dnsfilter.ConfigUtil;
 import dnsfilter.ConfigurationAccess;
 import dnsfilter.android.dnsserverconfig.widget.DNSListAdapter;
 import dnsfilter.android.dnsserverconfig.widget.DNSServerConfigEntrySerializer;
-import dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigBaseEntry;
 import dnsfilter.android.dnsserverconfig.widget.NotDeserializableException;
+import dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigBaseEntry;
 import util.ExecutionEnvironment;
 
 public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {

@@ -1,18 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/rounded_card"
-    android:enabled="false">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/commentText"
+    <FrameLayout
+        android:id="@+id/container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="6dp"
-        android:gravity="center_vertical"
-        android:minHeight="48dp"
-        android:textSize="14sp"
-        android:textStyle="italic"
-        android:typeface="monospace" />
+        android:layout_height="match_parent"
+        android:layout_marginVertical="4dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/rounded_card">
+
+        <TextView
+            android:id="@+id/commentText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="6dp"
+            android:gravity="center_vertical"
+            android:minHeight="48dp"
+            android:textSize="14sp"
+            android:textStyle="italic"
+            android:typeface="monospace" />
+    </FrameLayout>
 </FrameLayout>

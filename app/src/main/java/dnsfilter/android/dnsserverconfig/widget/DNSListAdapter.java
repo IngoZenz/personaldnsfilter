@@ -1,6 +1,9 @@
 package dnsfilter.android.dnsserverconfig.widget;
 
 
+import static dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigBaseEntry.CHAR_LINE_COMMENTED;
+import static dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigEntry.EMPTY_STRING;
+
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Handler;
@@ -150,8 +153,8 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigBaseEntry> imple
         }
 
         holder.dnsServerCommentEntry = entry;
-        holder.commentView.setText(entry.toString());
-        convertView.setEnabled(false);
+        holder.commentView.setText(entry.toString().replace(CHAR_LINE_COMMENTED, EMPTY_STRING));
+        holder.containter.setEnabled(false);
 
         return convertView;
     }
@@ -177,11 +180,10 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigBaseEntry> imple
         holder.protocolView.setText(entry.getProtocol().toString());
         holder.ipView.setText(entry.getIp());
         holder.portView.setText(entry.getPort());
-        View finalConvertView = convertView;
         holder.isActiveEntryCheckbox.setOnCheckedChangeListener(
                 (buttonView, isChecked) -> {
                     entry.setIsActive(isChecked);
-                    finalConvertView.setEnabled(entry.getIsActive());
+                    holder.root.setEnabled(entry.getIsActive());
                 }
         );
         holder.isActiveEntryCheckbox.setChecked(entry.getIsActive());
@@ -251,7 +253,7 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigBaseEntry> imple
             }
         });
 
-        convertView.setEnabled(entry.getIsActive());
+        holder.root.setEnabled(entry.getIsActive());
 
         return convertView;
     }
@@ -262,6 +264,7 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigBaseEntry> imple
 
     private void findCommentEntryViews(DNSServerCommentEntryViewHolder holder, View convertView) {
         holder.commentView = convertView.findViewById(R.id.commentText);
+        holder.containter = convertView.findViewById(R.id.container);
     }
 
     private void setupNewViewHolder(DNSServerConfigEntryViewHolder holder, View convertView) {
@@ -368,5 +371,6 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigBaseEntry> imple
     static class DNSServerCommentEntryViewHolder {
         DNSServerConfigCommentedEntry dnsServerCommentEntry;
         TextView commentView;
+        ViewGroup containter;
     }
 }

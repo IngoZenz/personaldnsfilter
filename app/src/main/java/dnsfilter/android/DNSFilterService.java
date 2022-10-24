@@ -522,7 +522,7 @@ public class DNSFilterService extends VpnService  {
 				int cnt = fallbackDNS.countTokens();
 				for (int i = 0; i < cnt; i++) {
 					String dnsEntry = fallbackDNS.nextToken().trim();
-					if (!dnsEntry.startsWith("#")) {
+					if (!dnsEntry.startsWith("#") && !dnsEntry.startsWith("~")) {
 						if (DNSProxyActivity.debug) Logger.getLogger().logLine("DNS:" + dnsEntry);
 						try {
 							DNSServer dnsServer = DNSServer.getInstance().createDNSServer(dnsEntry, timeout);
