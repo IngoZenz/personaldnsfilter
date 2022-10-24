@@ -41,7 +41,7 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
     private static final String SAVE_STATE_DNS_LIST = "fallbackDNS";
     private static final String SAVE_STATE_IS_RAW_MODE = "isRadModeDNS";
 
-    private final ConfigurationAccess CONFIG = ConfigurationAccess.getLocal();
+    private final ConfigurationAccess CONFIG = ConfigurationAccess.getCurrent();
     private final DNSServerConfigEntrySerializer serializer = new DNSServerConfigEntrySerializer();
     private final DNSServerConfigView view;
     private final DNSListAdapter listAdapter;
