@@ -3,7 +3,7 @@
     android:id="@+id/container"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="#333333"
+    android:background="#2a3440"
     android:padding="8dp">
 
     <Spinner
