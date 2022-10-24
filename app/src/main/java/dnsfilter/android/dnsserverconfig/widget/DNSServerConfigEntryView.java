@@ -3,27 +3,15 @@ package dnsfilter.android.dnsserverconfig.widget;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.os.Handler;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.TextView;
 
-import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import dnsfilter.DNSServer;
 import dnsfilter.android.R;
+import dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigEntry;
 
 public class DNSServerConfigEntryView {
 

@@ -12,6 +12,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -20,12 +21,14 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import dnsfilter.DNSServer;
 import dnsfilter.android.R;
+import dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigBaseEntry;
+import dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigCommentedEntry;
+import dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigEntry;
 
-public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implements DNSServerConfigEntryView.EditEventsListener {
+public class DNSListAdapter extends ArrayAdapter<DNSServerConfigBaseEntry> implements DNSServerConfigEntryView.EditEventsListener {
 
     private static final int DEFAULT_DNS_TIMEOUT = 15000;
 
@@ -41,7 +44,7 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
 
     private final DNSServerConfigEntryView dnsServerConfigEntryView;
 
-    public DNSListAdapter(Context context, List<DNSServerConfigEntry> objects, ExecutorService executor) {
+    public DNSListAdapter(Context context, List<DNSServerConfigBaseEntry> objects, ExecutorService executor) {
         super(context, 0, objects);
 
         this.dnsServerConfigEntryView = new DNSServerConfigEntryView(context, this);
@@ -61,6 +64,21 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
         this.testTasksPool = executor;
     }
 
+    public void changeCommentedLinesVisibility(boolean isVisible) {
+        boolean updateList = false;
+        for (int i = 0; i < this.getObjectsCount(); i++) {
+            DNSServerConfigBaseEntry entry = this.getItem(i);
+            if (entry instanceof DNSServerConfigCommentedEntry && ((DNSServerConfigCommentedEntry) entry).isVisible() != isVisible) {
+                ((DNSServerConfigCommentedEntry) entry).setVisible(isVisible);
+                updateList = true;
+            }
+        }
+
+        if (updateList) {
+            this.notifyDataSetChanged();
+        }
+    }
+
     @Override
     public int getCount() {
         return super.getCount() + 1;
@@ -73,6 +91,8 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
     @Override
     public int getItemViewType(int position) {
         if (position > super.getCount() - 1) {
+            return 2;
+        } else if (getItem(position) instanceof DNSServerConfigCommentedEntry) {
             return 1;
         } else {
             return 0;
@@ -82,10 +102,16 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        if (getItemViewType(position) == 1) {
-            convertView = getAddButton(parent);
-        } else {
-            convertView = getItemView(position, convertView, parent);
+        switch (getItemViewType(position)) {
+            case 2:
+                convertView = getAddButton(parent);
+                break;
+            case 1:
+                convertView = getCommentView(position, convertView, parent);
+                break;
+            case 0:
+                convertView = getItemView(position, convertView, parent);
+                break;
         }
 
         return convertView;
@@ -104,8 +130,34 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
         return view;
     }
 
+    private View getCommentView(int position, View convertView, ViewGroup parent) {
+        DNSServerConfigCommentedEntry entry = (DNSServerConfigCommentedEntry) getItem(position);
+
+        DNSServerCommentEntryViewHolder holder;
+
+        if (!entry.isVisible()) {
+            return new View(this.getContext());
+        }
+
+        if (convertView == null || !(convertView.getTag() instanceof DNSServerCommentEntryViewHolder)) {
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.dnsserverconfigentrylistcommentitem, parent, false);
+
+            holder = new DNSServerCommentEntryViewHolder();
+            setupNewCommentHolder(holder, convertView);
+            convertView.setTag(holder);
+        } else {
+            holder = (DNSServerCommentEntryViewHolder) convertView.getTag();
+        }
+
+        holder.dnsServerCommentEntry = entry;
+        holder.commentView.setText(entry.toString());
+        convertView.setEnabled(false);
+
+        return convertView;
+    }
+
     private View getItemView(int position, View convertView, ViewGroup parent) {
-        DNSServerConfigEntry entry = getItem(position);
+        DNSServerConfigEntry entry = (DNSServerConfigEntry) getItem(position);
 
         DNSServerConfigEntryViewHolder holder;
 
@@ -157,7 +209,7 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
                                 @Override
                                 public void run() {
                                     entry.setTestResult(new DNSServerConfigTestResult(DNSServerConfigEntryTestState.SUCCESS, result));
-                                     notifyDataSetChanged();
+                                    notifyDataSetChanged();
                                 }
                             });
                         } catch (IOException e) {
@@ -204,8 +256,16 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
         return convertView;
     }
 
+    private void setupNewCommentHolder(DNSServerCommentEntryViewHolder holder, View convertView) {
+        findCommentEntryViews(holder, convertView);
+    }
+
+    private void findCommentEntryViews(DNSServerCommentEntryViewHolder holder, View convertView) {
+        holder.commentView = convertView.findViewById(R.id.commentText);
+    }
+
     private void setupNewViewHolder(DNSServerConfigEntryViewHolder holder, View convertView) {
-        findViews(holder, convertView);
+        findEntryViews(holder, convertView);
 
         holder.editEntryButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -215,7 +275,7 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
         });
     }
 
-    private void findViews(DNSServerConfigEntryViewHolder holder, View convertView) {
+    private void findEntryViews(DNSServerConfigEntryViewHolder holder, View convertView) {
         holder.root = convertView.findViewById(R.id.container);
         holder.protocolView = convertView.findViewById(R.id.protocolText);
         holder.ipView = convertView.findViewById(R.id.ipText);
@@ -303,5 +363,10 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigEntry> implement
                     break;
             }
         }
+    }
+
+    static class DNSServerCommentEntryViewHolder {
+        DNSServerConfigCommentedEntry dnsServerCommentEntry;
+        TextView commentView;
     }
 }

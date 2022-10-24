@@ -18,7 +18,7 @@
         android:label="personalDNSfilter"
         android:theme="@style/Theme.phttpp.TitleBar"
         android:usesCleartextTraffic="true"
-        android:name="dnsfilter.PersonalDNSFilterApp">
+        android:name=".PersonalDNSFilterApp">
 
         <activity
             android:name=".dnsserverconfig.DNSServerConfigActivity"

@@ -1,16 +1,20 @@
-package dnsfilter.android.dnsserverconfig.widget;
+package dnsfilter.android.dnsserverconfig.widget.listitem;
 
 
 import java.util.Objects;
 
-public class DNSServerConfigEntry {
+import dnsfilter.android.dnsserverconfig.widget.DNSServerConfigEntryValidationResult;
+import dnsfilter.android.dnsserverconfig.widget.DNSServerConfigTestResult;
+import dnsfilter.android.dnsserverconfig.widget.DNSType;
+
+public class DNSServerConfigEntry extends DNSServerConfigBaseEntry {
 
     private static final String DEFAULT_IP = "";
     private static final Byte DEFAULT_DNS_SELECTION = 0;
     private static final String DEFAULT_PORT = "53";
     private static final String DEFAULT_ENDPOINT = "";
     private static final Boolean DEFAULT_IS_ACTIVE = true;
-    public static final String CHAR_LINE_COMMENTED = "#";
+    public static final String CHAR_ENTRY_INACTIVE = "~";
     public static final String EMPTY_STRING = "";
     public static final String ENTRY_PARTS_SEPARATOR = "::";
     public static final String SHORTER_IP_V6_SEPARATOR = "::";
@@ -106,7 +110,7 @@ public class DNSServerConfigEntry {
 
     @Override
     public String toString() {
-        return getIsActiveAsCommented(this.isActive)
+        return getIsActiveAsString(this.isActive)
                 + highlightShorterIPv6(this.ip)
                 + ENTRY_PARTS_SEPARATOR
                 + port
@@ -154,11 +158,11 @@ public class DNSServerConfigEntry {
         return Objects.hash(ip, port, protocol, endpoint, isActive, testResult, validationResult);
     }
 
-    public static String getIsActiveAsCommented(boolean isActive) {
+    public static String getIsActiveAsString(boolean isActive) {
         if (isActive) {
             return EMPTY_STRING;
         } else {
-            return CHAR_LINE_COMMENTED;
+            return CHAR_ENTRY_INACTIVE;
         }
     }
 

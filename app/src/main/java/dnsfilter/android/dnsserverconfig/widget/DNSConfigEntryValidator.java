@@ -4,6 +4,7 @@ package dnsfilter.android.dnsserverconfig.widget;
 import android.content.Context;
 
 import dnsfilter.android.R;
+import dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigEntry;
 
 public class DNSConfigEntryValidator {
 

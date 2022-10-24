@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/rounded_card"
+    android:enabled="false">
+
+    <TextView
+        android:id="@+id/commentText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="6dp"
+        android:gravity="center_vertical"
+        android:minHeight="48dp"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:textStyle="italic"
+        android:typeface="monospace" />
+</FrameLayout>
