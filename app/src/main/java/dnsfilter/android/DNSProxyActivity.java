@@ -1112,7 +1112,7 @@ public class DNSProxyActivity extends Activity
 			openBrowser("https://www.zenz-home.com/personaldnsfilter/help/help.php");
 			return;
 		} else if (destination == dnsField) {
-            startActivity(new Intent(this, DNSServerConfigActivity.class));
+            startActivityForResult(new Intent(this, DNSServerConfigActivity.class), DNSServerConfigActivity.ACTIVITY_RESULT_CODE);
 			return;
 		} else if (destination == scrollLockField) {
 			handleScrollLock();
@@ -1604,6 +1604,10 @@ public class DNSProxyActivity extends Activity
 			startSvc();
 		} else if (requestCode == 0 && resultCode != Activity.RESULT_OK) {
 			Logger.getLogger().logLine("VPN dialog not accepted!\r\nPress restart to display dialog again!");
+		}
+
+		if (requestCode == DNSServerConfigActivity.ACTIVITY_RESULT_CODE && resultCode == Activity.RESULT_OK) {
+			persistConfig();
 		}
 	}
 

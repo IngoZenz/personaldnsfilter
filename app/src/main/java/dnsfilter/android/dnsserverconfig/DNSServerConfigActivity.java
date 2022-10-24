@@ -2,6 +2,7 @@ package dnsfilter.android.dnsserverconfig;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -32,6 +33,7 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
     private Button restoreDefaultConfigurationButton;
     private ImageButton applyNewConfigurationButton;
 
+    public static final Integer ACTIVITY_RESULT_CODE = 325;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -149,6 +151,8 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
         new Handler(getMainLooper()).postDelayed(new Runnable() {
             @Override
             public void run() {
+                Intent returnIntent = new Intent();
+                setResult(Activity.RESULT_OK, returnIntent);
                 finish();
             }
         }, 500);
