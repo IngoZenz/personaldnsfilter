@@ -714,7 +714,7 @@ public class DNSFilterService extends VpnService  {
 		try {
 
 			Intent notificationIntent = new Intent(this, DNSProxyActivity.class);
-			pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+			pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
 			Notification noti;
 
 			// Initialize and start VPN Mode if not disabled
@@ -738,7 +738,7 @@ public class DNSFilterService extends VpnService  {
 
 				Intent pause_resume = new Intent();
 				pause_resume.setAction("pause_resume");
-				PendingIntent pause_resume_Intent = PendingIntent.getBroadcast(this, 12345, pause_resume, PendingIntent.FLAG_UPDATE_CURRENT);
+				PendingIntent pause_resume_Intent = PendingIntent.getBroadcast(this, 12345, pause_resume, PendingIntent.FLAG_UPDATE_CURRENT+PendingIntent.FLAG_IMMUTABLE);
 
 				notibuilder
 						.setContentTitle(getResources().getString(R.string.notificationActive))
