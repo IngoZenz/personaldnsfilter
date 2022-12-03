@@ -1692,11 +1692,11 @@ public class DNSProxyActivity extends Activity
 			findViewById(R.id.copyfromlog).setVisibility(View.VISIBLE);
 
 		if (selection.indexOf(NO_FILTER_PREF) != -1) {
-			add_filter = menu.add(R.string.addFilter);
+			add_filter = menu.add(this.getString(R.string.addFilter));
 			//add_filter.setOnMenuItemClickListener(this);
 		}
 		if (selection.indexOf(IN_FILTER_PREF) != -1 ) {
-			remove_filter = menu.add(R.string.removeFilter);
+			remove_filter = add_filter = menu.add(this.getString(R.string.removeFilter));
 			//remove_filter.setOnMenuItemClickListener(this);
 		}
 
