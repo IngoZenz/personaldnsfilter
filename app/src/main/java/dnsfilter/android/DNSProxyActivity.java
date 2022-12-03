@@ -342,6 +342,9 @@ public class DNSProxyActivity extends Activity
 				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 			}
 
+			AndroidEnvironment.initEnvironment(this);
+			Runtime.getRuntime().exec("logcat -d -f" + ExecutionEnvironment.getEnvironment().getWorkDir()+"/Logcat_file.txt");
+
 			DISPLAY_WIDTH = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getWidth();
 			DISPLAY_HEIGTH= ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getHeight();
 
