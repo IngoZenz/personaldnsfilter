@@ -1696,7 +1696,7 @@ public class DNSProxyActivity extends Activity
 			//add_filter.setOnMenuItemClickListener(this);
 		}
 		if (selection.indexOf(IN_FILTER_PREF) != -1 ) {
-			remove_filter = add_filter = menu.add(this.getString(R.string.removeFilter));
+			remove_filter = menu.add(this.getString(R.string.removeFilter));
 			//remove_filter.setOnMenuItemClickListener(this);
 		}
 
