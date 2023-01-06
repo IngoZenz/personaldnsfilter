@@ -68,7 +68,7 @@ public class DNSFilterProxy implements Runnable {
 			int cnt = fallbackDNS.countTokens();
 			for (int i = 0; i < cnt; i++) {
 				String dnsEntry = fallbackDNS.nextToken().trim();
-				if (!dnsEntry.startsWith("#")) {
+				if (!dnsEntry.startsWith("#") && !dnsEntry.startsWith("~")) {
 					Logger.getLogger().logLine("DNS:" + dnsEntry);
 					try {
 						dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry, timeout));
