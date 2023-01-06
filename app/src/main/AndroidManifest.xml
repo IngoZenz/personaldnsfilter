@@ -30,7 +30,8 @@
         <activity
             android:name=".DNSProxyActivity"
             android:label="personalDNSfilter"
-            android:windowSoftInputMode="adjustPan">
+            android:windowSoftInputMode="adjustPan"
+            android:exported = "true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -41,7 +42,8 @@
         <service
             android:name=".DNSFilterService"
             android:label="personalDNSfilterService"
-            android:permission="android.permission.BIND_VPN_SERVICE">
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>
@@ -50,7 +52,8 @@
         <receiver
             android:name=".BootUpReceiver"
             android:enabled="true"
-            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
 
