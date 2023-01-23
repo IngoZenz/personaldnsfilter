@@ -206,7 +206,27 @@ public class Connection implements TimeoutListener {
 		this.proxy = proxy;
 		establishConnection();
 	}
-	
+
+	private static SSLSocketFactory defaultSSLSocketFactory = null;
+
+	private SSLSocketFactory getDefaultSSLSocketFactory() throws IOException {
+		 if (defaultSSLSocketFactory != null)
+		 	return defaultSSLSocketFactory;
+
+		boolean useTLSSocketFactory = ExecutionEnvironment.getEnvironment().getEnvironmentID() == 1
+				&& Integer.parseInt(ExecutionEnvironment.getEnvironment().getEnvironmentVersion())<21;
+		try {
+			if (useTLSSocketFactory) {
+				defaultSSLSocketFactory = new TLSSocketFactory();
+			} else{
+				defaultSSLSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+			}
+			return defaultSSLSocketFactory;
+		} catch (Exception e){
+			throw new IOException("Cannot get TLSSocketFactory", e);
+		}
+	}
+
 	private void establishConnection() throws IOException {
 		
 		if (conTimeout <0)
@@ -225,11 +245,10 @@ public class Connection implements TimeoutListener {
 		if (ssl) {
 			socket.setSoTimeout(conTimeout); // avoid endless hang in SSL Handshake
 			if (sslSocketFactory==null)
-				sslSocketFactory=(SSLSocketFactory) SSLSocketFactory.getDefault();
+				sslSocketFactory= getDefaultSSLSocketFactory();
 			socket = sslSocketFactory.createSocket(socket, sadr.getHostName(), sadr.getPort(), true);
 			this.ssl = true;
 		}
-		
 		socketIn = socket.getInputStream();
 		socketOut = socket.getOutputStream();
 		if (ssl) 
