@@ -29,6 +29,7 @@ import util.Logger;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
 
 public class ConnectionChangeReceiver extends BroadcastReceiver implements Runnable {
 
@@ -45,6 +46,12 @@ public class ConnectionChangeReceiver extends BroadcastReceiver implements Runna
 		try {
 			if (ExecutionEnvironment.getEnvironment().debug())
 				Logger.getLogger().logLine("Received network connection event: " + intent.getAction());
+			if(intent.getExtras().getBoolean(ConnectivityManager.EXTRA_NO_CONNECTIVITY, Boolean.FALSE)) {
+				if (ExecutionEnvironment.getEnvironment().debug())
+					Logger.getLogger().logLine("Network got disconnected!");
+				DNSServer.invalidateOpenConnections(); //prevent hanging connections
+			}
+
 			DNSFilterService.possibleNetworkChange(false);
 
 			//some devices send only 1 network change event when the connection is closed but not when the network is back!
