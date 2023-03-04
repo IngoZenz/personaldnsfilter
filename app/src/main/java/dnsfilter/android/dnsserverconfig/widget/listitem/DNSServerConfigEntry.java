@@ -1,8 +1,6 @@
 package dnsfilter.android.dnsserverconfig.widget.listitem;
 
 
-import java.util.Objects;
-
 import dnsfilter.android.dnsserverconfig.widget.DNSServerConfigEntryValidationResult;
 import dnsfilter.android.dnsserverconfig.widget.DNSServerConfigTestResult;
 import dnsfilter.android.dnsserverconfig.widget.DNSType;
@@ -18,8 +16,8 @@ public class DNSServerConfigEntry extends DNSServerConfigBaseEntry {
     public static final String EMPTY_STRING = "";
     public static final String ENTRY_PARTS_SEPARATOR = "::";
     public static final String SHORTER_IP_V6_SEPARATOR = "::";
-    public static final String IP_V6_START_BRACER = "[";
-    public static final String IP_V6_END_BRACER = "]";
+    public static final String IP_START_BRACER = "[";
+    public static final String IP_END_BRACER = "]";
 
     private String ip;
     private String port;
@@ -111,7 +109,7 @@ public class DNSServerConfigEntry extends DNSServerConfigBaseEntry {
     @Override
     public String toString() {
         return getIsActiveAsString(this.isActive)
-                + highlightShorterIPv6(this.ip)
+                + getBracedIP(this.ip)
                 + ENTRY_PARTS_SEPARATOR
                 + port
                 + ENTRY_PARTS_SEPARATOR
@@ -119,12 +117,8 @@ public class DNSServerConfigEntry extends DNSServerConfigBaseEntry {
                 + getEndpointAsString(endpoint);
     }
 
-    private static String highlightShorterIPv6(String ip) {
-        if (ip.contains(SHORTER_IP_V6_SEPARATOR)) {
-            return IP_V6_START_BRACER + ip + IP_V6_END_BRACER;
-        } else {
-            return ip;
-        }
+    private static String getBracedIP(String ip) {
+        return IP_START_BRACER + ip + IP_END_BRACER;
     }
 
     private static String getEndpointAsString(String endpoint) {
@@ -144,6 +138,14 @@ public class DNSServerConfigEntry extends DNSServerConfigBaseEntry {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DNSServerConfigEntry dnsServerConfigEntry = (DNSServerConfigEntry) o;
+        return ip.equals(dnsServerConfigEntry.ip)
+                && port.equals(dnsServerConfigEntry.port)
+                && protocol == dnsServerConfigEntry.protocol
+                && endpoint.equals(dnsServerConfigEntry.endpoint)
+                && isActive.equals(dnsServerConfigEntry.isActive)
+                && testResult.equals(dnsServerConfigEntry.testResult)
+                && validationResult.equals(dnsServerConfigEntry.validationResult);
+/*
         return Objects.equals(ip, dnsServerConfigEntry.ip)
                 && Objects.equals(port, dnsServerConfigEntry.port)
                 && protocol == dnsServerConfigEntry.protocol
@@ -151,11 +153,18 @@ public class DNSServerConfigEntry extends DNSServerConfigBaseEntry {
                 && Objects.equals(isActive, dnsServerConfigEntry.isActive)
                 && Objects.equals(testResult, dnsServerConfigEntry.testResult)
                 && Objects.equals(validationResult, dnsServerConfigEntry.validationResult);
+*/
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ip, port, protocol, endpoint, isActive, testResult, validationResult);
+        //return Objects.hash(ip, port, protocol, endpoint, isActive, testResult, validationResult);
+        Object[] objects = new Object[] {ip, port, protocol, endpoint, isActive, testResult, validationResult};
+        int hash = 0;
+        for (int i = 0; i < objects.length; i++)
+            hash = 31*hash+objects[i].hashCode();
+
+        return hash;
     }
 
     public static String getIsActiveAsString(boolean isActive) {

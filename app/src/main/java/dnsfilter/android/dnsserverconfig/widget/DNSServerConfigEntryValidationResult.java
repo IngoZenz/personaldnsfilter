@@ -1,7 +1,5 @@
 package dnsfilter.android.dnsserverconfig.widget;
 
-import java.util.Objects;
-
 public class DNSServerConfigEntryValidationResult {
 
     private String ipError;
@@ -36,12 +34,18 @@ public class DNSServerConfigEntryValidationResult {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DNSServerConfigEntryValidationResult that = (DNSServerConfigEntryValidationResult) o;
-        return Objects.equals(ipError, that.ipError) && Objects.equals(portError, that.portError);
+        //return Objects.equals(ipError, that.ipError) && Objects.equals(portError, that.portError);
+        if ((ipError != null && portError == null)|| (ipError != null && portError == null))
+            return false;
+        if ((ipError == null && portError == null))
+            return true;
+
+        return ipError.equals(that.ipError) && portError.equals(that.portError);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ipError, portError);
+        return 31*ipError.hashCode()+ portError.hashCode();
     }
 
 }

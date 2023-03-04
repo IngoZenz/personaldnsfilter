@@ -1,7 +1,5 @@
 package dnsfilter.android.dnsserverconfig.widget;
 
-import java.util.Objects;
-
 public class DNSServerConfigTestResult {
 
     private static final DNSServerConfigEntryTestState DEFAULT_STATE = DNSServerConfigEntryTestState.NOT_STARTED;
@@ -51,12 +49,28 @@ public class DNSServerConfigTestResult {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DNSServerConfigTestResult that = (DNSServerConfigTestResult) o;
-        return perf == that.perf && testState == that.testState && Objects.equals(message, that.message);
+        return perf == that.perf && testState == that.testState && equalStr(message, that.message);
+    }
+
+    private boolean equalStr(String str1, String str2) {
+        if (str1 != null && str2 !=null)
+            return str1.equals(str2);
+        else if (str1 == null)
+            return (str2 == null);
+        else if (str2 == null)
+            return (str1 == null);
+        else return false;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(testState, message, perf);
+        //return Objects.hash(testState, message, perf);
+        Object[] objects = new Object[] {testState, message, perf};
+        int hash = 0;
+        for (int i = 0; i < objects.length; i++)
+            hash = 31*hash+objects[i].hashCode();
+
+        return hash;
     }
 
     public DNSServerConfigEntryTestState getTestState() {
