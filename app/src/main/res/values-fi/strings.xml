@@ -22,7 +22,7 @@
   <string name="cfgBackupRestore">Varmuuskopiointi ja palautus</string>
   <string name="backupConfig">Varmuuskopioi määritykset</string>
   <string name="restoreBackup">Palauta varmuuskopio</string>
-  <string name="restoreDefault">Palauta oletusmääritykset</string>
+  <string name="restoreDefault">Palauta oletusasetukset</string>
   <string name="cnameCloakingConfig">CNAME Cloaking suojaus (aggressiivinen)</string>
   <string name="category">Kategoria</string>
   <string name="name">Nimi</string>
@@ -39,4 +39,16 @@
   <string name="passphrase">Salasana</string>
   <string name="remoteConnectDialogTitle">Etähallinta</string>
   <string name="manuallyEditConfChk">Muokkaa asetustiedostoa</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">portti</string>
+  <string name="dnsProtocol" translatable="true">DNS-protokolla</string>
+  <string name="endpoint" translatable="true">päätepiste</string>
+  <string name="testDNSResultSuccess">Onnistui:\nKeskimääräinen ping ~ %1$d\"</string>
+  <string name="testDNSResultFailure">Epäonnistui: %1$s</string>
+  <string name="ipEmptyError">IP ei voi olla tyhjä</string>
+  <string name="portEmptyError">portti ei voi olla tyhjä</string>
+  <string name="editEntry">Muokkaa merkintää</string>
+  <string name="rawEditMode">Raakamuokkaustila</string>
+  <string name="serverUnreachable">Palvelinta ei voida tavoittaa</string>
+  <string name="showCommentedLines">Näytä kommentoidut rivit</string>
 </resources>

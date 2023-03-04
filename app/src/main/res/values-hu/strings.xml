@@ -5,11 +5,11 @@
   <string name="listenPortLabel">Port:</string>
   <string name="startBtnLabel">Újraindítás</string>
   <string name="stopBtnLabel">Bezár</string>
-  <string name="filterReloadBtnLabel">Szűrő visszatöltése</string>
+  <string name="filterReloadBtnLabel">Szűrő újratöltése</string>
   <string name="EnableConfigCheckBox">Haladó beállítások</string>
   <string name="editFilterLoadCheckBox">Szűrőfrissítés konfigurálása</string>
   <string name="editAdditionalHostsCheckBox">További gazdák konfigurálása</string>
-  <string name="appWhitelistCheckBox">Alkalmazás whitelist</string>
+  <string name="appWhitelistCheckBox">Alkalmazás fehérlista</string>
   <string name="keepAwakeCheckBox">Az eszköz alvó állapotának megakadályozása</string>
   <string name="EnableAutoStart">Automatikus indítás</string>
   <string name="EnableAdfilter">Blokkoló engedélyezése</string>
@@ -19,24 +19,36 @@
   <string name="filterUpdateDays">Szűrő frissítési időköz a nap:</string>
   <string name="active">Aktív</string>
   <string name="shortText">Rövid szöveg</string>
-  <string name="cfgBackupRestore">Backup and restore</string>
+  <string name="cfgBackupRestore">Biztonsági mentés és visszaállítás</string>
   <string name="backupConfig">Biztonsági konfiguráció</string>
   <string name="restoreBackup">A biztonsági mentés visszaállítása</string>
-  <string name="restoreDefault">Vissza az alapértelmezett konfigurációs</string>
+  <string name="restoreDefault">Alapértelmezett konfiguráció visszaálítása</string>
   <string name="cnameCloakingConfig">CNAME cloaking védelem (agresszív)</string>
   <string name="category">Kategória</string>
   <string name="name">Név</string>
   <string name="editFilterDialogTitle">A szűrő szerkesztése</string>
   <string name="addFilter">"Szűrő hozzáadása"</string>
-  <string name="removeFilter">"Távolítsa el a szűrőt"</string>
-  <string name="proxyModeCheckBox">DNS proxy mód nélkül helyi VPN</string>
-  <string name="rootModeCheckBox">Root módban nélkül helyi VPN</string>
+  <string name="removeFilter">"Szűrő eltávolítása"</string>
+  <string name="proxyModeCheckBox">DNS proxy mód helyi VPN nélkül</string>
+  <string name="rootModeCheckBox">Root mód helyi VPN nélkül</string>
   <string name="proxyLocalOnlyCheckbox">Csak a helyi DNS-proxykéréseket engedélyezze</string>
   <string name="notificationActive">Aktív</string>
   <string name="notificationPaused">Szüneteltetve</string>
   <string name="switch_pause_resume">Koppintson a váltáshoz</string>
   <string name="remote_destination">Rendeltetési hely</string>
-  <string name="passphrase">Jelszó</string>
+  <string name="passphrase">Jelmondat</string>
   <string name="remoteConnectDialogTitle">Távirányító</string>
   <string name="manuallyEditConfChk">Konfigurációs fájl szerkesztése</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">port</string>
+  <string name="dnsProtocol" translatable="true">DNS protokoll</string>
+  <string name="endpoint" translatable="true">végpont</string>
+  <string name="testDNSResultSuccess">Siker:\nÁtlagos ping ~ %1$d\"</string>
+  <string name="testDNSResultFailure">Sikertelen: %1$s</string>
+  <string name="ipEmptyError">Az IP-címnek nem kellene üresnek lennie</string>
+  <string name="portEmptyError">A portnak nem kellene üresnek lennie</string>
+  <string name="editEntry">Belépés szerkesztése</string>
+  <string name="rawEditMode">Nyers szerkesztő üzemmód</string>
+  <string name="serverUnreachable">A szerver nem elérhető</string>
+  <string name="showCommentedLines">Megjegyzéses sorok mutatása</string>
 </resources>

@@ -39,4 +39,16 @@
   <string name="passphrase">Пасспхрасе</string>
   <string name="remoteConnectDialogTitle">Даљинско управљање</string>
   <string name="manuallyEditConfChk">Измените конфигурациону датотеку</string>
+  <string name="ip" translatable="true">IP адреса</string>
+  <string name="port" translatable="true">порт</string>
+  <string name="dnsProtocol" translatable="true">ДНС протокол</string>
+  <string name="endpoint" translatable="true">крајња тачка</string>
+  <string name="testDNSResultSuccess">Успех:\n Просечан пинг ~ %1$d\"</string>
+  <string name="testDNSResultFailure">Није успео: %1$s</string>
+  <string name="ipEmptyError">IP не би требало да буде празан</string>
+  <string name="portEmptyError">Порт не треба да буде празан</string>
+  <string name="editEntry">Уреди Унос</string>
+  <string name="rawEditMode">Режим необрађеног уређивања</string>
+  <string name="serverUnreachable">Сервер није доступан</string>
+  <string name="showCommentedLines">Прикажи коментарисане линије</string>
 </resources>

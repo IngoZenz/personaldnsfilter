@@ -39,4 +39,16 @@
   <string name="passphrase">口令</string>
   <string name="remoteConnectDialogTitle">远程控制</string>
   <string name="manuallyEditConfChk">编辑配置文件</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">端口</string>
+  <string name="dnsProtocol" translatable="true">DNS 协议</string>
+  <string name="endpoint" translatable="true">endpoint</string>
+  <string name="testDNSResultSuccess">成功：\n平均 ping ~ %1$d\"</string>
+  <string name="testDNSResultFailure">失败： %1$s</string>
+  <string name="ipEmptyError">IP 不应为空</string>
+  <string name="portEmptyError">端口号不应为空</string>
+  <string name="editEntry">编辑 DNS 条目</string>
+  <string name="rawEditMode">原始编辑模式</string>
+  <string name="serverUnreachable">无法连接到服务器</string>
+  <string name="showCommentedLines">显示注释行</string>
 </resources>

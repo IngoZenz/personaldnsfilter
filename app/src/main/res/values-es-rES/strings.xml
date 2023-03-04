@@ -6,10 +6,10 @@
   <string name="startBtnLabel">Reiniciar</string>
   <string name="stopBtnLabel">Cerrar</string>
   <string name="filterReloadBtnLabel">Recargar filtro</string>
-  <string name="EnableConfigCheckBox">Configuraciones avanzadas</string>
+  <string name="EnableConfigCheckBox">Ajustes avanzados</string>
   <string name="editFilterLoadCheckBox">Configurar actualización de filtro</string>
   <string name="editAdditionalHostsCheckBox">Configurar anfitriones adicionales</string>
-  <string name="appWhitelistCheckBox">Lista blanca de apps</string>
+  <string name="appWhitelistCheckBox">Lista blanca de aplicaciones</string>
   <string name="keepAwakeCheckBox">Evitar que el dispositivo entre en estado de reposo</string>
   <string name="EnableAutoStart">Inicio automatico</string>
   <string name="EnableAdfilter">Habilitar bloqueo</string>
@@ -22,7 +22,7 @@
   <string name="cfgBackupRestore">Respaldo y restauración</string>
   <string name="backupConfig">Configuración del respaldo</string>
   <string name="restoreBackup">Restaurar respaldo</string>
-  <string name="restoreDefault">Restaurar a la configuración predeterminada</string>
+  <string name="restoreDefault">Restaurar configuración predeterminada</string>
   <string name="cnameCloakingConfig">CNAME cloaking protección (agresivo)</string>
   <string name="category">Categoría</string>
   <string name="name">Nombre</string>
@@ -30,7 +30,7 @@
   <string name="addFilter">"Añadir filtro"</string>
   <string name="removeFilter">"Eliminar filtro"</string>
   <string name="proxyModeCheckBox">Modo proxy DNS sin VPN local</string>
-  <string name="rootModeCheckBox">Modo root sin VPN local</string>
+  <string name="rootModeCheckBox">Modo de privilegio de acceso sin VPN local.</string>
   <string name="proxyLocalOnlyCheckbox">Permitir solo solicitudes de proxy DNS local</string>
   <string name="notificationActive">Activo</string>
   <string name="notificationPaused">Pausado</string>
@@ -39,4 +39,16 @@
   <string name="passphrase">Frase de contraseña</string>
   <string name="remoteConnectDialogTitle">Control remoto</string>
   <string name="manuallyEditConfChk">Editar archivo de configuración</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">puerto</string>
+  <string name="dnsProtocol" translatable="true">Protocolo DNS</string>
+  <string name="endpoint" translatable="true">Endpoint</string>
+  <string name="testDNSResultSuccess">\nPing Promedio  ~ %1$d\"</string>
+  <string name="testDNSResultFailure">Error: %1$s</string>
+  <string name="ipEmptyError">La IP no debe estar vacía</string>
+  <string name="portEmptyError">el puerto no debe estar vacío</string>
+  <string name="editEntry">Editar entrada</string>
+  <string name="rawEditMode">Editar en modo texto</string>
+  <string name="serverUnreachable">Servidor inaccesible</string>
+  <string name="showCommentedLines">Mostrar líneas comentadas</string>
 </resources>

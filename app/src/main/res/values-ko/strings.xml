@@ -22,7 +22,7 @@
   <string name="cfgBackupRestore">백업과 복원</string>
   <string name="backupConfig">백업 설정</string>
   <string name="restoreBackup">백업 복원</string>
-  <string name="restoreDefault">기본 설정을 복원</string>
+  <string name="restoreDefault">초기 설정 복구</string>
   <string name="cnameCloakingConfig">CNAME cloaking 보호 (공격적)</string>
   <string name="category">카테고리</string>
   <string name="name">이름</string>
@@ -39,4 +39,16 @@
   <string name="passphrase">암호</string>
   <string name="remoteConnectDialogTitle">리모콘</string>
   <string name="manuallyEditConfChk">구성 파일 편집</string>
+  <string name="ip" translatable="true">아이피</string>
+  <string name="port" translatable="true">포트</string>
+  <string name="dnsProtocol" translatable="true">DNS 프로토콜</string>
+  <string name="endpoint" translatable="true">엔드포인트</string>
+  <string name="testDNSResultSuccess">성공:\n평균 핑 ~ %1$d\"</string>
+  <string name="testDNSResultFailure">실패: %1$s</string>
+  <string name="ipEmptyError">IP는 빈칸으로 둘 수 없습니다</string>
+  <string name="portEmptyError">포트는 빈칸으로 둘 수 없습니다</string>
+  <string name="editEntry">항목 편집</string>
+  <string name="rawEditMode">제자리 편집 모드</string>
+  <string name="serverUnreachable">서버에 접속할 수 없습니다</string>
+  <string name="showCommentedLines">주석 처리된 줄 표시</string>
 </resources>

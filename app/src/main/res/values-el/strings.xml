@@ -22,7 +22,7 @@
   <string name="cfgBackupRestore">Δημιουργία αντιγράφων ασφαλείας και επαναφορά</string>
   <string name="backupConfig">Ρύθμιση αντιγράφων ασφαλείας</string>
   <string name="restoreBackup">Επαναφορά αντιγράφων ασφαλείας</string>
-  <string name="restoreDefault">Επαναφορά προεπιλεγμένων ρυθμίσεων</string>
+  <string name="restoreDefault">Επαναφορά προεπιλογών</string>
   <string name="cnameCloakingConfig">CNAME Προστασία από απόκρυψη (επιθετική)</string>
   <string name="category">Κατηγορία</string>
   <string name="name">Όνομα</string>
@@ -39,4 +39,16 @@
   <string name="passphrase">Φράση πρόσβασης</string>
   <string name="remoteConnectDialogTitle">Απομακρυσμένος έλεγχος</string>
   <string name="manuallyEditConfChk">Επεξεργασία αρχείου διαμόρφωσης</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">Θύρα</string>
+  <string name="dnsProtocol" translatable="true">Πρωτόκολλο DNS</string>
+  <string name="endpoint" translatable="true">Τελικό σημείο</string>
+  <string name="testDNSResultSuccess">Επιτυχία:\nΜέσος όρος ping ~ %1$d\"</string>
+  <string name="testDNSResultFailure">Αποτυχία: %s</string>
+  <string name="ipEmptyError">Η IP δεν μπορεί να είναι κενή</string>
+  <string name="portEmptyError">Η θύρα δεν μπορεί να είναι κενή</string>
+  <string name="editEntry">Επεξεργασία καταχώρησης</string>
+  <string name="rawEditMode">Λειτουργία επεξεργασίας Raw</string>
+  <string name="serverUnreachable">Ο διακομιστής δεν είναι προσβάσιμος</string>
+  <string name="showCommentedLines">Εμφάνιση γραμμών με σχόλια</string>
 </resources>

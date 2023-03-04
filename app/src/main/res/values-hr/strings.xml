@@ -39,4 +39,16 @@
   <string name="passphrase">Zaporka</string>
   <string name="remoteConnectDialogTitle">Daljinski upravljač</string>
   <string name="manuallyEditConfChk">Uredite konfiguracijsku datoteku</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">port</string>
+  <string name="dnsProtocol" translatable="true">DNS protokol</string>
+  <string name="endpoint" translatable="true">krajnja točka</string>
+  <string name="testDNSResultSuccess">Uspjeh:\nProsječni ping ~ %1$d\"</string>
+  <string name="testDNSResultFailure">Neuspješno: %1$s</string>
+  <string name="ipEmptyError">IP ne smije biti prazan</string>
+  <string name="portEmptyError">luka ne smije biti prazna</string>
+  <string name="editEntry">Uredi stavku</string>
+  <string name="rawEditMode">Sirovi način uređivanja</string>
+  <string name="serverUnreachable">Poslužitelj nije dostupan</string>
+  <string name="showCommentedLines">Prikaži retke s komentarima</string>
 </resources>

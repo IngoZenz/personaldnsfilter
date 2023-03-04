@@ -39,6 +39,16 @@
   <string name="passphrase">Пароль</string>
   <string name="remoteConnectDialogTitle">Дистанционное управление</string>
   <string name="manuallyEditConfChk">Редактировать файл конфигурации</string>
-  <string name="testDNSResultSuccess">Успех:\nСредний пинг ~ %1$d"</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">порт</string>
+  <string name="dnsProtocol" translatable="true">DNS протокол</string>
+  <string name="endpoint" translatable="true">конечная точка</string>
+  <string name="testDNSResultSuccess">Успех:\nСредний пинг ~ %1$d\"</string>
   <string name="testDNSResultFailure">Ошибка: %1$s</string>
+  <string name="ipEmptyError">IP не может быть пустым</string>
+  <string name="portEmptyError">Порт не может быть пустым</string>
+  <string name="editEntry">Редактировать запись</string>
+  <string name="rawEditMode">Текстовый режим</string>
+  <string name="serverUnreachable">Сервер недоступен</string>
+  <string name="showCommentedLines">Показать закомментированные записи</string>
 </resources>

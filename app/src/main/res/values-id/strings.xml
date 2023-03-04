@@ -22,7 +22,7 @@
   <string name="cfgBackupRestore">Cadangan dan Pemulihan</string>
   <string name="backupConfig">Konfigurasi cadangan</string>
   <string name="restoreBackup">Pemulihan pencadangan</string>
-  <string name="restoreDefault">Pulihkan konfigurasi bawaan</string>
+  <string name="restoreDefault">Pulihkan konfigurasi semula</string>
   <string name="cnameCloakingConfig">Perlindungan cloaking CNAME (agresif)</string>
   <string name="category">Kategori</string>
   <string name="name">Nama</string>
@@ -39,4 +39,16 @@
   <string name="passphrase">Frasa sandi</string>
   <string name="remoteConnectDialogTitle">Kontrol jarak jauh</string>
   <string name="manuallyEditConfChk">Edit file konfigurasi</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">port</string>
+  <string name="dnsProtocol" translatable="true">protokol DNS</string>
+  <string name="endpoint" translatable="true">endpoint</string>
+  <string name="testDNSResultSuccess">Berhasil:\nPing rata-rata ~ %1$d\"</string>
+  <string name="testDNSResultFailure">Gagal: %1$s</string>
+  <string name="ipEmptyError">Alamat IP tidak boleh kosong</string>
+  <string name="portEmptyError">port tidak boleh kosong</string>
+  <string name="editEntry">Sunting entri</string>
+  <string name="rawEditMode">Mode sunting langsung</string>
+  <string name="serverUnreachable">Server tidak dapat dijangkau</string>
+  <string name="showCommentedLines">Perlihatkan baris-baris yang ditandai komentar</string>
 </resources>

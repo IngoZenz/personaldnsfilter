@@ -22,7 +22,7 @@
   <string name="cfgBackupRestore">Záloha a obnovení</string>
   <string name="backupConfig">Konfigurace zálohy</string>
   <string name="restoreBackup">Obnovit zálohu</string>
-  <string name="restoreDefault">Obnovit výchozí konfiguraci</string>
+  <string name="restoreDefault">Obnovit výchozí</string>
   <string name="cnameCloakingConfig">Ochrana maskování CNAME (agresivní)</string>
   <string name="category">Kategorie</string>
   <string name="name">Název</string>
@@ -39,4 +39,16 @@
   <string name="passphrase">Přístupové heslo</string>
   <string name="remoteConnectDialogTitle">Vzdálené ovládání</string>
   <string name="manuallyEditConfChk">Upravit konfigurační soubor</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">port</string>
+  <string name="dnsProtocol" translatable="true">Protokol DNS</string>
+  <string name="endpoint" translatable="true">koncový bod</string>
+  <string name="testDNSResultSuccess">Úspěch:\nPrůměrný ping ~ %1$d\"</string>
+  <string name="testDNSResultFailure">Chyba: %1$s</string>
+  <string name="ipEmptyError">IP adresa nesmí být prázdná</string>
+  <string name="portEmptyError">port nesmí být prázdný</string>
+  <string name="editEntry">Upravit položku</string>
+  <string name="rawEditMode">Režim úprav založený na textu</string>
+  <string name="serverUnreachable">Server je nedostupný</string>
+  <string name="showCommentedLines">Zobrazit komentované řádky</string>
 </resources>

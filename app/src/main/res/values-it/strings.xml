@@ -4,12 +4,12 @@
   <string name="app_name">personalDNSfilter</string>
   <string name="listenPortLabel">Porta:</string>
   <string name="startBtnLabel">Riavvia</string>
-  <string name="stopBtnLabel">Chiudere</string>
+  <string name="stopBtnLabel">Chiudi</string>
   <string name="filterReloadBtnLabel">Ricarica filtro</string>
   <string name="EnableConfigCheckBox">Impostazioni Avanzate</string>
   <string name="editFilterLoadCheckBox">Configura filtro aggiornamenti</string>
   <string name="editAdditionalHostsCheckBox">Configura host aggiuntivi</string>
-  <string name="appWhitelistCheckBox">Whitelist app</string>
+  <string name="appWhitelistCheckBox">App escluse </string>
   <string name="keepAwakeCheckBox">Evita spegnimento schermo</string>
   <string name="EnableAutoStart">Avvio automatico</string>
   <string name="EnableAdfilter">Abilita blocco</string>
@@ -22,7 +22,7 @@
   <string name="cfgBackupRestore">Backup e ripristino</string>
   <string name="backupConfig">Configurazione backup</string>
   <string name="restoreBackup">Ripristina backup</string>
-  <string name="restoreDefault">Ripristina configurazione predefinita</string>
+  <string name="restoreDefault">Ripristina impostazioni predefinite</string>
   <string name="cnameCloakingConfig">CNAME cloaking protezione (aggressiva)</string>
   <string name="category">Categoria</string>
   <string name="name">nome</string>
@@ -39,4 +39,16 @@
   <string name="passphrase">Parola chiave </string>
   <string name="remoteConnectDialogTitle">Controllo remoto </string>
   <string name="manuallyEditConfChk">Modifica file di configurazione</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">Porta</string>
+  <string name="dnsProtocol" translatable="true">Protocollo DNS</string>
+  <string name="endpoint" translatable="true">PuntoFinale</string>
+  <string name="testDNSResultSuccess">Completato:\n ping medio ~ %1$d\"</string>
+  <string name="testDNSResultFailure">Fallito: %1$s</string>
+  <string name="ipEmptyError">IP non dovrebbe essere vuoto </string>
+  <string name="portEmptyError">La porta non dovrebbe essere vuota </string>
+  <string name="editEntry">Modifica voce </string>
+  <string name="rawEditMode">Modalità editor Raw </string>
+  <string name="serverUnreachable">Il server non è raggiungibile </string>
+  <string name="showCommentedLines">Mostra commenti </string>
 </resources>

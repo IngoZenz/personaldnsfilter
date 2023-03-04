@@ -39,4 +39,16 @@
   <string name="passphrase">Contrasenya</string>
   <string name="remoteConnectDialogTitle">Control remot</string>
   <string name="manuallyEditConfChk">Editeu el fitxer de configuració</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">port</string>
+  <string name="dnsProtocol" translatable="true">Protocol DNS</string>
+  <string name="endpoint" translatable="true">punt final</string>
+  <string name="testDNSResultSuccess">Èxit:\nPing mitjà ~ %1$d\"</string>
+  <string name="testDNSResultFailure">Ha fallat: %1$s</string>
+  <string name="ipEmptyError">La IP no ha d\'estar buida</string>
+  <string name="portEmptyError">El Port no ha de ser buit</string>
+  <string name="editEntry">Editar entrada</string>
+  <string name="rawEditMode">Mode d\'edició en brut</string>
+  <string name="serverUnreachable">El servidor no és accessible</string>
+  <string name="showCommentedLines">Mostra les línies comentades</string>
 </resources>

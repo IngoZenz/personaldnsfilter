@@ -39,4 +39,16 @@
   <string name="passphrase">पदबंध</string>
   <string name="remoteConnectDialogTitle">रिमोट कंट्रोल</string>
   <string name="manuallyEditConfChk">कॉन्फ़िगरेशन फ़ाइल संपादित करें</string>
+  <string name="ip" translatable="true">आईपी</string>
+  <string name="port" translatable="true">पोर्ट</string>
+  <string name="dnsProtocol" translatable="true">डीएनएस प्रोटोकॉल</string>
+  <string name="endpoint" translatable="true">एंडपॉइन्ट</string>
+  <string name="testDNSResultSuccess">सफलता:\nऔसत पिंग ~ %1$d\"</string>
+  <string name="testDNSResultFailure">विफल: %1$s</string>
+  <string name="ipEmptyError">आईपी ​​खाली नहीं होना चाहिए </string>
+  <string name="portEmptyError">आईपी ​​खाली नहीं होना चाहिए </string>
+  <string name="editEntry">एंट्री बदले</string>
+  <string name="rawEditMode">रॉ संपादित मोड </string>
+  <string name="serverUnreachable">नंबर पहुंंच से बाहर है</string>
+  <string name="showCommentedLines">टिप्पणी की गई लाइनें दिखाएँ</string>
 </resources>
