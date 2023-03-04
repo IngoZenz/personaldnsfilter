@@ -1,3 +1,5 @@
+// see https://courses.cs.duke.edu//fall16/compsci356/DNS/DNS-primer.pdf for info on message structure
+
 package dnsfilter;
 
 import java.io.IOException;
@@ -92,4 +94,37 @@ public class SimpleDNSMessage {
         return buf.position()- offset;    	
     }
 
+	public int produceType65FilterResponse(byte[] response, int offset) {
+
+		System.arraycopy(data, offs, response, offset, length);
+		//response[offset+2] = (byte) (((1<<7) + (response[offset+2] & 0b01111111)) | 0b00000100); // response flag and Authoritive answer
+		response[offset+2] = (byte) ((1<<7) + (response[offset+2] & 0b01111111));
+		response[offset+3] = (byte) 0b10000100; // Recursion available + 4 (not implemented type 65)
+
+		ByteBuffer buf = ByteBuffer.wrap(response, offset, response.length-offset);
+		buf.position(offset+4);
+		buf.putShort((short)1); //Q-count
+		buf.putShort((short)0); // A-count
+		buf.putShort((short)0); // Auth-count
+		buf.putShort((short)0); //Add-count
+
+		StringTokenizer chainElements = new StringTokenizer(qHost,".");
+		int count = chainElements.countTokens();
+
+		//QUESTION
+
+		//set request host
+		for (int i = 0; i < count; i++) {
+			String element = chainElements.nextToken();
+			buf.put((byte)(element.length() & 0xFF));
+			buf.put(element.getBytes());
+		}
+		buf.put((byte)0);
+
+		//Query type and class
+		buf.putShort(qType); // Q-Type:1
+		buf.putShort(qClass); // Q-Class:1
+
+		return buf.position()- offset;
+	}
 }
