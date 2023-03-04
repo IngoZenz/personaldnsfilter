@@ -22,7 +22,7 @@
   <string name="cfgBackupRestore">Backup og gendannelse</string>
   <string name="backupConfig">Backup af konfigurationen</string>
   <string name="restoreBackup">Gendan fra sikkerhedskopi</string>
-  <string name="restoreDefault">Gendanne standardkonfigurationen</string>
+  <string name="restoreDefault">Gendan standardkonfiguration</string>
   <string name="cnameCloakingConfig">CNAME Cloaking beskyttelse (aggressiv)</string>
   <string name="category">Kategori</string>
   <string name="name">Navn</string>
@@ -39,4 +39,16 @@
   <string name="passphrase">Adgangssætning</string>
   <string name="remoteConnectDialogTitle">Fjernbetjening</string>
   <string name="manuallyEditConfChk">Rediger konfigurationsfil</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">port</string>
+  <string name="dnsProtocol" translatable="true">DNS-protokol</string>
+  <string name="endpoint" translatable="true">endepunkt</string>
+  <string name="testDNSResultSuccess">Succes::\nGennemsnitlig ping - %1$d\"</string>
+  <string name="testDNSResultFailure">Mislykkedes: %1$s</string>
+  <string name="ipEmptyError">IP bør ikke være blank</string>
+  <string name="portEmptyError">port bør ikke være blank</string>
+  <string name="editEntry">Rediger post</string>
+  <string name="rawEditMode">Rå redigeringstilstand</string>
+  <string name="serverUnreachable">Server er ikke tilgængelig</string>
+  <string name="showCommentedLines">Vis linjer med kommentarer</string>
 </resources>

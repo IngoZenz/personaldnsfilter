@@ -22,7 +22,7 @@
   <string name="cfgBackupRestore">Kopia zapasowa i przywracanie</string>
   <string name="backupConfig">Konfiguracja kopii zapasowej</string>
   <string name="restoreBackup">Przywróć kopię zapasową</string>
-  <string name="restoreDefault">Przywróć domyślną konfigurację</string>
+  <string name="restoreDefault">Przywróć domyślne</string>
   <string name="cnameCloakingConfig">CNAME cloaking ochrona (agresywna)</string>
   <string name="category">Kategoria</string>
   <string name="name">Nazwisko</string>
@@ -39,4 +39,16 @@
   <string name="passphrase">Hasło</string>
   <string name="remoteConnectDialogTitle">Zdalne sterowanie</string>
   <string name="manuallyEditConfChk">Edytuj plik konfiguracyjny</string>
+  <string name="ip" translatable="true">Adres IP</string>
+  <string name="port" translatable="true">Port</string>
+  <string name="dnsProtocol" translatable="true">Protokół DNS</string>
+  <string name="endpoint" translatable="true">Punkt końcowy</string>
+  <string name="testDNSResultSuccess">Sukces:\nŚredni ping ~ %1$d\"</string>
+  <string name="testDNSResultFailure">Niepowodzenie: %1$s</string>
+  <string name="ipEmptyError">Adres IP nie powinien być pusty</string>
+  <string name="portEmptyError">Port nie powinien być pusty</string>
+  <string name="editEntry">Edytuj wpis</string>
+  <string name="rawEditMode">Tryb edycji surowej</string>
+  <string name="serverUnreachable">Serwer jest nieosiągalny</string>
+  <string name="showCommentedLines">Pokaż skomentowane linie</string>
 </resources>

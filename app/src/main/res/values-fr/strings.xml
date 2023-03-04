@@ -5,7 +5,7 @@
   <string name="listenPortLabel">Port :</string>
   <string name="startBtnLabel">Redémarrer</string>
   <string name="stopBtnLabel">Fermer</string>
-  <string name="filterReloadBtnLabel">Actualiser le filtre</string>
+  <string name="filterReloadBtnLabel">Actualiser les filtres</string>
   <string name="EnableConfigCheckBox">Paramètres avancés</string>
   <string name="editFilterLoadCheckBox">Configurer la mise à jour du filtre</string>
   <string name="editAdditionalHostsCheckBox">Configurer des hôtes supplémentaires</string>
@@ -22,7 +22,7 @@
   <string name="cfgBackupRestore">Sauvegarde et restauration</string>
   <string name="backupConfig">Sauver la configuration</string>
   <string name="restoreBackup">Restaurer la sauvegarde</string>
-  <string name="restoreDefault">Restaurer la configuration par défaut</string>
+  <string name="restoreDefault">Restaurer les valeurs par défaut</string>
   <string name="cnameCloakingConfig">CNAME Cloaking protection (aggressive)</string>
   <string name="category">Catégorie</string>
   <string name="name">Nom</string>
@@ -30,7 +30,7 @@
   <string name="addFilter">"Ajouter un filtre"</string>
   <string name="removeFilter">"Supprimer le filtre"</string>
   <string name="proxyModeCheckBox">Mode proxy DNS sans VPN local</string>
-  <string name="rootModeCheckBox">Mode racine sans VPN local</string>
+  <string name="rootModeCheckBox">Mode Root sans VPN local</string>
   <string name="proxyLocalOnlyCheckbox">Autoriser uniquement les requêtes proxy DNS locales</string>
   <string name="notificationActive">Actif</string>
   <string name="notificationPaused">En pause</string>
@@ -39,4 +39,16 @@
   <string name="passphrase">Phrase de passe</string>
   <string name="remoteConnectDialogTitle">Contrôle à distance</string>
   <string name="manuallyEditConfChk">Modifier le fichier de configuration</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">port</string>
+  <string name="dnsProtocol" translatable="true">Protocole DNS</string>
+  <string name="endpoint" translatable="true">point final</string>
+  <string name="testDNSResultSuccess">Succès:\nPing moyen ~ %1$d\"</string>
+  <string name="testDNSResultFailure">Échec: %1$s</string>
+  <string name="ipEmptyError">L\'IP ne doit pas être vide</string>
+  <string name="portEmptyError">Le port ne doit pas être vide</string>
+  <string name="editEntry">Modifier l\'entrée</string>
+  <string name="rawEditMode">Mode d\'édition brut</string>
+  <string name="serverUnreachable">Le serveur est inaccessible</string>
+  <string name="showCommentedLines">Afficher les lignes commentées</string>
 </resources>

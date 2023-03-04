@@ -22,7 +22,7 @@
   <string name="cfgBackupRestore">Khôi phục</string>
   <string name="backupConfig">Sao lưu cấu hình</string>
   <string name="restoreBackup">Khôi phục sao lưu</string>
-  <string name="restoreDefault">Khôi phục mặc định</string>
+  <string name="restoreDefault">Khôi phục về cấu hình mặc định</string>
   <string name="cnameCloakingConfig">CNAME cloaking bảo vệ (hung hăng)</string>
   <string name="category">Mục</string>
   <string name="name">Tên</string>
@@ -39,4 +39,16 @@
   <string name="passphrase">Cụm mật khẩu</string>
   <string name="remoteConnectDialogTitle">Điều khiển từ xa</string>
   <string name="manuallyEditConfChk">Chỉnh sửa tệp cấu hình</string>
+  <string name="ip" translatable="true">Địa chỉ IP của máy chủ DNS</string>
+  <string name="port" translatable="true">Cổng</string>
+  <string name="dnsProtocol" translatable="true">Giao thức DNS</string>
+  <string name="endpoint" translatable="true">ĐIểm cuối</string>
+  <string name="testDNSResultSuccess">Thành công:\nping trung bình ~ %1$d\"</string>
+  <string name="testDNSResultFailure">Thất bại: %1$s</string>
+  <string name="ipEmptyError">Thiếu dịa chỉ IP của máy chủ</string>
+  <string name="portEmptyError">Thiếu cổng của giao thức DNS</string>
+  <string name="editEntry">Chỉnh sửa đầu vào</string>
+  <string name="rawEditMode">Chế độ chỉnh sửa thô</string>
+  <string name="serverUnreachable">Máy chủ DNS không phản hồi</string>
+  <string name="showCommentedLines">Hiện các dòng bình luận</string>
 </resources>

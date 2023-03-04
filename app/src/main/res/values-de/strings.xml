@@ -22,7 +22,7 @@
   <string name="cfgBackupRestore">Sichern und Wiederherstellen</string>
   <string name="backupConfig">Konfiguration sichern</string>
   <string name="restoreBackup">Sicherung wiederherstellen</string>
-  <string name="restoreDefault">Standard-Konfiguration wiederherstellen</string>
+  <string name="restoreDefault">Standard wiederherstellen</string>
   <string name="cnameCloakingConfig">CNAME Cloaking Schutz (aggressiv)</string>
   <string name="category">Kategorie</string>
   <string name="name">Name</string>
@@ -39,4 +39,16 @@
   <string name="passphrase">Passwort</string>
   <string name="remoteConnectDialogTitle">Fernsteuerung</string>
   <string name="manuallyEditConfChk">Konfigurationsdatei bearbeiten</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">Port</string>
+  <string name="dnsProtocol" translatable="true">DNS Protokoll</string>
+  <string name="endpoint" translatable="true">Endpunkt</string>
+  <string name="testDNSResultSuccess">Erfolgreich:\nPing durchschnittlich ~ %1$d\"</string>
+  <string name="testDNSResultFailure">Erfolglos: %1$s</string>
+  <string name="ipEmptyError">IP darf nicht leer sein</string>
+  <string name="portEmptyError">Port darf nicht leer sein</string>
+  <string name="editEntry">Eintrag ändern</string>
+  <string name="rawEditMode">Text basierter Bearbeitungsmodus</string>
+  <string name="serverUnreachable">Server nicht erreichbar</string>
+  <string name="showCommentedLines">Kommentare anzeigen</string>
 </resources>

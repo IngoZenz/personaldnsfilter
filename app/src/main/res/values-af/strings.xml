@@ -22,7 +22,7 @@
   <string name="cfgBackupRestore">Friends en die herstel van</string>
   <string name="backupConfig">Friends opset</string>
   <string name="restoreBackup">Die herstel van friends</string>
-  <string name="restoreDefault">Die herstel van die standaard opset</string>
+  <string name="restoreDefault">herstel verstekkonfigurasie</string>
   <string name="cnameCloakingConfig">CNAME Cloaking Beskerming (aggressief)</string>
   <string name="category">Kategorie</string>
   <string name="name">Naam</string>
@@ -39,4 +39,16 @@
   <string name="passphrase">Wagfrase</string>
   <string name="remoteConnectDialogTitle">Afstandbeheer</string>
   <string name="manuallyEditConfChk">Wysig konfigurasie lêer</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">poort</string>
+  <string name="dnsProtocol" translatable="true">DNS-protokol</string>
+  <string name="endpoint" translatable="true">Eindpunt</string>
+  <string name="testDNSResultSuccess">sukses:\ngemiddelde ping ~ %1$d\"</string>
+  <string name="testDNSResultFailure">Misluk: %1$s</string>
+  <string name="ipEmptyError">IP moet nie leeg wees nie</string>
+  <string name="portEmptyError">poort moet nie leeg wees nie</string>
+  <string name="editEntry">Wysig inskrywing</string>
+  <string name="rawEditMode">Rou redigeermodus</string>
+  <string name="serverUnreachable">Bediener is onbereikbaar!</string>
+  <string name="showCommentedLines">Wys opmerkingsreëls</string>
 </resources>

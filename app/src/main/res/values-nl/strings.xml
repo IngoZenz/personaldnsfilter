@@ -22,7 +22,7 @@
   <string name="cfgBackupRestore">Back-up maken en herstellen</string>
   <string name="backupConfig">Back-up configuratie</string>
   <string name="restoreBackup">Back-up terugzetten</string>
-  <string name="restoreDefault">Standaardconfiguratie herstellen</string>
+  <string name="restoreDefault">Herstel standaard configuratie</string>
   <string name="cnameCloakingConfig">CNAME Cloaking bescherming (agressief)</string>
   <string name="category">categorie</string>
   <string name="name">naam</string>
@@ -39,4 +39,16 @@
   <string name="passphrase">Wachtwoordzin</string>
   <string name="remoteConnectDialogTitle">Bediening op afstand</string>
   <string name="manuallyEditConfChk">Configuratiebestand bewerken</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">poort</string>
+  <string name="dnsProtocol" translatable="true">DNS protocol</string>
+  <string name="endpoint" translatable="true">eindpunt</string>
+  <string name="testDNSResultSuccess">Succes:\nGemiddelde ping ~ %1$d\"</string>
+  <string name="testDNSResultFailure">Mislukt: %1$s</string>
+  <string name="ipEmptyError">IP mag niet leeg zijn</string>
+  <string name="portEmptyError">Poort mag niet leeg zijn</string>
+  <string name="editEntry">Bewerk invoer</string>
+  <string name="rawEditMode">Ruwe bewerkingsmodus</string>
+  <string name="serverUnreachable">Server is niet bereikbaar</string>
+  <string name="showCommentedLines">Toon becommentarieerde regels</string>
 </resources>

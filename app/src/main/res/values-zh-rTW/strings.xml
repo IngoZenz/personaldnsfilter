@@ -22,7 +22,7 @@
   <string name="cfgBackupRestore">備份與回復</string>
   <string name="backupConfig">建立備份</string>
   <string name="restoreBackup">透過備份還原</string>
-  <string name="restoreDefault">重置為默認設定</string>
+  <string name="restoreDefault">重置為預設設定</string>
   <string name="cnameCloakingConfig">揭露並阻擋以CNAME偽裝的第三方追蹤（激進的策略）</string>
   <string name="category">類別</string>
   <string name="name">名稱</string>
@@ -39,4 +39,16 @@
   <string name="passphrase">密碼</string>
   <string name="remoteConnectDialogTitle">遙控</string>
   <string name="manuallyEditConfChk">編輯配置文件</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">Port</string>
+  <string name="dnsProtocol" translatable="true">DNS 通訊協定</string>
+  <string name="endpoint" translatable="true">Endpoint</string>
+  <string name="testDNSResultSuccess">測試成功：\n平均 Ping ~ %1$d</string>
+  <string name="testDNSResultFailure">測試失敗：%1$s</string>
+  <string name="ipEmptyError">IP 欄不可為空白</string>
+  <string name="portEmptyError">連接埠不可為空白</string>
+  <string name="editEntry">編輯 DNS 項目</string>
+  <string name="rawEditMode">編輯原始內容</string>
+  <string name="serverUnreachable">無法連接到伺服器</string>
+  <string name="showCommentedLines">顯示註解行</string>
 </resources>

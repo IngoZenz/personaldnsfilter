@@ -22,7 +22,7 @@
   <string name="cfgBackupRestore">Säkerhetskopiera och återställ</string>
   <string name="backupConfig">Säkerhetskopiera konfiguration</string>
   <string name="restoreBackup">Återställ säkerhetskopia</string>
-  <string name="restoreDefault">Återställ standardkonfiguration</string>
+  <string name="restoreDefault">Återställa standardkonfigurationen</string>
   <string name="cnameCloakingConfig">CNAME cloaking skydd (aggressivt)</string>
   <string name="category">Kategori</string>
   <string name="name">Namn</string>
@@ -39,4 +39,16 @@
   <string name="passphrase">Lösenfras</string>
   <string name="remoteConnectDialogTitle">Fjärrkontroll</string>
   <string name="manuallyEditConfChk">Redigera konfigurationsfil</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">port</string>
+  <string name="dnsProtocol" translatable="true">DNS-protokoll</string>
+  <string name="endpoint" translatable="true">slutpunkt</string>
+  <string name="testDNSResultSuccess">Framgång:\nGenomsnittlig ping ~ %1$d\"</string>
+  <string name="testDNSResultFailure">Misslyckades: %1$s</string>
+  <string name="ipEmptyError">IP bör inte vara tomt.</string>
+  <string name="portEmptyError">Port får inte vara tom</string>
+  <string name="editEntry">Redigera posten</string>
+  <string name="rawEditMode">Redigeringsläge för råmaterial</string>
+  <string name="serverUnreachable">Servern går inte att nå</string>
+  <string name="showCommentedLines">Visa kommenterade rader</string>
 </resources>

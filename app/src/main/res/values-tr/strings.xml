@@ -11,7 +11,7 @@
   <string name="editAdditionalHostsCheckBox">Ek hostları yapılandır</string>
   <string name="appWhitelistCheckBox">Uygulama beyaz listesi</string>
   <string name="keepAwakeCheckBox">Cihazın uykuya geçmesini önle</string>
-  <string name="EnableAutoStart">Otomatik başlatma</string>
+  <string name="EnableAutoStart">Otomatik başlat</string>
   <string name="EnableAdfilter">Engellemeyi etkinleştir</string>
   <string name="dnsLabel">DNS:</string>
   <string name="manualDNSCheck">DNS sunucusu bulmayı devre dışı bırak - Aşağıdaki DNS sunucularını kullan:</string>
@@ -39,4 +39,16 @@
   <string name="passphrase">Parola-şifre</string>
   <string name="remoteConnectDialogTitle">Uzaktan kontrol</string>
   <string name="manuallyEditConfChk">Yapılandırma dosyasını düzenle</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">bağlantı noktası</string>
+  <string name="dnsProtocol" translatable="true">DNS protokolü</string>
+  <string name="endpoint" translatable="true">bitiş noktası</string>
+  <string name="testDNSResultSuccess">Başarılı::\nAverage ping ~ %1$d\"</string>
+  <string name="testDNSResultFailure">Başarısız: %1$s</string>
+  <string name="ipEmptyError">IP boş olmamalıdır</string>
+  <string name="portEmptyError">Bağlantı noktası bölümü boş bırakılamaz </string>
+  <string name="editEntry">Girdiyi düzenle</string>
+  <string name="rawEditMode">Ham düzenleme modu</string>
+  <string name="serverUnreachable">Sunucuya ulaşılamıyor</string>
+  <string name="showCommentedLines">Yorumları göster</string>
 </resources>

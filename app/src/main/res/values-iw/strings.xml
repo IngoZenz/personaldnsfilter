@@ -22,7 +22,7 @@
   <string name="cfgBackupRestore">גיבוי ושחזור</string>
   <string name="backupConfig">גבה הגדרות</string>
   <string name="restoreBackup">שחזר הגדרות</string>
-  <string name="restoreDefault">שחזר הגדרות ראשוניות</string>
+  <string name="restoreDefault">שחזור תצורת ברירת מחדל </string>
   <string name="cnameCloakingConfig">הגנת סיכה של CNAME (אגרסיבית)</string>
   <string name="category">קטגוריות</string>
   <string name="name">שם</string>
@@ -39,4 +39,16 @@
   <string name="passphrase">ביטוי סיסמה</string>
   <string name="remoteConnectDialogTitle">שלט רחוק</string>
   <string name="manuallyEditConfChk">עריכת קובץ הגדרות</string>
+  <string name="ip" translatable="true">כתובת IP</string>
+  <string name="port" translatable="true">יציאה</string>
+  <string name="dnsProtocol" translatable="true">פרוטוקול DNS</string>
+  <string name="endpoint" translatable="true">נקודת קצה</string>
+  <string name="testDNSResultSuccess">פינג הצלחה;/nממוצע ~ %1$d\"</string>
+  <string name="testDNSResultFailure">נכשל: %1$s</string>
+  <string name="ipEmptyError">IP לא אמור להיות ריק</string>
+  <string name="portEmptyError">היציאה לא אמורה להיות ריקה</string>
+  <string name="editEntry">עריכת ערך</string>
+  <string name="rawEditMode">מצב עריכה גולמית </string>
+  <string name="serverUnreachable">לא ניתן להגיע לשרת</string>
+  <string name="showCommentedLines">הצג שורות הערה</string>
 </resources>

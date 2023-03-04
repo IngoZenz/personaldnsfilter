@@ -22,7 +22,7 @@
   <string name="cfgBackupRestore">バックアップと復元</string>
   <string name="backupConfig">バックアップの設定</string>
   <string name="restoreBackup">バックアップから復元</string>
-  <string name="restoreDefault">既定値に復元</string>
+  <string name="restoreDefault">初期設定に戻す</string>
   <string name="cnameCloakingConfig">CNAME クローキング保護 (積極的)</string>
   <string name="category">カテゴリ</string>
   <string name="name">名前</string>
@@ -39,4 +39,16 @@
   <string name="passphrase">パスフレーズ</string>
   <string name="remoteConnectDialogTitle">リモートコントロール</string>
   <string name="manuallyEditConfChk">設定ファイルの編集</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">ポート</string>
+  <string name="dnsProtocol" translatable="true">DNSプロトコル</string>
+  <string name="endpoint" translatable="true">エンドポイント</string>
+  <string name="testDNSResultSuccess">成功:\n平均 Ping ~ %1$d\"</string>
+  <string name="testDNSResultFailure">失敗: %1$s</string>
+  <string name="ipEmptyError">IPは空であってはなりません</string>
+  <string name="portEmptyError">ポートは空であってはなりません</string>
+  <string name="editEntry">エントリを編集する</string>
+  <string name="rawEditMode">Raw編集モード</string>
+  <string name="serverUnreachable">サーバーに到達できません</string>
+  <string name="showCommentedLines">コメント行を表示する</string>
 </resources>

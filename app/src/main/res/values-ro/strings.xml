@@ -39,4 +39,16 @@
   <string name="passphrase">Parolă</string>
   <string name="remoteConnectDialogTitle">Control la distanță</string>
   <string name="manuallyEditConfChk">Editați fișierul de configurare</string>
+  <string name="ip" translatable="true">IP</string>
+  <string name="port" translatable="true">port</string>
+  <string name="dnsProtocol" translatable="true">Protocol DNS</string>
+  <string name="endpoint" translatable="true">Endpoint</string>
+  <string name="testDNSResultSuccess">Succes:\nPing mediu ~ %1$d\"</string>
+  <string name="testDNSResultFailure">Eșuat: %1$s</string>
+  <string name="ipEmptyError">Adresa IP nu ar trebui să fie goală</string>
+  <string name="portEmptyError">Portul nu trebuie să fie gol</string>
+  <string name="editEntry">Editează înregistrarea</string>
+  <string name="rawEditMode">Mod de editare brut</string>
+  <string name="serverUnreachable">Server inaccesibil</string>
+  <string name="showCommentedLines">Afișare linii comentate</string>
 </resources>
