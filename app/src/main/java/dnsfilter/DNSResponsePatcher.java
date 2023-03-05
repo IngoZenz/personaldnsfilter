@@ -30,6 +30,7 @@ import java.util.Set;
 
 import util.Logger;
 import util.LoggerInterface;
+import util.Utils;
 
 public class DNSResponsePatcher {
 
@@ -161,7 +162,7 @@ public class DNSResponsePatcher {
 						if (type == 1 || type == 28)
 							answerStr = InetAddress.getByAddress(answer).getHostAddress();
 						else
-							answerStr = new String(answer);
+							answerStr = getReadableStringFromBinary(answer,0,answer.length);
 					}
 					trafficLog(client, clss, type, host, answerStr, len);
 				}
@@ -261,6 +262,20 @@ public class DNSResponsePatcher {
 			}
 		}
 		return result;
+	}
+
+	public static String getReadableStringFromBinary(byte[] b, int offs, int r) {
+		StringBuilder result = new StringBuilder();
+		for (int i = offs; i < r; i++) {
+			if (!((b[i] < 64 && b[i] > 32) || (b[i] < 91 && b[i] > 64) || (b[i] < 123 && b[i] > 96)))  {
+				result.append((char) 46);
+			}
+			else if (b[i] != 44 && b[i] != 59)
+				result.append((char) b[i]); //no comma or semicolon as it might serve as seperator
+			else
+				result.append((char) 46);
+		}
+		return result.toString();
 	}
 }
 

@@ -94,12 +94,12 @@ public class SimpleDNSMessage {
         return buf.position()- offset;    	
     }
 
-	public int produceType65FilterResponse(byte[] response, int offset) {
+	public int get_NonTyp_1_28_FilterResponse(byte[] response, int offset) {
 
 		System.arraycopy(data, offs, response, offset, length);
 		//response[offset+2] = (byte) (((1<<7) + (response[offset+2] & 0b01111111)) | 0b00000100); // response flag and Authoritive answer
 		response[offset+2] = (byte) ((1<<7) + (response[offset+2] & 0b01111111));
-		response[offset+3] = (byte) 0b10000100; // Recursion available + 4 (not implemented type 65)
+		response[offset+3] = (byte) 0b10000101; // Recursion available + 5 (refused for policy reasons)
 
 		ByteBuffer buf = ByteBuffer.wrap(response, offset, response.length-offset);
 		buf.position(offset+4);
