@@ -94,7 +94,7 @@ public class SimpleDNSMessage {
         return buf.position()- offset;    	
     }
 
-	public int get_NonTyp1_Type28_FilterResponse(byte[] response, int offset) {
+	public int get_NonTyp_1_28_FilterResponse(byte[] response, int offset) {
 
 		System.arraycopy(data, offs, response, offset, length);
 		//response[offset+2] = (byte) (((1<<7) + (response[offset+2] & 0b01111111)) | 0b00000100); // response flag and Authoritive answer
