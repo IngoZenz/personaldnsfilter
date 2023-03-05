@@ -333,12 +333,13 @@ public class Utils {
 	public static String getReadableStringFromBinary(byte[] b, int offs, int r) {
 		StringBuilder result = new StringBuilder();
 		for (int i = offs; i < r; i++) {
-			if (!((b[i] < 64 && b[i] > 32) || (b[i] < 91 && b[i] > 64) || (b[i] < 123 && b[i] > 96))) {
-				if (b[i] != 10 && b[i] != 13)
-					result.append((char) 46);
-				else
-					result.append((char) b[i]);
-			} else result.append((char) b[i]);
+			if (!((b[i] < 64 && b[i] > 32) || (b[i] < 91 && b[i] > 64) || (b[i] < 123 && b[i] > 96)))  {
+				result.append((char) 46);
+			}
+			else if (b[i] != 44 && b[i] != 59)
+				result.append((char) b[i]); //no comma or semicolon as it might serve as seperator
+			else
+				result.append((char) 46);
 		}
 		return result.toString();
 	}
