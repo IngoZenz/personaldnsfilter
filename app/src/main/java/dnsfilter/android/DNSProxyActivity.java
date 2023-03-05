@@ -333,6 +333,11 @@ public class DNSProxyActivity extends Activity
 
 			super.onCreate(savedInstanceState);
 
+			AndroidEnvironment.initEnvironment(this);
+
+			if (ExecutionEnvironment.getEnvironment().debug())
+				Runtime.getRuntime().exec("logcat -d -f" + ExecutionEnvironment.getEnvironment().getWorkDir()+"/Logcat_file.txt");
+
 			String forcedDisplayMode = ConfigurationAccess.getLocal().getConfigUtil().getConfigValue("forceAndroidDisplayMode", "none").trim();
 			if (forcedDisplayMode.equalsIgnoreCase("portrait"))
 				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -341,9 +346,6 @@ public class DNSProxyActivity extends Activity
 			else if(getResources().getBoolean(R.bool.portrait_only)){
 				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 			}
-
-			AndroidEnvironment.initEnvironment(this);
-			Runtime.getRuntime().exec("logcat -d -f" + ExecutionEnvironment.getEnvironment().getWorkDir()+"/Logcat_file.txt");
 
 			DISPLAY_WIDTH = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getWidth();
 			DISPLAY_HEIGTH= ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getHeight();
