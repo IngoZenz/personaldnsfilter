@@ -36,6 +36,7 @@ import java.io.OutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.net.Socket;
+import java.nio.CharBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -327,6 +328,19 @@ public class Utils {
 			out.close();
 			in.close();
 		}
+	}
+
+	public static String getReadableStringFromBinary(byte[] b, int offs, int r) {
+		StringBuilder result = new StringBuilder();
+		for (int i = offs; i < r; i++) {
+			if (!((b[i] < 64 && b[i] > 32) || (b[i] < 91 && b[i] > 64) || (b[i] < 123 && b[i] > 96))) {
+				if (b[i] != 10 && b[i] != 13)
+					result.append((char) 46);
+				else
+					result.append((char) b[i]);
+			} else result.append((char) b[i]);
+		}
+		return result.toString();
 	}
 
 	public static void copyFile(File from, File to) throws IOException {

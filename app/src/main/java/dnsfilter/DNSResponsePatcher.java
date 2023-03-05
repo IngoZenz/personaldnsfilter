@@ -30,6 +30,7 @@ import java.util.Set;
 
 import util.Logger;
 import util.LoggerInterface;
+import util.Utils;
 
 public class DNSResponsePatcher {
 
@@ -161,7 +162,7 @@ public class DNSResponsePatcher {
 						if (type == 1 || type == 28)
 							answerStr = InetAddress.getByAddress(answer).getHostAddress();
 						else
-							answerStr = new String(answer);
+							answerStr = Utils.getReadableStringFromBinary(answer,0,answer.length);
 					}
 					trafficLog(client, clss, type, host, answerStr, len);
 				}
