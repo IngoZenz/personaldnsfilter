@@ -452,6 +452,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			out.write(bytes);
 			out.flush();
 			out.close();
+			Logger.getLogger().message("Config changed!\nRestart might be required!");
 		} catch (IOException e) {
 			throw new ConfigurationAccessException(e.getMessage(), e);
 		}
