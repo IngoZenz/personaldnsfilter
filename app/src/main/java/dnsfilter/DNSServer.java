@@ -59,7 +59,7 @@ public class DNSServer {
 
     protected static Proxy proxy = Proxy.NO_PROXY;
 
-    static {
+    static void init(){
         Connection.setPoolTimeoutSeconds(30);
         //load proxy
         try {

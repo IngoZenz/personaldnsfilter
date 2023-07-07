@@ -1343,6 +1343,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			config = new Properties();
 			config.load(new ByteArrayInputStream(configBytes));
 
+			DNSServer.init();
+
 			serverStopped = false;
 
 			//start remote Control server if configured and not started already
