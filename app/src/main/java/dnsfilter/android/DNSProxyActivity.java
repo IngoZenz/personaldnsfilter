@@ -604,6 +604,12 @@ public class DNSProxyActivity extends Activity
 	}
 
 	@Override
+	public void onRequestPermissionsResult (int requestCode, String[] permissions, int[] grantResults) {
+		if (permissions[0].equals(Manifest.permission.POST_NOTIFICATIONS) && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+			handleRestart(); //let it take effect
+	}
+
+	@Override
 	public void onResume() {
 		try {
 			super.onResume();
