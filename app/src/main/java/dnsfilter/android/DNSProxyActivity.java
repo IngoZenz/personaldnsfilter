@@ -22,12 +22,14 @@
 
 package dnsfilter.android;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -332,7 +334,11 @@ public class DNSProxyActivity extends Activity
 			StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().build());
 
 			super.onCreate(savedInstanceState);
-
+			if (Build.VERSION.SDK_INT >= 33) {
+				if (this.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+					this.requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+				}
+			}
 			AndroidEnvironment.initEnvironment(this);
 
 			if (ExecutionEnvironment.getEnvironment().debug())
