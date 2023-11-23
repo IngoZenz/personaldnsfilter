@@ -97,7 +97,7 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
             String[] dnsEntries = source.split(LINE_SEPARATOR);
             for (String entry : dnsEntries) {
                 if (!entry.isEmpty()) {
-                    entries.add(serializer.deserializeSafe(entry));
+                    entries.add(serializer.deserializeSafe(entry.trim()));
                 }
             }
         }
