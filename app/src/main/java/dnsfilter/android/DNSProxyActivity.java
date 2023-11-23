@@ -334,11 +334,12 @@ public class DNSProxyActivity extends Activity
 			StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().build());
 
 			super.onCreate(savedInstanceState);
-			if (Build.VERSION.SDK_INT >= 33) {
-				if (this.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-					this.requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
-				}
+
+			if (getIntent().getBooleanExtra("SHOULD_FINISH", false)) {
+				finish();
+				System.exit(0);
 			}
+
 			AndroidEnvironment.initEnvironment(this);
 
 			if (ExecutionEnvironment.getEnvironment().debug())
@@ -358,11 +359,6 @@ public class DNSProxyActivity extends Activity
 
 			MsgTO.setActivity(this);
 			INSTANCE = this;
-
-			if (getIntent().getBooleanExtra("SHOULD_FINISH", false)) {
-				finish();
-				System.exit(0);
-			}
 
 			if (Build.VERSION.SDK_INT >= 21) {
 				Window window = this.getWindow();
@@ -594,6 +590,11 @@ public class DNSProxyActivity extends Activity
 			}
 
 			if (appStart) {
+				if (Build.VERSION.SDK_INT >= 33) {
+					if (this.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+						this.requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+					}
+				}
 				initAppAndStartup();
 			}
 
@@ -605,8 +606,11 @@ public class DNSProxyActivity extends Activity
 
 	@Override
 	public void onRequestPermissionsResult (int requestCode, String[] permissions, int[] grantResults) {
-		if (permissions[0].equals(Manifest.permission.POST_NOTIFICATIONS) && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+		if (permissions[0].equals(Manifest.permission.POST_NOTIFICATIONS) && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 			handleRestart(); //let it take effect
+			handleInitialInfoPopUp();
+		}
+		else Logger.getLogger().message("NOTIFICATION PERMISSION IS REQUIRED!");
 	}
 
 	@Override
@@ -900,9 +904,6 @@ public class DNSProxyActivity extends Activity
 		loadAndApplyConfig(true);
 
 		appStart = false; // now started
-
-		handleInitialInfoPopUp();
-
 	}
 
 	private static Dialog popUpDialog = null;
@@ -919,6 +920,17 @@ public class DNSProxyActivity extends Activity
 			persistConfig();
 			popUpDialogChanged = false;
 		}
+	}
+
+	private boolean checkNotificationPermission() {
+		if (Build.VERSION.SDK_INT >= 33) {
+			if (this.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+				Logger.getLogger().logLine("NOTIFICATION PERMISSION IS REQUIRED!");
+				Logger.getLogger().message("NOTIFICATION PERMISSION IS REQUIRED!");
+				return false;
+			}
+		}
+		return true;
 	}
 
 
@@ -1013,8 +1025,13 @@ public class DNSProxyActivity extends Activity
 
 			runOnUiThread(uiUpdater);
 
-			if (startApp)
+			if (!checkNotificationPermission())
+				return;
+
+			if (startApp) {
+				handleInitialInfoPopUp();
 				startup();
+			}
 
 		} else
 			switchingConfig =false;
@@ -1556,6 +1573,9 @@ public class DNSProxyActivity extends Activity
 
 	private void handleRestart() {
 	    if (CONFIG.isLocal()) {
+
+			if (!checkNotificationPermission())
+				return;
 
 			if (!DNSFilterService.stop(false))
 				return;
