@@ -64,7 +64,7 @@ import util.conpool.TLSSocketFactory;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1505402";
+	public static final String VERSION = "1505402-dev";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -671,7 +671,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 									if (hostEntry != null && !hostEntry.equals("localhost")) {
 										String host = hostEntry;
-										if (r[0] == 1) //wildcard
+										if (r[0] == 1 & !(host.startsWith("*.") & host.lastIndexOf("*") == 0)) //wildcard
 											skippedWildcard++;
 										else {
 											out.write((host + "\n").getBytes());
