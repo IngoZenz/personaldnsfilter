@@ -671,8 +671,13 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 									if (hostEntry != null && !hostEntry.equals("localhost")) {
 										String host = hostEntry;
-										if (r[0] == 1 & !(host.startsWith("*.") & host.lastIndexOf("*") == 0)) //wildcard, support only *.<host> entries
-											skippedWildcard++;
+										if (r[0] == 1) { //wildcard included
+											if (host.startsWith("*.") & host.lastIndexOf("*") == 0) {//wildcard, support only *.<host> entries
+												host = host.substring(2);
+												out.write((host + "\n").getBytes());
+												count++;
+											} else skippedWildcard++;
+										}
 										else {
 											out.write((host + "\n").getBytes());
 											count++;
