@@ -74,7 +74,7 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 		this.categoryField = categoryField;
 		categoryField.setText(ALL_ACTIVE);
 
-		categoryMap = new TreeMap();
+		categoryMap = new TreeMap(String.CASE_INSENSITIVE_ORDER);
 	}
 
 	private View[] getContentCells(TableRow row) {
