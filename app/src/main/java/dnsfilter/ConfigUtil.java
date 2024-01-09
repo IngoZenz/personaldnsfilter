@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 import util.Logger;
 
@@ -104,6 +105,7 @@ public class ConfigUtil {
 
         int count = urlTokens.countTokens();
         HostFilterList[] result = new HostFilterList[count];
+        TreeMap<String, HostFilterList> resultSorted = new TreeMap(String.CASE_INSENSITIVE_ORDER);
 
         for (int i = 0; i < count; i++) {
             String urlHost = null;
@@ -141,9 +143,9 @@ public class ConfigUtil {
             if (urlSwitchTokens.hasMoreTokens())
                 active = Boolean.parseBoolean(urlSwitchTokens.nextToken().trim());
 
-            result[i] = new HostFilterList(active, url_category,url_id, urlStr);
+            resultSorted.put(url_id, new HostFilterList(active, url_category,url_id, urlStr));
         }
-        return result;
+        return resultSorted.values().toArray(result);
     }
 
 
