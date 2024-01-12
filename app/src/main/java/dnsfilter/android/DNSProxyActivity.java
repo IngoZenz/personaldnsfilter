@@ -339,20 +339,7 @@ public class DNSProxyActivity extends Activity
 				finish();
 				System.exit(0);
 			}
-
 			AndroidEnvironment.initEnvironment(this);
-
-			if (ExecutionEnvironment.getEnvironment().debug())
-				Runtime.getRuntime().exec("logcat -d -f" + ExecutionEnvironment.getEnvironment().getWorkDir()+"/Logcat_file.txt");
-
-			String forcedDisplayMode = ConfigurationAccess.getLocal().getConfigUtil().getConfigValue("forceAndroidDisplayMode", "none").trim();
-			if (forcedDisplayMode.equalsIgnoreCase("portrait"))
-				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-			else if (forcedDisplayMode.equalsIgnoreCase("landscape"))
-				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-			else if(getResources().getBoolean(R.bool.portrait_only)){
-				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-			}
 
 			DISPLAY_WIDTH = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getWidth();
 			DISPLAY_HEIGTH= ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getHeight();
@@ -588,6 +575,19 @@ public class DNSProxyActivity extends Activity
 				myLogger = new SuppressRepeatingsLogger(this);
 				Logger.setLogger(new GroupedLogger(new LoggerInterface[]{myLogger}));
 			}
+
+			String forcedDisplayMode = ConfigurationAccess.getLocal().getConfigUtil().getConfigValue("forceAndroidDisplayMode", "none").trim();
+			if (forcedDisplayMode.equalsIgnoreCase("portrait"))
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+			else if (forcedDisplayMode.equalsIgnoreCase("landscape"))
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+			else if(getResources().getBoolean(R.bool.portrait_only)){
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+			}
+
+			debug = Boolean.parseBoolean(ConfigurationAccess.getLocal().getConfigUtil().getConfigValue("debug", "false"));
+			if (debug)
+				Runtime.getRuntime().exec("logcat -d -f" + ExecutionEnvironment.getEnvironment().getWorkDir()+"/Logcat_file.txt");
 
 			if (appStart) {
 				if (Build.VERSION.SDK_INT >= 33) {
@@ -989,8 +989,6 @@ public class DNSProxyActivity extends Activity
 					} catch (Exception e) {
 						Logger.getLogger().logLine("Error in log text size setting! "+e.toString());
 					}
-
-					debug = Boolean.parseBoolean(config.getConfigValue("debug", "false"));
 
 					ConfigUtil.HostFilterList[] filterEntries = config.getConfiguredFilterLists();
 					filterCfg.setEntries(filterEntries);
