@@ -65,7 +65,7 @@ import util.conpool.TLSSocketFactory;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1505403-dev";
+	public static final String VERSION = "1505500-dev";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -314,7 +314,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				Logger.getLogger().logLine("Can not parse version from " + previousVersion+"!");
 			}
 		}
-		if (version <= 1505402) //from version 1505403 on the dnsfilter-default.conf is already created when creating the config.
+		if (version <= 1505402) //from version 1505500 on the dnsfilter-default.conf is already created when creating the config.
 			copyFromAssets("dnsfilter-1505401.conf", "dnsfilter-default.conf");
 
 		File defaultConfFile = new File(getPath() + "dnsfilter-default.conf");
