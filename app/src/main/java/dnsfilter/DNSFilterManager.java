@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -325,7 +326,9 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	}
 
 
+
 	private byte[] mergeAndPersistConfig(byte[] currentConfigBytes, byte[] config_Previous_Defaults) throws IOException {
+		filterCfgEqual = 0;
 		String currentCfgStr = new String(currentConfigBytes);
 
 		//handle previous filter disable logic from version 1.50.45
@@ -391,9 +394,9 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	}
 
 	private boolean useDefaultConfig(String currentKey, Properties currentConfig, Properties previousDefaults) {
-		boolean useKeyDefault = ( currentKey.equals("initialInfoPopUpText") || currentKey.equals("initialInfoPopUpTitle") || currentKey.equals("footerLink") || currentKey.equals("showInitialInfoPopUp")) ;
+		boolean forceKeyDefault = ( currentKey.equals("initialInfoPopUpText") || currentKey.equals("initialInfoPopUpTitle") || currentKey.equals("footerLink") || currentKey.equals("showInitialInfoPopUp")) ;
 		boolean useNewDefault = useNewDefault(currentKey, currentConfig, previousDefaults);
-		return useKeyDefault || useNewDefault;
+		return forceKeyDefault || useNewDefault;
 	}
 
 	private boolean useNewDefault(String currentKey, Properties currentConfig, Properties previousDefaults) {
@@ -401,20 +404,43 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			return false;
 
 		if (currentKey.equals("fallbackDNS"))
-			return (currentConfig.get(currentKey).equals(previousDefaults.get(currentKey)));
+			return dnsConfigEqual(currentConfig.getProperty(currentKey,""), previousDefaults.getProperty(currentKey,""));
 		if (currentKey.equals("filterAutoUpdateURL") || currentKey.equals("filterAutoUpdateURL_IDs") || currentKey.equals("filterAutoUpdateURL_categories") || currentKey.equals("filterAutoUpdateURL_switchs"))
 			return useFilterDefaults(currentConfig, previousDefaults);
-		return false;
 
+		return currentConfig.getProperty(currentKey, "").equals(previousDefaults.getProperty(currentKey, ""));
 	}
+
+	private boolean dnsConfigEqual(String dnsCfg1, String  dnsCfg2) {
+		return DNSServer.getInstance().dnsServersEqual(dnsCfg1, dnsCfg2);
+	}
+
+	private int filterCfgEqual = 0; // 1 true / -1 false / 0 unknown. Will be reset to 0 with each mergeAndPersistConfig operation
 
 	private boolean useFilterDefaults(Properties currentConfig, Properties previousDefaults) {
-		return
-			currentConfig.get("filterAutoUpdateURL").equals(previousDefaults.get("filterAutoUpdateURL")) &&
-			currentConfig.get("filterAutoUpdateURL_IDs").equals(previousDefaults.get("filterAutoUpdateURL_IDs")) &&
-			currentConfig.get("filterAutoUpdateURL_categories").equals(previousDefaults.get("filterAutoUpdateURL_categories")) &&
-			currentConfig.get("filterAutoUpdateURL_switchs").equals(previousDefaults.get("filterAutoUpdateURL_switchs"));
+
+		if (filterCfgEqual != 0) //already calculated
+			return (filterCfgEqual == 1);
+
+		// not calculated yet - need to check
+		Vector current = ConfigUtil.getConfiguredFilterListsAsVector(currentConfig);
+		Vector previous = ConfigUtil.getConfiguredFilterListsAsVector(previousDefaults);
+
+		if (current.size() != previous.size()) {
+			filterCfgEqual = -1;
+			return false;
+		}
+		for (int i = 0; i < current.size(); i++) {
+			if (!previous.contains(current.elementAt(i))) {
+				filterCfgEqual = -1;
+				return false;
+			}
+		}
+		filterCfgEqual = 1;
+		return true;
 	}
+
+
 
 
 	private void createDefaultConfiguration() {

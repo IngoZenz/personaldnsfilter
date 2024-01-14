@@ -61,23 +61,11 @@ public class DNSFilterProxy implements Runnable {
 				Logger.getLogger().logLine("DNS detection not supported for this device");
 				Logger.getLogger().message("DNS detection not supported - Using fallback!");
 			}
-			Vector<DNSServer> dnsAdrs = new Vector<DNSServer>();
-			int timeout = Integer.parseInt(dnsFilterMgr.getConfig().getProperty("dnsRequestTimeout", "15000"));
 
-			StringTokenizer fallbackDNS = new StringTokenizer(dnsFilterMgr.getConfig().getProperty("fallbackDNS", ""), ";");
-			int cnt = fallbackDNS.countTokens();
-			for (int i = 0; i < cnt; i++) {
-				String dnsEntry = fallbackDNS.nextToken().trim();
-				if (!dnsEntry.startsWith("#") && !dnsEntry.startsWith("~")) {
-					Logger.getLogger().logLine("DNS:" + dnsEntry);
-					try {
-						dnsAdrs.add(DNSServer.getInstance().createDNSServer(dnsEntry, timeout));
-					} catch (IOException e) {
-						Logger.getLogger().logException(e);
-					}
-				}
-			}
-			DNSCommunicator.getInstance().setDNSServers(dnsAdrs.toArray(new DNSServer[dnsAdrs.size()]));
+			int timeout = Integer.parseInt(dnsFilterMgr.getConfig().getProperty("dnsRequestTimeout", "15000"));
+			String specList = dnsFilterMgr.getConfig().getProperty("fallbackDNS", "");
+			DNSServer[] dnsServers = DNSServer.getInstance().createDNSServers(specList, timeout, false);
+			DNSCommunicator.getInstance().setDNSServers(dnsServers);
         } catch (IOException e) {
             Logger.getLogger().logLine("!!!DNS server initialization failed!!!");
             Logger.getLogger().logLine(e.toString());

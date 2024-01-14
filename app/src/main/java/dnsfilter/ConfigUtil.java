@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.Vector;
 
 import util.Logger;
 
@@ -30,6 +31,21 @@ public class ConfigUtil {
             this.category = category;
             this.id = id;
             this.url = url;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null)
+                return false;
+            if ( !this.getClass().equals(obj.getClass()) )
+                return false;
+
+            HostFilterList hfl = (HostFilterList)obj;
+            return (
+                active == hfl.active &&
+                category.equals(hfl.category) &&
+                id.equals(hfl.id) &&
+                url.equals(hfl.url));
         }
     }
 
@@ -93,6 +109,19 @@ public class ConfigUtil {
     }
 
     public HostFilterList[] getConfiguredFilterLists() {
+        return getConfiguredFilterLists(config);
+    }
+
+    public static Vector<HostFilterList> getConfiguredFilterListsAsVector(Properties config) {
+        HostFilterList[] result = getConfiguredFilterLists(config);
+        Vector<HostFilterList> resultVector = new Vector<>(result.length);
+        for (int i = 0; i < result.length; i++)
+            resultVector.addElement(result[i]);
+        return resultVector;
+
+    }
+
+    public static HostFilterList[] getConfiguredFilterLists(Properties config) {
         String urls = config.getProperty("filterAutoUpdateURL", "");
         String url_IDs = config.getProperty("filterAutoUpdateURL_IDs", "");
         String url_switchs = config.getProperty("filterAutoUpdateURL_switchs", "");
