@@ -257,7 +257,7 @@ public class DNSServer {
         Vector<DNSServerConfig> dnsServers = new Vector<>();
         for (int i = 0; i < cnt; i++) {
             String dnsEntry = fallbackDNS.nextToken().trim();
-            if (!dnsEntry.startsWith("#") && !dnsEntry.startsWith("~")) {
+            if (!dnsEntry.startsWith("#")) {
                 try {
                     DNSServerConfig dnsServerCfg = new DNSServerConfig(dnsEntry, 0);
                     dnsServers.add(dnsServerCfg);
