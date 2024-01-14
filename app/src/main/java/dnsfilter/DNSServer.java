@@ -67,11 +67,17 @@ public class DNSServer {
         int port;
         String endPoint;
         int timeout;
+        boolean active;
 
 
         protected DNSServerConfig (String spec, int timeout) throws IOException {
             this.timeout = timeout;
             ip = null;
+
+            if (spec.startsWith("~")) {
+                active = false;
+                spec = spec.substring(1);
+            } else active = true;
 
             if (spec.startsWith("[")) { //IPV6
                 int idx = spec.indexOf("]");
@@ -131,7 +137,8 @@ public class DNSServer {
                 ip.equals(cfg.ip) &&
                 port == cfg.port &&
                 endPoint1.equals(endPoint2) &&
-                timeout == cfg.timeout
+                timeout == cfg.timeout &&
+                active == cfg.active
             );
         }
     }
