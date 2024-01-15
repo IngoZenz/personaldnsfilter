@@ -66,12 +66,10 @@ public class DNSServer {
         String ip;
         int port;
         String endPoint;
-        int timeout;
         boolean active;
 
 
-        protected DNSServerConfig (String spec, int timeout) throws IOException {
-            this.timeout = timeout;
+        protected DNSServerConfig (String spec) throws IOException {
             ip = null;
 
             if (spec.startsWith("~")) {
@@ -115,7 +113,7 @@ public class DNSServer {
                 endPoint = entryTokens[3];
         }
 
-        protected DNSServer createDNSServer() throws IOException {
+        protected DNSServer createDNSServer(int timeout) throws IOException {
             return getInstance().createDNSServer(protocol,InetAddress.getByName(ip),port,timeout,endPoint);
         }
 
@@ -137,7 +135,6 @@ public class DNSServer {
                 ip.equals(cfg.ip) &&
                 port == cfg.port &&
                 endPoint1.equals(endPoint2) &&
-                timeout == cfg.timeout &&
                 active == cfg.active
             );
         }
@@ -226,8 +223,8 @@ public class DNSServer {
     }
 
     public DNSServer createDNSServer(String spec, int timeout) throws IOException {
-        DNSServerConfig dnsServerConfig = new DNSServerConfig(spec, timeout);
-        return dnsServerConfig.createDNSServer();
+        DNSServerConfig dnsServerConfig = new DNSServerConfig(spec);
+        return dnsServerConfig.createDNSServer(timeout);
     }
 
     public boolean dnsServersEqual(String specList1, String specList2){
@@ -259,7 +256,7 @@ public class DNSServer {
             String dnsEntry = fallbackDNS.nextToken().trim();
             if (!dnsEntry.startsWith("#")) {
                 try {
-                    DNSServerConfig dnsServerCfg = new DNSServerConfig(dnsEntry, 0);
+                    DNSServerConfig dnsServerCfg = new DNSServerConfig(dnsEntry);
                     dnsServers.add(dnsServerCfg);
                 } catch (Exception e) {
                     Logger.getLogger().logLine("Error parsing DNS Servers from "+specList);
@@ -280,10 +277,10 @@ public class DNSServer {
             if (!dnsEntry.startsWith("#") && !dnsEntry.startsWith("~")) {
                 if (ExecutionEnvironment.getEnvironment().debug()) Logger.getLogger().logLine("DNS:" + dnsEntry);
                 try {
-                    DNSServerConfig dnsServerCfg = new DNSServerConfig(dnsEntry, timeout);
+                    DNSServerConfig dnsServerCfg = new DNSServerConfig(dnsEntry);
                     if (rootMode && dnsServerCfg.port == 53)
                         throw new IOException("Port 53 not allowed when running in root mode! Use DoT or DoH!");
-                    dnsServers.add(dnsServerCfg.createDNSServer());
+                    dnsServers.add(dnsServerCfg.createDNSServer(timeout));
                     serverCount++;
                 } catch (Exception e) {
                     Logger.getLogger().logLine("Cannot create DNS server for " + dnsEntry + "!\n" + e.toString());
