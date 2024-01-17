@@ -66,7 +66,7 @@ import util.conpool.TLSSocketFactory;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1505500-dev";
+	public static final String VERSION = "1505501-dev";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -268,21 +268,16 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			// New install - create default config
 			Logger.getLogger().logLine(propsFile + " not found! - Creating default config!");
 			createDefaultConfiguration();
-			propsFile = new File(getPath() + "dnsfilter.conf");
 		}
+		return getConfigMergedIfNeeded();
+	}
+
+	private byte[] getConfigMergedIfNeeded() throws ConfigurationAccessException {
 		try {
+			File propsFile = new File(getPath() + "dnsfilter.conf");
 			InputStream in = new FileInputStream(propsFile);
 			byte[] config = Utils.readFully(in,1024);
 			in.close();
-
-			// check for additionalHosts.txt
-			File f = new File(getPath() +"additionalHosts.txt");
-			if (!f.exists()) {
-				f.createNewFile();
-				FileOutputStream fout = new FileOutputStream(f);
-				InputStream defIn = ExecutionEnvironment.getEnvironment().getAsset("additionalHosts.txt");
-				Utils.copyFully(defIn, fout, true);
-			}
 
 			//check versions, in case different merge existing configuration with defaults
 			File versionFile = new File(getPath() +"VERSION.TXT");
@@ -580,6 +575,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	public void doBackup(String name) throws IOException {
 		try {
 			copyLocalFile("dnsfilter.conf", "backup/"+name+"/dnsfilter.conf");
+			copyLocalFile("dnsfilter-default.conf", "backup/"+name+"/dnsfilter-default.conf");
 			copyLocalFile("additionalHosts.txt", "backup/"+name+"/additionalHosts.txt");
 			copyLocalFile("VERSION.TXT", "backup/"+name+"/VERSION.TXT");
 			Logger.getLogger().message(new File(getPath() + "backup/"+name).getPath());
@@ -607,6 +603,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			stop();
 			invalidate();
 			copyFromAssets("dnsfilter.conf", "dnsfilter.conf");
+			copyFromAssets("dnsfilter.conf", "dnsfilter-default.conf");
 			copyFromAssets("additionalHosts.txt", "additionalHosts.txt");
 
 			//cleanup hostsfile and index in order to force reload
@@ -633,6 +630,12 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			copyLocalFile("backup/"+name+"/dnsfilter.conf", "dnsfilter.conf");
 			copyLocalFile("backup/"+name+"/additionalHosts.txt", "additionalHosts.txt");
 			copyLocalFile("backup/"+name+"/VERSION.TXT", "VERSION.TXT");
+			File defaultCfg = new File(getPath() + "backup/"+name+"/dnsfilter-default.conf");
+
+			if (defaultCfg.exists())
+				copyLocalFile("backup/"+name+"/dnsfilter-default.conf", "dnsfilter-default.conf");
+
+			getConfigMergedIfNeeded();
 
 			//cleanup hostsfile and index in order to force reload
 			String filterHostFile = null;
