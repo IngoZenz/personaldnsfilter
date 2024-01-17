@@ -118,6 +118,15 @@ public class DNSServer {
         }
 
         @Override
+        public String toString()  {
+            String result = "["+ip+"]::"+port+"::"+getStringFromProto(protocol);
+            if (endPoint != null)
+                result = result+"::"+endPoint;
+
+            return result;
+        }
+
+        @Override
         public boolean equals(Object cfg2){
             if (cfg2 == null)
                 return false;
@@ -199,6 +208,19 @@ public class DNSServer {
         else throw new IOException("Invalid protocol: "+s);
     }
 
+    public static String getStringFromProto(int proto) {
+
+        if (proto == UDP)
+            return "UDP";
+        else if (proto == TCP)
+            return "TCP";
+        else if (proto == DOT)
+            return "DOT";
+        else if (proto == DOH)
+            return "DOH";
+        else return "Unknown";
+    }
+
 
 
     protected DNSServer (InetAddress address, int port, int timeout){
@@ -248,19 +270,19 @@ public class DNSServer {
     }
 
 
-    private Vector <DNSServerConfig> getDNSServerConfigsFromSpecList(String specList){
+    private Vector <DNSServerConfig> getDNSServerConfigsFromSpecList(String specList) {
         StringTokenizer fallbackDNS = new StringTokenizer(specList, ";");
         int cnt = fallbackDNS.countTokens();
         Vector<DNSServerConfig> dnsServers = new Vector<>();
         for (int i = 0; i < cnt; i++) {
             String dnsEntry = fallbackDNS.nextToken().trim();
-            if (!dnsEntry.startsWith("#")) {
+            if (!dnsEntry.startsWith("#") && !dnsEntry.trim().equals("")) {
                 try {
                     DNSServerConfig dnsServerCfg = new DNSServerConfig(dnsEntry);
                     dnsServers.add(dnsServerCfg);
                 } catch (Exception e) {
-                    Logger.getLogger().logLine("Error parsing DNS Servers from "+specList);
-                    return null;
+                    Logger.getLogger().logLine("Error parsing DNS Server from "+dnsEntry+": "+e.toString());
+                    Logger.getLogger().message("Error parsing DNS Server from "+dnsEntry);
                 }
             }
         }
@@ -268,27 +290,24 @@ public class DNSServer {
     }
 
     public DNSServer[] createDNSServers(String specList, int timeout, boolean rootMode) throws IOException {
-        StringTokenizer fallbackDNS = new StringTokenizer(specList, ";");
-        int cnt = fallbackDNS.countTokens();
-        int serverCount = 0;
+        Vector <DNSServerConfig> dnsServerCfgs = getDNSServerConfigsFromSpecList(specList);
+        int cnt = dnsServerCfgs.size();
         Vector<DNSServer> dnsServers = new Vector<>();
         for (int i = 0; i < cnt; i++) {
-            String dnsEntry = fallbackDNS.nextToken().trim();
-            if (!dnsEntry.startsWith("#") && !dnsEntry.startsWith("~")) {
-                if (ExecutionEnvironment.getEnvironment().debug()) Logger.getLogger().logLine("DNS:" + dnsEntry);
-                try {
-                    DNSServerConfig dnsServerCfg = new DNSServerConfig(dnsEntry);
-                    if (rootMode && dnsServerCfg.port == 53)
-                        throw new IOException("Port 53 not allowed when running in root mode! Use DoT or DoH!");
+            DNSServerConfig dnsServerCfg = dnsServerCfgs.elementAt(i);
+            if (dnsServerCfg.active) {
+                if (rootMode && dnsServerCfg.port == 53) {
+                    Logger.getLogger().logLine("invalid DNS entry " + dnsServerCfg+"! port 53 not allowed when running in root mode! Use DoT or DoH!");
+                    Logger.getLogger().message("Skipping invalid DNS entry " + dnsServerCfg + "!");
+                }
+                else if (dnsServerCfg.active) {
                     dnsServers.add(dnsServerCfg.createDNSServer(timeout));
-                    serverCount++;
-                } catch (Exception e) {
-                    Logger.getLogger().logLine("Cannot create DNS server for " + dnsEntry + "!\n" + e.toString());
-                    Logger.getLogger().message("Invalid DNS server entry: '" + dnsEntry + "'");
+                    if (ExecutionEnvironment.getEnvironment().debug())
+                        Logger.getLogger().logLine("Added DNS Server "+dnsServerCfg+"!");
                 }
             }
         }
-        return dnsServers.toArray(new DNSServer[serverCount]);
+        return dnsServers.toArray(new DNSServer[dnsServers.size()]);
     }
 
     public InetAddress getAddress() {
