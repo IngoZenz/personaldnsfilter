@@ -620,16 +620,20 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 	@Override
 	public void doRestore(String name) throws IOException {
-
 		try {
 			if (!canStop())
 				throw new IOException("Cannot stop! Pending operation!");
-
 			stop();
 			invalidate();
 			copyLocalFile("backup/"+name+"/dnsfilter.conf", "dnsfilter.conf");
 			copyLocalFile("backup/"+name+"/additionalHosts.txt", "additionalHosts.txt");
 			copyLocalFile("backup/"+name+"/VERSION.TXT", "VERSION.TXT");
+
+			//delete eventually existing invalid default config file.
+			new File(getPath() + "dnsfilter-default.conf").delete();
+
+			// copy default file from backup if existing. In case it does not exist in backup folder,
+			//it will be created via getConfigMergeIfNeeded!
 			File defaultCfg = new File(getPath() + "backup/"+name+"/dnsfilter-default.conf");
 
 			if (defaultCfg.exists())
