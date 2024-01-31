@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Comparator;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -121,6 +123,22 @@ public class ConfigUtil {
 
     }
 
+    private static class StringWrapper implements Comparable {
+
+        String wrapped;
+
+        private StringWrapper(String s){
+            wrapped = s.toUpperCase(Locale.ROOT);
+        }
+        @Override
+        public int compareTo(Object o) {
+            StringWrapper arg = (StringWrapper)o;
+            if (arg.wrapped.equals(wrapped))
+                return -1;
+            return wrapped.compareTo(arg.wrapped);
+        }
+    }
+
     public static HostFilterList[] getConfiguredFilterLists(Properties config) {
         String urls = config.getProperty("filterAutoUpdateURL", "");
         String url_IDs = config.getProperty("filterAutoUpdateURL_IDs", "");
@@ -134,7 +152,7 @@ public class ConfigUtil {
 
         int count = urlTokens.countTokens();
         HostFilterList[] result = new HostFilterList[count];
-        TreeMap<String, HostFilterList> resultSorted = new TreeMap(String.CASE_INSENSITIVE_ORDER);
+        TreeMap<StringWrapper, HostFilterList> resultSorted = new TreeMap();
 
         for (int i = 0; i < count; i++) {
             String urlHost = null;
@@ -172,7 +190,7 @@ public class ConfigUtil {
             if (urlSwitchTokens.hasMoreTokens())
                 active = Boolean.parseBoolean(urlSwitchTokens.nextToken().trim());
 
-            resultSorted.put(url_id, new HostFilterList(active, url_category,url_id, urlStr));
+            resultSorted.put(new StringWrapper(url_id), new HostFilterList(active, url_category,url_id, urlStr));
         }
         return resultSorted.values().toArray(result);
     }
