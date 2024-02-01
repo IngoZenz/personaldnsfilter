@@ -40,12 +40,15 @@ public class BootUpReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		AndroidEnvironment.initEnvironment(context);
-		Properties config;
-		if ((config = getConfig()) != null && Boolean.parseBoolean(config.getProperty("AUTOSTART", "false"))) {
+		Properties config = getConfig();
+		if (config != null && Boolean.parseBoolean(config.getProperty("AUTOSTART", "false"))) {
 
 			if (Build.VERSION.SDK_INT >= 28) {
 				Intent i = new Intent(context, DNSFilterService.class);
-				VpnService.prepare(context);
+				boolean proxyOnAndroid = Boolean.parseBoolean(config.getProperty("dnsProxyOnAndroid", "false"));
+				boolean vpnAndProxy = Boolean.parseBoolean(config.getProperty("vpnInAdditionToProxyMode", "false"));
+				if (!proxyOnAndroid || vpnAndProxy)
+					VpnService.prepare(context);
 				context.startForegroundService(i);
 			} else {
 				DNSProxyActivity.BOOT_START = true;

@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
@@ -48,6 +49,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -64,7 +66,7 @@ import util.conpool.TLSSocketFactory;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1505401";
+	public static final String VERSION = "1505502";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -266,21 +268,16 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			// New install - create default config
 			Logger.getLogger().logLine(propsFile + " not found! - Creating default config!");
 			createDefaultConfiguration();
-			propsFile = new File(getPath() + "dnsfilter.conf");
 		}
+		return getConfigMergedIfNeeded();
+	}
+
+	private byte[] getConfigMergedIfNeeded() throws ConfigurationAccessException {
 		try {
+			File propsFile = new File(getPath() + "dnsfilter.conf");
 			InputStream in = new FileInputStream(propsFile);
 			byte[] config = Utils.readFully(in,1024);
 			in.close();
-
-			// check for additionalHosts.txt
-			File f = new File(getPath() +"additionalHosts.txt");
-			if (!f.exists()) {
-				f.createNewFile();
-				FileOutputStream fout = new FileOutputStream(f);
-				InputStream defIn = ExecutionEnvironment.getEnvironment().getAsset("additionalHosts.txt");
-				Utils.copyFully(defIn, fout, true);
-			}
 
 			//check versions, in case different merge existing configuration with defaults
 			File versionFile = new File(getPath() +"VERSION.TXT");
@@ -293,8 +290,9 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			if (!vStr.equals(DNSFilterManager.VERSION)) {
 				//Version Change ==> merge config with new default config
 				Logger.getLogger().logLine("Updated version! Previous version:" + vStr + ", current version:" + DNSFilterManager.VERSION);
+				byte[] config_Previous_Defaults = getPreviousDefaultConfig(vStr);
 				createDefaultConfiguration();
-				config = mergeAndPersistConfig(config);
+				config = mergeAndPersistConfig(config, config_Previous_Defaults);
 			}
 			return config;
 		} catch (IOException e) {
@@ -303,8 +301,29 @@ public class DNSFilterManager extends ConfigurationAccess  {
 		}
 	}
 
+	private byte[] getPreviousDefaultConfig(String previousVersion) throws IOException {
+		int version = 0;
+		if (!previousVersion.equals("")) {
+			try {
+				version = Integer.parseInt(previousVersion.substring(0, 7));
+			} catch (Exception e) {
+				Logger.getLogger().logLine("Can not parse version from " + previousVersion+"!");
+			}
+		}
+		if (version <= 1505402) //from version 1505500 on the dnsfilter-default.conf is already created when creating the config.
+			copyFromAssets("dnsfilter-1505401.conf", "dnsfilter-default.conf");
 
-	private byte[] mergeAndPersistConfig(byte[] currentConfigBytes) throws IOException {
+		File defaultConfFile = new File(getPath() + "dnsfilter-default.conf");
+		InputStream in = new FileInputStream(defaultConfFile);
+		byte[] config = Utils.readFully(in,1024);
+		in.close();
+		return config;
+	}
+
+
+
+	private byte[] mergeAndPersistConfig(byte[] currentConfigBytes, byte[] config_Previous_Defaults) throws IOException {
+		filterCfgEqual = 0;
 		String currentCfgStr = new String(currentConfigBytes);
 
 		//handle previous filter disable logic from version 1.50.45
@@ -314,6 +333,12 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 		Properties currentConfig = new Properties();
 		currentConfig.load(new ByteArrayInputStream(currentCfgStr.getBytes()));
+
+		Properties previousDefaults = null;
+		if (config_Previous_Defaults != null) {
+			previousDefaults = new Properties();
+			previousDefaults.load(new ByteArrayInputStream(config_Previous_Defaults));
+		}
 
 		String[] currentKeys = currentConfig.keySet().toArray(new String[0]);
 		BufferedReader defCfgReader = new BufferedReader(new InputStreamReader(ExecutionEnvironment.getEnvironment().getAsset("dnsfilter.conf")));
@@ -330,7 +355,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 					if (ln.startsWith(currentKeys[i] + " =")) {
 						if (currentKeys[i].equals("filterActive") && filterDisabledV15045)
 							ln = "filterActive = false";
-						else if (!useDefaultConfig(currentKeys[i]))
+						else if (!useDefaultConfig(currentKeys[i], currentConfig, previousDefaults))
 							ln = currentKeys[i] + " = " + currentConfig.getProperty(currentKeys[i], "").replace("\n","\\n");
 					}
 				}
@@ -363,9 +388,54 @@ public class DNSFilterManager extends ConfigurationAccess  {
 		return configBytes;
 	}
 
-	private boolean useDefaultConfig(String currentKey) {
-		return ( currentKey.equals("initialInfoPopUpText") || currentKey.equals("initialInfoPopUpTitle") || currentKey.equals("footerLink") || currentKey.equals("showInitialInfoPopUp")) ;
+	private boolean useDefaultConfig(String currentKey, Properties currentConfig, Properties previousDefaults) {
+		boolean forceKeyDefault = ( currentKey.equals("initialInfoPopUpText") || currentKey.equals("initialInfoPopUpTitle") || currentKey.equals("footerLink") || currentKey.equals("showInitialInfoPopUp")) ;
+		boolean useNewDefault = useNewDefault(currentKey, currentConfig, previousDefaults);
+		return forceKeyDefault || useNewDefault;
 	}
+
+	private boolean useNewDefault(String currentKey, Properties currentConfig, Properties previousDefaults) {
+		if (previousDefaults == null)
+			return false;
+
+		if (currentKey.equals("fallbackDNS"))
+			return dnsConfigEqual(currentConfig.getProperty(currentKey,""), previousDefaults.getProperty(currentKey,""));
+		if (currentKey.equals("filterAutoUpdateURL") || currentKey.equals("filterAutoUpdateURL_IDs") || currentKey.equals("filterAutoUpdateURL_categories") || currentKey.equals("filterAutoUpdateURL_switchs"))
+			return useFilterDefaults(currentConfig, previousDefaults);
+
+		return currentConfig.getProperty(currentKey, "").equals(previousDefaults.getProperty(currentKey, ""));
+	}
+
+	private boolean dnsConfigEqual(String dnsCfg1, String  dnsCfg2) {
+		return DNSServer.getInstance().dnsServersEqual(dnsCfg1, dnsCfg2);
+	}
+
+	private int filterCfgEqual = 0; // 1 true / -1 false / 0 unknown. Will be reset to 0 with each mergeAndPersistConfig operation
+
+	private boolean useFilterDefaults(Properties currentConfig, Properties previousDefaults) {
+
+		if (filterCfgEqual != 0) //already calculated
+			return (filterCfgEqual == 1);
+
+		// not calculated yet - need to check
+		Vector current = ConfigUtil.getConfiguredFilterListsAsVector(currentConfig);
+		Vector previous = ConfigUtil.getConfiguredFilterListsAsVector(previousDefaults);
+
+		if (current.size() != previous.size()) {
+			filterCfgEqual = -1;
+			return false;
+		}
+		for (int i = 0; i < current.size(); i++) {
+			if (!previous.contains(current.elementAt(i))) {
+				filterCfgEqual = -1;
+				return false;
+			}
+		}
+		filterCfgEqual = 1;
+		return true;
+	}
+
+
 
 
 	private void createDefaultConfiguration() {
@@ -373,8 +443,11 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			File f = new File(getPath() +".");
 			f.mkdir();
 
-			//dnsfilter.con f
+			//dnsfilter.conf
 			copyFromAssets("dnsfilter.conf", "dnsfilter.conf");
+
+			//default config
+			copyFromAssets("dnsfilter.conf", "dnsfilter-default.conf");
 
 			//additionalHosts.txt
 			if (!new File(getPath() +"additionalHosts.txt").exists())
@@ -420,7 +493,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	public void updateConfigMergeDefaults(byte[] config) throws IOException {
 		try {
 			invalidate();
-			config = mergeAndPersistConfig(config);
+			config = mergeAndPersistConfig(config, null);
 			this.config.load(new ByteArrayInputStream(config));
 			Logger.getLogger().message("Config changed!\nRestart might be required!");
 		} catch (IOException e) {
@@ -502,6 +575,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	public void doBackup(String name) throws IOException {
 		try {
 			copyLocalFile("dnsfilter.conf", "backup/"+name+"/dnsfilter.conf");
+			copyLocalFile("dnsfilter-default.conf", "backup/"+name+"/dnsfilter-default.conf");
 			copyLocalFile("additionalHosts.txt", "backup/"+name+"/additionalHosts.txt");
 			copyLocalFile("VERSION.TXT", "backup/"+name+"/VERSION.TXT");
 			Logger.getLogger().message(new File(getPath() + "backup/"+name).getPath());
@@ -529,6 +603,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			stop();
 			invalidate();
 			copyFromAssets("dnsfilter.conf", "dnsfilter.conf");
+			copyFromAssets("dnsfilter.conf", "dnsfilter-default.conf");
 			copyFromAssets("additionalHosts.txt", "additionalHosts.txt");
 
 			//cleanup hostsfile and index in order to force reload
@@ -545,16 +620,26 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 	@Override
 	public void doRestore(String name) throws IOException {
-
 		try {
 			if (!canStop())
 				throw new IOException("Cannot stop! Pending operation!");
-
 			stop();
 			invalidate();
 			copyLocalFile("backup/"+name+"/dnsfilter.conf", "dnsfilter.conf");
 			copyLocalFile("backup/"+name+"/additionalHosts.txt", "additionalHosts.txt");
 			copyLocalFile("backup/"+name+"/VERSION.TXT", "VERSION.TXT");
+
+			//delete eventually existing invalid default config file.
+			new File(getPath() + "dnsfilter-default.conf").delete();
+
+			// copy default file from backup if existing. In case it does not exist in backup folder,
+			//it will be created via getConfigMergeIfNeeded!
+			File defaultCfg = new File(getPath() + "backup/"+name+"/dnsfilter-default.conf");
+
+			if (defaultCfg.exists())
+				copyLocalFile("backup/"+name+"/dnsfilter-default.conf", "dnsfilter-default.conf");
+
+			getConfigMergedIfNeeded();
 
 			//cleanup hostsfile and index in order to force reload
 			String filterHostFile = null;
@@ -671,8 +756,13 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 									if (hostEntry != null && !hostEntry.equals("localhost")) {
 										String host = hostEntry;
-										if (r[0] == 1) //wildcard
-											skippedWildcard++;
+										if (r[0] == 1) { //wildcard included
+											if (host.startsWith("*.") & host.lastIndexOf("*") == 0) {//wildcard, support only *.<host> entries
+												host = host.substring(2);
+												out.write((host + "\n").getBytes());
+												count++;
+											} else skippedWildcard++;
+										}
 										else {
 											out.write((host + "\n").getBytes());
 											count++;
@@ -1342,6 +1432,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			byte[] configBytes = readConfig();
 			config = new Properties();
 			config.load(new ByteArrayInputStream(configBytes));
+
+			DNSServer.init();
 
 			serverStopped = false;
 

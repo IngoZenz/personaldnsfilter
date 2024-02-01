@@ -7,8 +7,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Comparator;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.util.Vector;
 
 import util.Logger;
 
@@ -29,6 +33,21 @@ public class ConfigUtil {
             this.category = category;
             this.id = id;
             this.url = url;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null)
+                return false;
+            if ( !this.getClass().equals(obj.getClass()) )
+                return false;
+
+            HostFilterList hfl = (HostFilterList)obj;
+            return (
+                active == hfl.active &&
+                category.equals(hfl.category) &&
+                id.equals(hfl.id) &&
+                url.equals(hfl.url));
         }
     }
 
@@ -92,6 +111,35 @@ public class ConfigUtil {
     }
 
     public HostFilterList[] getConfiguredFilterLists() {
+        return getConfiguredFilterLists(config);
+    }
+
+    public static Vector<HostFilterList> getConfiguredFilterListsAsVector(Properties config) {
+        HostFilterList[] result = getConfiguredFilterLists(config);
+        Vector<HostFilterList> resultVector = new Vector<>(result.length);
+        for (int i = 0; i < result.length; i++)
+            resultVector.addElement(result[i]);
+        return resultVector;
+
+    }
+
+    private static class StringWrapper implements Comparable {
+
+        String wrapped;
+
+        private StringWrapper(String s){
+            wrapped = s.toUpperCase(Locale.ROOT);
+        }
+        @Override
+        public int compareTo(Object o) {
+            StringWrapper arg = (StringWrapper)o;
+            if (arg.wrapped.equals(wrapped))
+                return -1;
+            return wrapped.compareTo(arg.wrapped);
+        }
+    }
+
+    public static HostFilterList[] getConfiguredFilterLists(Properties config) {
         String urls = config.getProperty("filterAutoUpdateURL", "");
         String url_IDs = config.getProperty("filterAutoUpdateURL_IDs", "");
         String url_switchs = config.getProperty("filterAutoUpdateURL_switchs", "");
@@ -104,6 +152,7 @@ public class ConfigUtil {
 
         int count = urlTokens.countTokens();
         HostFilterList[] result = new HostFilterList[count];
+        TreeMap<StringWrapper, HostFilterList> resultSorted = new TreeMap();
 
         for (int i = 0; i < count; i++) {
             String urlHost = null;
@@ -141,9 +190,9 @@ public class ConfigUtil {
             if (urlSwitchTokens.hasMoreTokens())
                 active = Boolean.parseBoolean(urlSwitchTokens.nextToken().trim());
 
-            result[i] = new HostFilterList(active, url_category,url_id, urlStr);
+            resultSorted.put(new StringWrapper(url_id), new HostFilterList(active, url_category,url_id, urlStr));
         }
-        return result;
+        return resultSorted.values().toArray(result);
     }
 
 

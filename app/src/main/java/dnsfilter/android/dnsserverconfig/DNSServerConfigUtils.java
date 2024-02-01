@@ -12,8 +12,6 @@ public class DNSServerConfigUtils {
     }
 
     static String formatSerializedProperties(String fallbackDNSPropertyValue) {
-        return fallbackDNSPropertyValue
-                .replace(";", "\n")
-                .replace(" ", "");
+        return fallbackDNSPropertyValue.replace(";", "\n");
     }
 }

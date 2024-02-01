@@ -22,12 +22,14 @@
 
 package dnsfilter.android;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -333,30 +335,17 @@ public class DNSProxyActivity extends Activity
 
 			super.onCreate(savedInstanceState);
 
-			AndroidEnvironment.initEnvironment(this);
-
-			if (ExecutionEnvironment.getEnvironment().debug())
-				Runtime.getRuntime().exec("logcat -d -f" + ExecutionEnvironment.getEnvironment().getWorkDir()+"/Logcat_file.txt");
-
-			String forcedDisplayMode = ConfigurationAccess.getLocal().getConfigUtil().getConfigValue("forceAndroidDisplayMode", "none").trim();
-			if (forcedDisplayMode.equalsIgnoreCase("portrait"))
-				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-			else if (forcedDisplayMode.equalsIgnoreCase("landscape"))
-				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-			else if(getResources().getBoolean(R.bool.portrait_only)){
-				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+			if (getIntent().getBooleanExtra("SHOULD_FINISH", false)) {
+				finish();
+				System.exit(0);
 			}
+			AndroidEnvironment.initEnvironment(this);
 
 			DISPLAY_WIDTH = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getWidth();
 			DISPLAY_HEIGTH= ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getHeight();
 
 			MsgTO.setActivity(this);
 			INSTANCE = this;
-
-			if (getIntent().getBooleanExtra("SHOULD_FINISH", false)) {
-				finish();
-				System.exit(0);
-			}
 
 			if (Build.VERSION.SDK_INT >= 21) {
 				Window window = this.getWindow();
@@ -587,7 +576,25 @@ public class DNSProxyActivity extends Activity
 				Logger.setLogger(new GroupedLogger(new LoggerInterface[]{myLogger}));
 			}
 
+			String forcedDisplayMode = ConfigurationAccess.getLocal().getConfigUtil().getConfigValue("forceAndroidDisplayMode", "none").trim();
+			if (forcedDisplayMode.equalsIgnoreCase("portrait"))
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+			else if (forcedDisplayMode.equalsIgnoreCase("landscape"))
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+			else if(getResources().getBoolean(R.bool.portrait_only)){
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+			}
+
+			debug = Boolean.parseBoolean(ConfigurationAccess.getLocal().getConfigUtil().getConfigValue("debug", "false"));
+			if (debug)
+				Runtime.getRuntime().exec("logcat -d -f" + ExecutionEnvironment.getEnvironment().getWorkDir()+"/Logcat_file.txt");
+
 			if (appStart) {
+				if (Build.VERSION.SDK_INT >= 33) {
+					if (this.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+						this.requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+					}
+				}
 				initAppAndStartup();
 			}
 
@@ -595,6 +602,15 @@ public class DNSProxyActivity extends Activity
 			dump(e);
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Override
+	public void onRequestPermissionsResult (int requestCode, String[] permissions, int[] grantResults) {
+		if (permissions[0].equals(Manifest.permission.POST_NOTIFICATIONS) && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+			handleRestart(); //let it take effect
+			handleInitialInfoPopUp();
+		}
+		else Logger.getLogger().message("NOTIFICATION PERMISSION IS REQUIRED!");
 	}
 
 	@Override
@@ -888,9 +904,6 @@ public class DNSProxyActivity extends Activity
 		loadAndApplyConfig(true);
 
 		appStart = false; // now started
-
-		handleInitialInfoPopUp();
-
 	}
 
 	private static Dialog popUpDialog = null;
@@ -907,6 +920,17 @@ public class DNSProxyActivity extends Activity
 			persistConfig();
 			popUpDialogChanged = false;
 		}
+	}
+
+	private boolean checkNotificationPermission() {
+		if (Build.VERSION.SDK_INT >= 33) {
+			if (this.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+				Logger.getLogger().logLine("NOTIFICATION PERMISSION IS REQUIRED!");
+				Logger.getLogger().message("NOTIFICATION PERMISSION IS REQUIRED!");
+				return false;
+			}
+		}
+		return true;
 	}
 
 
@@ -966,8 +990,6 @@ public class DNSProxyActivity extends Activity
 						Logger.getLogger().logLine("Error in log text size setting! "+e.toString());
 					}
 
-					debug = Boolean.parseBoolean(config.getConfigValue("debug", "false"));
-
 					ConfigUtil.HostFilterList[] filterEntries = config.getConfiguredFilterLists();
 					filterCfg.setEntries(filterEntries);
 
@@ -1001,8 +1023,13 @@ public class DNSProxyActivity extends Activity
 
 			runOnUiThread(uiUpdater);
 
-			if (startApp)
+			if (!checkNotificationPermission())
+				return;
+
+			if (startApp) {
+				handleInitialInfoPopUp();
 				startup();
+			}
 
 		} else
 			switchingConfig =false;
@@ -1544,6 +1571,9 @@ public class DNSProxyActivity extends Activity
 
 	private void handleRestart() {
 	    if (CONFIG.isLocal()) {
+
+			if (!checkNotificationPermission())
+				return;
 
 			if (!DNSFilterService.stop(false))
 				return;

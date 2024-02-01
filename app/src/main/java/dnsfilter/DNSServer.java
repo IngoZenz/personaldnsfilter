@@ -35,7 +35,8 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.nio.ByteBuffer;
 import java.util.HashSet;
-
+import java.util.StringTokenizer;
+import java.util.Vector;
 import util.ExecutionEnvironment;
 import util.Logger;
 import util.conpool.Connection;
@@ -59,7 +60,97 @@ public class DNSServer {
 
     protected static Proxy proxy = Proxy.NO_PROXY;
 
-    static {
+
+    private class DNSServerConfig extends Object {
+        int protocol;
+        String ip;
+        int port;
+        String endPoint;
+        boolean active;
+
+
+        protected DNSServerConfig (String spec) throws IOException {
+            ip = null;
+
+            if (spec.startsWith("~")) {
+                active = false;
+                spec = spec.substring(1);
+            } else active = true;
+
+            if (spec.startsWith("[")) { //IPV6
+                int idx = spec.indexOf("]");
+                if (idx != -1) {
+                    ip = spec.substring(1,idx);
+                    spec = spec.substring(idx);
+                }
+            } else { // Check if String is just IP without brackets for backward compatibility
+                String specUpper = spec.toUpperCase();
+                if (specUpper.indexOf("::UDP") == -1 && specUpper.indexOf("::DOT") == -1 && specUpper.indexOf("::DOH") == -1 ) {
+                    ip = spec; //just the ip String
+                    spec = "";
+                }
+            }
+
+            String[] entryTokens  = spec.split("::");
+
+            if (ip == null)
+                ip = entryTokens[0];
+
+            port = 53;
+            if (entryTokens.length>1) {
+                try {
+                    port = Integer.parseInt(entryTokens[1]);
+                } catch (NumberFormatException nfe) {
+                    throw new IOException("Invalid port!", nfe);
+                }
+            }
+            protocol = DNSServer.UDP;
+            if (entryTokens.length>2)
+                protocol = DNSServer.getProtoFromString(entryTokens[2]);
+
+            endPoint = null;
+            if (entryTokens.length>3)
+                endPoint = entryTokens[3];
+        }
+
+        protected DNSServer createDNSServer(int timeout) throws IOException {
+            return getInstance().createDNSServer(protocol,InetAddress.getByName(ip),port,timeout,endPoint);
+        }
+
+        @Override
+        public String toString()  {
+            String result = "["+ip+"]::"+port+"::"+getStringFromProto(protocol);
+            if (endPoint != null)
+                result = result+"::"+endPoint;
+
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object cfg2){
+            if (cfg2 == null)
+                return false;
+            if (!this.getClass().equals(cfg2.getClass()))
+                return false;
+            DNSServerConfig cfg = (DNSServerConfig) cfg2;
+            String endPoint1 = endPoint;
+            String endPoint2 = cfg.endPoint;
+            if (endPoint1 == null)
+                endPoint1 = "";
+            if (endPoint2 == null)
+                endPoint2 = "";
+            return (
+                protocol == cfg.protocol &&
+                ip.equals(cfg.ip) &&
+                port == cfg.port &&
+                endPoint1.equals(endPoint2) &&
+                active == cfg.active
+            );
+        }
+    }
+
+
+    static void init(){
         Connection.setPoolTimeoutSeconds(30);
         //load proxy
         try {
@@ -117,6 +208,19 @@ public class DNSServer {
         else throw new IOException("Invalid protocol: "+s);
     }
 
+    public static String getStringFromProto(int proto) {
+
+        if (proto == UDP)
+            return "UDP";
+        else if (proto == TCP)
+            return "TCP";
+        else if (proto == DOT)
+            return "DOT";
+        else if (proto == DOH)
+            return "DOH";
+        else return "Unknown";
+    }
+
 
 
     protected DNSServer (InetAddress address, int port, int timeout){
@@ -140,46 +244,70 @@ public class DNSServer {
         }
     }
 
-    public DNSServer createDNSServer(String spec, int timeout) throws IOException{
+    public DNSServer createDNSServer(String spec, int timeout) throws IOException {
+        DNSServerConfig dnsServerConfig = new DNSServerConfig(spec);
+        return dnsServerConfig.createDNSServer(timeout);
+    }
 
-        String ip = null;
+    public boolean dnsServersEqual(String specList1, String specList2){
+        if (specList1 == null || specList2 == null)
+            return (specList1 == specList2);
 
-        if (spec.startsWith("[")) { //IPV6
-            int idx = spec.indexOf("]");
-            if (idx != -1) {
-                ip = spec.substring(1,idx);
-                spec = spec.substring(idx);
-            }
-        } else { // Check if String is just IP without brackets for backward compatibility
-            String specUpper = spec.toUpperCase();
-            if (specUpper.indexOf("::UDP") == -1 && specUpper.indexOf("::DOT") == -1 && specUpper.indexOf("::DOH") == -1 ) {
-                ip = spec; //just the ip String
-                spec = "";
+        Vector <DNSServerConfig> spec1 = getDNSServerConfigsFromSpecList(specList1);
+        Vector <DNSServerConfig> spec2 = getDNSServerConfigsFromSpecList(specList2);
+
+        if (spec1 == null || spec2 == null)
+            return (spec1 == spec2);
+
+        if (spec1.size() != spec2.size())
+            return false;
+
+        for (int i = 0; i<spec1.size(); i++)
+            if (!spec2.contains(spec1.elementAt(i)))
+                return false;
+
+       return true;
+    }
+
+
+    private Vector <DNSServerConfig> getDNSServerConfigsFromSpecList(String specList) {
+        StringTokenizer fallbackDNS = new StringTokenizer(specList, ";");
+        int cnt = fallbackDNS.countTokens();
+        Vector<DNSServerConfig> dnsServers = new Vector<>();
+        for (int i = 0; i < cnt; i++) {
+            String dnsEntry = fallbackDNS.nextToken().trim();
+            if (!dnsEntry.startsWith("#") && !dnsEntry.trim().equals("")) {
+                try {
+                    DNSServerConfig dnsServerCfg = new DNSServerConfig(dnsEntry);
+                    dnsServers.add(dnsServerCfg);
+                } catch (Exception e) {
+                    Logger.getLogger().logLine("Error parsing DNS Server from "+dnsEntry+": "+e.toString());
+                    Logger.getLogger().message("Error parsing DNS Server from "+dnsEntry);
+                }
             }
         }
+        return dnsServers;
+    }
 
-        String[] entryTokens  = spec.split("::");
-
-        if (ip == null)
-            ip = entryTokens[0];
-        
-        int port = 53;
-        if (entryTokens.length>1) {
-            try {
-                port = Integer.parseInt(entryTokens[1]);
-            } catch (NumberFormatException nfe) {
-                throw new IOException("Invalid port!", nfe);
+    public DNSServer[] createDNSServers(String specList, int timeout, boolean rootMode) throws IOException {
+        Vector <DNSServerConfig> dnsServerCfgs = getDNSServerConfigsFromSpecList(specList);
+        int cnt = dnsServerCfgs.size();
+        Vector<DNSServer> dnsServers = new Vector<>();
+        for (int i = 0; i < cnt; i++) {
+            DNSServerConfig dnsServerCfg = dnsServerCfgs.elementAt(i);
+            if (dnsServerCfg.active) {
+                if (rootMode && dnsServerCfg.port == 53) {
+                    Logger.getLogger().logLine("invalid DNS entry " + dnsServerCfg+"! port 53 not allowed when running in root mode! Use DoT or DoH!");
+                    Logger.getLogger().message("Skipping invalid DNS entry " + dnsServerCfg + "!");
+                }
+                else if (dnsServerCfg.active) {
+                    dnsServers.add(dnsServerCfg.createDNSServer(timeout));
+                    if (ExecutionEnvironment.getEnvironment().debug())
+                        Logger.getLogger().logLine("Added DNS Server "+dnsServerCfg+"!");
+                }
             }
         }
-        int proto = DNSServer.UDP;
-        if (entryTokens.length>2)
-            proto = DNSServer.getProtoFromString(entryTokens[2]);
-
-        String endPoint = null;
-        if (entryTokens.length>3)
-            endPoint = entryTokens[3];
-
-        return getInstance().createDNSServer(proto,InetAddress.getByName(ip),port,timeout,endPoint);
+        return dnsServers.toArray(new DNSServer[dnsServers.size()]);
     }
 
     public InetAddress getAddress() {
