@@ -310,10 +310,12 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				Logger.getLogger().logLine("Can not parse version from " + previousVersion+"!");
 			}
 		}
-		if (version <= 1505402) //from version 1505500 on the dnsfilter-default.conf is already created when creating the config.
-			copyFromAssets("dnsfilter-1505401.conf", "dnsfilter-default.conf");
 
 		File defaultConfFile = new File(getPath() + "dnsfilter-default.conf");
+
+		if (version <= 1505402 || !defaultConfFile.exists()) //from version 1505500 on the dnsfilter-default.conf is already created when creating the config but migtht have been deleted (handle this case!).
+			copyFromAssets("dnsfilter-1505401.conf", "dnsfilter-default.conf");
+
 		InputStream in = new FileInputStream(defaultConfFile);
 		byte[] config = Utils.readFully(in,1024);
 		in.close();
