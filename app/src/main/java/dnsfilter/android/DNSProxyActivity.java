@@ -402,9 +402,10 @@ public class DNSProxyActivity extends Activity
 			Button categoryUp = ((Button) findViewById(R.id.CategoryUp));
 			Button categoryDn = ((Button) findViewById(R.id.CategoryDown));
 			TextView categoryField = ((TextView) findViewById(R.id.categoryFilter));
+			Button restoreDefault = ((Button) findViewById(R.id.restoreDefaultBtn));
 
 
-			filterCfg = new FilterConfig((TableLayout) findViewById(R.id.filtercfgtable), categoryUp, categoryDn, categoryField);
+			filterCfg = new FilterConfig((TableLayout) findViewById(R.id.filtercfgtable), categoryUp, categoryDn, categoryField, restoreDefault);
 			if (cfgEntries != null) {
 				filterCfg.setEntries(cfgEntries);
 				filterCfg.setCurrentCategory(filterCategory);

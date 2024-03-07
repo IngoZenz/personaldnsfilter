@@ -342,6 +342,11 @@
                         android:paddingEnd="7dp"/>
                 </LinearLayout>
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="0.9"
+                    android:orientation="vertical">
                 <ScrollView
                     android:layout_width="fill_parent"
                     android:layout_height="match_parent"
@@ -410,6 +415,24 @@
                         </TableRow>
                     </TableLayout>
                 </ScrollView>
+                </LinearLayout>
+                <Button
+                    android:id="@+id/restoreDefaultBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginHorizontal="6dp"
+                    android:layout_toStartOf="@id/applyNewConfigurationButton"
+                    android:background="@drawable/custom_round_button"
+                    android:fontFamily="sans-serif-medium"
+                    android:padding="10dp"
+                    android:text="@string/restoreDefault"
+                    android:textAllCaps="true"
+                    android:textColor="#1d2733"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <dnsfilter.android.PaddedCheckBox

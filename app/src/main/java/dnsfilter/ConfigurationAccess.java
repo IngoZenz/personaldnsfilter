@@ -61,6 +61,8 @@ public abstract class ConfigurationAccess {
 
     abstract public Properties getConfig() throws IOException;
 
+    abstract public Properties getDefaultConfig() throws IOException;
+
     abstract public byte[] readConfig() throws IOException;
 
     abstract public void updateConfig(byte[] config) throws IOException;

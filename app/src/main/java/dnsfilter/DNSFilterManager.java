@@ -66,7 +66,7 @@ import util.conpool.TLSSocketFactory;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1505503";
+	public static final String VERSION = "1505504-dev";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -248,6 +248,13 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			config.load(new ByteArrayInputStream(configBytes));
 		}
 		return config;
+	}
+
+	@Override
+	public Properties getDefaultConfig() throws IOException {
+		Properties defaults = new Properties();
+		defaults.load(ExecutionEnvironment.getEnvironment().getAsset("dnsfilter.conf"));
+		return defaults;
 	}
 
 	@Override

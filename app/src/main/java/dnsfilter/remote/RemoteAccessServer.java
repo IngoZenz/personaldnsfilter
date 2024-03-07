@@ -223,7 +223,15 @@ public class RemoteAccessServer implements Runnable {
                     ObjectOutputStream objout = new ObjectOutputStream(out);
                     objout.writeObject(config);
                     objout.flush();
-                } else if (action.equals("readConfig()")) {
+                }
+                else if (action.equals("getDefaultConfig()")) {
+                    Properties config = ConfigurationAccess.getLocal().getDefaultConfig();
+                    out.write("OK\n".getBytes());
+                    ObjectOutputStream objout = new ObjectOutputStream(out);
+                    objout.writeObject(config);
+                    objout.flush();
+                }
+                else if (action.equals("readConfig()")) {
                     byte[] result = ConfigurationAccess.getLocal().readConfig();
                     out.write("OK\n".getBytes());
                     out.writeInt(result.length);

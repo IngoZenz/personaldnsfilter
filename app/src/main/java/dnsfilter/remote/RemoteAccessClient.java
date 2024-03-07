@@ -243,6 +243,34 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
     }
 
     @Override
+    public Properties getDefaultConfig() throws IOException {
+        try {
+            getOutputStream().write("getDefaultConfig()\n".getBytes());
+            getOutputStream().flush();
+            InputStream in = getInputStream();
+            String response = Utils.readLineFromStream(in);
+            if (!response.equals("OK")) {
+                throw new ConfigurationAccessException(response, null);
+            }
+            try {
+                return (Properties) new ObjectInputStream(in).readObject();
+            } catch (ClassNotFoundException e) {
+                connectedLogger.logException(e);
+                throw new IOException(e);
+            }
+        } catch (ConfigurationAccessException e) {
+            connectedLogger.logLine("Remote action failed! "+e.getMessage());
+            connectedLogger.message("Remote action failed! "+e.getMessage());
+            throw e;
+        } catch (IOException e) {
+            connectedLogger.logLine("Remote action getConfig() failed! "+e.getMessage());
+            connectedLogger.message("Remote action getConfig() failed! "+e.getMessage());
+            closeConnectionReconnect();
+            throw e;
+        }
+    }
+
+    @Override
     public byte[] readConfig() throws IOException {
         try {
             getOutputStream().write("readConfig()\n".getBytes());
