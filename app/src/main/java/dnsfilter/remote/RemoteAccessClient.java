@@ -23,7 +23,8 @@ import util.Utils;
 
 public class RemoteAccessClient extends ConfigurationAccess implements TimeoutListener {
 
-   static int CON_TIMEOUT = 15000;
+
+    static int CON_TIMEOUT = 15000;
    static int READ_TIMEOUT = 15000;
 	
 	
@@ -34,6 +35,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
     static final int UPD_DNS = 4;
     static final int UPD_CON_CNT = 5;
     static final int HEART_BEAT = 6;
+    public static final int INVALIDATE = 7;
 
 
     private String host;
@@ -636,6 +638,9 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
                         case HEART_BEAT:
                             processHeartBeat();
                             confirmHeartBeat();
+                            break;
+                        case INVALIDATE:
+                            invalidate();
                             break;
                         default:
                             throw new IOException("Unknown message type: " + type);

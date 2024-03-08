@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import dnsfilter.remote.RemoteAccessClient;
+import util.Logger;
 import util.LoggerInterface;
 
 public abstract class ConfigurationAccess {
@@ -24,8 +25,7 @@ public abstract class ConfigurationAccess {
 
 
     static public ConfigurationAccess getLocal() {
-        CURRENT = DNSFilterManager.getInstance();
-        return CURRENT;
+        return DNSFilterManager.getInstance();
     }
 
     static public ConfigurationAccess getRemote(LoggerInterface logger, String host, int port, String keyphrase) throws IOException {
@@ -34,7 +34,9 @@ public abstract class ConfigurationAccess {
     }
 
     static public ConfigurationAccess getCurrent(){
-        return CURRENT;
+        if (CURRENT== null)
+            return getLocal();
+        else return CURRENT;
     }
 
     protected void invalidate() {
