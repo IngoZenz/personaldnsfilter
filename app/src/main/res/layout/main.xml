@@ -738,19 +738,42 @@
 
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/scrolllock"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="15dp"
-            android:layout_marginStart="0dp"
-            android:layout_marginTop="0dp"
-            android:layout_marginEnd="0dp"
-            android:layout_marginBottom="2dp"
-            android:includeFontPadding="false"
-            android:background="#ffffff"
-            android:gravity="end"
-            android:textColor="#424242"
-            android:textStyle="bold" />
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/logMode"
+                android:layout_width="0dp"
+                android:layout_height="15dp"
+                android:layout_weight="1"
+                android:layout_marginStart="0dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginEnd="0dp"
+                android:layout_marginBottom="2dp"
+                android:includeFontPadding="false"
+                android:background="#ffffff"
+                android:gravity="start"
+                android:textColor="#424242"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/scrolllock"
+                android:layout_width="0dp"
+                android:layout_height="15dp"
+                android:layout_weight="1"
+                android:layout_marginStart="0dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginEnd="0dp"
+                android:layout_marginBottom="2dp"
+                android:includeFontPadding="false"
+                android:background="#ffffff"
+                android:gravity="end"
+                android:textColor="#424242"
+                android:textStyle="bold" />
+        
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/copyfromlog"

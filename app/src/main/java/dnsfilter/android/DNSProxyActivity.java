@@ -75,6 +75,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -110,6 +111,7 @@ public class DNSProxyActivity extends Activity
 	protected Button remoteCtrlBtn;
 	protected Button helpBtn;
 	protected static EditText logOutView;
+	protected static EditText logOutSummaryView;
 	protected static TextView dnsField;
 	protected static CheckBox advancedConfigCheck;
 	protected static CheckBox editFilterLoadCheck;
@@ -138,9 +140,14 @@ public class DNSProxyActivity extends Activity
 	protected static FilterConfig filterCfg;
 	protected static EditText additionalHostsField;
 	protected static EditText manuallyEditField;
+	protected static TextView logModeField;
 	protected static TextView scrollLockField;
+	protected static String LOGMODE_FULL = "  ䷀";
+	protected static String LOGMODE_SUMMARY = "  ☰";
 	protected static String SCROLL_PAUSE = "II  ";
 	protected static String SCROLL_CONTINUE = " ▶ ";
+
+	protected static boolean log_mode_full = true;
 	protected static boolean scroll_locked = false;
 	protected static TextView link_field;
 	protected static int link_field_color = Color.TRANSPARENT;
@@ -270,6 +277,42 @@ public class DNSProxyActivity extends Activity
 				logOutView.append(newLn);
 			}
 		}
+		updateLogSummary();
+	}
+
+	private void updateLogSummary() {
+		if (!log_mode_full) {
+			logOutSummaryView.setText("");
+
+			HashSet<String> lines = new HashSet<>();
+			for (String line : Html.toHtml(logOutView.getText()).split("<br>")) {
+				if (line.contains("&"))
+				{
+					// Split line where the URL starts
+					String beforeURL = line.substring(0, line.lastIndexOf(';'));
+					String rest = line.substring(beforeURL.length() + 1);
+
+					// Use only second level domains
+					int dotsCount = 0;
+					for (int n = rest.length() - 1; n >= 0; n--) {
+						if (rest.charAt(n) == '.') {
+							dotsCount++;
+							if (dotsCount == 2) {
+								rest = rest.substring(n);
+								break;
+							}
+						}
+					}
+
+					// Hashset is used to remove duplicates
+					line = beforeURL + rest;
+					if (!lines.contains(line)) {
+						logOutSummaryView.append(fromHtml(line + "<br>"));
+						lines.add(line);
+					}
+				}
+			}
+		}
 	}
 
 
@@ -365,6 +408,7 @@ public class DNSProxyActivity extends Activity
 				logSize = logOutView.getTextSize();
 			}
 
+			logOutSummaryView = new EditText(this);
 			logOutView = (EditText) findViewById(R.id.logOutput);
 			if (logSize != -1)
 				logOutView.setTextSize(TypedValue.COMPLEX_UNIT_PX, logSize);
@@ -452,6 +496,14 @@ public class DNSProxyActivity extends Activity
 			Drawable background = link_field.getBackground();
 			if (background instanceof ColorDrawable)
 				link_field_color = ((ColorDrawable) background).getColor();
+
+			logModeField = (TextView) findViewById(R.id.logMode);
+			if (log_mode_full)
+				logModeField.setText(LOGMODE_FULL);
+			else
+				logModeField.setText(LOGMODE_SUMMARY);
+
+			logModeField.setOnClickListener(this);
 
 			scrollLockField = (TextView) findViewById(R.id.scrolllock);
 			if (scroll_locked)
@@ -1146,6 +1198,9 @@ public class DNSProxyActivity extends Activity
 		} else if (destination == dnsField) {
             startActivityForResult(new Intent(this, DNSServerConfigActivity.class), DNSServerConfigActivity.ACTIVITY_RESULT_CODE);
 			return;
+		} else if (destination == logModeField) {
+			handleLogMode();
+			return;
 		} else if (destination == scrollLockField) {
 			handleScrollLock();
 			return;
@@ -1378,6 +1433,27 @@ public class DNSProxyActivity extends Activity
 			logLine("=>CONNECTED to "+ CONFIG +"<=");
 			checkPasscode();
 		}
+	}
+
+	private void handleLogMode() {
+		if (log_mode_full) {
+			log_mode_full = false;
+			logModeField.setText(LOGMODE_SUMMARY);
+			logOutSummaryView.setText(logOutView.getText()); //backup log
+		} else {
+			log_mode_full = true;
+			logModeField.setText(LOGMODE_FULL);
+			logOutSummaryView.setText(logOutView.getText()); //restore log
+		}
+
+		// Swap objects (write into invisible view when log_mode_full == false)
+		EditText temp = logOutSummaryView;
+		logOutSummaryView = logOutView;
+		logOutView = temp;
+
+		updateLogSummary();
+		handleScrollLock();
+		handleScrollLock();
 	}
 
 	private void handleScrollLock() {
