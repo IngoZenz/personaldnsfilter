@@ -216,6 +216,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
         }
         ctrlcon = null;
         remoteStream = null;
+        REMOTE = null;
     }
 
     @Override

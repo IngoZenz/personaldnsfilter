@@ -5,13 +5,12 @@ import java.io.IOException;
 import java.util.Properties;
 
 import dnsfilter.remote.RemoteAccessClient;
-import util.Logger;
 import util.LoggerInterface;
 
 public abstract class ConfigurationAccess {
 
     protected ConfigUtil config_util = null;
-    static ConfigurationAccess CURRENT;
+    protected static ConfigurationAccess REMOTE;
 
 
     public static class ConfigurationAccessException extends IOException{
@@ -29,14 +28,14 @@ public abstract class ConfigurationAccess {
     }
 
     static public ConfigurationAccess getRemote(LoggerInterface logger, String host, int port, String keyphrase) throws IOException {
-        CURRENT = new RemoteAccessClient(logger, host, port, keyphrase);
-        return CURRENT;
+        REMOTE = new RemoteAccessClient(logger, host, port, keyphrase);
+        return REMOTE;
     }
 
     static public ConfigurationAccess getCurrent(){
-        if (CURRENT== null)
+        if (REMOTE == null)
             return getLocal();
-        else return CURRENT;
+        else return REMOTE;
     }
 
     protected void invalidate() {
