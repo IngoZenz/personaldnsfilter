@@ -642,7 +642,6 @@ public class DNSProxyActivity extends Activity
 			if (code.equals(""))
 				return;
 
-			findViewById(R.id.main).setVisibility(View.GONE);
 			final AlertDialog.Builder builder = new AlertDialog.Builder(this).setCancelable(false);
 
 			builder.setTitle("Passcode required!");
@@ -665,6 +664,7 @@ public class DNSProxyActivity extends Activity
 			Runnable ui = new Runnable() {
 				@Override
 				public void run() {
+					findViewById(R.id.main).setVisibility(View.GONE);
 					PASSWORD_DIAG = builder.show();
 				}
 			};
