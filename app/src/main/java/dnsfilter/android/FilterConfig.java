@@ -16,11 +16,16 @@ import android.widget.TextView;
 import android.view.View.OnClickListener;
 
 import java.io.File;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Properties;
 import java.util.TreeMap;
 
 import dnsfilter.ConfigUtil;
+import dnsfilter.ConfigurationAccess;
+import util.ExecutionEnvironment;
+import util.Logger;
 
 public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListener {
 
@@ -42,6 +47,7 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 	Dialog editDialog;
 	Button categoryUp;
 	Button categoryDown;
+	Button restoreDefault;
 	TextView categoryField;
 	TreeMap <String, Integer> categoryMap;
 
@@ -55,7 +61,7 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 
 
 
-	public FilterConfig(TableLayout table, Button categoryUp, Button categoryDn, TextView categoryField ) {
+	public FilterConfig(TableLayout table, Button categoryUp, Button categoryDn, TextView categoryField, Button restoreDefault ) {
 
 		configTable = table;
 		editDialog = new Dialog(table.getContext(), R.style.Theme_dialog_TitleBar);
@@ -72,6 +78,7 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 		this.categoryUp = categoryUp;
 		this.categoryDown = categoryDn;
 		this.categoryField = categoryField;
+		this.restoreDefault = restoreDefault;
 		categoryField.setText(ALL_ACTIVE);
 
 		categoryMap = new TreeMap(String.CASE_INSENSITIVE_ORDER);
@@ -142,6 +149,7 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 
 		categoryDown.setOnClickListener(this);
 		categoryUp.setOnClickListener(this);
+		restoreDefault.setOnClickListener(this);
 
 		loaded = true;
 	}
@@ -181,6 +189,7 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 		}
 		categoryDown.setOnClickListener(null);
 		categoryUp.setOnClickListener(null);
+		restoreDefault.setOnClickListener(null);
 		loaded = false;
 	}
 
@@ -190,8 +199,23 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 			handleEditDialogEvent(v);
 		else if (v==categoryUp || v == categoryDown)
 			handleCategoryChange((Button) v);
+		else if (v == restoreDefault)
+			restoreDefaultFilters();
 		else
 			showEditDialog((TableRow) v.getParent());
+	}
+
+	private void restoreDefaultFilters() {
+		try {
+			Properties defaults = ConfigurationAccess.getCurrent().getDefaultConfig();
+			clear();
+			DNSProxyActivity.filterReloadIntervalView.setText(defaults.getProperty("reloadIntervalDays", "7"));
+			setEntries(ConfigUtil.getConfiguredFilterLists(defaults));
+			load();
+		} catch (Exception e) {
+			Logger.getLogger().logException(e);
+			Logger.getLogger().message(e.toString());
+		}
 	}
 
 	private void handleCategoryChange(Button v) {

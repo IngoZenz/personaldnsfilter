@@ -23,7 +23,8 @@ import util.Utils;
 
 public class RemoteAccessClient extends ConfigurationAccess implements TimeoutListener {
 
-   static int CON_TIMEOUT = 15000;
+
+    static int CON_TIMEOUT = 15000;
    static int READ_TIMEOUT = 15000;
 	
 	
@@ -34,6 +35,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
     static final int UPD_DNS = 4;
     static final int UPD_CON_CNT = 5;
     static final int HEART_BEAT = 6;
+    public static final int INVALIDATE = 7;
 
 
     private String host;
@@ -214,6 +216,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
         }
         ctrlcon = null;
         remoteStream = null;
+        REMOTE = null;
     }
 
     @Override
@@ -237,6 +240,34 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
             throw e;
         } catch (IOException e) {
             connectedLogger.logLine("Remote action getConfig() failed! "+e.getMessage());
+            closeConnectionReconnect();
+            throw e;
+        }
+    }
+
+    @Override
+    public Properties getDefaultConfig() throws IOException {
+        try {
+            getOutputStream().write("getDefaultConfig()\n".getBytes());
+            getOutputStream().flush();
+            InputStream in = getInputStream();
+            String response = Utils.readLineFromStream(in);
+            if (!response.equals("OK")) {
+                throw new ConfigurationAccessException(response, null);
+            }
+            try {
+                return (Properties) new ObjectInputStream(in).readObject();
+            } catch (ClassNotFoundException e) {
+                connectedLogger.logException(e);
+                throw new IOException(e);
+            }
+        } catch (ConfigurationAccessException e) {
+            connectedLogger.logLine("Remote action failed! "+e.getMessage());
+            connectedLogger.message("Remote action failed! "+e.getMessage());
+            throw e;
+        } catch (IOException e) {
+            connectedLogger.logLine("Remote action getConfig() failed! "+e.getMessage());
+            connectedLogger.message("Remote action getConfig() failed! "+e.getMessage());
             closeConnectionReconnect();
             throw e;
         }
@@ -608,6 +639,9 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
                         case HEART_BEAT:
                             processHeartBeat();
                             confirmHeartBeat();
+                            break;
+                        case INVALIDATE:
+                            invalidate();
                             break;
                         default:
                             throw new IOException("Unknown message type: " + type);

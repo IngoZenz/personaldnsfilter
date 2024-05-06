@@ -66,7 +66,7 @@ import util.conpool.TLSSocketFactory;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1505502";
+	public static final String VERSION = "1505504-dev";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -251,6 +251,13 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	}
 
 	@Override
+	public Properties getDefaultConfig() throws IOException {
+		Properties defaults = new Properties();
+		defaults.load(ExecutionEnvironment.getEnvironment().getAsset("dnsfilter.conf"));
+		return defaults;
+	}
+
+	@Override
 	public byte[] readConfig() throws ConfigurationAccessException{
 
 		File propsFile = new File(getPath() + "dnsfilter.conf");
@@ -310,10 +317,12 @@ public class DNSFilterManager extends ConfigurationAccess  {
 				Logger.getLogger().logLine("Can not parse version from " + previousVersion+"!");
 			}
 		}
-		if (version <= 1505402) //from version 1505500 on the dnsfilter-default.conf is already created when creating the config.
-			copyFromAssets("dnsfilter-1505401.conf", "dnsfilter-default.conf");
 
 		File defaultConfFile = new File(getPath() + "dnsfilter-default.conf");
+
+		if (version <= 1505402 || !defaultConfFile.exists()) //from version 1505500 on the dnsfilter-default.conf is already created when creating the config but migtht have been deleted (handle this case!).
+			copyFromAssets("dnsfilter-1505401.conf", "dnsfilter-default.conf");
+
 		InputStream in = new FileInputStream(defaultConfFile);
 		byte[] config = Utils.readFully(in,1024);
 		in.close();
@@ -1206,6 +1215,8 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	private void updateIndexReloadInfoConfFile(String url) {
 		try {
 			invalidate();
+			if (remoteAccessManager!= null)
+				remoteAccessManager.invalidate();
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(getPath() + "dnsfilter.conf")));
 			String ln;

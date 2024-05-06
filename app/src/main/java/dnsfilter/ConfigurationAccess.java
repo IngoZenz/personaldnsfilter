@@ -10,7 +10,7 @@ import util.LoggerInterface;
 public abstract class ConfigurationAccess {
 
     protected ConfigUtil config_util = null;
-    static ConfigurationAccess CURRENT;
+    protected static ConfigurationAccess REMOTE;
 
 
     public static class ConfigurationAccessException extends IOException{
@@ -24,17 +24,18 @@ public abstract class ConfigurationAccess {
 
 
     static public ConfigurationAccess getLocal() {
-        CURRENT = DNSFilterManager.getInstance();
-        return CURRENT;
+        return DNSFilterManager.getInstance();
     }
 
     static public ConfigurationAccess getRemote(LoggerInterface logger, String host, int port, String keyphrase) throws IOException {
-        CURRENT = new RemoteAccessClient(logger, host, port, keyphrase);
-        return CURRENT;
+        REMOTE = new RemoteAccessClient(logger, host, port, keyphrase);
+        return REMOTE;
     }
 
     static public ConfigurationAccess getCurrent(){
-        return CURRENT;
+        if (REMOTE == null)
+            return getLocal();
+        else return REMOTE;
     }
 
     protected void invalidate() {
@@ -60,6 +61,8 @@ public abstract class ConfigurationAccess {
     abstract public void releaseConfiguration() ;
 
     abstract public Properties getConfig() throws IOException;
+
+    abstract public Properties getDefaultConfig() throws IOException;
 
     abstract public byte[] readConfig() throws IOException;
 

@@ -54,6 +54,12 @@ public class RemoteAccessServer implements Runnable {
        return new String(buf,0,r).trim();
     }
 
+    public void invalidate() {
+        RemoteSession[] sessionarray = (RemoteSession[]) sessions.values().toArray(new RemoteSession[sessions.size()]);
+        for (int i = 0; i < sessionarray.length; i++)
+            sessionarray[i].invalidate();
+    }
+
     @Override
     public void run() {
         while (!stopped) {
@@ -135,6 +141,7 @@ public class RemoteAccessServer implements Runnable {
         boolean doReconnect = false;
         DataOutputStream out;
         DataInputStream in;
+        boolean remoteStreamSession = false;
 
         long timeout = Long.MAX_VALUE; //heartbeat timeout for dead session detection
         long lastHeartBeatConfirm = System.currentTimeMillis();//last confirmed heartbeat
@@ -223,7 +230,15 @@ public class RemoteAccessServer implements Runnable {
                     ObjectOutputStream objout = new ObjectOutputStream(out);
                     objout.writeObject(config);
                     objout.flush();
-                } else if (action.equals("readConfig()")) {
+                }
+                else if (action.equals("getDefaultConfig()")) {
+                    Properties config = ConfigurationAccess.getLocal().getDefaultConfig();
+                    out.write("OK\n".getBytes());
+                    ObjectOutputStream objout = new ObjectOutputStream(out);
+                    objout.writeObject(config);
+                    objout.flush();
+                }
+                else if (action.equals("readConfig()")) {
                     byte[] result = ConfigurationAccess.getLocal().readConfig();
                     out.write("OK\n".getBytes());
                     out.writeInt(result.length);
@@ -320,6 +335,7 @@ public class RemoteAccessServer implements Runnable {
             try {
                 //read the ID of the corresponding control session
                 connectedSessionId = Integer.parseInt(Utils.readLineFromStream(in));
+                remoteStreamSession = true;
             } catch (Exception e){
                 throw new IOException(e);
             }
@@ -430,6 +446,20 @@ public class RemoteAccessServer implements Runnable {
                 Logger.getLogger().logLine("Heartbeat failed! " + e);
                 killSession();
             }
+        }
+
+        private void invalidate() {
+           if (!remoteStreamSession)
+              return; // the control session not the back channel for log and other events
+           try {
+                synchronized (out) {
+                    out.writeShort(RemoteAccessClient.INVALIDATE);
+                    out.writeShort(0); //0 length message
+                    out.flush();
+                }
+            } catch (IOException e) {
+                Logger.getLogger().logLine("Invalidation failed! " + e);
+           }
         }
 
         private void heartBeatConfirmed() {

@@ -190,7 +190,7 @@ public class ConfigUtil {
             if (urlSwitchTokens.hasMoreTokens())
                 active = Boolean.parseBoolean(urlSwitchTokens.nextToken().trim());
 
-            resultSorted.put(new StringWrapper(url_id), new HostFilterList(active, url_category,url_id, urlStr));
+            resultSorted.put(new StringWrapper(url_id+url_category+urlStr+active), new HostFilterList(active, url_category,url_id, urlStr));
         }
         return resultSorted.values().toArray(result);
     }
