@@ -55,6 +55,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -366,18 +367,27 @@ public class DNSFilterService extends VpnService  {
 
 	}
 
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	private static Network[] getConnectedNetworks(ConnectivityManager conMan, int type) {
-		ArrayList<Network> nwList = new ArrayList<Network>();
-		Network[] nw = conMan.getAllNetworks();
-		for (int i = 0; i < nw.length;i++) {
-			NetworkInfo ni = conMan.getNetworkInfo(nw[i]);
-			if (ni != null && (ni.getType() == type || type == -1) && ni.isConnected())
-				nwList.add(nw[i]);
-		}
-		return nwList.toArray(new Network[nwList.size()]);
-	}
 
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
+	private static Network getActiveNetwork(ConnectivityManager connectivityManager) {
+		HashSet<Network> result = new HashSet<Network>();
+		NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+		if (activeNetworkInfo != null)
+		{
+			Network[] networks = connectivityManager.getAllNetworks();
+			for (Network network : networks)
+			{
+				NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
+                if (networkInfo != null && networkInfo.toString() != null) {
+					//NetworkInfo.equals() is not overwritten - therefore this bad hack with using toString()
+					if (networkInfo.toString().equals(activeNetworkInfo.toString())) {
+						return network;
+					}
+				}
+			}
+		}
+		return null;
+	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private static String[] getDNSviaConnectivityManager() {
@@ -391,10 +401,10 @@ public class DNSFilterService extends VpnService  {
 
 		HashSet<String> result = new HashSet<String>();
 		ConnectivityManager connectivityManager = (ConnectivityManager) instance.getSystemService(CONNECTIVITY_SERVICE);
-		Network[] networks = getConnectedNetworks(connectivityManager, ConnectivityManager.TYPE_WIFI); //prefer WiFi
-		if (networks.length == 0)
-			networks = getConnectedNetworks(connectivityManager, -1); //fallback all networks
-		for (Network network : networks) {
+
+		Network network = getActiveNetwork(connectivityManager);
+
+		if (network != null) {
 
 			LinkProperties linkProperties = connectivityManager.getLinkProperties(network);
 			if (linkProperties != null) {
@@ -404,9 +414,10 @@ public class DNSFilterService extends VpnService  {
 					if (!adr.equals(VIRTUALDNS_IPV4) && !adr.equals(VIRTUALDNS_IPV6))
 						result.add(adr);
 				}
-			} else Logger.getLogger().logLine("WARNING: Cannot get link properties for "+network.toString());
-
+			} else
+				Logger.getLogger().logLine("WARNING: Cannot get link properties for " + network.toString());
 		}
+
 		return result.toArray(new String[result.size()]);
 	}
 
@@ -462,6 +473,12 @@ public class DNSFilterService extends VpnService  {
 				dnsReqForwarder.updateForward();
 
 			String[] dnsServers = getDNSServers();
+
+			if (ExecutionEnvironment.getEnvironment().debug()) {
+				Logger.getLogger().logLine("Detected DNS Servers:*******************");
+				for (int i = 0; i <dnsServers.length; i++)
+					Logger.getLogger().logLine(dnsServers[i]);
+			}
 
 			boolean chnagedIPs = (dnsServers.length != 0)  && !Utils.arrayEqual(lastDNSServers, dnsServers);
 
