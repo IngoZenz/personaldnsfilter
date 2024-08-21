@@ -370,22 +370,32 @@ public class DNSFilterService extends VpnService  {
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private static Network getActiveNetwork(ConnectivityManager connectivityManager) {
-		HashSet<Network> result = new HashSet<Network>();
+
+		/* if (Build.VERSION.SDK_INT >= 23) {
+			Network network = connectivityManager.getActiveNetwork();
+			if (ExecutionEnvironment.getEnvironment().debug())
+				Logger.getLogger().logLine("ACTIVE NETWORK:" + network);
+			return network;
+		}*/
+
 		NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-		if (activeNetworkInfo != null)
-		{
+		if (activeNetworkInfo != null) {
 			Network[] networks = connectivityManager.getAllNetworks();
-			for (Network network : networks)
-			{
+			for (Network network : networks) {
 				NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
-                if (networkInfo != null && networkInfo.toString() != null) {
+				if (networkInfo != null && networkInfo.toString() != null) {
 					//NetworkInfo.equals() is not overwritten - therefore this bad hack with using toString()
 					if (networkInfo.toString().equals(activeNetworkInfo.toString())) {
+						if (ExecutionEnvironment.getEnvironment().debug())
+							Logger.getLogger().logLine("ACTIVE NETWORK:"+network);
 						return network;
 					}
 				}
 			}
 		}
+		if (ExecutionEnvironment.getEnvironment().debug())
+			Logger.getLogger().logLine("ACTIVE NETWORK: NULL");
+
 		return null;
 	}
 
@@ -409,8 +419,12 @@ public class DNSFilterService extends VpnService  {
 			LinkProperties linkProperties = connectivityManager.getLinkProperties(network);
 			if (linkProperties != null) {
 				List<InetAddress> dnsList = linkProperties.getDnsServers();
+				if (ExecutionEnvironment.getEnvironment().debug())
+					Logger.getLogger().logLine("FOUND "+dnsList.size()+" DNS servers!");
 				for (int i = 0; i < dnsList.size(); i++) {
 					String adr = dnsList.get(i).getHostAddress();
+					if (ExecutionEnvironment.getEnvironment().debug())
+						Logger.getLogger().logLine("FOUND DNS "+adr);
 					if (!adr.equals(VIRTUALDNS_IPV4) && !adr.equals(VIRTUALDNS_IPV6))
 						result.add(adr);
 				}
