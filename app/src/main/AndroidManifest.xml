@@ -13,7 +13,8 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
 
     <application
         android:icon="@mipmap/ic_launcher"
@@ -43,9 +44,12 @@
 
         <service
             android:name=".DNSFilterService"
+            android:foregroundServiceType="specialUse"
             android:label="personalDNSfilterService"
             android:permission="android.permission.BIND_VPN_SERVICE"
             android:exported="true">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Filter DNS requests on the device for parental control or security reasons, the notification shows the status of the DNS Filter."/>
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>
