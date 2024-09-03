@@ -695,7 +695,11 @@ public class DNSFilterService extends VpnService  {
 				}
 
 				registerReceiver(ConnectionChangeReceiver.getInstance(), new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
-				registerReceiver(NotificationReceiver.getInstance(), new IntentFilter("pause_resume"),RECEIVER_EXPORTED);
+
+				if (android.os.Build.VERSION.SDK_INT < 34)
+					registerReceiver(NotificationReceiver.getInstance(), new IntentFilter("pause_resume"));
+				else
+					registerReceiver(NotificationReceiver.getInstance(), new IntentFilter("pause_resume"),RECEIVER_EXPORTED);
 
 				possibleNetworkChange(true); // in order to trigger dns detection
 
