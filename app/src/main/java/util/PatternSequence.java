@@ -84,6 +84,11 @@ public class PatternSequence {
         return patternList.add(new Pattern(pattern, value));
     }
 
+    public boolean removePattern(String pattern, Object value) {
+        matchedPatternCache.clear();
+        return patternList.remove(new Pattern(pattern, value));
+    }
+
     public Object match(String s) {
 
         Object value = matchedPatternCache.get(s);

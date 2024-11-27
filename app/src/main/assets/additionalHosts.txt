@@ -1,8 +1,14 @@
 # Add your own additional hosts here!
-# Supports blacklist, whitelist and map to custom IP
+# Supports custom IP mapping, blacklist and whitelist
 
 # WARNING! You must not add huge lists here!
 # This is only for overruling the configured filter.
+
+# In order to forward to custom ip, add a ">" in front of the host,
+# followed by whitespace and mapped ip.
+# Wildcard Character "*" can be used.
+
+fritz.box 192.168.2.1
 
 # Format for blacklist: 1 host name per line (sample below).
 # Wildcard Character "*" can be used for host blocking.
@@ -20,12 +26,8 @@ sample4712.justasample.com
 !whitelistsample.justasample.com
 
 # PRIORITIES in case of conflicting entries
-# 1. Explicit entries without wildcards
-# 2. Wildcard entries prioritized along the sequence in this file
+# 0. Custom IP Mappings prioritized along the sequence in this file
+# 1. Explicit black-/ whitelist entries without wildcards
+# 2. Wildcard black-/ whitelist entries prioritized along the sequence in this file
 # 3. Downloaded blocklist
-
-# In order to forward to custom ip add a ">" in front of the host,
-# followed by whitespace and mapped IP.
-
->router.home 192.168.2.1
 

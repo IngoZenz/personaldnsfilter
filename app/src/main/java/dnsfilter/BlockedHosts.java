@@ -41,6 +41,7 @@ import util.HugePackedSet;
 import util.LRUCache;
 import util.Logger;
 import util.ObjectPackagingManager;
+import util.PatternSequence;
 import util.Utils;
 
 public class BlockedHosts implements Set {
@@ -75,78 +76,7 @@ public class BlockedHosts implements Set {
 
 	private HugePackedSet blockedHostsHashes;
 
-	private class OverrulePattern {
-		private String[] pattern;
-		private boolean filter;
-		private int hashcode;
-		private  OverrulePattern (String patternString, boolean filter){
-			this.pattern = patternString.split("\\*", -1);
-			this.filter = filter;
-			hashcode = patternString.hashCode();
-			if (!filter)
-				hashcode = ~hashcode;
-		}
-
-		@Override
-		public int hashCode() {
-			return hashcode;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (obj != null && hashcode == obj.hashCode() && obj instanceof OverrulePattern)
-				return patternEqual((OverrulePattern) obj);
-			else
-				return false;
-		}
-
-		private boolean patternEqual(OverrulePattern overrulePattern) {
-			if (pattern.length == overrulePattern.pattern.length) {
-				for (int i = 0; i < pattern.length; i++) {
-					if (!pattern[i].equals(overrulePattern.pattern[i]))
-						return false;
-				}
-				return true;
-			} else
-				return false;
-		}
-
-		private boolean match(String host) {
-
-			// Iterate over the parts.
-			for (int i = 0; i < pattern.length; i++) {
-				String part = pattern[i];
-
-				int idx = -1;
-				if (i < pattern.length-1)
-					idx = host.indexOf(part);
-				else
-					idx = host.lastIndexOf(part);
-
-				if (i == 0 && !part.equals("") && idx != 0) {
-					// i == 0 ==> we are on the first fixed part
-					// first fixed part is not empty ==> Matching String must start with first fixed part
-					// if not, no match!
-					return false;
-				}
-				if (i == pattern.length-1 && !part.equals("") && idx + part.length() != host.length()) {
-					// i == last part
-					// last part is not empty ==> Matching String must end with last part
-					// if not, no match
-					return false;
-				}
-				// part not detected in the text.
-				if (idx == -1) {
-					return false;
-				}
-				// Move ahead, towards the right of the text.
-				host = host.substring(idx + part.length());
-			}
-			return true;
-		}
-
-	}
-	private Vector<OverrulePattern> overrulePatterns = new Vector<OverrulePattern>();
+	private PatternSequence overrulePatterns = new PatternSequence();
 
 	public BlockedHosts(int maxCountEstimate, int okCacheSize, int filterListCacheSize) {
 		okCache = new LRUCache(okCacheSize);
@@ -176,7 +106,7 @@ public class BlockedHosts implements Set {
 		host = host.toLowerCase();
 
 		if (host.indexOf("*") != -1) {
-			overrulePatterns.add(new OverrulePattern(host, filter));
+			overrulePatterns.addPattern(host, filter);
 			clearCache(!filter);
 		}
 		else {
@@ -189,7 +119,7 @@ public class BlockedHosts implements Set {
 		host = host.toLowerCase();
 
 		if (host.indexOf("*") != -1) {
-			overrulePatterns.remove(new OverrulePattern(host, filter));
+			overrulePatterns.removePattern(host, filter);
 			clearCache(filter);
 		}
 		else {
@@ -322,18 +252,6 @@ public class BlockedHosts implements Set {
 	}
 
 
-	private OverrulePattern getOverrulePattern (String host) {
-
-		Iterator<OverrulePattern> it = overrulePatterns.iterator();
-		while (it.hasNext()) {
-			OverrulePattern pattern = it.next();
-			if (pattern.match(host))
-				return pattern;
-		}
-		return null;
-	}
-
-
 	@Override
 	public boolean contains(Object object) {
 
@@ -375,9 +293,9 @@ public class BlockedHosts implements Set {
 				return filter.booleanValue();
 
 			if (checkPattern) {
-				OverrulePattern patternMatch = getOverrulePattern(hostName);
+				Boolean patternMatch = (Boolean) overrulePatterns.match(hostName);
 				if (patternMatch != null)
-					return patternMatch.filter;
+					return patternMatch.booleanValue();
 			}
 
 			if (blockedHostsHashes.contains(hosthash))
