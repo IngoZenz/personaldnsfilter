@@ -15,6 +15,8 @@ public class DNSServerConfigEntrySerializer {
 
     private DNSServerConfigBaseEntry deserializeImpl(String entry) {
 
+        //TODO replace duplicated parser impl with the one already in DNSServer class
+
         if (entry == null || entry.isEmpty()) {
             return new DNSServerConfigEntry();
         }
@@ -53,8 +55,10 @@ public class DNSServerConfigEntrySerializer {
             newEntry = new DNSServerConfigEntry(splittedEntry[0], splittedEntry[1], isActive);
         } else if (splittedEntry.length == 3) {
             newEntry = new DNSServerConfigEntry(splittedEntry[0], splittedEntry[1], DNSType.valueOf(splittedEntry[2].toUpperCase()), isActive);
-        } else {
+        } else if (splittedEntry.length == 4){
             newEntry = new DNSServerConfigEntry(splittedEntry[0], splittedEntry[1], DNSType.valueOf(splittedEntry[2].toUpperCase()), splittedEntry[3], isActive);
+        } else { //url host might contain IPV6 Address with :: in it => add also "::" +splittedEntry[4] to the url
+            newEntry = new DNSServerConfigEntry(splittedEntry[0], splittedEntry[1], DNSType.valueOf(splittedEntry[2].toUpperCase()), splittedEntry[3]+"::"+splittedEntry[4], isActive);
         }
 
         return newEntry;
