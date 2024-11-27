@@ -37,6 +37,7 @@ import java.util.Hashtable;
 
 import util.ExecutionEnvironment;
 import util.Logger;
+import util.PatternSequence;
 
 public class DNSResolver implements Runnable {
 
@@ -58,9 +59,9 @@ public class DNSResolver implements Runnable {
 
 	private static boolean enableLocalResolver = false;
 	private static int localResolverTTL = 0;
-	private static Hashtable <String, byte[]> customIPMappings = null;
+	private static PatternSequence customIPMappings = null;
 
-	public static void initLocalResolver(Hashtable<String, byte[]> customMappings, boolean enabled, int ttl){
+	public static void initLocalResolver(PatternSequence customMappings, boolean enabled, int ttl){
 		customIPMappings = customMappings;
 		localResolverTTL= ttl;
 		enableLocalResolver = enabled;
@@ -122,7 +123,7 @@ public class DNSResolver implements Runnable {
 		}
 
 		if (customIPMappings != null)
-			ip = customIPMappings.get(prfx+host.toLowerCase());
+			ip = (byte[]) customIPMappings.match(prfx+host.toLowerCase());
 		if (ip == null && DNSResponsePatcher.filter(host, false)) {
 			DNSResponsePatcher.logNstats(true, host);
 			ip = filterIP;

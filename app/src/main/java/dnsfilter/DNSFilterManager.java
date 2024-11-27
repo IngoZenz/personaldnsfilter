@@ -60,6 +60,7 @@ import util.ExecutionEnvironment;
 import util.FileLogger;
 import util.Logger;
 import util.LoggerInterface;
+import util.PatternSequence;
 import util.Utils;
 import util.conpool.TLSSocketFactory;
 
@@ -86,7 +87,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	private static LoggerInterface TRAFFIC_LOG;
 
 	private static BlockedHosts hostFilter = null;
-	private static Hashtable<String, byte[]> customIPMappings = null;
+	private static PatternSequence customIPMappings = null;
 	private boolean serverStopped = true;
 	private boolean reloading_filter = false;
 	private AutoFilterUpdater autoFilterUpdater;
@@ -1169,9 +1170,9 @@ public class DNSFilterManager extends ConfigurationAccess  {
 			InetAddress address = InetAddress.getByName(ip);
 			byte[] addressBytes = address.getAddress();
 			if (addressBytes.length == 4)
-				customIPMappings.put(">4"+host, addressBytes);
+				customIPMappings.addPattern(">4"+host, addressBytes);
 			else
-				customIPMappings.put(">6"+host, addressBytes);
+				customIPMappings.addPattern(">6"+host, addressBytes);
 
 		} catch (Exception e) {
 			Logger.getLogger().logLine("Cannot apply custom mapping "+entry);
@@ -1513,7 +1514,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 				boolean enableLocalResolver = Boolean.parseBoolean(config.getProperty("enableLocalResolver", "false"));
 				int localTTL = Integer.parseInt(config.getProperty("localResolverTTL", "60"));
-				customIPMappings = new Hashtable();
+				customIPMappings = new PatternSequence();
 				DNSResolver.initLocalResolver(customIPMappings, enableLocalResolver, localTTL);
 
 				// trigger regular filter update when configured
