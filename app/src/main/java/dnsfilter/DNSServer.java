@@ -111,6 +111,8 @@ public class DNSServer {
             endPoint = null;
             if (entryTokens.length>3)
                 endPoint = entryTokens[3];
+            if (entryTokens.length >4) //url host is possibly IPv6 address with :: in between
+                endPoint = endPoint+"::"+entryTokens[4];
         }
 
         protected DNSServer createDNSServer(int timeout) throws IOException {

@@ -7,14 +7,18 @@
     android:background="#2a3440"
     android:focusable="true"
     android:focusableInTouchMode="true"
-    android:orientation="vertical">
-
-    <TextView
-        android:id="@+id/infoPopUpTxt"
+    android:orientation="vertical"
+    android:weightSum="1">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:layout_marginTop="10dp"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="10dp">
+    <TextView
+        android:id="@+id/infoPopUpTxt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#2a3440"
@@ -22,7 +26,7 @@
         android:textColorLink="#00BCD4"
         android:text="">
     </TextView>
-
+    </ScrollView>
     <dnsfilter.android.PaddedCheckBox
         android:id="@+id/disableInfoPopUp"
         android:layout_width="wrap_content"

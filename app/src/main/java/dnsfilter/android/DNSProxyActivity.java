@@ -617,6 +617,16 @@ public class DNSProxyActivity extends Activity
 	}
 
 	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		if (PASSWORD_DIAG != null && PASSWORD_DIAG.isShowing() )
+			PASSWORD_DIAG.dismiss();
+
+		if (popUpDialog != null && popUpDialog.isShowing())
+			closeInitialInfoPopUp();
+	}
+
+	@Override
 	public void onResume() {
 		try {
 			super.onResume();
