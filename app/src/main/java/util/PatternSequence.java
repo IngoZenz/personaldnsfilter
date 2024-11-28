@@ -29,7 +29,7 @@ public class PatternSequence {
         }
 
         private boolean patternEqual(Pattern overrulePattern) {
-            if (pattern.length == overrulePattern.pattern.length) {
+            if (pattern.length == overrulePattern.pattern.length && overrulePattern.value.equals(value)) {
                 for (int i = 0; i < pattern.length; i++) {
                     if (!pattern[i].equals(overrulePattern.pattern[i]))
                         return false;
