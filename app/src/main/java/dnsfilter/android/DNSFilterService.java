@@ -93,6 +93,7 @@ public class DNSFilterService extends VpnService  {
 	private static boolean DNS_PROXY_PORT_IS_REDIRECTED = false;
 
 	private static boolean dnsProxyMode = false;
+	private static int dnsProxyPort = 5300;
 	private static boolean dnsProxyOnlyLocal = true;
 	private static boolean rootMode = false;
 	private static boolean vpnInAdditionToProxyMode = false;
@@ -148,7 +149,7 @@ public class DNSFilterService extends VpnService  {
 
 
 
-		public void clean() {
+		private void clean() {
 			String ipFilePath = ExecutionEnvironment.getEnvironment().getWorkDir()+"/"+ipFileName;
 			File f = new File(ipFilePath);
 			try {
@@ -162,7 +163,7 @@ public class DNSFilterService extends VpnService  {
 					}
 
 					Logger.getLogger().logLine("Cleaning up a previous redirect from previous not correctly terminated execution!");
-					runOSCommand(true, "iptables -t nat -D OUTPUT -p udp --dport 53 -j DNAT --to-destination "+ip+":5300");
+					runOSCommand(true, "iptables -t nat -D OUTPUT -p udp --dport 53 -j DNAT --to-destination "+ip+":"+dnsProxyPort);
 					runOSCommand(true, "ip6tables -D OUTPUT -p tcp --destination-port 53 -j DROP");
 					runOSCommand(true, "ip6tables -D OUTPUT -p udp --destination-port 53 -j DROP");
 					runOSCommand(true, "iptables -D OUTPUT -p tcp --destination-port 53 -j DROP");
@@ -175,7 +176,7 @@ public class DNSFilterService extends VpnService  {
 		}
 
 
-		public synchronized void updateForward() {
+		private synchronized void updateForward() {
 
 			String ipFilePath = ExecutionEnvironment.getEnvironment().getWorkDir()+"/"+ipFileName;
 
@@ -183,7 +184,7 @@ public class DNSFilterService extends VpnService  {
 				String ip = getALocalIpAddress();
 				if (ip !=null &&!ip.equals(forwardip)){
 					clearForward();
-					runOSCommand(false, "iptables -t nat -I OUTPUT -p udp --dport 53 -j DNAT --to-destination " + ip + ":5300");
+					runOSCommand(false, "iptables -t nat -I OUTPUT -p udp --dport 53 -j DNAT --to-destination " + ip + ":"+dnsProxyPort);
 					//nat in general not available for IP6 => drop IP6 DNS requests!
 					runOSCommand(true, "ip6tables -A OUTPUT -p udp --destination-port 53 -j DROP");
 					runOSCommand(true, "ip6tables -A OUTPUT -p tcp --destination-port 53 -j DROP");
@@ -199,7 +200,7 @@ public class DNSFilterService extends VpnService  {
 			}
 		}
 
-		public synchronized void clearForward() {
+		private synchronized void clearForward() {
 
 			String ipFilePath = ExecutionEnvironment.getEnvironment().getWorkDir()+"/"+ipFileName;
 
@@ -207,7 +208,7 @@ public class DNSFilterService extends VpnService  {
 				return;
 
 			try {
-				runOSCommand(false, "iptables -t nat -D OUTPUT -p udp --dport 53 -j DNAT --to-destination "+forwardip+":5300");
+				runOSCommand(false, "iptables -t nat -D OUTPUT -p udp --dport 53 -j DNAT --to-destination "+forwardip+":"+dnsProxyPort);
 				runOSCommand(true, "ip6tables -D OUTPUT -p tcp --destination-port 53 -j DROP");
 				runOSCommand(true, "ip6tables -D OUTPUT -p udp --destination-port 53 -j DROP");
 				runOSCommand(true, "iptables -D OUTPUT -p tcp --destination-port 53 -j DROP");
@@ -680,6 +681,8 @@ public class DNSFilterService extends VpnService  {
 				DNSFILTER = DNSFilterManager.getInstance();
 				DNSFILTER.init();
 				dnsProxyMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("dnsProxyOnAndroid", "false"));
+				dnsProxyPort = Integer.parseInt(DNSFILTER.getConfig().getProperty("dnsProxyPortAndroid","5300"));
+
 				dnsProxyOnlyLocal = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("dnsProxyOnlyLocalRequests", "true"));
 				rootMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("rootModeOnAndroid", "false"));
 				vpnInAdditionToProxyMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("vpnInAdditionToProxyMode", "false"));
@@ -707,7 +710,7 @@ public class DNSFilterService extends VpnService  {
 				if (dnsProxyMode) {
 					if (rootMode)
 						setUpPortRedir();
-					DNSFILTERPROXY = new DNSFilterProxy(5300);
+					DNSFILTERPROXY = new DNSFilterProxy(dnsProxyPort);
 					new Thread(DNSFILTERPROXY).start();
 				}
 
@@ -835,7 +838,7 @@ public class DNSFilterService extends VpnService  {
 		if (DNS_PROXY_PORT_IS_REDIRECTED)
 			return;
 		try {
-			runOSCommand(false, "iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-port 5300");
+			runOSCommand(false, "iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-port "+dnsProxyPort);
 			DNS_PROXY_PORT_IS_REDIRECTED = true;
 		} catch (Exception e) {
 			Logger.getLogger().logLine("Exception during setting port redirection:" + e.toString());
@@ -847,7 +850,7 @@ public class DNSFilterService extends VpnService  {
 		if (!DNS_PROXY_PORT_IS_REDIRECTED)
 			return;
 		try {
-			runOSCommand(false, "iptables -t nat -D PREROUTING -p udp --dport 53 -j REDIRECT --to-port 5300");
+			runOSCommand(false, "iptables -t nat -D PREROUTING -p udp --dport 53 -j REDIRECT --to-port"+dnsProxyPort);
 			DNS_PROXY_PORT_IS_REDIRECTED = false;
 		} catch (Exception e) {
 			Logger.getLogger().logLine("Exception when clearing port redirection:" + e.toString());
