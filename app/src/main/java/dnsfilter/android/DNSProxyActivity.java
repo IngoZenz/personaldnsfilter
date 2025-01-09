@@ -1650,7 +1650,7 @@ public class DNSProxyActivity extends Activity
 		if (requestCode == 0 && resultCode == Activity.RESULT_OK) {
 			startSvc();
 		} else if (requestCode == 0 && resultCode != Activity.RESULT_OK) {
-			Logger.getLogger().logLine("VPN dialog not accepted!\r\nPress restart to display dialog again!");
+			Logger.getLogger().logLine("VPN confirmation dialog not accepted!\r\nPress restart to display dialog again!\r\nAnother app might be using \"Always-on VPN\".\r\nCheck under Settings > Network & Internet > VPN.");
 		}
 
 		if (requestCode == DNSServerConfigActivity.ACTIVITY_RESULT_CODE && resultCode == Activity.RESULT_OK) {
