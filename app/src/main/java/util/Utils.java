@@ -44,6 +44,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 public class Utils {
 
@@ -355,6 +358,62 @@ public class Utils {
 			sourceFile.delete();
 		}
 
+	}
+
+	public static void zipFile(ZipOutputStream zos, File fileToZip, String parrentDirectoryName) throws Exception {
+		if (fileToZip == null || !fileToZip.exists()) {
+			return;
+		}
+
+		String zipEntryName = fileToZip.getName();
+		if (parrentDirectoryName!=null && !parrentDirectoryName.isEmpty()) {
+			zipEntryName = parrentDirectoryName + "/" + fileToZip.getName();
+		}
+
+		if (fileToZip.isDirectory()) {
+			System.out.println("+" + zipEntryName);
+			for (File file : fileToZip.listFiles()) {
+				zipFile(zos, file, zipEntryName);
+			}
+		} else {
+			System.out.println("   " + zipEntryName);
+			byte[] buffer = new byte[1024];
+			FileInputStream fis = new FileInputStream(fileToZip);
+			zos.putNextEntry(new ZipEntry(zipEntryName));
+			int length;
+			while ((length = fis.read(buffer)) > 0) {
+				zos.write(buffer, 0, length);
+			}
+			zos.closeEntry();
+			fis.close();
+		}
+	}
+
+	public static void unzipFile(ZipInputStream zis, String outputDir) throws IOException {
+		byte[] buffer = new byte[1024];
+		ZipEntry zipEntry = zis.getNextEntry();
+		while (zipEntry != null) {
+			File newFile = new File(outputDir + File.separator, zipEntry.getName());
+			if (zipEntry.isDirectory()) {
+				if (!newFile.isDirectory() && !newFile.mkdirs()) {
+					throw new IOException("Failed to create directory " + newFile);
+				}
+			} else {
+				File parent = newFile.getParentFile();
+				if (!parent.isDirectory() && !parent.mkdirs()) {
+					throw new IOException("Failed to create directory " + parent);
+				}
+				FileOutputStream fos = new FileOutputStream(newFile);
+				int len = 0;
+				while ((len = zis.read(buffer)) > 0) {
+					fos.write(buffer, 0, len);
+				}
+				fos.close();
+			}
+			zipEntry = zis.getNextEntry();
+		}
+		zis.closeEntry();
+		zis.close();
 	}
 
 }
