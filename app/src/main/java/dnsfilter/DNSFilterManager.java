@@ -729,7 +729,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 								URL url = new URL(urlStr);
 								URLConnection con = url.openConnection();
 
-								if (useTLSSocketFactory) {
+								if (useTLSSocketFactory && con instanceof HttpsURLConnection) {
 									try {
 										((HttpsURLConnection) con).setSSLSocketFactory(new TLSSocketFactory());
 									} catch (Exception e) {
