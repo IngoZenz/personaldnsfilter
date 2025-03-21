@@ -8,7 +8,7 @@
 # followed by whitespace and mapped ip.
 # Wildcard Character "*" can be used.
 
-fritz.box 192.168.2.1
+>router 192.168.2.1
 
 # Format for blacklist: 1 host name per line (sample below).
 # Wildcard Character "*" can be used for host blocking.
