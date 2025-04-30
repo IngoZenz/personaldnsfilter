@@ -50,6 +50,7 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
         configureRestoreDefaultsButton();
         configureApplyNewConfigurationButton();
         configureShowCommentedLines();
+        presenter.onChangedShowCommentedLinesCheckbox(showCommentedLinesCheckbox.isChecked());
     }
 
     private void setupActionBar() {

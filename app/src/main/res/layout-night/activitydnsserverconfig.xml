@@ -43,7 +43,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="6dp"
             android:button="@drawable/custom_switch"
-            android:checked="false"
+            android:checked="true"
             android:singleLine="true"
             android:text="@string/showCommentedLines"
             android:textColor="#FFFFFF" />
