@@ -786,6 +786,25 @@ public class DNSFilterService extends VpnService  {
 		DNSFilterManager.getInstance().switchBlockingActive();
 		DNSProxyActivity.reloadLocalConfig();
 		updateNotification();
+		
+		// Update the quick settings tile
+		DNSFilterTileService.requestTileUpdate(this);
+	}
+
+	/**
+	 * Check if DNS filtering is currently active
+	 * 
+	 * @return true if filtering is active, false otherwise
+	 */
+	public boolean isFilterActive() {
+		try {
+			if (DNSFILTER != null) {
+				return Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("filterActive", "true"));
+			}
+		} catch (Exception e) {
+			Logger.getLogger().logException(e);
+		}
+		return false;
 	}
 
 	private void updateNotification() {

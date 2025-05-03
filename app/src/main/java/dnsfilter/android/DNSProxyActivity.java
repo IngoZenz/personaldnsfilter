@@ -1063,6 +1063,7 @@ public class DNSProxyActivity extends Activity
 				return;
 
 			boolean changed = persistAdditionalHosts();
+			boolean filterActiveChanged = false;
 
 			if (filterReloadIntervalView.getText().toString().equals(""))
 				filterReloadIntervalView.setText("7");
@@ -1098,8 +1099,10 @@ public class DNSProxyActivity extends Activity
 				else if (ln.trim().startsWith("rootModeOnAndroid"))
 					getConfig().updateConfigValue("rootModeOnAndroid", rootModeCheck.isChecked()+"");
 
-				else if (ln.trim().startsWith("filterActive"))
+				else if (ln.trim().startsWith("filterActive")) {
 					getConfig().updateConfigValue("filterActive", enableAdFilterCheck.isChecked()+"");
+					filterActiveChanged = true;
+				}
 
 				else if (popUpDialogChanged && ln.trim().startsWith("showInitialInfoPopUp"))
 					getConfig().updateConfigValue("showInitialInfoPopUp", showInitialInfoPopUp+"");
@@ -1112,6 +1115,11 @@ public class DNSProxyActivity extends Activity
 
 			if (getConfig().isChanged()) {
 				CONFIG.updateConfig(getConfig().getConfigBytes());
+				
+				// Update the quick settings tile if filter status changed
+				if (filterActiveChanged) {
+					DNSFilterTileService.requestTileUpdate(this);
+				}
 			}
 
 		} catch (Exception e) {
