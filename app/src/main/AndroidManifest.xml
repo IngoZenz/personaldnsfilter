@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="dnsfilter.android"
     android:installLocation="auto"
-    android:versionCode="1505700"
-    android:versionName="1.50.57.0">
+    android:versionCode="1505701"
+    android:versionName="1.50.57.1">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
