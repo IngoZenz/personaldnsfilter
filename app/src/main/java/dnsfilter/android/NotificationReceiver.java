@@ -47,8 +47,11 @@ public class NotificationReceiver extends BroadcastReceiver {
 				return;
 			}
 			DNSFilterService instance = DNSFilterService.INSTANCE;
-			if (instance != null)
-				DNSFilterService.INSTANCE.pause_resume();
+			if (instance != null) {
+				instance.pause_resume();
+				// Update quick settings tile
+				DNSFilterTileService.requestTileUpdate(context);
+			}
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
 		}
