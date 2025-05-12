@@ -49,6 +49,9 @@ public class PaddingCipherOutputStream extends OutputStream {
 	
 	@Override
 	public void write(byte b[]) throws IOException {
+    if (b == null) {
+            throw new NullPointerException("Cannot write null byte array");
+        }
 		write(b,0,b.length);		
 	}
 	
