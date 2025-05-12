@@ -269,7 +269,8 @@ public class Utils {
 
 	public static Object deserializeObject(byte[] bytes) throws IOException {
 		ByteArrayInputStream bytesIn = new ByteArrayInputStream(bytes);
-		ObjectInputStream objIn = new ObjectInputStream (bytesIn);
+		ValidatingObjectInputStream ois = new ValidatingObjectInputStream(bais); {
+    ois.accept(LinkedList.class, LogMutation.class, HashMap.class, String.class);
 		try {
 			return objIn.readObject();
 		} catch (ClassNotFoundException e) {
