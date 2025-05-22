@@ -1575,6 +1575,8 @@ public class DNSProxyActivity extends Activity
 
 	protected synchronized void handleExitApp() {
 		DNSFilterService.stop(true);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+			DNSFilterTileService.requestTileUpdate(this);
 		Intent intent = new Intent(this, DNSProxyActivity.class);
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 		intent.putExtra("SHOULD_FINISH", true);

@@ -795,6 +795,22 @@ public class DNSFilterService extends VpnService  {
 		updateNotification();
 	}
 
+	/**
+	 * Check if DNS filtering is currently active
+	 * 
+	 * @return true if filtering is active, false otherwise
+	 */
+	public boolean isFilterActive() {
+		try {
+			if (DNSFILTER != null) {
+				return Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("filterActive", "true"));
+			}
+		} catch (Exception e) {
+			Logger.getLogger().logException(e);
+		}
+		return false;
+	}
+
 	private void updateNotification() {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN)
 			return;
@@ -812,6 +828,10 @@ public class DNSFilterService extends VpnService  {
 
 			((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel(1);
 			((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).notify(1,notibuilder.build());
+
+			// Update the quick settings tile
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+				DNSFilterTileService.requestTileUpdate(this);
 
 		} catch (Exception e){
 			Logger.getLogger().logException(e);
