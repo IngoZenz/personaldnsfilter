@@ -80,7 +80,7 @@ public class Connection implements TimeoutListener {
 		InetAddress adr=null;
 		
 		if (CUSTOM_HOSTS != null)
-		adr = (InetAddress) CUSTOM_HOSTS.get(host);
+			adr = (InetAddress) CUSTOM_HOSTS.get(host);
 		if (adr == null)
 			if (proxy == Proxy.NO_PROXY) 
 				adr = InetAddress.getByName(host);			
