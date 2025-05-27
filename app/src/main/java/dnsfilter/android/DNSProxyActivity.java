@@ -846,11 +846,13 @@ public class DNSProxyActivity extends Activity
 			if (additionalHostsChanged)
 				try {
 					CONFIG.updateAdditionalHosts(addHostsTxt.getBytes());
+					return true;
 				} catch (IOException eio) {
 					Logger.getLogger().logLine("Cannot persistAdditionalHosts!\n" + eio.toString());
+					return true;
 				}
 		}
-		return additionalHostsChanged;
+		return false;
 	}
 
 	protected boolean persistManuallyEditConf()  {
@@ -860,11 +862,13 @@ public class DNSProxyActivity extends Activity
 				try {
 					CONFIG.updateConfigMergeDefaults(addHostsTxt.getBytes());
 					loadAndApplyConfig(false);
+					return true;
 				} catch (IOException eio) {
 					Logger.getLogger().logLine("Cannot persist manually edited config!\n" + eio.toString());
+					return true;
 				}
 		}
-		return manuallyConfEdited;
+		return false;
 	}
 
 
