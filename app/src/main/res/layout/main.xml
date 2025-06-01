@@ -632,63 +632,6 @@
                 android:layout_marginBottom="15dp"
                 android:orientation="vertical">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginEnd="10dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="0dp"
-                        android:layout_marginTop="5dp"
-                        android:paddingEnd="7dp"
-                        android:text="ID"
-                        android:textColor="#424242"
-                        android:textSize="14sp" />
-
-                    <Button
-                        android:id="@+id/BackupIdDn"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="0dp"
-                        android:layout_marginTop="5dp"
-                        android:layout_marginBottom="3dp"
-                        android:layout_weight="0.09"
-                        android:background="@drawable/custom_button"
-                        android:drawableStart="@drawable/arrow_left"
-                        android:paddingStart="6.5dp"
-                        android:paddingTop="4dp"
-                        android:paddingBottom="4dp" />
-
-                    <EditText
-                        android:id="@+id/BackupId"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
-                        android:layout_weight="0.82"
-                        android:background="#DEE2E6"
-                        android:gravity="center"
-                        android:text="."
-                        android:textColor="#424242"
-                        android:textSize="14sp" />
-
-                    <Button
-                        android:id="@+id/BackupIdUp"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="0dp"
-                        android:layout_marginTop="5dp"
-                        android:layout_marginBottom="3dp"
-                        android:layout_weight="0.09"
-                        android:background="@drawable/custom_button"
-                        android:drawableEnd="@drawable/arrow_right"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="6.5dp"
-                        android:paddingBottom="4dp" />
-                </LinearLayout>
-
                 <Button
                     android:id="@+id/backupBtn"
                     android:layout_width="wrap_content"

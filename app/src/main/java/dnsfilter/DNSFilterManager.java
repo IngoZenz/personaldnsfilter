@@ -52,6 +52,9 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -67,7 +70,7 @@ import util.conpool.TLSSocketFactory;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1505800";
+	public static final String VERSION = "1505800-dev01";
 
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
 
@@ -562,33 +565,29 @@ public class DNSFilterManager extends ConfigurationAccess  {
 		Utils.copyFile(fromFile, toFile);
 	}
 
-	@Override
-	public String[] getAvailableBackups() throws IOException {
-		File file = new File(getPath() +"backup");
-		String[] names = new String[0];
-		if (file.exists())
-			names = file.list();
-
-		ArrayList<String> result = new ArrayList<String>();
-
-		for(String name : names)
-		{
-			if (new File(getPath() +"backup/" + name).isDirectory())
-				result.add(name);
-		}
-		Collections.sort(result);
-		return (String[]) result.toArray(new String[0]);
+	private void zipFile(ZipOutputStream zipOut, File f) throws IOException {
+		String name = f.getName();
+		Logger.getLogger().logLine("zipping: "+name);
+		ZipEntry entry = new ZipEntry(name);
+		zipOut.putNextEntry(entry);
+		FileInputStream fin = new FileInputStream(f);
+		Utils.copyFully(fin, zipOut, false);
+		zipOut.closeEntry();
+		zipOut.flush();
+		fin.close();
 	}
 
 
 	@Override
-	public void doBackup(String name) throws IOException {
+	public void doBackup(OutputStream out) throws IOException {
 		try {
-			copyLocalFile("dnsfilter.conf", "backup/"+name+"/dnsfilter.conf");
-			copyLocalFile("dnsfilter-default.conf", "backup/"+name+"/dnsfilter-default.conf");
-			copyLocalFile("additionalHosts.txt", "backup/"+name+"/additionalHosts.txt");
-			copyLocalFile("VERSION.TXT", "backup/"+name+"/VERSION.TXT");
-			Logger.getLogger().message(new File(getPath() + "backup/"+name).getPath());
+			ZipOutputStream zip = new ZipOutputStream(out);
+			zipFile(zip, new File(getPath()+"dnsfilter.conf"));
+			zipFile(zip, new File(getPath()+"dnsfilter-default.conf"));
+			zipFile(zip, new File(getPath()+"additionalHosts.txt"));
+			zipFile(zip, new File(getPath()+"VERSION.TXT"));
+			zip.finish();
+			zip.close();
 		} catch (IOException e) {
 			throw new ConfigurationAccessException(e.getMessage(), e);
 		}
@@ -628,27 +627,34 @@ public class DNSFilterManager extends ConfigurationAccess  {
 		}
 	}
 
+	private void restoreZipEntry (ZipEntry entry, ZipInputStream in) throws IOException {
+		Logger.getLogger().logLine("Restoring: "+entry.getName());
+		FileOutputStream out = new FileOutputStream(getPath()+entry.getName());
+		byte[] buf = new byte[1024];
+		Utils.copyFully(in, out, false);
+		out.flush();
+		out.close();
+	}
+
 	@Override
-	public void doRestore(String name) throws IOException {
+	public void doRestore(InputStream in) throws IOException {
 		try {
 			if (!canStop())
 				throw new IOException("Cannot stop! Pending operation!");
 			stop();
 			invalidate();
-			copyLocalFile("backup/"+name+"/dnsfilter.conf", "dnsfilter.conf");
-			copyLocalFile("backup/"+name+"/additionalHosts.txt", "additionalHosts.txt");
-			copyLocalFile("backup/"+name+"/VERSION.TXT", "VERSION.TXT");
-
-			//delete eventually existing invalid default config file.
-			new File(getPath() + "dnsfilter-default.conf").delete();
-
-			// copy default file from backup if existing. In case it does not exist in backup folder,
-			//it will be created via getConfigMergeIfNeeded!
-			File defaultCfg = new File(getPath() + "backup/"+name+"/dnsfilter-default.conf");
-
-			if (defaultCfg.exists())
-				copyLocalFile("backup/"+name+"/dnsfilter-default.conf", "dnsfilter-default.conf");
-
+			ZipInputStream zip = new ZipInputStream(in);
+			ZipEntry entry = zip.getNextEntry();
+			try {
+				while (entry != null) {
+					restoreZipEntry(entry, zip);
+					entry = zip.getNextEntry();
+				}
+				zip.close();
+			} catch (Exception e) {
+				Logger.getLogger().logException(e);
+				throw e;
+			}
 			getConfigMergedIfNeeded();
 
 			//cleanup hostsfile and index in order to force reload

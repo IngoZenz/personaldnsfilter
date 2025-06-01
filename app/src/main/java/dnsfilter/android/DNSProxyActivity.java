@@ -68,7 +68,9 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -438,10 +440,6 @@ public class DNSProxyActivity extends Activity
 			restoreBtn.setOnClickListener(this);
 			restoreDefaultsBtn = (Button) findViewById(R.id.RestoreDefaultBtn);
 			restoreDefaultsBtn.setOnClickListener(this);
-			backupDnBtn = (Button) findViewById(R.id.BackupIdDn);
-			backupDnBtn.setOnClickListener(this);
-			backupUpBtn = (Button) findViewById(R.id.BackupIdUp);
-			backupUpBtn.setOnClickListener(this);
 			addFilterBtn = (TextView) findViewById(R.id.addFilterBtn);
 			addFilterBtn.setOnClickListener(this);
 			removeFilterBtn = (TextView) findViewById(R.id.removeFilterBtn);
@@ -727,62 +725,58 @@ public class DNSProxyActivity extends Activity
 		}
 	}
 
-	private String getBackupSubFolder() {
-		String subFolder = ".";
-		String txt = ((TextView) findViewById(R.id.BackupId)).getText().toString();
-		if (selectedBackup != -1 || !txt.equals("<default>")) {
-			if (selectedBackup!=-1)
-				subFolder = availableBackups[selectedBackup];
-
-			if (!txt.equals(subFolder)) {
-				//edited name
-
-				//Check if in List
-				for (int i = 0; i < availableBackups.length; i++)
-					if (txt.equals(availableBackups[i])) {
-						selectedBackup = i;
-						return txt;
-					}
-
-				//new entry => add to list
-				ArrayList<String> list = new ArrayList<String>();
-                list.addAll(Arrays.asList(availableBackups));
-
-				list.add(txt);
-
-				Collections.sort(list);
-				availableBackups = list.toArray(new String[list.size()]);
-
-				for (int i = 0; i < availableBackups.length; i++)
-					if (txt.equals(availableBackups[i])) {
-						selectedBackup = i;
-						return txt;
-
-					}
-
-				//something wrong
-				Logger.getLogger().logException(new Exception("Something is wrong!"));
-				return txt;
-			}
-			else return txt;
-		}
-		else return ".";
-	}
-
-
+	private static int DO_BACKUP = 0;
+	private static int DO_RESTORE = 1;
 
 	protected void doBackup() {
 
+		Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+		intent.addCategory(Intent.CATEGORY_OPENABLE);
+		intent.setType("application/zip");
+		intent.putExtra(Intent.EXTRA_TITLE, "backup.zip");
+
+		startActivityForResult(intent, DO_BACKUP);
+	}
+
+	protected void doRestore() {
+
+		Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+		intent.addCategory(Intent.CATEGORY_OPENABLE);
+		intent.setType("application/zip");
+		intent.putExtra(Intent.EXTRA_TITLE, "backup.zip");
+
+		startActivityForResult(intent, DO_RESTORE);
+	}
+
+	public void onBackupRestore(int requestCode, int resultCode,
+								 Intent resultData) {
 		TextView backupStatusView = findViewById(R.id.backupLog);
-		try {
-			CONFIG.doBackup(getBackupSubFolder());
-			backupStatusView.setTextColor(Color.parseColor("#43A047"));
-			backupStatusView.setText("Backup success!");
-		} catch (IOException eio) {
-			backupStatusView.setTextColor(Color.parseColor("#E53935"));
-			backupStatusView.setText("Backup failed! " + eio.getMessage());
+
+		if (resultCode == Activity.RESULT_OK) {
+			Uri uri = null;
+			try {
+				if (resultData == null)
+					throw new Exception("Operation aborted!");
+
+				uri = resultData.getData();
+				if (requestCode == DO_BACKUP) {
+					CONFIG.doBackup(getContentResolver().openOutputStream(uri));
+					backupStatusView.setTextColor(Color.parseColor("#43A047"));
+					backupStatusView.setText("Backup success!");
+				}
+				if (requestCode == DO_RESTORE) {
+					CONFIG.doRestore(getContentResolver().openInputStream(uri));
+					backupStatusView.setTextColor(Color.parseColor("#43A047"));
+					loadAndApplyConfig(false);
+					backupStatusView.setText("Restore success!");
+				}
+			} catch (Exception e) {
+				backupStatusView.setTextColor(Color.parseColor("#E53935"));
+				backupStatusView.setText("Operation failed! " + e.getMessage());
+			}
 		}
 	}
+
 
 	protected void doRestoreDefaults() {
 		TextView backupStatusView = findViewById(R.id.backupLog);
@@ -797,23 +791,7 @@ public class DNSProxyActivity extends Activity
 		}
 	}
 
-	protected void doRestore() {
-		TextView backupStatusView = findViewById(R.id.backupLog);
-		try {
-			CONFIG.doRestore(getBackupSubFolder());
-			backupStatusView.setTextColor(Color.parseColor("#43A047"));
-			loadAndApplyConfig(false);
-			backupStatusView.setText("Restore success!");
-		} catch (IOException eio) {
-			backupStatusView.setTextColor(Color.parseColor("#E53935"));
-			backupStatusView.setText("Restore failed! " + eio.getMessage());
-		}
-	}
-
-
-
-
-	protected void loadAdditionalHosts() {
+		protected void loadAdditionalHosts() {
 		int limit= 524288;
 		try {
 			byte[] content = CONFIG.getAdditionalHosts(limit);
@@ -1174,9 +1152,6 @@ public class DNSProxyActivity extends Activity
 		} else if (destination == restoreDefaultsBtn) {
 			doRestoreDefaults();
 			return;
-		} else if (destination == backupDnBtn || destination == backupUpBtn) {
-			handleBackUpIdChange(destination == backupUpBtn);
-			return;
 		} else if (destination == initialInfoPopUpExitBtn) {
 			closeInitialInfoPopUp();
 			return;
@@ -1234,22 +1209,6 @@ public class DNSProxyActivity extends Activity
 		}
 	}
 
-
-	private void handleBackUpIdChange(boolean up) {
-		if (up && selectedBackup==availableBackups.length-1)
-			selectedBackup = -1;
-		else if (!up && selectedBackup == -1)
-			selectedBackup = availableBackups.length-1;
-		else if (up)
-			selectedBackup++;
-		else if (!up)
-			selectedBackup--;
-		String txt = "<default>";
-		if (selectedBackup != -1)
-			txt = availableBackups[selectedBackup];
-
-		((TextView)findViewById(R.id.BackupId)).setText(txt);
-	}
 
 	private void onRemoteConnected(ConfigurationAccess remote){
 		CONFIG =remote;
@@ -1504,16 +1463,6 @@ public class DNSProxyActivity extends Activity
 
 			if (backupRestoreCheck.isChecked()) {
 				findViewById(R.id.backupRestoreView).setVisibility(View.VISIBLE);
-				try {
-					availableBackups=CONFIG.getAvailableBackups();
-					selectedBackup = -1;
-					((TextView)findViewById(R.id.BackupId)).setText("<default>");
-				} catch (IOException e) {
-					Logger.getLogger().logException(e);
-					backupRestoreCheck.setChecked(false);
-					findViewById(R.id.backupRestoreView).setVisibility(View.GONE);
-				}
-
 			} else {
 				findViewById(R.id.backupRestoreView).setVisibility(View.GONE);
 			}
@@ -1609,6 +1558,8 @@ public class DNSProxyActivity extends Activity
         }
 	}
 
+	private final int START_SVC = 377;
+
 	protected void startup() {
 		try {
 			long repeatingLogSuppressTime = Long.parseLong(getConfig().getConfigValue("repeatingLogSuppressTime", "1000"));
@@ -1633,7 +1584,7 @@ public class DNSProxyActivity extends Activity
 			if (!vpnDisabled)
 				intent = VpnService.prepare(this.getApplicationContext());
 			if (intent != null) {
-				startActivityForResult(intent, 0);
+				startActivityForResult(intent, START_SVC);
 			} else { //already prepared or VPN disabled
 				startSvc();
 			}
@@ -1653,15 +1604,16 @@ public class DNSProxyActivity extends Activity
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (requestCode == 0 && resultCode == Activity.RESULT_OK) {
+		if (requestCode == START_SVC && resultCode == Activity.RESULT_OK) {
 			startSvc();
-		} else if (requestCode == 0 && resultCode != Activity.RESULT_OK) {
+		} else if (requestCode == START_SVC && resultCode != Activity.RESULT_OK) {
 			Logger.getLogger().logLine("VPN confirmation dialog not accepted!\r\nPress restart to display dialog again!\r\nAnother app might be using \"Always-on VPN\".\r\nCheck under Settings > Network & Internet > VPN.");
 		}
-
 		if (requestCode == DNSServerConfigActivity.ACTIVITY_RESULT_CODE && resultCode == Activity.RESULT_OK) {
 			persistConfig();
 		}
+		if (requestCode == DO_BACKUP || requestCode == DO_RESTORE )
+			onBackupRestore(requestCode, resultCode, data);
 	}
 
 	@Override

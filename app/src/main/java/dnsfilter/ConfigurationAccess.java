@@ -2,6 +2,8 @@ package dnsfilter;
 
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Properties;
 
 import dnsfilter.remote.RemoteAccessClient;
@@ -90,13 +92,11 @@ public abstract class ConfigurationAccess {
 
     abstract public void triggerUpdateFilter()  throws IOException;
 
-    abstract public String[] getAvailableBackups() throws IOException;
-
-    abstract public void doBackup(String name) throws IOException ;
+    abstract public void doBackup(OutputStream out) throws IOException ;
 
     abstract public void doRestoreDefaults() throws IOException;
 
-    abstract public void doRestore(String name) throws IOException;
+    abstract public void doRestore(InputStream in) throws IOException;
 
     abstract public void wakeLock() throws IOException;
 

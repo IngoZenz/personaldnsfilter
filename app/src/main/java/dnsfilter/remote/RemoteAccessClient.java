@@ -480,43 +480,20 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
     }
 
     @Override
-    public void doBackup(String name) throws IOException {
-        triggerAction("doBackup()", name);
+    public void doBackup(OutputStream backupout) throws IOException {
+        DataOutputStream out = new DataOutputStream(getOutputStream());
+        DataInputStream in = new DataInputStream(getInputStream());
+        out.write(("doBackup()\n").getBytes());
+        out.flush();
+        String response = Utils.readLineFromStream(in);
+        if (!response.equals("OK"))
+            throw new ConfigurationAccessException(response, null);
+        byte[] buf = new byte[in.readInt()];
+        in.readFully(buf);
+        backupout.write(buf);
+        backupout.flush();
+        backupout.close();
     }
-
-    @Override
-    public String[] getAvailableBackups() throws IOException {
-        try {
-            DataOutputStream out = new DataOutputStream(getOutputStream());
-            DataInputStream in = new DataInputStream(getInputStream());
-            out.write(("getAvailableBackups()\n").getBytes());
-            out.flush();
-
-            String response = Utils.readLineFromStream(in);
-            if (!response.equals("OK")) {
-                throw new ConfigurationAccessException(response, null);
-            }
-            try {
-                int cnt = Integer.parseInt(Utils.readLineFromStream(in));
-                String[] result = new String[cnt];
-                for (int i = 0; i < cnt; i++)
-                    result[i]=Utils.readLineFromStream(in);
-
-                return result;
-
-            } catch (Exception e) {
-                throw new IOException (e);
-            }
-        } catch (ConfigurationAccessException e) {
-            connectedLogger.logLine("Remote action failed! "+e.getMessage());
-            throw e;
-        } catch (IOException e) {
-            connectedLogger.logLine("Remote action  getFilterStatistics() failed! "+e.getMessage());
-            closeConnectionReconnect();
-            throw e;
-        }
-    }
-
 
 
     @Override
@@ -526,9 +503,18 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
     }
 
     @Override
-    public void doRestore(String name) throws IOException{
+    public void doRestore(InputStream backup) throws IOException{
         invalidate();
-        triggerAction("doRestore()", name);
+        DataOutputStream out = new DataOutputStream(getOutputStream());
+        DataInputStream in = new DataInputStream(getInputStream());
+        out.write(("doRestore()\n").getBytes());
+        byte[] backupData = Utils.readFully(backup, 1024);
+        out.writeInt(backupData.length);
+        out.write(backupData);
+        out.flush();
+        String response = Utils.readLineFromStream(in);
+        if (!response.equals("OK"))
+            throw new ConfigurationAccessException(response, null);
     }
 
     @Override

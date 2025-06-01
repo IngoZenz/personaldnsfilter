@@ -1,6 +1,8 @@
 package dnsfilter.remote;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -195,6 +197,7 @@ public class RemoteAccessServer implements Runnable {
             while (!killed) {
                 try {
                     action = readStringFromStream(in, buf);
+
                     if (action.equals("attach"))
                         attachStream();
                     else if (action.equals("releaseConfiguration()"))
@@ -294,11 +297,17 @@ public class RemoteAccessServer implements Runnable {
                     out.write("OK\n".getBytes());
                     out.flush();
                 } else if (action.equals("doBackup()")) {
-                    ConfigurationAccess.getLocal().doBackup(Utils.readLineFromStream(in));
+                    ByteArrayOutputStream backupout = new ByteArrayOutputStream();
+                    ConfigurationAccess.getLocal().doBackup(backupout);
                     out.write("OK\n".getBytes());
+                    byte[] backup = backupout.toByteArray();
+                    out.writeInt(backup.length);
+                    out.write(backup);
                     out.flush();
                 } else if (action.equals("doRestore()")) {
-                    ConfigurationAccess.getLocal().doRestore(Utils.readLineFromStream(in));
+                    byte[] input = new byte[in.readInt()];
+                    in.readFully(input);
+                    ConfigurationAccess.getLocal().doRestore(new ByteArrayInputStream(input));
                     out.write("OK\n".getBytes());
                     out.flush();
                 } else if (action.equals("doRestoreDefaults()")) {
@@ -312,14 +321,6 @@ public class RemoteAccessServer implements Runnable {
                 } else if (action.equals("releaseWakeLock()")) {
                     ConfigurationAccess.getLocal().releaseWakeLock();
                     out.write("OK\n".getBytes());
-                    out.flush();
-                } else if (action.equals("getAvailableBackups()")) {
-                    String[] result = ConfigurationAccess.getLocal().getAvailableBackups();
-                    out.write("OK\n".getBytes());
-                    out.write((result.length+"\n").getBytes());
-                    for (int i = 0; i < result.length; i++)
-                        out.write((result[i]+"\n").getBytes());
-
                     out.flush();
                 } else
                     throw new ConfigurationAccess.ConfigurationAccessException("Unknown action: " + action);
