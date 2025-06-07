@@ -2,8 +2,6 @@ package dnsfilter.android;
 
 import android.app.Application;
 
-import dnsfilter.android.AndroidEnvironment;
-
 public class PersonalDNSFilterApp extends Application {
 
     @Override

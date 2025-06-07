@@ -1,15 +1,15 @@
 package dnsfilter.android.dnsserverconfig.widget;
 
+import static dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigBaseEntry.CHAR_LINE_COMMENTED;
 import static dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigEntry.CHAR_ENTRY_INACTIVE;
 import static dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigEntry.EMPTY_STRING;
 import static dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigEntry.ENTRY_PARTS_SEPARATOR;
 import static dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigEntry.IP_END_BRACER;
 import static dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigEntry.IP_START_BRACER;
-import static dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigBaseEntry.CHAR_LINE_COMMENTED;
 
+import dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigBaseEntry;
 import dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigCommentedEntry;
 import dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigEntry;
-import dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigBaseEntry;
 
 public class DNSServerConfigEntrySerializer {
 

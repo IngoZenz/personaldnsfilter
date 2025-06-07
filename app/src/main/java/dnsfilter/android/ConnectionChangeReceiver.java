@@ -22,14 +22,14 @@
 
 package dnsfilter.android;
 
-import dnsfilter.DNSServer;
-import util.ExecutionEnvironment;
-import util.Logger;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
+
+import dnsfilter.DNSServer;
+import util.ExecutionEnvironment;
+import util.Logger;
 
 public class ConnectionChangeReceiver extends BroadcastReceiver implements Runnable {
 

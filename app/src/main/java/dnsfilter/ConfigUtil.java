@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Comparator;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.StringTokenizer;

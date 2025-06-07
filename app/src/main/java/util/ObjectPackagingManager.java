@@ -1,7 +1,5 @@
 package util;
 
-import java.io.IOException;
-
 public interface ObjectPackagingManager {
 	
 	public int objectSize();

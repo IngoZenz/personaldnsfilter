@@ -28,20 +28,14 @@ import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.StringTokenizer;
-import java.util.Vector;
 
 import util.ExecutionEnvironment;
-import util.SuppressRepeatingsLogger;
 import util.GroupedLogger;
 import util.Logger;
 import util.LoggerInterface;
+import util.SuppressRepeatingsLogger;
 
 public class DNSFilterProxy implements Runnable {
 

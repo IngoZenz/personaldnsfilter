@@ -11,7 +11,6 @@ import android.util.Log;
 
 import java.io.IOException;
 
-import dnsfilter.DNSFilterManager;
 import util.Logger;
 
 /**

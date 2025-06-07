@@ -4,19 +4,18 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TableLayout;
 import android.widget.TableRow;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
-import android.view.View.OnClickListener;
 
 import java.io.File;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
@@ -24,7 +23,6 @@ import java.util.TreeMap;
 
 import dnsfilter.ConfigUtil;
 import dnsfilter.ConfigurationAccess;
-import util.ExecutionEnvironment;
 import util.Logger;
 
 public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListener {

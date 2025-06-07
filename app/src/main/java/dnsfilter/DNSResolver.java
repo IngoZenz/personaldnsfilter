@@ -22,9 +22,6 @@
 
 package dnsfilter;
 
-import ip.IPPacket;
-import ip.UDPPacket;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -33,8 +30,9 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketAddress;
-import java.util.Hashtable;
 
+import ip.IPPacket;
+import ip.UDPPacket;
 import util.ExecutionEnvironment;
 import util.Logger;
 import util.PatternSequence;

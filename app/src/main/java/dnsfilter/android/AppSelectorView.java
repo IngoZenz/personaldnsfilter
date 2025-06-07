@@ -1,11 +1,10 @@
 package dnsfilter.android;
 
-import java.util.Set;
-import java.util.TreeSet;
-
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -15,9 +14,10 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.widget.TextView;
+
+import java.util.Set;
+import java.util.TreeSet;
 
 import util.Logger;
 

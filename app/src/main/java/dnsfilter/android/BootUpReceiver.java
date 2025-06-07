@@ -21,17 +21,16 @@
  */
 package dnsfilter.android;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.Properties;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.VpnService;
 import android.os.Build;
-import android.os.Environment;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Properties;
 
 import util.ExecutionEnvironment;
 

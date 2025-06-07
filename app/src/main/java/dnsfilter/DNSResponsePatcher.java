@@ -30,7 +30,6 @@ import java.util.Set;
 
 import util.Logger;
 import util.LoggerInterface;
-import util.Utils;
 
 public class DNSResponsePatcher {
 
