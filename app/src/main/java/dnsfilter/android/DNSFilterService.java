@@ -596,7 +596,7 @@ public class DNSFilterService extends VpnService  {
 		}
 
 		if (!routes.trim().equals("") && !routes.trim().equals(";"))
-			Logger.getLogger().logLine("Adding routes:" + routes);
+			Logger.getLogger().logLine("Adding routes: " + routes);
 
 		StringTokenizer routeIPs = new StringTokenizer(routes, ";");
 
