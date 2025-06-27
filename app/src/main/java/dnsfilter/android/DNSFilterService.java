@@ -850,7 +850,7 @@ public class DNSFilterService extends VpnService  {
 		if (!DNS_PROXY_PORT_IS_REDIRECTED)
 			return;
 		try {
-			runOSCommand(false, "iptables -t nat -D PREROUTING -p udp --dport 53 -j REDIRECT --to-port"+dnsProxyPort);
+			runOSCommand(false, "iptables -t nat -D PREROUTING -p udp --dport 53 -j REDIRECT --to-port "+dnsProxyPort);
 			DNS_PROXY_PORT_IS_REDIRECTED = false;
 		} catch (Exception e) {
 			Logger.getLogger().logLine("Exception when clearing port redirection:" + e.toString());
