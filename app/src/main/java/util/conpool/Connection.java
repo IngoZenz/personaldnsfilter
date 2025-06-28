@@ -106,7 +106,9 @@ public class Connection implements TimeoutListener {
 			con = new Connection(sadr,conTimeout, ssl, sslSocketFactory, proxy);
 		}		
 		con.initStreams();
-		connAcquired.add(con);
+		synchronized(connAcquired) {
+			connAcquired.add(con);
+		}
 		return con;
 	}
 	
@@ -125,7 +127,9 @@ public class Connection implements TimeoutListener {
 			con = new Connection(host, port, conTimeout, ssl, sslSocketFactory, proxy);		
 		}		
 		con.initStreams();
-		connAcquired.add(con);
+		synchronized(connAcquired) {
+			connAcquired.add(con);
+		};
 		return con;
 	}
 	
@@ -296,12 +300,14 @@ public class Connection implements TimeoutListener {
 			for (int i = 0; i < destinations.length; i++) {
 				Connection[] cons = (Connection[]) destinations[i].toArray(new Connection[0]);
 				for (int ii = 0; ii < cons.length; ii++)
-					cons[ii].release(false);				
+					cons[ii].release(false);
 			}
-			
-			Connection[] cons = (Connection[]) connAcquired.toArray(new Connection[0]);
-			for (int i = 0; i < cons.length; i++)
-				cons[i].release(false);
+
+			synchronized (connAcquired) {
+				Connection[] cons = (Connection[]) connAcquired.toArray(new Connection[0]);
+				for (int i = 0; i < cons.length; i++)
+					cons[i].release(false);
+			}
 		}
 	}
 	
@@ -393,7 +399,9 @@ public class Connection implements TimeoutListener {
 		if (!valid) //a killed connection already released
 			return;
 		
-		connAcquired.remove(this);
+		synchronized (connAcquired) {
+			connAcquired.remove(this);
+		}
 
 		if (reuse) {
 			in.invalidate();
