@@ -728,7 +728,7 @@ public class DNSProxyActivity extends Activity
 		Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
 		intent.addCategory(Intent.CATEGORY_OPENABLE);
 		intent.setType("application/zip");
-		intent.putExtra(Intent.EXTRA_TITLE, "backup.zip");
+		intent.putExtra(Intent.EXTRA_TITLE, "pdnsf_backup.zip");
 
 		startActivityForResult(intent, DO_BACKUP);
 	}
@@ -738,7 +738,7 @@ public class DNSProxyActivity extends Activity
 		Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
 		intent.addCategory(Intent.CATEGORY_OPENABLE);
 		intent.setType("application/zip");
-		intent.putExtra(Intent.EXTRA_TITLE, "backup.zip");
+		intent.putExtra(Intent.EXTRA_TITLE, "pdnsf_backup.zip");
 
 		startActivityForResult(intent, DO_RESTORE);
 	}
