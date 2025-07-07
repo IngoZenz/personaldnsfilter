@@ -295,24 +295,39 @@ public class Connection implements TimeoutListener {
 	}
 
 	public static void invalidate() {
-		synchronized (connPooled) {
-			Vector[] destinations = (Vector[]) connPooled.values().toArray(new Vector[0]);
-			for (int i = 0; i < destinations.length; i++) {
-				Connection[] cons = (Connection[]) destinations[i].toArray(new Connection[0]);
-				for (int ii = 0; ii < cons.length; ii++)
-					cons[ii].release(false);
-			}
+		Vector toBeReleased = new Vector();
 
+		synchronized (connPooled) {
 			synchronized (connAcquired) {
-				Connection[] cons = (Connection[]) connAcquired.toArray(new Connection[0]);
-				for (int i = 0; i < cons.length; i++)
-					cons[i].release(false);
+
+				Vector[] destinations = (Vector[]) connPooled.values().toArray(new Vector[0]);
+				for (int i = 0; i < destinations.length; i++) {
+					Connection[] cons = (Connection[]) destinations[i].toArray(new Connection[destinations[i].size()]);
+					for (int ii = 0; ii < cons.length; ii++) {
+						toBeReleased.add(cons[ii]);
+						cons[ii].valid = false;
+						destinations[i].remove(cons[ii]);
+					}
+					connPooled.remove(destinations[i]);
+				}
+				Connection[] cons = (Connection[]) connAcquired.toArray(new Connection[connAcquired.size()]);
+				for (int i = 0; i < cons.length; i++) {
+					toBeReleased.add(cons[i]);
+					cons[i].valid = false;
+					connAcquired.remove(cons[i]);
+				}
 			}
 		}
+		Connection[] cons = (Connection[]) toBeReleased.toArray(new Connection[toBeReleased.size()]);
+		for (int i = 0; i < cons.length; i++)
+			cons[i].closeConnection();
 	}
+
 	
 	public static void poolReuse(Connection con) {
 		synchronized (connPooled) {
+			if (!con.valid)
+				return;
 			if (!con.acquired)
 				throw new IllegalStateException("Inconsistent connection state - Cannot release non acquired connection");
 			con.acquired=false;
@@ -344,9 +359,9 @@ public class Connection implements TimeoutListener {
 					throw new IllegalStateException("Inconsistent connection state - Cannot take already acquired connection from pool!");
 				con.acquired=true;
 				toNotify.unregister(con);
-				found = con.isAlive();
+				found = con.valid && con.isAlive();
 				if (!found) {
-					con.release(false);
+					con.closeConnection();
 					con = null;
 				}
 			}
@@ -414,19 +429,23 @@ public class Connection implements TimeoutListener {
 			}
 			poolReuse(this);
 		} else  {
-			try {
-				valid = false;
-				if (!ssl) { //SSLSocket doesn't support this
-					socket.shutdownOutput();
-					socket.shutdownInput();
-				}					
-				socket.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-			}
+			closeConnection();
 		}
 	}
-	
+
+	private void closeConnection() {
+		try {
+			valid = false;
+			if (!ssl) { //SSLSocket doesn't support this
+				socket.shutdownOutput();
+				socket.shutdownInput();
+			}
+			socket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+		}
+	}
+
 	public void setSoTimeout(int millis) throws SocketException {
 		socket.setSoTimeout(millis);
 	}
@@ -448,7 +467,7 @@ public class Connection implements TimeoutListener {
 				connPooled.remove(poolKey);
 		}
 		if (found) //if false, than connection was just taken by another thread
-			release(false);
+			closeConnection();
 	}
 
 	@Override
