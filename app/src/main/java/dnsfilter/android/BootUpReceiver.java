@@ -26,6 +26,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.VpnService;
 import android.os.Build;
+import android.os.StrictMode;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -48,6 +49,7 @@ public class BootUpReceiver extends BroadcastReceiver {
 				boolean vpnAndProxy = Boolean.parseBoolean(config.getProperty("vpnInAdditionToProxyMode", "false"));
 				if (!proxyOnAndroid || vpnAndProxy)
 					VpnService.prepare(context);
+				StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().build());
 				context.startForegroundService(i);
 			} else {
 				DNSProxyActivity.BOOT_START = true;
