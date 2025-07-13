@@ -1,5 +1,6 @@
 package dnsfilter.android;
 
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -60,9 +61,22 @@ public class DNSFilterTileService extends TileService {
                 updateTile();
             } else {
                 // Service isn't running, we need to start it
-                Intent startIntent = new Intent(this, DNSProxyActivity.class);
-                startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivityAndCollapse(startIntent);
+                if (Build.VERSION.SDK_INT < 34) {
+                    Intent startIntent = new Intent(this, DNSProxyActivity.class);
+                    startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivityAndCollapse(startIntent);
+                } else {
+                    Intent startIntent = new Intent(this, DNSProxyActivity.class);
+                    startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivityAndCollapse(
+                            PendingIntent.getActivity(
+                                    this,
+                                    0,
+                                    startIntent,
+                                    PendingIntent.FLAG_IMMUTABLE
+                            )
+                    );
+                }
             }
         } catch (IOException e) {
             Logger.getLogger().logLine("Error toggling DNS filtering state: " + e.getMessage());
