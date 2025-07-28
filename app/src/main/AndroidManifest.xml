@@ -3,8 +3,8 @@
     package="dnsfilter.android"
     android:installLocation="auto"
 
-    android:versionCode="1505800"
-    android:versionName="1.50.58.0">
+    android:versionCode="1505801"
+    android:versionName="1.50.58.1">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
