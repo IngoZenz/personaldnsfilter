@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="dnsfilter.android"
     android:installLocation="auto"
-
     android:versionCode="1505900"
     android:versionName="1.50.59.0">
 
@@ -35,10 +34,9 @@
             android:name=".DNSProxyActivity"
             android:label="personalDNSfilter"
             android:windowSoftInputMode="adjustPan"
-            android:exported = "true">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -89,6 +87,7 @@
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+        
     </application>
 
 </manifest>
