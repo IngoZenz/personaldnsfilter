@@ -3,6 +3,7 @@ package dnsfilter.android;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -120,7 +121,12 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 			try {
 				//set 'Loading apps...' info
 				final TextView infoText = new TextView(getContext());
-				infoText.setTextColor(Color.BLACK);
+
+				int uimode = getContext().getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+				if (uimode == Configuration.UI_MODE_NIGHT_YES)
+					infoText.setTextColor(Color.WHITE);
+				else infoText.setTextColor(Color.BLACK);
+
 				infoText.setText("Loading apps...");
 
 				post(new Runnable() {
