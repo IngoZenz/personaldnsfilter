@@ -351,7 +351,7 @@ public class DNSProxyActivity extends Activity
 				System.exit(0);
 			}
 
-			if (Build.VERSION.SDK_INT >= 33) { //<33 is handled in callback onBackPressed() below!
+			if (Build.VERSION.SDK_INT >= 36) { //<36 is handled in callback onBackPressed() below!
 				OnBackInvokedCallback callback = () -> {
 					if (advancedConfigCheck.isChecked()) {
 						advancedConfigCheck.setChecked(false);
@@ -702,7 +702,7 @@ public class DNSProxyActivity extends Activity
 
 	@Override
 	public void onBackPressed() {
-		if (Build.VERSION.SDK_INT < 33) {
+		if (Build.VERSION.SDK_INT < 36) {
 			if (advancedConfigCheck.isChecked()) {
 				advancedConfigCheck.setChecked(false);
 				persistConfig(); //ensure eventually changed config gets stored
