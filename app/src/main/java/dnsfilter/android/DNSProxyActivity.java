@@ -355,6 +355,7 @@ public class DNSProxyActivity extends Activity
 				OnBackInvokedCallback callback = () -> {
 					if (advancedConfigCheck.isChecked()) {
 						advancedConfigCheck.setChecked(false);
+						persistConfig(); //ensure eventually changed config gets stored
 						handleAdvancedConfig(null); // reset UI view
 					}
 					else finish();
@@ -704,6 +705,7 @@ public class DNSProxyActivity extends Activity
 		if (Build.VERSION.SDK_INT < 33) {
 			if (advancedConfigCheck.isChecked()) {
 				advancedConfigCheck.setChecked(false);
+				persistConfig(); //ensure eventually changed config gets stored
 				handleAdvancedConfig(null); // reset UI view
 			}
 			else super.onBackPressed();
