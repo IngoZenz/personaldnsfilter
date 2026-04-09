@@ -68,6 +68,8 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TextView;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -348,6 +350,22 @@ public class DNSProxyActivity extends Activity
 				finish();
 				System.exit(0);
 			}
+
+			if (Build.VERSION.SDK_INT >= 33) { //<33 is handled in callback onBackPressed() below!
+				OnBackInvokedCallback callback = () -> {
+					if (advancedConfigCheck.isChecked()) {
+						advancedConfigCheck.setChecked(false);
+						handleAdvancedConfig(null); // reset UI view
+					}
+					else finish();
+				};
+
+				getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+						OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+						callback
+				);
+			}
+
 			AndroidEnvironment.initEnvironment(this);
 
 			DISPLAY_WIDTH = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getWidth();
@@ -680,6 +698,18 @@ public class DNSProxyActivity extends Activity
 		}
 		else Logger.getLogger().message("NOTIFICATION PERMISSION IS REQUIRED!");
 	}
+
+	@Override
+	public void onBackPressed() {
+		if (Build.VERSION.SDK_INT < 33) {
+			if (advancedConfigCheck.isChecked()) {
+				advancedConfigCheck.setChecked(false);
+				handleAdvancedConfig(null); // reset UI view
+			}
+			else super.onBackPressed();
+		}
+	}
+
 
 	@Override
 	public void onDestroy() {
