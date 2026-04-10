@@ -1607,6 +1607,7 @@ public class DNSProxyActivity extends Activity
 			findViewById(R.id.advSettingsScroll).setVisibility(View.GONE);
 			appWhiteListCheck.setChecked(false);
 			appSelector.clear();
+			findViewById(R.id.appWhiteListScroll).setVisibility(View.GONE);
 			findViewById(R.id.backupRestoreView).setVisibility(View.GONE);
 			editFilterLoadCheck.setChecked(false);
 			backupRestoreCheck.setChecked(false);
