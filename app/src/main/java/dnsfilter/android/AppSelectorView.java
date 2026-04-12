@@ -260,7 +260,7 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 		//clear
 		wrappers = null;
 		if (searchView!= null) {
-			searchView.setOnClickListener(null);
+			searchView.findViewById(R.id.searchBtn).setOnClickListener(null);
 			searchStringField.removeTextChangedListener(this);
 		}
 		this.removeAllViews();
