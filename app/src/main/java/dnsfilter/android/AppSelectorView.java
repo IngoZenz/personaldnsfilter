@@ -9,6 +9,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,7 +25,7 @@ import java.util.TreeSet;
 import util.Logger;
 
 
-public class AppSelectorView extends LinearLayout implements View.OnClickListener {
+public class AppSelectorView extends LinearLayout implements View.OnClickListener, TextWatcher {
 
 	private PackageManager pm = this.getContext().getPackageManager();
 	private boolean loaded = false;
@@ -34,6 +36,7 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 
 	private ComparableAppInfoWrapper[] wrappers = null;
 	private View searchView;
+	private EditText searchStringField;
 	private View emptyResult;
 
 	@Override
@@ -42,7 +45,7 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 		if (!loaded || runningUpdate != null)
 			return ;
 
-		String searchStr = ((EditText)searchView.findViewById(R.id.searchString)).getText().toString().toLowerCase();
+		String searchStr = searchStringField.getText().toString().toLowerCase().trim();
 
 		ComparableAppInfoWrapper[] allwrappers = wrappers;
 		int count = 0;
@@ -61,6 +64,21 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 		if (count == 0)
 			emptyResult.setVisibility(View.VISIBLE);
 		Logger.getLogger().logLine("Found: "+count+" apps!");
+
+	}
+
+	@Override
+	public void afterTextChanged(Editable s) {
+		onClick(searchStringField);
+	}
+
+	@Override
+	public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+	}
+
+	@Override
+	public void onTextChanged(CharSequence s, int start, int before, int count) {
 
 	}
 
@@ -207,6 +225,8 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 
 		searchView = LayoutInflater.from(getContext()).inflate(R.layout.appselectorsearch, null);
 		searchView.findViewById(R.id.searchBtn).setOnClickListener(this);
+		searchStringField = (EditText) searchView.findViewById(R.id.searchString);
+		searchStringField.addTextChangedListener(this);
 		emptyResult = LayoutInflater.from(getContext()).inflate(R.layout.emptyresult, null);
 		emptyResult.setVisibility(View.GONE);
 
@@ -239,8 +259,10 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 
 		//clear
 		wrappers = null;
-		if (searchView!= null)
+		if (searchView!= null) {
 			searchView.setOnClickListener(null);
+			searchStringField.removeTextChangedListener(this);
+		}
 		this.removeAllViews();
 		loaded = false;
 	}
