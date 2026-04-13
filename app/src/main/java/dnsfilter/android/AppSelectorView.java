@@ -46,14 +46,15 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 		if (!loaded || runningUpdate != null)
 			return ;
 
-		String searchStr = searchStringField.getText().toString().toLowerCase().trim();
+		String searchStr = searchStringField.getText().toString().toUpperCase().trim();
 
 		ComparableAppInfoWrapper[] allwrappers = wrappers;
 		int count = 0;
 		emptyResult.setVisibility(View.GONE);
 
 		for (int i = 0; i < allwrappers.length; i++) {
-			boolean visible = allwrappers[i].checkBox.getText().toString().toLowerCase().indexOf(searchStr) != -1;
+
+			boolean visible = allwrappers[i].appString.indexOf(searchStr) != -1;
 			if (visible)
 				allwrappers[i].checkBox.setVisibility(View.VISIBLE);
 			else
@@ -90,15 +91,15 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 		private ApplicationInfo wrapped = null;
 		CheckBox checkBox = null;
 
-		private ComparableAppInfoWrapper(ApplicationInfo wrapped, CheckBox checkBox) {
-			appName = checkBox.getText().toString();
+		private ComparableAppInfoWrapper(ApplicationInfo wrapped, CheckBox checkBox, String appString) {
+			this.appString = appString.toUpperCase();
 			this.wrapped = wrapped;
 			this.checkBox = checkBox;
 		}
 
 		@Override
 		public int compareTo(ComparableAppInfoWrapper o) {
-			return appName.toUpperCase().compareTo(o.appName.toUpperCase());
+			return appString.compareTo(o.appString);
 		}
 	}
 
