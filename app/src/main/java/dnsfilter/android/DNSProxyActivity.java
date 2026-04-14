@@ -1481,6 +1481,9 @@ public class DNSProxyActivity extends Activity
 
 		prepareTransition((ViewGroup) findViewById(R.id.linearLayout4));
 
+		if (dest !=null && !dest.isChecked())
+			hideKeyboard(this);
+
 		((TextView) findViewById(R.id.backupLog)).setText("");
 		if (advancedConfigCheck.isChecked()) {
 			setVisibilityForAdvCfg(View.GONE);
@@ -1601,7 +1604,6 @@ public class DNSProxyActivity extends Activity
 				findViewById(R.id.manuallyEditScroll).setVisibility(View.GONE);
 			}
 		} else {
-			hideKeyboard(this);
 			setVisibilityForAdvCfg(View.VISIBLE);
 			findViewById(R.id.filtercfgview).setVisibility(View.GONE);
 			filterCfg.clear();
