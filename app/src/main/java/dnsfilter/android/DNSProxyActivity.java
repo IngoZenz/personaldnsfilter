@@ -26,6 +26,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -61,6 +62,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -1599,6 +1601,7 @@ public class DNSProxyActivity extends Activity
 				findViewById(R.id.manuallyEditScroll).setVisibility(View.GONE);
 			}
 		} else {
+			hideKeyboard(this);
 			setVisibilityForAdvCfg(View.VISIBLE);
 			findViewById(R.id.filtercfgview).setVisibility(View.GONE);
 			filterCfg.clear();
@@ -1624,6 +1627,16 @@ public class DNSProxyActivity extends Activity
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 			TransitionManager.beginDelayedTransition(v);
 		}
+	}
+
+	public static void hideKeyboard(Activity activity) {
+		InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+		View view = activity.getCurrentFocus();
+		if (view == null) {
+			view = new View(activity);
+		}
+		imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+
 	}
 
 	protected synchronized void handleExitApp() {
