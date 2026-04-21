@@ -22,7 +22,6 @@ import android.widget.TextView;
 import java.util.Set;
 import java.util.TreeSet;
 
-import util.ExecutionEnvironment;
 import util.Logger;
 
 
@@ -64,9 +63,8 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 		}
 		if (count == 0)
 			emptyResult.setVisibility(View.VISIBLE);
+		Logger.getLogger().logLine("Found: "+count+" apps!");
 
-		if (ExecutionEnvironment.getEnvironment().debug())
-			Logger.getLogger().logLine("Found: "+count+" apps!");
 	}
 
 	@Override
