@@ -1698,7 +1698,9 @@ public class DNSProxyActivity extends Activity
 	}
 
 	private void startSvc() {
-		startService(new Intent(this, DNSFilterService.class));
+		if (Build.VERSION.SDK_INT >= 26) {
+			startForegroundService(new Intent(this, DNSFilterService.class));
+		} else startService(new Intent(this, DNSFilterService.class));
 	}
 
 	@Override

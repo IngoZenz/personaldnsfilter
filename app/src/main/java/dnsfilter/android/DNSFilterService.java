@@ -31,6 +31,7 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import android.net.ConnectivityManager;
 import android.net.LinkProperties;
 import android.net.Network;
@@ -687,85 +688,7 @@ public class DNSFilterService extends VpnService  {
 
 		INSTANCE = this;
 
-		if (DNSFILTER != null) {
-			Logger.getLogger().logLine("DNS filter already running!");
-		} else {
-			try {
-				DNSFILTER = DNSFilterManager.getInstance();
-				DNSFILTER.init();
-				dnsProxyMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("dnsProxyOnAndroid", "false"));
-				dnsProxyPort = Integer.parseInt(DNSFILTER.getConfig().getProperty("dnsProxyPortAndroid","5300"));
-
-				dnsProxyOnlyLocal = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("dnsProxyOnlyLocalRequests", "true"));
-				rootMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("rootModeOnAndroid", "false"));
-				vpnInAdditionToProxyMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("vpnInAdditionToProxyMode", "false"));
-
-				if (rootMode && !dnsProxyMode) {
-					rootMode = false;
-					Logger.getLogger().logLine("WARNING! Root mode only possible in combination with DNS proxy mode!");
-				}
-
-				if (rootMode) {
-					dnsReqForwarder.clean(); //cleanup possible hangig iprules after a crash
-					dnsReqForwarder.updateForward();
-				}
-
-				registerReceiver(ConnectionChangeReceiver.getInstance(), new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
-
-				if (android.os.Build.VERSION.SDK_INT < 34)
-					registerReceiver(NotificationReceiver.getInstance(), new IntentFilter("pause_resume"));
-				else
-					registerReceiver(NotificationReceiver.getInstance(), new IntentFilter("pause_resume"),RECEIVER_EXPORTED);
-
-				possibleNetworkChange(true); // in order to trigger dns detection
-
-				//start DNS Proxy Mode if configured
-				if (dnsProxyMode) {
-					if (rootMode)
-						setUpPortRedir();
-					DNSFILTERPROXY = new DNSFilterProxy(dnsProxyPort);
-					new Thread(DNSFILTERPROXY).start();
-				}
-
-				//run DNSCryptProxy when configured
-				manageDNSCryptProxy = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("manageDNSCryptProxy", "false"));
-
-				if (manageDNSCryptProxy && !dnsCryptProxyStartTriggered) {
-					try {
-						runOSCommand(true,false, KILL_DNSCRYPTPROXY);
-						runOSCommand(false, true,START_DNSCRYPTPROXY+" "+DNSFILTER.getConfig().getProperty("dnsCryptProxyStartOptions",""));
-						dnsCryptProxyStartTriggered = true;
-					} catch (Exception e) {
-						Logger.getLogger().logException(e);
-					}
-				}
-
-				is_running = true;
-
-			} catch (Exception e) {
-				DNSFILTER = null;
-				Logger.getLogger().logException(e);
-				return START_STICKY;
-			}
-		}
 		try {
-
-			Intent notificationIntent = new Intent(this, DNSProxyActivity.class);
-			pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
-			Notification noti;
-
-			// Initialize and start VPN Mode if not disabled
-
-			if (!dnsProxyMode || vpnInAdditionToProxyMode) {
-				ParcelFileDescriptor vpnInterface = initVPN(true);
-
-				if (vpnInterface != null) {
-					vpnRunner = new VPNRunner(++startCounter, vpnInterface, true);
-					new Thread(vpnRunner).start();
-				} else Logger.getLogger().logLine("Error! Cannot get VPN interface! Try restart!");
-			}
-
-
 			if (android.os.Build.VERSION.SDK_INT >= 16) {
 
 				if (android.os.Build.VERSION.SDK_INT >= 26)
@@ -785,21 +708,103 @@ public class DNSFilterService extends VpnService  {
 						.addAction(0, getResources().getString(R.string.switch_pause_resume), pause_resume_Intent)
 						.build();
 
-				updateNotification();
+				if (Build.VERSION.SDK_INT >= 29)
+					startForeground(1, notibuilder.setOngoing(true).build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+				else
+					startForeground(1, notibuilder.setOngoing(true).build());
 
-				noti = notibuilder.build();
+				if (startDNSFilter())
+					updateNotification();
+
+				return START_STICKY;
 			} else {
+				startDNSFilter();
 				return START_STICKY;
 			}
 
-			startForeground(1, noti);
-			return START_STICKY;
 
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
 		}
 
 		return START_STICKY;
+	}
+
+	private boolean startDNSFilter() {
+		if (DNSFILTER != null) {
+			Logger.getLogger().logLine("DNS filter already running!");
+			return true;
+		}
+		try {
+			DNSFILTER = DNSFilterManager.getInstance();
+			DNSFILTER.init();
+			dnsProxyMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("dnsProxyOnAndroid", "false"));
+			dnsProxyPort = Integer.parseInt(DNSFILTER.getConfig().getProperty("dnsProxyPortAndroid","5300"));
+
+			dnsProxyOnlyLocal = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("dnsProxyOnlyLocalRequests", "true"));
+			rootMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("rootModeOnAndroid", "false"));
+			vpnInAdditionToProxyMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("vpnInAdditionToProxyMode", "false"));
+
+			// Initialize and start VPN Mode if not disabled
+
+			if (!dnsProxyMode || vpnInAdditionToProxyMode) {
+				ParcelFileDescriptor vpnInterface = initVPN(true);
+
+				if (vpnInterface != null) {
+					vpnRunner = new VPNRunner(++startCounter, vpnInterface, true);
+					new Thread(vpnRunner).start();
+				} else {
+					Logger.getLogger().logLine("Error! Cannot get VPN interface! Try restart!");
+					return false;
+				}
+			}
+
+			if (rootMode && !dnsProxyMode) {
+				rootMode = false;
+				Logger.getLogger().logLine("WARNING! Root mode only possible in combination with DNS proxy mode!");
+			}
+
+			if (rootMode) {
+				dnsReqForwarder.clean(); //cleanup possible hangig iprules after a crash
+				dnsReqForwarder.updateForward();
+			}
+			registerReceiver(ConnectionChangeReceiver.getInstance(), new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
+
+			if (android.os.Build.VERSION.SDK_INT < 34)
+				registerReceiver(NotificationReceiver.getInstance(), new IntentFilter("pause_resume"));
+			else
+				registerReceiver(NotificationReceiver.getInstance(), new IntentFilter("pause_resume"),RECEIVER_EXPORTED);
+
+			possibleNetworkChange(true); // in order to trigger dns detection
+
+			//start DNS Proxy Mode if configured
+			if (dnsProxyMode) {
+				if (rootMode)
+					setUpPortRedir();
+				DNSFILTERPROXY = new DNSFilterProxy(dnsProxyPort);
+				new Thread(DNSFILTERPROXY).start();
+			}
+
+			//run DNSCryptProxy when configured
+			manageDNSCryptProxy = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("manageDNSCryptProxy", "false"));
+
+			if (manageDNSCryptProxy && !dnsCryptProxyStartTriggered) {
+				try {
+					runOSCommand(true,false, KILL_DNSCRYPTPROXY);
+					runOSCommand(false, true,START_DNSCRYPTPROXY+" "+DNSFILTER.getConfig().getProperty("dnsCryptProxyStartOptions",""));
+					dnsCryptProxyStartTriggered = true;
+				} catch (Exception e) {
+					Logger.getLogger().logException(e);
+				}
+			}
+			is_running = true;
+			return true;
+
+		} catch (Exception e) {
+			DNSFILTER = null;
+			Logger.getLogger().logException(e);
+			return false;
+		}
 	}
 
 
@@ -840,8 +845,12 @@ public class DNSFilterService extends VpnService  {
 			else
 				notibuilder.setSmallIcon(R.drawable.icon_disabled);
 
-			((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel(1);
-			((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).notify(1,notibuilder.build());
+			//((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel(1);
+			//((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).notify(1,notibuilder.build());
+			if (Build.VERSION.SDK_INT >= 29)
+				startForeground(1, notibuilder.setOngoing(true).build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+			else
+				startForeground(1, notibuilder.setOngoing(true).build());
 
 			// Update the quick settings tile
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
