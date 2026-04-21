@@ -66,10 +66,9 @@ import util.conpool.TLSSocketFactory;
 
 public class DNSFilterManager extends ConfigurationAccess  {
 
-	public static final String VERSION = "1505901-dev1";
-
+	public static final String VERSION = "1505901-dev5";
 	private static DNSFilterManager INSTANCE = new DNSFilterManager();
-
+	
 	static public boolean debug;
 	private static String filterReloadURL;
 	private static boolean filterHostsFileRemoveDuplicates;
@@ -398,7 +397,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 	}
 
 	private boolean useDefaultConfig(String currentKey, Properties currentConfig, Properties previousDefaults) {
-		boolean forceKeyDefault = ( currentKey.equals("initialInfoPopUpText") || currentKey.equals("initialInfoPopUpTitle") || currentKey.equals("footerLink") || currentKey.equals("showInitialInfoPopUp")) ;
+		boolean forceKeyDefault = ( currentKey.equals("initialInfoPopUpText") || currentKey.equals("initialInfoPopUpTitle") || currentKey.equals("showInitialInfoPopUp")) ;
 		boolean useNewDefault = useNewDefault(currentKey, currentConfig, previousDefaults);
 		return forceKeyDefault || useNewDefault;
 	}
