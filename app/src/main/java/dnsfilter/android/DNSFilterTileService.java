@@ -12,6 +12,7 @@ import android.util.Log;
 
 import java.io.IOException;
 
+import dnsfilter.ConfigurationAccess;
 import util.Logger;
 
 /**
@@ -57,6 +58,12 @@ public class DNSFilterTileService extends TileService {
         // Toggle filtering state
         try {
             if (DNSFilterService.INSTANCE != null) {
+                String passwd = ConfigurationAccess.getLocal().getConfig().getProperty("passcode","").trim();
+                if (!passwd.equals("")) {
+                    Logger.getLogger().logLine("Service tile action not allowed when passcode protected!");
+                    Logger.getLogger().message("Not permitted - Passcode protected!");
+                    return;
+                }
                 DNSFilterService.INSTANCE.pause_resume();
                 updateTile();
             } else {
