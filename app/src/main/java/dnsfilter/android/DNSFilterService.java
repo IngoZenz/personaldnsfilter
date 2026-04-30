@@ -711,7 +711,13 @@ public class DNSFilterService extends VpnService  {
 						.addAction(0, getResources().getString(R.string.switch_pause_resume), pause_resume_Intent)
 						.setCategory(Notification.CATEGORY_SERVICE);
 
-				updateNotification();
+				Notification noti = notibuilder.setOngoing(true).build();
+				noti.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
+
+				if (Build.VERSION.SDK_INT >= 29)
+					startForeground(1, noti, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+				else
+					startForeground(1, noti);
 
 				if (startDNSFilter())
 					updateNotification();
