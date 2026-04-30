@@ -9,6 +9,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,10 +22,11 @@ import android.widget.TextView;
 import java.util.Set;
 import java.util.TreeSet;
 
+import util.ExecutionEnvironment;
 import util.Logger;
 
 
-public class AppSelectorView extends LinearLayout implements View.OnClickListener {
+public class AppSelectorView extends LinearLayout implements View.OnClickListener, TextWatcher {
 
 	private PackageManager pm = this.getContext().getPackageManager();
 	private boolean loaded = false;
@@ -34,22 +37,22 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 
 	private ComparableAppInfoWrapper[] wrappers = null;
 	private View searchView;
+	private EditText searchStringField;
 	private View emptyResult;
 
 	@Override
 	public void onClick(View v) {
-		//search clicked
 		if (!loaded || runningUpdate != null)
 			return ;
 
-		String searchStr = ((EditText)searchView.findViewById(R.id.searchString)).getText().toString().toLowerCase();
+		String searchStr = searchStringField.getText().toString().toUpperCase().trim();
 
 		ComparableAppInfoWrapper[] allwrappers = wrappers;
 		int count = 0;
 		emptyResult.setVisibility(View.GONE);
 
 		for (int i = 0; i < allwrappers.length; i++) {
-			boolean visible = allwrappers[i].checkBox.getText().toString().toLowerCase().indexOf(searchStr) != -1;
+			boolean visible = allwrappers[i].appString.indexOf(searchStr) != -1;
 			if (visible)
 				allwrappers[i].checkBox.setVisibility(View.VISIBLE);
 			else
@@ -60,25 +63,40 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 		}
 		if (count == 0)
 			emptyResult.setVisibility(View.VISIBLE);
-		Logger.getLogger().logLine("Found: "+count+" apps!");
+		if (ExecutionEnvironment.getEnvironment().debug())
+			Logger.getLogger().logLine("Found: "+count+" apps!");
+	}
+
+	@Override
+	public void afterTextChanged(Editable s) {
+		onClick(searchStringField);
+	}
+
+	@Override
+	public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+	}
+
+	@Override
+	public void onTextChanged(CharSequence s, int start, int before, int count) {
 
 	}
 
 	private class ComparableAppInfoWrapper implements Comparable<ComparableAppInfoWrapper> {
-
-		private String appName = null;
+		
 		private ApplicationInfo wrapped = null;
 		CheckBox checkBox = null;
+		private String appString = null;
 
-		private ComparableAppInfoWrapper(ApplicationInfo wrapped, CheckBox checkBox) {
-			appName = checkBox.getText().toString();
+		private ComparableAppInfoWrapper(ApplicationInfo wrapped, CheckBox checkBox, String appString) {
+			this.appString = appString.toUpperCase();
 			this.wrapped = wrapped;
 			this.checkBox = checkBox;
 		}
 
 		@Override
 		public int compareTo(ComparableAppInfoWrapper o) {
-			return appName.toUpperCase().compareTo(o.appName.toUpperCase());
+			return appString.compareTo(o.appString);
 		}
 	}
 
@@ -119,7 +137,6 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 				return;
 
 			try {
-				//set 'Loading apps...' info
 				final TextView infoText = new TextView(getContext());
 
 				int uimode = getContext().getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
@@ -138,17 +155,33 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 
 				String selectedapppackages = ("," + selectedApps + ",").replace(" ", "");
 
-				ApplicationInfo[] packages = pm.getInstalledApplications(PackageManager.GET_META_DATA).toArray(new ApplicationInfo[0]);
+				ApplicationInfo[] packages = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+						.toArray(new ApplicationInfo[0]);
 
-				Set<ComparableAppInfoWrapper> sortedWrappers = new TreeSet<ComparableAppInfoWrapper>();
+				Set<ComparableAppInfoWrapper> sortedWrappers = new TreeSet<>();
+
 				for (int i = 0; i < packages.length && !abort; i++) {
-					CheckBox entry = (CheckBox) LayoutInflater.from(getContext()).inflate(R.layout.appselectorcheckbox, null);
+					CheckBox entry = (CheckBox) LayoutInflater.from(getContext())
+							.inflate(R.layout.appselectorcheckbox, null);
 					entry.setChecked(selectedapppackages.contains("," + packages[i].packageName + ","));
-					entry.setText(packages[i].loadLabel(pm) + "\n" + packages[i].packageName);
-					sortedWrappers.add(new ComparableAppInfoWrapper(packages[i], entry));
+
+					String appName = packages[i].loadLabel(pm).toString();
+					String pkgName = packages[i].packageName;
+
+					String shortApp = appName.length() > 32 ? appName.substring(0, 32) + "…" : appName;
+					String shortPkg = pkgName.length() > 38 ? pkgName.substring(0, 38) + "…" : pkgName;
+					String combined = shortApp + "\n" + shortPkg;
+					android.text.SpannableString spannable = new android.text.SpannableString(combined);
+
+					int start = shortApp.length() + 1;
+					int end = combined.length();
+					spannable.setSpan(new android.text.style.RelativeSizeSpan(0.85f), start, end, 0);
+
+					entry.setText(spannable);
+
+					sortedWrappers.add(new ComparableAppInfoWrapper(packages[i], entry, appName+":"+pkgName));
 				}
 
-				//remove 'Loading apps...' info, add searchView
 				post(new Runnable() {
 					@Override
 					public void run() {
@@ -207,6 +240,8 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 
 		searchView = LayoutInflater.from(getContext()).inflate(R.layout.appselectorsearch, null);
 		searchView.findViewById(R.id.searchBtn).setOnClickListener(this);
+		searchStringField = (EditText) searchView.findViewById(R.id.searchString);
+		searchStringField.addTextChangedListener(this);
 		emptyResult = LayoutInflater.from(getContext()).inflate(R.layout.emptyresult, null);
 		emptyResult.setVisibility(View.GONE);
 
@@ -227,24 +262,23 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 
 	public void clear() {
 
-		//first abort a potentially running icon update
 		AsyncLoader asyncLoader = runningUpdate;
 		if (asyncLoader != null) {
 			asyncLoader.abort();
 			loaded = false;
 			wrappers = null;
 		}
-		//store selected App Status
+
 		selectedApps = getSelectedAppPackages();
 
-		//clear
 		wrappers = null;
-		if (searchView!= null)
-			searchView.setOnClickListener(null);
+		if (searchView!= null) {
+			searchView.findViewById(R.id.searchBtn).setOnClickListener(null);
+			searchStringField.removeTextChangedListener(this);
+		}
 		this.removeAllViews();
 		loaded = false;
 	}
-
 
 	public void setSelectedApps(String selectedApps) {
 		this.selectedApps = selectedApps;
