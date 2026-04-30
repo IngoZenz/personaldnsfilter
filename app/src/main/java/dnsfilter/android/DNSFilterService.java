@@ -709,12 +709,9 @@ public class DNSFilterService extends VpnService  {
 						.setContentIntent(pendingIntent)
 						//.setContentIntent(pause_resume_Intent)
 						.addAction(0, getResources().getString(R.string.switch_pause_resume), pause_resume_Intent)
-						.build();
+						.setCategory(Notification.CATEGORY_SERVICE);
 
-				if (Build.VERSION.SDK_INT >= 29)
-					startForeground(1, notibuilder.setOngoing(true).build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
-				else
-					startForeground(1, notibuilder.setOngoing(true).build());
+				updateNotification();
 
 				if (startDNSFilter())
 					updateNotification();
@@ -848,12 +845,15 @@ public class DNSFilterService extends VpnService  {
 			else
 				notibuilder.setSmallIcon(R.drawable.icon_disabled);
 
+			Notification noti = notibuilder.setOngoing(true).build();
+			noti.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
+
 			//((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel(1);
 			//((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).notify(1,notibuilder.build());
 			if (Build.VERSION.SDK_INT >= 29)
-				startForeground(1, notibuilder.setOngoing(true).build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+				startForeground(1, noti, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
 			else
-				startForeground(1, notibuilder.setOngoing(true).build());
+				startForeground(1, noti);
 
 			// Update the quick settings tile
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
