@@ -1353,11 +1353,11 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 	@Override
 	public void restart() throws IOException {
-		Logger.getLogger().message("Restarting...");
 		try {
 			stop();
 			init();
 			ExecutionEnvironment.getEnvironment().onReload();
+			Logger.getLogger().message("personalDNSfilter restarted!");
 		} catch (IOException e) {
 			throw new ConfigurationAccessException(e.getMessage(), e);
 		}

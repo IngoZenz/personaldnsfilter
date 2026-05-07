@@ -1654,7 +1654,6 @@ public class DNSProxyActivity extends Activity
 	private void handleRestart() {
 	    if (CONFIG.isLocal()) {
 
-			Logger.getLogger().message("restarting...");
 			if (!checkNotificationPermission())
 				return;
 
@@ -1662,6 +1661,7 @@ public class DNSProxyActivity extends Activity
 				return;
 
 			startup();
+			Logger.getLogger().message("personalDNSfilter restarted!");
 			loadAndApplyConfig(false);
 		}
 	    else {
