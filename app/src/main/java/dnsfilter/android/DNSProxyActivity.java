@@ -1654,6 +1654,7 @@ public class DNSProxyActivity extends Activity
 	private void handleRestart() {
 	    if (CONFIG.isLocal()) {
 
+			Logger.getLogger().message("restarting...");
 			if (!checkNotificationPermission())
 				return;
 

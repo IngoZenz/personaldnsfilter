@@ -1353,6 +1353,7 @@ public class DNSFilterManager extends ConfigurationAccess  {
 
 	@Override
 	public void restart() throws IOException {
+		Logger.getLogger().message("Restarting...");
 		try {
 			stop();
 			init();
