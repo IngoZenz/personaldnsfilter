@@ -5,6 +5,7 @@ import android.app.job.JobService;
 import android.content.Context;
 import android.content.Intent;
 import android.net.VpnService;
+import android.os.StrictMode;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,6 +29,7 @@ public class StartServiceJobService extends JobService {
         Context context = getApplicationContext();
 
         try {
+            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().build());
             Intent serviceIntent = new Intent(context, DNSFilterService.class);
             context.startForegroundService(serviceIntent);
         } catch (Exception e) {
