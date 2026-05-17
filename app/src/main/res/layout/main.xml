@@ -539,14 +539,14 @@
                 android:id="@+id/scrollView2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0dp"
+                android:fillViewport="true"
                 android:scrollbarSize="5dp"
                 android:overScrollMode="never"
                 android:scrollbarThumbHorizontal="@drawable/scroll_bar_alt">
 
                 <EditText
                     android:id="@+id/additionalHostsField"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/text_view"
                     android:inputType="textMultiLine|textNoSuggestions"
@@ -555,6 +555,7 @@
                     android:textSize="14sp"
                     android:typeface="monospace"/>
             </HorizontalScrollView>
+
         </ScrollView>
 
         <ScrollView
@@ -572,14 +573,14 @@
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0dp"
+                android:fillViewport="true"
                 android:scrollbarSize="5dp"
                 android:overScrollMode="never"
                 android:scrollbarThumbHorizontal="@drawable/scroll_bar_alt">
 
                 <EditText
                     android:id="@+id/manuallyEditField"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/text_view"
                     android:inputType="textMultiLine|textNoSuggestions"
