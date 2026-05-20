@@ -704,15 +704,15 @@ public class DNSProxyActivity extends Activity
 
 	@Override
 	public void onBackPressed() {
-		if (Build.VERSION.SDK_INT < 36) {
-			if (advancedConfigCheck.isChecked()) {
-				advancedConfigCheck.setChecked(false);
-				persistConfig(); //ensure eventually changed config gets stored
-				handleAdvancedConfig(null); // reset UI view
-			}
-			else super.onBackPressed();
+
+		if (advancedConfigCheck.isChecked()) {
+			advancedConfigCheck.setChecked(false);
+			persistConfig(); //ensure eventually changed config gets stored
+			handleAdvancedConfig(null); // reset UI view
 		}
+		else super.onBackPressed();
 	}
+
 
 
 	@Override
