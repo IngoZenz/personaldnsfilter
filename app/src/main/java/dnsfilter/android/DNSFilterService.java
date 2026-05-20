@@ -715,7 +715,7 @@ public class DNSFilterService extends VpnService  {
 				noti.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
 
 				if (Build.VERSION.SDK_INT >= 29)
-					startForeground(1, noti, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+					startForeground(1, noti, ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED);
 				else
 					startForeground(1, noti);
 
@@ -857,7 +857,7 @@ public class DNSFilterService extends VpnService  {
 			//((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel(1);
 			//((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).notify(1,notibuilder.build());
 			if (Build.VERSION.SDK_INT >= 29)
-				startForeground(1, noti, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+				startForeground(1, noti, ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED);
 			else
 				startForeground(1, noti);
 
