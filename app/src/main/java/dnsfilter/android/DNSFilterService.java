@@ -108,6 +108,7 @@ public class DNSFilterService extends VpnService  {
 	boolean dnsCryptProxyStartTriggered = false;
 	PendingIntent pendingIntent;
 	private int mtu;
+	private int serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC;
 	Notification.Builder notibuilder;
 
 	protected static class DNSReqForwarder {
@@ -677,21 +678,10 @@ public class DNSFilterService extends VpnService  {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 
-		AndroidEnvironment.initEnvironment(this);
-
 		SERVICE = intent;
-
-		if (is_running) {
-			Logger.getLogger().logLine("Ignoring duplicate start after update!");
-			return START_STICKY;
-		}
-
 		INSTANCE = this;
 
 		try {
-			Intent notificationIntent = new Intent(this, DNSProxyActivity.class);
-			pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
-			
 			if (android.os.Build.VERSION.SDK_INT >= 16) {
 
 				if (android.os.Build.VERSION.SDK_INT >= 26)
@@ -711,13 +701,7 @@ public class DNSFilterService extends VpnService  {
 						.addAction(0, getResources().getString(R.string.switch_pause_resume), pause_resume_Intent)
 						.setCategory(Notification.CATEGORY_SERVICE);
 
-				Notification noti = notibuilder.setOngoing(true).build();
-				noti.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
-
-				if (Build.VERSION.SDK_INT >= 29)
-					startForeground(1, noti, ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED);
-				else
-					startForeground(1, noti);
+				startForeground();
 
 				if (startDNSFilter())
 					updateNotification();
@@ -736,11 +720,25 @@ public class DNSFilterService extends VpnService  {
 		return START_STICKY;
 	}
 
+	private void startForeground() {
+		Notification noti = notibuilder.setOngoing(true).build();
+		noti.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
+
+		if (Build.VERSION.SDK_INT >= 29)
+			startForeground(1, noti, serviceType);
+		else
+			startForeground(1, noti);
+	}
+
 	private boolean startDNSFilter() {
+		if (is_running) {
+			Logger.getLogger().logLine("Ignoring duplicate start after update!");
+		}
 		if (DNSFILTER != null) {
 			Logger.getLogger().logLine("DNS filter already running!");
 			return true;
 		}
+		AndroidEnvironment.initEnvironment(this);
 		try {
 			DNSFILTER = DNSFilterManager.getInstance();
 			DNSFILTER.init();
@@ -754,6 +752,11 @@ public class DNSFilterService extends VpnService  {
 			// Initialize and start VPN Mode if not disabled
 
 			if (!dnsProxyMode || vpnInAdditionToProxyMode) {
+				// upgrade service type for vpn
+				serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED;
+				startForeground();
+
+				//start VPN
 				ParcelFileDescriptor vpnInterface = initVPN(true);
 
 				if (vpnInterface != null) {
@@ -851,15 +854,7 @@ public class DNSFilterService extends VpnService  {
 			else
 				notibuilder.setSmallIcon(R.drawable.icon_disabled);
 
-			Notification noti = notibuilder.setOngoing(true).build();
-			noti.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
-
-			//((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).cancel(1);
-			//((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).notify(1,notibuilder.build());
-			if (Build.VERSION.SDK_INT >= 29)
-				startForeground(1, noti, ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED);
-			else
-				startForeground(1, noti);
+			startForeground();
 
 			// Update the quick settings tile
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
@@ -868,7 +863,6 @@ public class DNSFilterService extends VpnService  {
 		} catch (Exception e){
 			Logger.getLogger().logException(e);
 		}
-
 	}
 
 	private String getChannel() {
@@ -980,6 +974,12 @@ public class DNSFilterService extends VpnService  {
 		Logger.getLogger().logLine("destroyed");
 		shutdown();
 		super.onDestroy();
+	}
+
+	@Override
+	public void onRevoke() {
+		Logger.getLogger().logLine("VPN revoked by system!");
+		super.onRevoke();
 	}
 
 	private boolean shutdown() {
