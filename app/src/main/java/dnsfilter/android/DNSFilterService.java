@@ -108,7 +108,6 @@ public class DNSFilterService extends VpnService  {
 	boolean dnsCryptProxyStartTriggered = false;
 	PendingIntent pendingIntent;
 	private int mtu;
-	private int serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC;
 	Notification.Builder notibuilder;
 
 	protected static class DNSReqForwarder {
@@ -724,8 +723,15 @@ public class DNSFilterService extends VpnService  {
 		Notification noti = notibuilder.setOngoing(true).build();
 		noti.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
 
-		if (Build.VERSION.SDK_INT >= 29)
-			startForeground(1, noti, serviceType);
+		if (Build.VERSION.SDK_INT >= 29) {
+			try {
+				startForeground(1, noti, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+			} catch (SecurityException e) {
+				Logger.getLogger().logLine("Security Exception during service start with FOREGROUND_SERVICE_TYPE_SPECIAL_USE!");
+				Logger.getLogger().logLine("Falling back to FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED!");
+				startForeground(1, noti, ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED);
+			}
+		}
 		else
 			startForeground(1, noti);
 	}
@@ -752,10 +758,6 @@ public class DNSFilterService extends VpnService  {
 			// Initialize and start VPN Mode if not disabled
 
 			if (!dnsProxyMode || vpnInAdditionToProxyMode) {
-				// upgrade service type for vpn
-				serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED;
-				startForeground();
-
 				//start VPN
 				ParcelFileDescriptor vpnInterface = initVPN(true);
 
