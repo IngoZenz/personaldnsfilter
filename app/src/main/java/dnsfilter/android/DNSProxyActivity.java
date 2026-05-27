@@ -17,7 +17,7 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
  Find the latest version at http://www.zenz-solutions.de/personaldnsfilter
- Contact:i.z@gmx.net 
+ Contact:i.z@gmx.net
  */
 
 package dnsfilter.android;
@@ -40,6 +40,8 @@ import android.net.Uri;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.StrictMode;
 import android.text.Editable;
 import android.text.Html;
@@ -535,7 +537,7 @@ public class DNSProxyActivity extends Activity
 			link_field = (TextView) findViewById(R.id.link_field);
 			link_field.setText(fromHtml(link_field_txt));
 			link_field.setMovementMethod(LinkMovementMethod.getInstance());
-			
+
 			Drawable background = link_field.getBackground();
 			if (background instanceof ColorDrawable)
 				link_field_color = ((ColorDrawable) background).getColor();
@@ -850,7 +852,7 @@ public class DNSProxyActivity extends Activity
 	}
 
 	public void onBackupRestore(int requestCode, int resultCode,
-								 Intent resultData) {
+								Intent resultData) {
 		TextView backupStatusView = findViewById(R.id.backupLog);
 
 		if (resultCode == Activity.RESULT_OK) {
@@ -892,7 +894,7 @@ public class DNSProxyActivity extends Activity
 		}
 	}
 
-		protected void loadAdditionalHosts() {
+	protected void loadAdditionalHosts() {
 		int limit= 524288;
 		try {
 			byte[] content = CONFIG.getAdditionalHosts(limit);
@@ -1157,7 +1159,7 @@ public class DNSProxyActivity extends Activity
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(CONFIG.readConfig())));
 			while ((ln = reader.readLine()) != null) {
 
-                if (ln.trim().startsWith("reloadIntervalDays"))
+				if (ln.trim().startsWith("reloadIntervalDays"))
 					getConfig().updateConfigValue("reloadIntervalDays", filterReloadIntervalView.getText().toString());
 
 				else if (ln.trim().startsWith("AUTOSTART"))
@@ -1239,7 +1241,7 @@ public class DNSProxyActivity extends Activity
 			openBrowser("https://www.zenz-home.com/personaldnsfilter/help/help.php");
 			return;
 		} else if (destination == dnsField) {
-            startActivityForResult(new Intent(this, DNSServerConfigActivity.class), DNSServerConfigActivity.ACTIVITY_RESULT_CODE);
+			startActivityForResult(new Intent(this, DNSServerConfigActivity.class), DNSServerConfigActivity.ACTIVITY_RESULT_CODE);
 			return;
 		} else if (destination == scrollLockField) {
 			handleScrollLock();
@@ -1442,7 +1444,7 @@ public class DNSProxyActivity extends Activity
 			} catch (IOException e) {
 				message(e.getMessage());
 				CONFIG = ConfigurationAccess.getLocal();
-                switchingConfig = false;
+				switchingConfig = false;
 			}
 		}
 		else {
@@ -1652,7 +1654,7 @@ public class DNSProxyActivity extends Activity
 	}
 
 	private void handleRestart() {
-	    if (CONFIG.isLocal()) {
+		if (CONFIG.isLocal()) {
 
 			if (!checkNotificationPermission())
 				return;
@@ -1660,18 +1662,25 @@ public class DNSProxyActivity extends Activity
 			if (!DNSFilterService.stop(false))
 				return;
 
-			startup();
-			Logger.getLogger().message("personalDNSfilter restarted!");
-			loadAndApplyConfig(false);
+			// Delay startup to give Android time to fully tear down the old service
+			// before starting a new one via startForegroundService(). Without this
+			// delay there is a race condition where the new service start is queued
+			// while the old one is still being destroyed, which can cause
+			// ForegroundServiceDidNotStartInTimeException on loaded devices.
+			new Handler(Looper.getMainLooper()).postDelayed(() -> {
+				startup();
+				Logger.getLogger().message("personalDNSfilter restarted!");
+				loadAndApplyConfig(false);
+			}, 500);
 		}
-	    else {
-            try {
-                CONFIG.restart();
-                loadAndApplyConfig(false);
-            } catch (IOException e) {
-                Logger.getLogger().logException(e);
-            }
-        }
+		else {
+			try {
+				CONFIG.restart();
+				loadAndApplyConfig(false);
+			} catch (IOException e) {
+				Logger.getLogger().logException(e);
+			}
+		}
 	}
 
 	private final int START_SVC = 377;
