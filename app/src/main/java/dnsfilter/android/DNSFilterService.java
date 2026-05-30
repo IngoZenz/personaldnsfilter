@@ -683,6 +683,10 @@ public class DNSFilterService extends VpnService  {
 		try {
 			if (android.os.Build.VERSION.SDK_INT >= 16) {
 
+				// Initialize pendingIntent for notification tap
+				Intent notificationIntent = new Intent(this, DNSProxyActivity.class);
+				pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+
 				if (android.os.Build.VERSION.SDK_INT >= 26)
 					notibuilder = new Notification.Builder(this, getChannel());
 				else
