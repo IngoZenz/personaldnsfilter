@@ -366,6 +366,8 @@ public class DOHHttp2Util {
                     throw new IOException("Only " + HttpProxy.class.getName() + " supported for creating connection over tunnel!");
                 socket = ((HttpProxy) proxy).openTunnel(sadr, timeout, true);
             }
+            
+            socket.setSoTimeout(timeout);
 
             SSLSocket sslsocket = (SSLSocket) sslContext.getSocketFactory()
                     .createSocket(socket, sadr.getHostName(), sadr.getPort(), true);
@@ -698,11 +700,12 @@ public class DOHHttp2Util {
         // String host = "dns.mullvad.net";
         // String host = "dns.cloudflare.com";
         String host = "dns.quad9.net";
+        // String host = "dns.opendns.com";
 
         InetAddress iadr = InetAddress.getByName(host);
         InetSocketAddress sadr = new InetSocketAddress(iadr, port);
 
-        for (int i = 0; i < 300; i++) {
+        for (int i = 0; i < 1; i++) {
             try {
                 byte[] dnsQuery = buildDnsQuery("www.zenz-solutions.de", 1);
                 System.out.println("Results for www.zenz-solutions.de:");
