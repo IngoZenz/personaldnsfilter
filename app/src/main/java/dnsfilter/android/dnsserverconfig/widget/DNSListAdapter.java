@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import dnsfilter.ConfigurationAccess;
 import dnsfilter.DNSServer;
 import dnsfilter.android.R;
 import dnsfilter.android.dnsserverconfig.widget.listitem.DNSServerConfigBaseEntry;
@@ -197,6 +198,7 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigBaseEntry> imple
                     @Override
                     public void run() {
                         try {
+                            int timeout = Integer.parseInt(ConfigurationAccess.getCurrent().getConfig().getProperty("dnsRequestTimeout", ""+DEFAULT_DNS_TIMEOUT));
                             long result = DNSServer.getInstance()
                                     .createDNSServer(new DNSServerConfigEntry(
                                             entry.getIp(),
@@ -204,7 +206,7 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigBaseEntry> imple
                                             entry.getProtocol(),
                                             entry.getEndpoint(),
                                             true
-                                    ).toString(), DEFAULT_DNS_TIMEOUT)
+                                    ).toString(), timeout)
                                     .testDNS(5);
                             handler.post(new Runnable() {
                                 @Override
