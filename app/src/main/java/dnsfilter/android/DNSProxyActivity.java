@@ -665,18 +665,27 @@ public class DNSProxyActivity extends Activity
 				Logger.setLogger(new GroupedLogger(new LoggerInterface[]{myLogger}));
 			}
 
-			String forcedDisplayMode = ConfigurationAccess.getLocal().getConfigUtil().getConfigValue("forceAndroidDisplayMode", "none").trim();
-			if (forcedDisplayMode.equalsIgnoreCase("portrait"))
-				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-			else if (forcedDisplayMode.equalsIgnoreCase("landscape"))
-				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-			else if(getResources().getBoolean(R.bool.portrait_only)){
-				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+			String forcedDisplayMode = null;
+			try {
+				forcedDisplayMode = ConfigurationAccess.getLocal().getConfigUtil().getConfigValue("forceAndroidDisplayMode", "none").trim();
+				if (forcedDisplayMode.equalsIgnoreCase("portrait"))
+					setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+				else if (forcedDisplayMode.equalsIgnoreCase("landscape"))
+					setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+				else if(getResources().getBoolean(R.bool.portrait_only))
+					setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+			} catch (IOException e) {
+				Logger.getLogger().logException(e);
 			}
 
-			debug = Boolean.parseBoolean(ConfigurationAccess.getLocal().getConfigUtil().getConfigValue("debug", "false"));
-			if (debug)
-				Runtime.getRuntime().exec("logcat -d -f" + ExecutionEnvironment.getEnvironment().getWorkDir()+"/Logcat_file.txt");
+			try {
+				debug = Boolean.parseBoolean(ConfigurationAccess.getLocal().getConfigUtil().getConfigValue("debug", "false"));
+				if (debug)
+					Runtime.getRuntime().exec("logcat -d -f" + ExecutionEnvironment.getEnvironment().getWorkDir() + "/Logcat_file.txt");
+			} catch (Exception e) {
+				Logger.getLogger().logException(e);
+			}
 
 			if (appStart) {
 				if (Build.VERSION.SDK_INT >= 33) {
@@ -687,9 +696,9 @@ public class DNSProxyActivity extends Activity
 				initAppAndStartup();
 			}
 
-		} catch (Exception e){
+		} catch (RuntimeException e) {
 			dump(e);
-			throw new RuntimeException(e);
+			throw e;
 		}
 	}
 
