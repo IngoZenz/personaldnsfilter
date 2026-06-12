@@ -326,6 +326,7 @@ public class DNSServer {
                             Logger.getLogger().logLine("Added DNS Server " + dnsServerCfg + "!");
                     } catch (IOException e) {
                         Logger.getLogger().logLine ("Cannot add DNS Server "+dnsServerCfg+"\n"+e.toString());
+                        Logger.getLogger().message(e.getMessage());
                     }
                 }
             }
