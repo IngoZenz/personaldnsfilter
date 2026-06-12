@@ -320,9 +320,13 @@ public class DNSServer {
                     Logger.getLogger().message("Skipping invalid DNS entry " + dnsServerCfg + "!");
                 }
                 else if (dnsServerCfg.active) {
-                    dnsServers.add(dnsServerCfg.createDNSServer(timeout));
-                    if (ExecutionEnvironment.getEnvironment().debug())
-                        Logger.getLogger().logLine("Added DNS Server "+dnsServerCfg+"!");
+                    try {
+                        dnsServers.add(dnsServerCfg.createDNSServer(timeout));
+                        if (ExecutionEnvironment.getEnvironment().debug())
+                            Logger.getLogger().logLine("Added DNS Server " + dnsServerCfg + "!");
+                    } catch (IOException e) {
+                        Logger.getLogger().logLine ("Cannot add DNS Server "+dnsServerCfg+"\n"+e.toString());
+                    }
                 }
             }
         }
