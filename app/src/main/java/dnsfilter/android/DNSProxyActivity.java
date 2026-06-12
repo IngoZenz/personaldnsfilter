@@ -302,14 +302,12 @@ public class DNSProxyActivity extends Activity
 				int logSize = logOutView.getText().length();
 
 				if (logSize >= 10000) {
-					Spannable logStr = logOutView.getText();
+					Editable logStr = logOutView.getText();
 					int start = logSize / 2;
-
-					while (logStr.charAt(start) != '\n' && start < logStr.length()-1)
+					while (start < logStr.length() - 1 && logStr.charAt(start) != '\n')
 						start++;
-
-					logOutView.setText(logStr.subSequence(start, logStr.length()));
-
+					if (start < logStr.length() - 1)
+						logStr.delete(0, start + 1);
 				}
 
 				if (!advancedConfigCheck.isChecked()) { //avoid focus lost when editing advanced settings
