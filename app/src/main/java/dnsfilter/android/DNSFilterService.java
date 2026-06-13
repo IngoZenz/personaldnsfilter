@@ -39,6 +39,7 @@ import android.net.NetworkInfo;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
+import android.os.StrictMode;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -749,6 +750,7 @@ public class DNSFilterService extends VpnService  {
 			return true;
 		}
 		AndroidEnvironment.initEnvironment(this);
+		StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().build());
 		try {
 			DNSFILTER = DNSFilterManager.getInstance();
 			DNSFILTER.init();
@@ -758,6 +760,8 @@ public class DNSFilterService extends VpnService  {
 			dnsProxyOnlyLocal = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("dnsProxyOnlyLocalRequests", "true"));
 			rootMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("rootModeOnAndroid", "false"));
 			vpnInAdditionToProxyMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("vpnInAdditionToProxyMode", "false"));
+
+			possibleNetworkChange(true); // in order to trigger dns detection
 
 			// Initialize and start VPN Mode if not disabled
 
@@ -789,8 +793,6 @@ public class DNSFilterService extends VpnService  {
 				registerReceiver(NotificationReceiver.getInstance(), new IntentFilter("pause_resume"));
 			else
 				registerReceiver(NotificationReceiver.getInstance(), new IntentFilter("pause_resume"),RECEIVER_EXPORTED);
-
-			possibleNetworkChange(true); // in order to trigger dns detection
 
 			//start DNS Proxy Mode if configured
 			if (dnsProxyMode) {
