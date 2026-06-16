@@ -23,6 +23,8 @@ package dnsfilter;
  */
 
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.DatagramPacket;
@@ -36,6 +38,7 @@ import util.GroupedLogger;
 import util.Logger;
 import util.LoggerInterface;
 import util.SuppressRepeatingsLogger;
+import util.Utils;
 
 public class DNSFilterProxy implements Runnable {
 
@@ -149,12 +152,44 @@ public class DNSFilterProxy implements Runnable {
 			myLogger.setTimestampFormat(timeStampPattern);
 		}
 
-		initDNS(filtermgr);
+		//initialize Bootstrap DNS Servers to be used initially to resolve configured DNS servers
+		String bootstrapDNS = "[8.8.8.8]::443::DOH::https://dns.google/dns-query; [2001:4860:4860::8888]::443::DOH::https://dns.google/dns-query";
+		DNSServer[] dnsServers = DNSServer.getInstance().createDNSServers(bootstrapDNS, 5000, false);
+		DNSCommunicator.getInstance().setDNSServers(dnsServers);
+
+		waitUntilBootstrapServersAreReady();
 
 		int port = Integer.parseInt(DNSFilterManager.getInstance().getConfig().getProperty("dnsProxyPortNonAndroid","53"));
 		DNSFilterProxy runner = new DNSFilterProxy(port);
 
-		runner.run();
+		new Thread(runner).start();
+		Thread.sleep(1000); // wait a second for the runner to become ready!
+		
+		initDNS(filtermgr);
+	}
+
+	private static void waitUntilBootstrapServersAreReady() {
+		boolean ready = false;
+		while (!ready) {
+			try {
+				File dnsPerfFile= new File(ExecutionEnvironment.getEnvironment().getWorkDir()+"/dnsperf.info");
+				if (dnsPerfFile.exists()) {
+					InputStream in = new FileInputStream(dnsPerfFile);
+					String content = new String(Utils.readFully(in, 1024));
+					ready = content.contains("Terminated");			
+					in.close();
+				}
+				if (!ready) {
+					System.out.println("Waiting for bootstrap DNS servers to become ready!");
+					Thread.sleep(1000);
+				}
+
+			} catch (IOException e) {
+				Logger.getLogger().logException(e);
+			} catch (InterruptedException e) {
+                Logger.getLogger().logLine(e.toString());
+            }
+        }
 	}
 
 	private static InetAddress openVPN4pDNSf_Adr;
