@@ -52,7 +52,7 @@ public class ConnectionChangeReceiver extends BroadcastReceiver implements Runna
 				DNSServer.invalidateOpenConnections(); //prevent hanging connections
 			}
 
-			DNSFilterService.possibleNetworkChange(false);
+			DNSFilterService.possibleNetworkChange(false, true);
 
 			//some devices send only 1 network change event when the connection is closed but not when the network is back!
 			//therefore we check again for the new DNS after some seconds (in own thread) and hope connection is available then! 
@@ -66,7 +66,7 @@ public class ConnectionChangeReceiver extends BroadcastReceiver implements Runna
 	public void run() {
 		try {
 			Thread.sleep(10000);
-			DNSFilterService.possibleNetworkChange(false);
+			DNSFilterService.possibleNetworkChange(false, true);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			Logger.getLogger().logException(e);

@@ -489,10 +489,10 @@ public class DNSFilterService extends VpnService  {
 
 	static String[] lastDNSServers = new String[0];
 
-	public static void possibleNetworkChange(boolean force) throws IOException {
+	public static void possibleNetworkChange(boolean force, boolean updateIPRules) throws IOException {
 		if (ExecutionEnvironment.getEnvironment().hasNetwork()) {
 
-			if (rootMode)
+			if (rootMode & updateIPRules)
 				dnsReqForwarder.updateForward();
 
 			String[] dnsServers = getDNSServers();
@@ -761,7 +761,7 @@ public class DNSFilterService extends VpnService  {
 			rootMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("rootModeOnAndroid", "false"));
 			vpnInAdditionToProxyMode = Boolean.parseBoolean(DNSFILTER.getConfig().getProperty("vpnInAdditionToProxyMode", "false"));
 
-			possibleNetworkChange(true); // in order to trigger dns detection
+			possibleNetworkChange(true, false); // in order to trigger dns detection
 
 			// Initialize and start VPN Mode if not disabled
 
@@ -1097,7 +1097,7 @@ public class DNSFilterService extends VpnService  {
 			restartVPN(true);
 		}
 		updateNotification();
-		possibleNetworkChange(true); // trigger dns detection
+		possibleNetworkChange(true, true); // trigger dns detection
 	}
 
 	public static void onReload() throws IOException {
