@@ -154,6 +154,8 @@ public class DNSFilterProxy implements Runnable {
 
 		//initialize Bootstrap DNS Servers to be used initially to resolve configured DNS servers
 		String bootstrapDNS = "[8.8.8.8]::443::DOH::https://dns.google/dns-query; [2001:4860:4860::8888]::443::DOH::https://dns.google/dns-query";
+		bootstrapDNS = DNSFilterManager.getInstance().getConfig().getProperty("bootstrapDNS",bootstrapDNS);
+		Logger.getLogger().logLine("Using bootstrapDNS: "+bootstrapDNS);
 		DNSServer[] dnsServers = DNSServer.getInstance().createDNSServers(bootstrapDNS, 5000, false);
 		DNSCommunicator.getInstance().setDNSServers(dnsServers);
 
