@@ -1,1 +1,0 @@
-java -cp ./personalDNSfilter.jar dnsfilter.DNSFilterProxy
