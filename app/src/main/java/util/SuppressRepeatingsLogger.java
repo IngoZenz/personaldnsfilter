@@ -11,8 +11,9 @@ public class SuppressRepeatingsLogger implements LoggerInterface {
 	private HashMap<String, Long> lastLogs = new HashMap<String, Long>();
 	private long timeRepeat = 0;
 	private long lastCleanup = 0;
-	DateFormat dateFormatter = null; //new SimpleDateFormat("H:mm:ss");
-	String lastTS="";
+	// volatile: setTimestampFormat() is called from other threads (typically null first, then the pattern)
+	volatile DateFormat dateFormatter = null; //new SimpleDateFormat("H:mm:ss");
+	volatile String lastTS="";
 
 
 	public SuppressRepeatingsLogger(LoggerInterface nestedLogger) {
@@ -20,11 +21,16 @@ public class SuppressRepeatingsLogger implements LoggerInterface {
 	}
 
 	private void addTimeStamp() {
-		if (dateFormatter == null)
+		// work on a snapshot: the field can be reset to null by another thread between check and use
+		DateFormat formatter = dateFormatter;
+		if (formatter == null)
 			return;
-		String ts = dateFormatter.format(new Date());
+		String ts;
+		synchronized (formatter) { // DateFormat/SimpleDateFormat is not thread safe
+			ts = formatter.format(new Date());
+		}
 		if ((!ts.equals(lastTS))) {
-			nestedLogger.logLine(dateFormatter.format(new Date()));
+			nestedLogger.logLine(ts);
 			lastTS=ts;
 		}
 	}
@@ -100,7 +106,7 @@ public class SuppressRepeatingsLogger implements LoggerInterface {
 
 	@Override
 	public void message(String txt) {
-			nestedLogger.message(txt);
+		nestedLogger.message(txt);
 	}
 
 	@Override
