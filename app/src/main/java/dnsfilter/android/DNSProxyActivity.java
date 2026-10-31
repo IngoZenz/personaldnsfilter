@@ -181,9 +181,9 @@ public class DNSProxyActivity extends Activity
 	protected static String IP_FORWARD_PREF = "➞\u200A";
 
 	//log color and format
-	protected static String filterLogFormat;
-	protected static String acceptLogFormat;
-	protected static String fwdLogFormat;
+	protected static String filterLogFormat = "<font color='#E53935'>($CONTENT)</font>";
+	protected static String acceptLogFormat = "<font color='#43A047'>($CONTENT)</font>";
+	protected static String fwdLogFormat = "<font color='#FFB300'>($CONTENT)</font>";
 	protected static String normalLogFormat="($CONTENT)";
 
 	protected static ConfigurationAccess CONFIG = ConfigurationAccess.getLocal();
