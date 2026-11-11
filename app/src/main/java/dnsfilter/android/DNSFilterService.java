@@ -231,10 +231,16 @@ public class DNSFilterService extends VpnService  {
 			return true; //no vpn running
 
 
-		if (type == 0)
-			return instance.protect((Socket) socket);
-		if (type == 1)
-			return instance.protect((DatagramSocket) socket);
+		try {
+			if (type == 0)
+				return instance.protect((Socket) socket);
+			if (type == 1)
+				return instance.protect((DatagramSocket) socket);
+		} catch (NullPointerException e) {
+			// VpnService.protect() dereferences the FileDescriptor of the socket, which is null if the socket
+			// has been closed concurrently (e.g. UDP.invalidateAllUDPSessions() on a network change).
+			return false;
+		}
 
 		return false;
 	}
