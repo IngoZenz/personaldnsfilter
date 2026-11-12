@@ -141,6 +141,10 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 	public void load() {
 		if (loaded) return;
 
+		// filterEntries are set via setEntries() as soon as the config has been loaded. If the user
+		// triggers load() before (e.g. config not yet available), there is nothing to show yet.
+		if (filterEntries == null) return;
+
 		for (int i = 0; i < filterEntries.length; i++)
 			addItem(filterEntries[i]);
 		addEmptyEndItem();
