@@ -8,7 +8,7 @@ mode con: cols=90 lines=27
 
 :: BatchGotAdmin
 REM  --> Check for permissions
->nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
+>nul 2>&1 net session
 
 REM --> If error flag set, we do not have admin.
 if '%errorlevel%' NEQ '0' (
@@ -113,10 +113,8 @@ goto menu
 cls
 echo.
 echo Preparing to set pDNSf DNS to the following Network Adapters:
-for /f "usebackq skip=3 tokens=2,3*" %%f in (`netsh interface show interface`) do (
-    if /i "%%f"=="Connected" (
-        echo %green%%%h%yellow%
-    )
+for /f "usebackq delims=" %%h in (`powershell -NoProfile -Command "Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | Select-Object -ExpandProperty Name"`) do (
+    echo %green%%%h%yellow%
 )
 set /p ans1="Are you sure?(y/n):"
 if /i "!ans1!"=="y" goto opt1a
@@ -126,12 +124,10 @@ echo.
 echo %cyan% Nothing has changed^^!
 goto menu
 :opt1a
-for /f "usebackq skip=3 tokens=2,3*" %%f in (`netsh interface show interface`) do (
-    if /i "%%f"=="Connected" (
-        echo Setting pDNSf DNS for "%%h"...
-        netsh interface ipv4 set dnsservers name="%%h" source=static address=127.0.0.1 register=primary validate=no
-        netsh interface ipv6 set dnsservers name="%%h" source=static address=::1 register=primary validate=no
-    )
+for /f "usebackq delims=" %%h in (`powershell -NoProfile -Command "Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | Select-Object -ExpandProperty Name"`) do (
+    echo Setting pDNSf DNS for "%%h"...
+    netsh interface ipv4 set dnsservers name="%%h" source=static address=127.0.0.1 register=primary validate=no
+    netsh interface ipv6 set dnsservers name="%%h" source=static address=::1 register=primary validate=no
 )
 goto done
 
@@ -208,10 +204,8 @@ cls && (echo %magenta% The input is invalid^^!%yellow%) && goto opt3a
 cls
 echo.
 echo Preparing to reset DNS of the following Network Adapters to default:
-for /f "usebackq skip=3 tokens=2,3*" %%f in (`netsh interface show interface`) do (
-    if /i "%%f"=="Connected" (
-        echo %green%%%h%yellow%
-    )
+for /f "usebackq delims=" %%h in (`powershell -NoProfile -Command "Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | Select-Object -ExpandProperty Name"`) do (
+    echo %green%%%h%yellow%
 )
 set /p ans1="Are you sure?(y/n):"
 if /i "!ans1!"=="y" goto opt4a
@@ -221,12 +215,10 @@ echo.
 echo %cyan% Nothing has changed^^!
 goto menu
 :opt4a
-for /f "usebackq skip=3 tokens=2,3*" %%f in (`netsh interface show interface`) do (
-    if /i "%%f"=="Connected" (
-        echo Reverting to DHCP DNS for "%%h"...
-        netsh interface ipv4 set dnsservers name="%%h" source=dhcp
-        netsh interface ipv6 set dnsservers name="%%h" source=dhcp
-    )
+for /f "usebackq delims=" %%h in (`powershell -NoProfile -Command "Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | Select-Object -ExpandProperty Name"`) do (
+    echo Reverting to DHCP DNS for "%%h"...
+    netsh interface ipv4 set dnsservers name="%%h" source=dhcp
+    netsh interface ipv6 set dnsservers name="%%h" source=dhcp
 )
 goto done
 

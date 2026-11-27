@@ -42,7 +42,9 @@ public class IPPacket {
 	protected byte[] data;
 
 	public IPPacket(byte[] packet, int offs, int len) {
-		version = packet[offs] >> 4;
+		if (packet == null || offs < 0 || len < 20 || offs + len > packet.length)
+			throw new IllegalArgumentException("Invalid IP packet bounds: len=" + len);
+		version = (packet[offs] >>> 4) & 0x0F;
 		data = packet;
 		offset = offs;
 		this.len = len;
@@ -50,6 +52,8 @@ public class IPPacket {
 			this.ipHeader = ByteBuffer.wrap(packet, offs, 20).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
 			ipHdrlen = 20;
 		} else if (version == 6) {
+			if (len < 40)
+				throw new IllegalArgumentException("Invalid IPv6 packet length: " + len);
 			this.ipHeader = ByteBuffer.wrap(packet, offs, 40).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
 			ipHdrlen = 40;
 		} else

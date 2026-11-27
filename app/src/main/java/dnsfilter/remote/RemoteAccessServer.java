@@ -14,8 +14,10 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import dnsfilter.ConfigurationAccess;
 import dnsfilter.DNSFilterManager;
@@ -31,11 +33,13 @@ import util.Utils;
 
 public class RemoteAccessServer implements Runnable {
 
-    private static int sessionId=0;
+    private static final int MAX_PAYLOAD_SIZE = 16 * 1024 * 1024; // 16 MiB cap
+    private static final int MAX_LOG_CHUNK_BYTES = 16384; // fits safely in signed short
+    private static final AtomicInteger sessionId = new AtomicInteger(0);
 
-    boolean stopped = false;
+    volatile boolean stopped = false;
     private ServerSocket server;
-    private HashMap sessions = new HashMap<Integer, RemoteSession>();
+    private final Map<Integer, RemoteSession> sessions = new ConcurrentHashMap<Integer, RemoteSession>();
 
 
     public RemoteAccessServer(int port, String keyphrase) throws IOException{
@@ -56,7 +60,7 @@ public class RemoteAccessServer implements Runnable {
     }
 
     public void invalidate() {
-        RemoteSession[] sessionarray = (RemoteSession[]) sessions.values().toArray(new RemoteSession[sessions.size()]);
+        RemoteSession[] sessionarray = sessions.values().toArray(new RemoteSession[0]);
         for (int i = 0; i < sessionarray.length; i++)
             sessionarray[i].invalidate();
     }
@@ -64,8 +68,10 @@ public class RemoteAccessServer implements Runnable {
     @Override
     public void run() {
         while (!stopped) {
+            Socket con = null;
+            boolean handedOff = false;
             try {
-                Socket con = server.accept();
+                con = server.accept();
                 InputStream in = Encryption.getDecryptedStream(con.getInputStream());
                 OutputStream out = Encryption.getEncryptedOutputStream(con.getOutputStream(), 1024);
 
@@ -76,14 +82,15 @@ public class RemoteAccessServer implements Runnable {
 
                     if (option.equals("new_session")) {
                         //create and start session
-                        sessionId++;
+                        int newId = sessionId.incrementAndGet();
                         out.write("OK\n".getBytes());
-                        out.write((sessionId+"\n").getBytes());
+                        out.write((newId+"\n").getBytes());
                         out.write((ConfigurationAccess.getLocal().getVersion() + "\n").getBytes());
                         out.write((ConfigurationAccess.getLocal().getLastDNSAddress() + "\n").getBytes());
                         out.write((ConfigurationAccess.getLocal().openConnectionsCount() + "\n").getBytes());
                         out.flush();
-                        new RemoteSession(con, in, out, sessionId);
+                        new RemoteSession(con, in, out, newId);
+                        handedOff = true;
                     }
                     else if (option.equals("reconnect_session")) {
                         int id;
@@ -92,25 +99,34 @@ public class RemoteAccessServer implements Runnable {
                         } catch (Exception e) {
                             throw new IOException(e);
                         }
-                        RemoteSession session = (RemoteSession) sessions.get(id);
+                        RemoteSession session = sessions.get(id);
                         if (session == null)
                             throw new IOException("Reconnect session not found:"+id);
                         else {
                             session.reconnectSession(con, in, out);
                             out.write("OK\n".getBytes());
                             out.flush();
+                            handedOff = true;
                         }
                     }
                     else throw new IOException("Invalid option: "+option);
 
                 } catch (IOException e) {
-                    out.write(e.toString().getBytes());
-                    out.flush();
-                    Utils.closeSocket(con);
+                    try {
+                        out.write(e.toString().getBytes());
+                        out.flush();
+                    } catch (IOException ignored) {
+                        // client may already have disconnected or failed keyphrase check
+                    }
                     throw e;
                 }
             } catch (IOException e) {
-                Logger.getLogger().logLine("RemoteServerException: "+e.toString());
+                if (!stopped)
+                    Logger.getLogger().logLine("RemoteServerException: "+e.toString());
+            } finally {
+                if (!handedOff && con != null) {
+                    Utils.closeSocket(con);
+                }
             }
         }
     }
@@ -118,7 +134,7 @@ public class RemoteAccessServer implements Runnable {
 
     public void stop() {
         stopped = true;
-        RemoteSession[] remoteSessions = (RemoteSession[]) sessions.values().toArray(new RemoteSession[0]);
+        RemoteSession[] remoteSessions = sessions.values().toArray(new RemoteSession[0]);
         for (int i = 0; i < remoteSessions.length; i++ )
             remoteSessions[i].killSession();
         try {
@@ -180,13 +196,22 @@ public class RemoteAccessServer implements Runnable {
             }
         }
 
-        public void reconnectSession(Socket con, InputStream in, OutputStream out) throws IOException{
+        public synchronized void reconnectSession(Socket con, InputStream in, OutputStream out) throws IOException{
            doReconnect = true;
            Socket old = this.socket;
            this.socket = con;
-           this.out = new DataOutputStream(con.getOutputStream());
-           this.in = new DataInputStream(con.getInputStream());
+           this.out = new DataOutputStream(out);
+           this.in = new DataInputStream(in);
            Utils.closeSocket(old);
+        }
+
+        private byte[] readBoundedBytes(DataInputStream in) throws IOException {
+            int len = in.readInt();
+            if (len < 0 || len > MAX_PAYLOAD_SIZE)
+                throw new ConfigurationAccess.ConfigurationAccessException("Payload length out of bounds: " + len, null);
+            byte[] buf = new byte[len];
+            in.readFully(buf);
+            return buf;
         }
 
         @Override
@@ -247,27 +272,26 @@ public class RemoteAccessServer implements Runnable {
                     out.write(result);
                     out.flush();
                 } else if (action.equals("updateConfig()")) {
-                    byte[] cfg = new byte[in.readInt()];
-                    in.readFully(cfg);
+                    byte[] cfg = readBoundedBytes(in);
                     ConfigurationAccess.getLocal().updateConfig(cfg);
                     out.write("OK\n".getBytes());
                     out.flush();
                 } else if (action.equals("updateConfigMergeDefaults()")) {
-                    byte[] cfg = new byte[in.readInt()];
-                    in.readFully(cfg);
+                    byte[] cfg = readBoundedBytes(in);
                     ConfigurationAccess.getLocal().updateConfigMergeDefaults(cfg);
                     out.write("OK\n".getBytes());
                     out.flush();
                 } else if (action.equals("getAdditionalHosts()")) {
                     int limit = in.readInt();
                     byte[] result = ConfigurationAccess.getLocal().getAdditionalHosts(limit);
+                    if (result == null)
+                        throw new ConfigurationAccess.ConfigurationAccessException("additionalHosts exceeds limit (" + limit + " bytes)!", null);
                     out.write("OK\n".getBytes());
                     out.writeInt(result.length);
                     out.write(result);
                     out.flush();
                 } else if (action.equals("updateAdditionalHosts()")) {
-                    byte[] cfg = new byte[in.readInt()];
-                    in.readFully(cfg);
+                    byte[] cfg = readBoundedBytes(in);
                     ConfigurationAccess.getLocal().updateAdditionalHosts(cfg);
                     out.write("OK\n".getBytes());
                     out.flush();
@@ -304,8 +328,7 @@ public class RemoteAccessServer implements Runnable {
                     out.write(backup);
                     out.flush();
                 } else if (action.equals("doRestore()")) {
-                    byte[] input = new byte[in.readInt()];
-                    in.readFully(input);
+                    byte[] input = readBoundedBytes(in);
                     ConfigurationAccess.getLocal().doRestore(new ByteArrayInputStream(input));
                     out.write("OK\n".getBytes());
                     out.flush();
@@ -325,7 +348,8 @@ public class RemoteAccessServer implements Runnable {
                     throw new ConfigurationAccess.ConfigurationAccessException("Unknown action: " + action);
 
             } catch (ConfigurationAccess.ConfigurationAccessException e) {
-                out.write((e.getMessage().replace("\n", "\t") + "\n").getBytes());
+                String msg = e.getMessage() != null ? e.getMessage() : e.toString();
+                out.write((msg.replace("\n", "\t") + "\n").getBytes());
                 out.flush();
             }
         }
@@ -360,11 +384,21 @@ public class RemoteAccessServer implements Runnable {
                             out.writeShort(msg.length);
                             out.write(msg);
 
-                            //the log
-                            msg = txt.getBytes();
-                            out.writeShort(type);
-                            out.writeShort(msg.length);
-                            out.write(msg);
+                            //the log (chunked so each packet length stays strictly within signed short bounds)
+                            byte[] fullMsg = txt.getBytes();
+                            if (fullMsg.length == 0) {
+                                out.writeShort(type);
+                                out.writeShort(0);
+                            } else {
+                                int offset = 0;
+                                while (offset < fullMsg.length) {
+                                    int chunkLen = Math.min(MAX_LOG_CHUNK_BYTES, fullMsg.length - offset);
+                                    out.writeShort(type);
+                                    out.writeShort(chunkLen);
+                                    out.write(fullMsg, offset, chunkLen);
+                                    offset += chunkLen;
+                                }
+                            }
                             out.flush();
 
                         } catch (IOException e) {

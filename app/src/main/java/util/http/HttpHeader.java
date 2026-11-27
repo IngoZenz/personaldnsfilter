@@ -200,8 +200,12 @@ public class HttpHeader {
 	}
 	
 	public String removeValue(String key) {
-		_keys.remove(key);
-		return (String) _mapping.remove(key.toUpperCase());		
+		for (int i = _keys.size() - 1; i >= 0; i--) {
+			if (((String) _keys.get(i)).equalsIgnoreCase(key)) {
+				_keys.remove(i);
+			}
+		}
+		return (String) _mapping.remove(key.toUpperCase());
 	}
 
 	public void appendValueToHeaderString(StringBuffer headerString, String key, String value) {
@@ -277,7 +281,12 @@ public class HttpHeader {
 
 		String val = getValue("Content-Length");
 		if (val != null) {
-			return Long.parseLong(val);
+			try {
+				long parsed = Long.parseLong(val.trim());
+				return parsed >= 0 ? parsed : -1;
+			} catch (NumberFormatException e) {
+				return -1;
+			}
 		}
 
 		else
@@ -297,10 +306,14 @@ public class HttpHeader {
 
 	public boolean chunkedTransfer() {
 		Object val = getValue("Transfer-Encoding");
-		if (val != null)
-			return ((String) val).equalsIgnoreCase("chunked");
-		else
-			return false;
+		if (val != null) {
+			String[] parts = ((String) val).split("[,;]|_,_");
+			for (int i = 0; i < parts.length; i++) {
+				if (parts[i].trim().equalsIgnoreCase("chunked"))
+					return true;
+			}
+		}
+		return false;
 	}
 
 	public void setValue(String key, String value) {
@@ -363,23 +376,38 @@ public class HttpHeader {
 		else 
 			remote_port = -1;
 		
-		remote_host_name = hostEntry;
+		remote_host_name = hostEntry.trim();
 
-		int idx = hostEntry.lastIndexOf(":"); // check for the port number
-		// take IPV6 into account!!! http://[2a00:1450:400a:804::1010]:80 HTTP/1.1
-
-		if (idx != -1 && !hostEntry.endsWith("]")) {
-			try {
-				remote_port = Integer.parseInt(hostEntry.substring(idx + 1));
-			} catch (NumberFormatException nfe) {
-				throw new IOException("Bad request - Cannot parse port to int:" + _first);
+		if (remote_host_name.startsWith("[")) {
+			int closeBracket = remote_host_name.indexOf(']');
+			if (closeBracket == -1)
+				throw new IOException("Bad request - Unclosed IPv6 bracket: " + _first);
+			String hostPart = remote_host_name.substring(1, closeBracket);
+			if (closeBracket + 1 < remote_host_name.length()) {
+				if (remote_host_name.charAt(closeBracket + 1) != ':')
+					throw new IOException("Bad request - Invalid host entry: " + _first);
+				try {
+					remote_port = Integer.parseInt(remote_host_name.substring(closeBracket + 2));
+					if (remote_port <= 0 || remote_port > 65535)
+						throw new IOException("Bad request - Port out of range: " + _first);
+				} catch (NumberFormatException nfe) {
+					throw new IOException("Bad request - Cannot parse port to int:" + _first);
+				}
 			}
-			remote_host_name = hostEntry.substring(0, idx);
-		}	
-
-		// IPV6 e.g. [2a00:1450:400a:804::1010]
-		if (remote_host_name.startsWith("[") && remote_host_name.endsWith("]")) {
-			remote_host_name = remote_host_name.substring(1, remote_host_name.length() - 1);
+			remote_host_name = hostPart;
+		} else {
+			int firstColon = remote_host_name.indexOf(':');
+			int lastColon = remote_host_name.lastIndexOf(':');
+			if (firstColon != -1 && firstColon == lastColon) {
+				try {
+					remote_port = Integer.parseInt(remote_host_name.substring(lastColon + 1));
+					if (remote_port <= 0 || remote_port > 65535)
+						throw new IOException("Bad request - Port out of range: " + _first);
+				} catch (NumberFormatException nfe) {
+					throw new IOException("Bad request - Cannot parse port to int:" + _first);
+				}
+				remote_host_name = remote_host_name.substring(0, lastColon);
+			}
 		}
 
 	}

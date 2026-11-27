@@ -36,11 +36,13 @@ import android.net.ConnectivityManager;
 import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkInfo;
+import android.net.NetworkRequest;
 import android.net.VpnService;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.os.StrictMode;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -60,6 +62,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import dnsfilter.ConfigurationAccess;
 import dnsfilter.DNSCommunicator;
@@ -81,14 +84,14 @@ public class DNSFilterService extends VpnService  {
 	private static String ADDRESS_IPV4 = "10.0.2.15";
 	private static String ADDRESS_IPV6 = "fdc8:1095:91e1:aaaa:aaaa:aaaa:aaaa:aaa2";
 
-	protected static Intent SERVICE=null;
+	protected static volatile Intent SERVICE=null;
 
 	private static String START_DNSCRYPTPROXY = "dnscrypt-proxy";
 	private static String KILL_DNSCRYPTPROXY = "killall dnscrypt-proxy";
 
-	public static DNSFilterManager DNSFILTER = null;
-	public static DNSFilterProxy DNSFILTERPROXY = null;
-	protected static DNSFilterService INSTANCE = null;
+	public static volatile DNSFilterManager DNSFILTER = null;
+	public static volatile DNSFilterProxy DNSFILTERPROXY = null;
+	protected static volatile DNSFilterService INSTANCE = null;
 
 	private static boolean DNS_PROXY_PORT_IS_REDIRECTED = false;
 
@@ -98,13 +101,16 @@ public class DNSFilterService extends VpnService  {
 	private static boolean rootMode = false;
 	private static boolean vpnInAdditionToProxyMode = false;
 	private static boolean routeDNS = false;
-	private static boolean is_running = false;
+	private static volatile boolean is_running = false;
 	protected static DNSReqForwarder dnsReqForwarder = new DNSReqForwarder();
 
-	private static int startCounter = 0;
+	private static final AtomicInteger startCounter = new AtomicInteger(0);
 
 	private boolean blocking = false;
-	private VPNRunner vpnRunner=null;
+	private volatile VPNRunner vpnRunner=null;
+	private Object networkCallbackHolder = null;
+	private boolean connectivityReceiverRegistered = false;
+	private boolean notificationReceiverRegistered = false;
 	boolean manageDNSCryptProxy = false;
 	boolean dnsCryptProxyStartTriggered = false;
 	PendingIntent pendingIntent;
@@ -155,11 +161,20 @@ public class DNSFilterService extends VpnService  {
 			try {
 				if (f.exists()) {
 					InputStream in = new FileInputStream(f);
-					String ip = new String(Utils.readFully(in, 100));
-					in.close();
+					String ip;
+					try {
+						ip = new String(Utils.readFully(in, 100)).trim();
+					} finally {
+						in.close();
+					}
 
 					if (!f.delete()){
 						throw(new IOException("Cannot delete "+ipFilePath));
+					}
+
+					if (!isValidIPv4(ip)) {
+						Logger.getLogger().logLine("Ignoring invalid persisted forward IP in " + ipFilePath);
+						return;
 					}
 
 					Logger.getLogger().logLine("Cleaning up a previous redirect from previous not correctly terminated execution!");
@@ -173,6 +188,24 @@ public class DNSFilterService extends VpnService  {
 				Logger.getLogger().logLine(e.toString());
 			}
 
+		}
+
+		private boolean isValidIPv4(String ip) {
+			if (ip == null || ip.isEmpty())
+				return false;
+			String[] parts = ip.split("\\.", -1);
+			if (parts.length != 4)
+				return false;
+			for (int i = 0; i < 4; i++) {
+				try {
+					int octet = Integer.parseInt(parts[i]);
+					if (octet < 0 || octet > 255)
+						return false;
+				} catch (NumberFormatException e) {
+					return false;
+				}
+			}
+			return true;
 		}
 
 
@@ -191,9 +224,12 @@ public class DNSFilterService extends VpnService  {
 					runOSCommand(true, "iptables -A OUTPUT -p tcp --destination-port 53 -j DROP");
 					forwardip = ip;
 					FileOutputStream ipFile = new FileOutputStream(ipFilePath);
-					ipFile.write(ip.getBytes());
-					ipFile.flush();
-					ipFile.close();
+					try {
+						ipFile.write(ip.getBytes());
+						ipFile.flush();
+					} finally {
+						ipFile.close();
+					}
 				}
 			} catch (Exception e) {
 				Logger.getLogger().logLine(e.getMessage());
@@ -208,12 +244,13 @@ public class DNSFilterService extends VpnService  {
 				return;
 
 			try {
-				runOSCommand(false, "iptables -t nat -D OUTPUT -p udp --dport 53 -j DNAT --to-destination "+forwardip+":"+dnsProxyPort);
+				runOSCommand(true, "iptables -t nat -D OUTPUT -p udp --dport 53 -j DNAT --to-destination "+forwardip+":"+dnsProxyPort);
 				runOSCommand(true, "ip6tables -D OUTPUT -p tcp --destination-port 53 -j DROP");
 				runOSCommand(true, "ip6tables -D OUTPUT -p udp --destination-port 53 -j DROP");
 				runOSCommand(true, "iptables -D OUTPUT -p tcp --destination-port 53 -j DROP");
 				forwardip = null;
-				if (!new File(ipFilePath).delete()){
+				File f = new File(ipFilePath);
+				if (f.exists() && !f.delete()){
 					throw (new IOException("Cannot delete "+ipFilePath));
 				}
 			} catch (Exception e) {
@@ -227,7 +264,7 @@ public class DNSFilterService extends VpnService  {
 
 		DNSFilterService instance = INSTANCE;
 
-		if (!is_running || instance.vpnRunner == null)
+		if (!is_running || instance == null || instance.vpnRunner == null)
 			return true; //no vpn running
 
 
@@ -380,12 +417,12 @@ public class DNSFilterService extends VpnService  {
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private static Network getActiveNetwork(ConnectivityManager connectivityManager) {
 
-		/* if (Build.VERSION.SDK_INT >= 23) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 			Network network = connectivityManager.getActiveNetwork();
 			if (ExecutionEnvironment.getEnvironment().debug())
 				Logger.getLogger().logLine("ACTIVE NETWORK:" + network);
 			return network;
-		}*/
+		}
 
 		NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
 		if (activeNetworkInfo != null) {
@@ -406,6 +443,56 @@ public class DNSFilterService extends VpnService  {
 			Logger.getLogger().logLine("ACTIVE NETWORK: NULL");
 
 		return null;
+	}
+
+	@TargetApi(Build.VERSION_CODES.N)
+	private static class NetworkCallbackHelper {
+		private final ConnectivityManager cm;
+		private final ConnectivityManager.NetworkCallback callback;
+
+		NetworkCallbackHelper(ConnectivityManager cm) {
+			this.cm = cm;
+			this.callback = new ConnectivityManager.NetworkCallback() {
+				@Override
+				public void onAvailable(Network network) {
+					triggerNetworkUpdate();
+				}
+
+				@Override
+				public void onLost(Network network) {
+					DNSServer.invalidateOpenConnections();
+					triggerNetworkUpdate();
+				}
+
+				@Override
+				public void onLinkPropertiesChanged(Network network, LinkProperties linkProperties) {
+					triggerNetworkUpdate();
+				}
+			};
+			NetworkRequest request = new NetworkRequest.Builder().build();
+			cm.registerNetworkCallback(request, callback);
+		}
+
+		private static void triggerNetworkUpdate() {
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						possibleNetworkChange(false, true);
+					} catch (Exception e) {
+						Logger.getLogger().logException(e);
+					}
+				}
+			}).start();
+		}
+
+		void unregister() {
+			try {
+				cm.unregisterNetworkCallback(callback);
+			} catch (Exception e) {
+				Logger.getLogger().logException(e);
+			}
+		}
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -678,7 +765,7 @@ public class DNSFilterService extends VpnService  {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 
-		SERVICE = intent;
+		SERVICE = (intent != null) ? intent : new Intent(this, DNSFilterService.class);
 		INSTANCE = this;
 
 		try {
@@ -695,6 +782,7 @@ public class DNSFilterService extends VpnService  {
 
 				Intent pause_resume = new Intent();
 				pause_resume.setAction("pause_resume");
+				pause_resume.setPackage(getPackageName());
 				PendingIntent pause_resume_Intent = PendingIntent.getBroadcast(this, 12345, pause_resume, PendingIntent.FLAG_UPDATE_CURRENT+PendingIntent.FLAG_IMMUTABLE);
 
 				notibuilder
@@ -707,12 +795,21 @@ public class DNSFilterService extends VpnService  {
 
 				startForeground();
 
-				if (startDNSFilter())
+				if (startDNSFilter()) {
 					updateNotification();
+				} else if (!is_running) {
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+						stopForeground(STOP_FOREGROUND_REMOVE);
+					else
+						stopForeground(true);
+					stopSelf();
+				}
 
 				return START_STICKY;
 			} else {
-				startDNSFilter();
+				if (!startDNSFilter() && !is_running) {
+					stopSelf();
+				}
 				return START_STICKY;
 			}
 
@@ -777,9 +874,10 @@ public class DNSFilterService extends VpnService  {
 	}
 
 
-	private boolean startDNSFilter() {
+	private synchronized boolean startDNSFilter() {
 		if (is_running) {
 			Logger.getLogger().logLine("Ignoring duplicate start after update!");
+			return true;
 		}
 		if (DNSFILTER != null) {
 			Logger.getLogger().logLine("DNS filter already running!");
@@ -806,10 +904,12 @@ public class DNSFilterService extends VpnService  {
 				ParcelFileDescriptor vpnInterface = initVPN(true);
 
 				if (vpnInterface != null) {
-					vpnRunner = new VPNRunner(++startCounter, vpnInterface, true);
+					vpnRunner = new VPNRunner(startCounter.incrementAndGet(), vpnInterface, true);
 					new Thread(vpnRunner).start();
 				} else {
 					Logger.getLogger().logLine("Error! Cannot get VPN interface! Try restart!");
+					DNSFILTER.stop();
+					DNSFILTER = null;
 					return false;
 				}
 			}
@@ -823,12 +923,23 @@ public class DNSFilterService extends VpnService  {
 				dnsReqForwarder.clean(); //cleanup possible hangig iprules after a crash
 				dnsReqForwarder.updateForward();
 			}
-			registerReceiver(ConnectionChangeReceiver.getInstance(), new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
 
-			if (android.os.Build.VERSION.SDK_INT < 34)
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+				ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+				if (cm != null) {
+					networkCallbackHolder = new NetworkCallbackHelper(cm);
+				}
+			} else {
+				registerReceiver(ConnectionChangeReceiver.getInstance(), new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
+				connectivityReceiverRegistered = true;
+			}
+
+			if (android.os.Build.VERSION.SDK_INT < 34) {
 				registerReceiver(NotificationReceiver.getInstance(), new IntentFilter("pause_resume"));
-			else
-				registerReceiver(NotificationReceiver.getInstance(), new IntentFilter("pause_resume"),RECEIVER_EXPORTED);
+			} else {
+				registerReceiver(NotificationReceiver.getInstance(), new IntentFilter("pause_resume"), RECEIVER_NOT_EXPORTED);
+			}
+			notificationReceiverRegistered = true;
 
 			//start DNS Proxy Mode if configured
 			if (dnsProxyMode) {
@@ -854,10 +965,48 @@ public class DNSFilterService extends VpnService  {
 			return true;
 
 		} catch (Exception e) {
-			DNSFILTER = null;
+			cleanupPartialStart();
 			Logger.getLogger().logException(e);
 			return false;
 		}
+	}
+
+	private void cleanupPartialStart() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && networkCallbackHolder != null) {
+			((NetworkCallbackHelper) networkCallbackHolder).unregister();
+			networkCallbackHolder = null;
+		}
+		if (connectivityReceiverRegistered) {
+			try {
+				unregisterReceiver(ConnectionChangeReceiver.getInstance());
+			} catch (Exception ignored) {
+			}
+			connectivityReceiverRegistered = false;
+		}
+		if (notificationReceiverRegistered) {
+			try {
+				unregisterReceiver(NotificationReceiver.getInstance());
+			} catch (Exception ignored) {
+			}
+			notificationReceiverRegistered = false;
+		}
+		VPNRunner runningVPN = vpnRunner;
+		vpnRunner = null;
+		if (runningVPN != null)
+			runningVPN.stop(true);
+		if (DNSFILTERPROXY != null) {
+			DNSFILTERPROXY.stop();
+			DNSFILTERPROXY = null;
+		}
+		if (DNSFILTER != null) {
+			try {
+				DNSFILTER.stop();
+			} catch (Exception e) {
+				Logger.getLogger().logException(e);
+			}
+			DNSFILTER = null;
+		}
+		is_running = false;
 	}
 
 
@@ -955,31 +1104,61 @@ public class DNSFilterService extends VpnService  {
 
 		Process su = Runtime.getRuntime().exec("su");
 		DataOutputStream outputStream = new DataOutputStream(su.getOutputStream());
-		outputStream.writeBytes(command+"\n");
-		outputStream.flush();
+		final InputStream stdout = su.getInputStream();
+		final InputStream stderr = su.getErrorStream();
+		try {
+			outputStream.writeBytes(command+"\n");
+			outputStream.flush();
 
-		outputStream.writeBytes("exit\n");
-		outputStream.flush();
+			outputStream.writeBytes("exit\n");
+			outputStream.flush();
 
-		InputStream stdout = su.getInputStream();
+			final ByteArrayOutputStream errOut = new ByteArrayOutputStream();
+			Thread errReader = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					byte[] errBuf = new byte[1024];
+					int r;
+					try {
+						while ((r = stderr.read(errBuf)) != -1) {
+							errOut.write(errBuf, 0, r);
+						}
+					} catch (IOException ignored) {
+					}
+				}
+			});
+			errReader.start();
 
-		byte[] buf = new byte[1024];
-		int r;
+			byte[] buf = new byte[1024];
+			int r;
 
-		while ( (r = stdout.read(buf)) != -1) {
-			Logger.getLogger().log(new String(buf,0,r));
+			while ( (r = stdout.read(buf)) != -1) {
+				Logger.getLogger().log(new String(buf,0,r));
+			}
+
+			errReader.join();
+			if (errOut.size() > 0) {
+				Logger.getLogger().log(errOut.toString());
+			}
+
+			su.waitFor();
+			int exitVal = su.exitValue();
+			if (exitVal != 0  && !ignoreError)
+				throw new Exception ("Error in process execution: "+exitVal);
+		} finally {
+			try {
+				outputStream.close();
+			} catch (IOException ignored) {
+			}
+			try {
+				stdout.close();
+			} catch (IOException ignored) {
+			}
+			try {
+				stderr.close();
+			} catch (IOException ignored) {
+			}
 		}
-
-		InputStream stderr = su.getErrorStream();
-
-		while ( (r = stderr.read(buf)) != -1) {
-			Logger.getLogger().log(new String(buf,0,r));
-		}
-
-		su.waitFor();
-		int exitVal = su.exitValue();
-		if (exitVal != 0  && !ignoreError)
-			throw new Exception ("Error in process execution: "+exitVal);
 	}
 
 	private static void runOSCommand(final boolean ignoreError, boolean async, final String command) throws Exception {
@@ -1017,6 +1196,8 @@ public class DNSFilterService extends VpnService  {
 	public void onDestroy() {
 		Logger.getLogger().logLine("destroyed");
 		shutdown();
+		if (INSTANCE == this)
+			INSTANCE = null;
 		super.onDestroy();
 	}
 
@@ -1035,11 +1216,25 @@ public class DNSFilterService extends VpnService  {
 				return false;
 			}
 
-			try {
-				unregisterReceiver(ConnectionChangeReceiver.getInstance());
-				unregisterReceiver(NotificationReceiver.getInstance());
-			} catch (Exception e) {
-				e.printStackTrace();
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && networkCallbackHolder != null) {
+				((NetworkCallbackHelper) networkCallbackHolder).unregister();
+				networkCallbackHolder = null;
+			}
+			if (connectivityReceiverRegistered) {
+				try {
+					unregisterReceiver(ConnectionChangeReceiver.getInstance());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				connectivityReceiverRegistered = false;
+			}
+			if (notificationReceiverRegistered) {
+				try {
+					unregisterReceiver(NotificationReceiver.getInstance());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				notificationReceiverRegistered = false;
 			}
 
 			if (rootMode) {
@@ -1063,8 +1258,12 @@ public class DNSFilterService extends VpnService  {
 				DNSFILTER = null;
 				Logger.getLogger().logLine("DNS filter stopped!");
 			}
-			stopService(SERVICE);
-			SERVICE = null;
+			if (SERVICE != null) {
+				stopService(SERVICE);
+				SERVICE = null;
+			} else {
+				stopSelf();
+			}
 			is_running = false;
 			Thread.sleep(200);
 			return true;
@@ -1117,7 +1316,7 @@ public class DNSFilterService extends VpnService  {
 		}
 
 		if (vpnInterface != null) {
-			vpnRunner = new VPNRunner(++startCounter, vpnInterface, explicitOp);
+			vpnRunner = new VPNRunner(startCounter.incrementAndGet(), vpnInterface, explicitOp);
 			new Thread(vpnRunner).start();
 
 

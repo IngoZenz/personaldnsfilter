@@ -62,7 +62,8 @@ public class PooledConnectionInputStream extends InputStream {
 		if (!valid)
 			throw new IllegalStateException("Invalid:"+this);
 		
-		traffic = traffic+r;
+		if (r > 0)
+			traffic = traffic+r;
 		return r;
 	}
 	

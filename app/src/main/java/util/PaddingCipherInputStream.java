@@ -5,8 +5,11 @@ import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.MessageDigest;
 
 public class PaddingCipherInputStream extends InputStream {
+
+	private static final int MAX_FRAME_SIZE = 32 * 1024 * 1024; // 32 MiB defensive cap
 
 	private DataInputStream lowerIn;
 	private ByteArrayInputStream byteBuf;
@@ -14,34 +17,36 @@ public class PaddingCipherInputStream extends InputStream {
 	private boolean init = false;
 
 	public PaddingCipherInputStream(InputStream underlying)
-			throws IOException {		
+			throws IOException {
 		lowerIn = new DataInputStream(underlying);
-
 	}
-	
+
 	private void initRead() throws IOException {
-		if (init ) return;
-		
+		if (init) return;
+
 		int size = -1;
-		
 		init = true;
-		
+
 		//check init bytes
 		try {
 			size = lowerIn.readInt();
-		} catch (EOFException eofEx){
-			eof=true;
+		} catch (EOFException eofEx) {
+			eof = true;
 		}
 		if (!eof) {
-			if (size != Encryption.ENCR_INIT_BYTES.length)
+			if (size <= 0 || size > MAX_FRAME_SIZE)
 				throw new IOException("Wrong keyphrase!");
-			
+
 			byte[] next = new byte[size];
 			lowerIn.readFully(next);
-			
-			for (int i = 0; i < next.length; i++)
-				if (next[i] != Encryption.ENCR_INIT_BYTES[i])
+
+			try {
+				byte[] decrypted = Encryption.decrypt(next);
+				if (!MessageDigest.isEqual(decrypted, Encryption.INIT_BYTES))
 					throw new IOException("Wrong keyphrase!");
+			} catch (IOException e) {
+				throw new IOException("Wrong keyphrase!");
+			}
 		}
 	}
 
@@ -59,49 +64,46 @@ public class PaddingCipherInputStream extends InputStream {
 		return byteBuf.read();
 	}
 
-
 	@Override
 	public int read(byte b[], int off, int len) throws IOException {
 		if (!init)
 			initRead();
 		if (available() != 0)
-			return byteBuf.read(b,off,len);		
-		if (eof) 
+			return byteBuf.read(b, off, len);
+		if (eof)
 			return -1;
-		
+
 		byteBuf = getNewBytes();
-		
+
 		if (eof) return -1;
-		
-		return byteBuf.read(b,off,len);	
+
+		return byteBuf.read(b, off, len);
 	}
-	
-		
 
 	@Override
 	public int available() throws IOException {
 		if (byteBuf != null)
 			return byteBuf.available();
 		return 0;
-
 	}
 
 	private ByteArrayInputStream getNewBytes() throws IOException {
 		byte[] next = null;
 		try {
 			int size = lowerIn.readInt();
+			if (size == 0) {
+				byteBuf = null;
+				eof = true;
+				return null; // EOF
+			}
+			if (size < 0 || size > MAX_FRAME_SIZE)
+				throw new IOException("Invalid encrypted frame size: " + size);
 			next = new byte[size];
-			lowerIn.readFully(next);		
-		} catch (EOFException e) {			
+			lowerIn.readFully(next);
+		} catch (EOFException e) {
 			eof = true;
 			byteBuf = null;
 			return null;
-		}
-
-		if (next.length == 0) {
-			byteBuf = null;
-			eof = true;
-			return null; // EOF
 		}
 
 		try {
@@ -111,13 +113,10 @@ public class PaddingCipherInputStream extends InputStream {
 		} catch (Exception e) {
 			throw new IOException(e.getMessage());
 		}
-
 	}
-	
+
 	@Override
 	public void close() throws IOException {
 		lowerIn.close();
 	}
-	
-
 }

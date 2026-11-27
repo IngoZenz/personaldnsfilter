@@ -66,10 +66,13 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
     }*/
 
     public static void initEnvironment(Context context) {
-        ctx = context;
+        if (context == null)
+            return;
+        Context appCtx = context.getApplicationContext();
+        ctx = (appCtx != null) ? appCtx : context;
         if (android.os.Build.VERSION.SDK_INT >= 19) {
-            context.getExternalFilesDirs(null); //Seems on some devices this has to be called once before accessing Files...
-            File dir = context.getExternalFilesDir(null);
+            ctx.getExternalFilesDirs(null); //Seems on some devices this has to be called once before accessing Files...
+            File dir = ctx.getExternalFilesDir(null);
             if (dir != null)
                 WORKDIR = dir.getAbsolutePath() + "/PersonalDNSFilter";
 
@@ -123,17 +126,29 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
     }
 
     @Override
-    public void wakeLock(){
-        WifiManager.WifiLock wifiLock = ((WifiManager) ctx.getApplicationContext().getSystemService(Context.WIFI_SERVICE)).createWifiLock(WifiManager.WIFI_MODE_FULL, "personalHttpProxy");
-        wifiLock.acquire();
-        PowerManager.WakeLock wakeLock = ((PowerManager) ctx.getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "personalDNSfilter:wakelock");
-        wakeLock.acquire();
+    public synchronized void wakeLock(){
+        if (ctx == null)
+            return;
+        WifiManager wifiMgr = (WifiManager) ctx.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        WifiManager.WifiLock wifiLock = null;
+        if (wifiMgr != null) {
+            wifiLock = wifiMgr.createWifiLock(WifiManager.WIFI_MODE_FULL, "personalHttpProxy");
+            wifiLock.acquire();
+        }
+        PowerManager powerMgr = (PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
+        PowerManager.WakeLock wakeLock = null;
+        if (powerMgr != null) {
+            wakeLock = powerMgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "personalDNSfilter:wakelock");
+            wakeLock.acquire();
+        }
         wakeLooks.push(new Object[]{wifiLock, wakeLock});
         Logger.getLogger().logLine("Acquired WIFI lock and partial wake lock!");
     }
 
     @Override
-    public void releaseWakeLock() {
+    public synchronized void releaseWakeLock() {
+        if (wakeLooks.isEmpty())
+            return;
         Object[] locks;
         try {
             locks = (Object[]) wakeLooks.pop();
@@ -143,26 +158,17 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
         }
         WifiManager.WifiLock wifiLock = (WifiManager.WifiLock) locks[0];
         PowerManager.WakeLock wakeLock = (PowerManager.WakeLock) locks[1];
-        wifiLock.release();
-        wakeLock.release();
+        if (wifiLock != null && wifiLock.isHeld())
+            wifiLock.release();
+        if (wakeLock != null && wakeLock.isHeld())
+            wakeLock.release();
         Logger.getLogger().logLine("Released WIFI lock and partial wake lock!");
     }
 
     @Override
-    public void releaseAllWakeLocks() {
-        Object[] locks;
+    public synchronized void releaseAllWakeLocks() {
         while (!wakeLooks.isEmpty()) {
-            try {
-                locks = (Object[]) wakeLooks.pop();
-            } catch (Exception e) {
-                Logger.getLogger().logException(e);
-                return;
-            }
-            WifiManager.WifiLock wifiLock = (WifiManager.WifiLock) locks[0];
-            PowerManager.WakeLock wakeLock = (PowerManager.WakeLock) locks[1];
-            wifiLock.release();
-            wakeLock.release();
-            Logger.getLogger().logLine("Released WIFI lock and partial wake lock!");
+            releaseWakeLock();
         }
     }
 
@@ -191,7 +197,11 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
 
     @Override
     public boolean hasNetwork() {
+        if (ctx == null)
+            return false;
         ConnectivityManager conMan= (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (conMan == null)
+            return false;
         NetworkInfo ni = conMan.getActiveNetworkInfo();
         return ni != null && ni.isConnected();
     }
@@ -217,7 +227,10 @@ public class AndroidEnvironment implements ExecutionEnvironmentInterface {
         }
 
         //TO BE DELETED ONCE ON TARGET 11! MIGRATION OF CONFIG DATA TO EXTERNAL USER FOLDER
-        File F_WORKDIR = new File(WORKDIR);
+        String workDir = getWorkDir();
+        if (workDir == null)
+            return;
+        File F_WORKDIR = new File(workDir);
         if (!F_WORKDIR.exists() && storagePermission) {
             File OLDPATH = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PersonalDNSFilter");
             if (OLDPATH.exists() && !OLDPATH.equals(F_WORKDIR)) {

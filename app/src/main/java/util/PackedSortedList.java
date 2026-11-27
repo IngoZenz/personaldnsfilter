@@ -198,7 +198,7 @@ public class PackedSortedList implements List, RandomAccess {
 	public Object get(int pos) {
 		//parallel read is threadsafe!
 
-		if (pos >= count)
+		if (pos < 0 || pos >= count)
 			return null;
 		
 		int offs = pos * object_size;	
@@ -327,8 +327,9 @@ public class PackedSortedList implements List, RandomAccess {
 	
 	private void loadinMemory()  {
 		//No readers and writers allowed - needs synchronization from outside
+		FileInputStream in = null;
 		try {
-			FileInputStream in = new FileInputStream(persistedPackFile);
+			in = new FileInputStream(persistedPackFile);
 			int size = count * objMgr.objectSize();
 			datapack = new byte[size];
 
@@ -338,10 +339,16 @@ public class PackedSortedList implements List, RandomAccess {
 			while ((r = in.read(datapack, offs, size - offs)) != -1 && offs != size)
 				offs = offs + r;
 
-			in.close();
 			loaded = true;
 		} catch (IOException ioe){
 			throw new IllegalStateException(ioe);
+		} finally {
+			if (in != null) {
+				try {
+					in.close();
+				} catch (IOException ignored) {
+				}
+			}
 		}
 	}
 

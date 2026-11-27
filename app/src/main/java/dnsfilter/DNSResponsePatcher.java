@@ -1,4 +1,4 @@
-/* 
+/*
  PersonalDNSFilter 1.5
  Copyright (C) 2017 Ingo Zenz
 
@@ -17,7 +17,7 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
  Find the latest version at http://www.zenz-solutions.de/personaldnsfilter
- Contact:i.z@gmx.net 
+ Contact:i.z@gmx.net
  */
 
 package dnsfilter;
@@ -27,25 +27,33 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import util.Logger;
 import util.LoggerInterface;
 
 public class DNSResponsePatcher {
 
-	private static Set FILTER = null;
-	private static LoggerInterface TRAFFIC_LOG = null;
+	private static final int MAX_POINTER_JUMPS = 64;
+	private static final int MAX_DOMAIN_LENGTH = 255;
+
+	private static volatile Set FILTER = null;
+	private static volatile LoggerInterface TRAFFIC_LOG = null;
 
 	protected static byte[] ipv4_blocked;
 	protected static byte[] ipv6_blocked;
 
-	private static long okCnt=0;
-	private static long filterCnt=0;
-	private static boolean checkIP = false;
-	private static boolean checkCNAME = true;
+	private static final AtomicLong okCnt = new AtomicLong(0);
+	private static final AtomicLong filterCnt = new AtomicLong(0);
+	private static volatile boolean checkIP = false;
+	private static volatile boolean checkCNAME = true;
 
 
 	static {
+		loadBlockedAddresses();
+	}
+
+	private static void loadBlockedAddresses() {
 		try {
 			ipv4_blocked = InetAddress.getByName(ConfigurationAccess.getLocal().getConfig().getProperty("ipV4BlockedHost","127.0.0.1")).getAddress();
 			ipv6_blocked = InetAddress.getByName(ConfigurationAccess.getLocal().getConfig().getProperty("ipV6BlockedHost","::1")).getAddress();
@@ -54,12 +62,10 @@ public class DNSResponsePatcher {
 		}
 	}
 
-
 	public static void init(Set filter, LoggerInterface trafficLogger) {
 		FILTER = filter;
 		TRAFFIC_LOG = trafficLogger;
-		//okCnt=0;
-		//filterCnt=0;
+		loadBlockedAddresses();
 		try {
 			checkIP = Boolean.parseBoolean(ConfigurationAccess.getLocal().getConfig().getProperty("checkResolvedIP","false"));
 			checkCNAME = Boolean.parseBoolean(ConfigurationAccess.getLocal().getConfig().getProperty("checkCNAME","false"));
@@ -69,11 +75,11 @@ public class DNSResponsePatcher {
 	}
 
 	public static long getFilterCount() {
-		return filterCnt;
+		return filterCnt.get();
 	}
 
 	public static long getOkCount() {
-		return okCnt;
+		return okCnt.get();
 	}
 
 
@@ -81,12 +87,15 @@ public class DNSResponsePatcher {
 
 		try {
 			ByteBuffer buf = ByteBuffer.wrap(response, offs, response.length - offs);
+			if (buf.remaining() < 12)
+				throw new IOException("Truncated DNS message header!");
+
 			String queryHost = "";
 
 			buf.getShort(); // ID
 			buf.getShort(); // Flags
-			int questCount = buf.getShort();
-			int answerCount = buf.getShort();
+			int questCount = buf.getShort() & 0xFFFF;
+			int answerCount = buf.getShort() & 0xFFFF;
 			buf.getShort(); // auths
 			buf.getShort(); // additional
 
@@ -95,11 +104,9 @@ public class DNSResponsePatcher {
 			for (int i = 0; i < questCount; i++) {
 
 				queryHost = readDomainName(buf, offs);
+				if (buf.remaining() < 4)
+					throw new IOException("Truncated DNS question!");
 				short type = buf.getShort(); // query type
-
-				//checking the filter on the answer does not always work due to cname redirects (type 5 responses)
-				//therefore we just check the filter on the query host and thus we'll disallow also all cname redirects.
-				//This seems to work well - however is not 100% correct!
 
 				if (type == 1 || type == 28)
 					filter = filter || filter(queryHost, true);
@@ -111,36 +118,53 @@ public class DNSResponsePatcher {
 
 			for (int i = 0; i < answerCount; i++) {
 				String host = readDomainName(buf, offs);
+				if (buf.remaining() < 10)
+					throw new IOException("Truncated DNS answer RR header!");
 				short type = buf.getShort(); // type
 				short clss = buf.getShort(); // class
 				buf.getInt(); // TTL
-				int len = buf.getShort(); // len
+				int len = buf.getShort() & 0xFFFF; // len
+				if (len > buf.remaining())
+					throw new IOException("DNS answer RDLENGTH out of bounds: " + len);
 
 				boolean filtered = false;
 
-				if ((type == 1 || type == 28)) {
+				if (type == 5 && !filter && checkCNAME) {
+					int rdataPos = buf.position();
+					String cnameTarget = readDomainName(buf, offs);
+					if (!cnameTarget.isEmpty() && !cnameTarget.equalsIgnoreCase(queryHost)) {
+						filter = filter || filter(cnameTarget, true);
+						queryHost = cnameTarget;
+					}
+					buf.position(rdataPos);
+				}
+
+				if (type == 1 || type == 28) {
 					if (!filter && checkCNAME && !host.equalsIgnoreCase(queryHost)) { //avoid duplicate checking same hosts
 						filter = filter || filter(host, true);  //Handle CNAME Cloaking!
 						queryHost = host;
 					}
 					if (filter) {
-						filtered = true;
-						// replace ip!
-						if (type == 1) // IPV4
+						if (type == 1 && len == 4 && ipv4_blocked != null && ipv4_blocked.length == 4) {
+							filtered = true;
 							buf.put(ipv4_blocked);
-						else if (type == 28) // IPV6
+						} else if (type == 28 && len == 16 && ipv6_blocked != null && ipv6_blocked.length == 16) {
+							filtered = true;
 							buf.put(ipv6_blocked);
-					} else if (checkIP){ //check if resolved IP is filtered
+						}
+					} else if (checkIP && ((type == 1 && len == 4) || (type == 28 && len == 16))) { //check if resolved IP is filtered
 						byte[] answer = new byte[len];
 						buf.get(answer);
 						buf.position(buf.position() - len);
 						String ip = InetAddress.getByAddress(answer).getHostAddress();
 						if (filterIP(ip)) {
-							filtered = true;
-							if (type == 1) // IPV4
+							if (type == 1 && ipv4_blocked != null && ipv4_blocked.length == 4) {
+								filtered = true;
 								buf.put(ipv4_blocked);
-							else if (type == 28) // IPV6
+							} else if (type == 28 && ipv6_blocked != null && ipv6_blocked.length == 16) {
+								filtered = true;
 								buf.put(ipv6_blocked);
+							}
 						}
 					}
 				}
@@ -153,12 +177,14 @@ public class DNSResponsePatcher {
 					String answerStr = null;
 					buf.position(buf.position() - len);
 
-					if (type == 5)
+					if (type == 5) {
+						int posAfterRdata = buf.position() + len;
 						answerStr = readDomainName(buf, offs);
-					else {
+						buf.position(posAfterRdata);
+					} else {
 						buf.get(answer);
 
-						if (type == 1 || type == 28)
+						if ((type == 1 && len == 4) || (type == 28 && len == 16))
 							answerStr = InetAddress.getByAddress(answer).getHostAddress();
 						else
 							answerStr = getReadableStringFromBinary(answer,0,answer.length);
@@ -176,11 +202,12 @@ public class DNSResponsePatcher {
 
 	protected static boolean filter(String host, boolean log) {
 		boolean result;
+		Set currentFilter = FILTER;
 
-		if (FILTER == null)
+		if (currentFilter == null)
 			result = false;
 		else
-			result = FILTER.contains(host);
+			result = currentFilter.contains(host);
 
 		if (log)
 			logNstats(result, host);
@@ -190,12 +217,13 @@ public class DNSResponsePatcher {
 
 
 	protected static void trafficLog(String client, short clss, short type, String host, String answer, int length) {
-		if (TRAFFIC_LOG == null)
+		LoggerInterface logger = TRAFFIC_LOG;
+		if (logger == null)
 			return;
 		if (answer != null)
-			TRAFFIC_LOG.logLine(client + ", "+ clss + ", A-" + type + ", " + host + ", " + answer + ", /Length:" + length);
+			logger.logLine(client + ", "+ clss + ", A-" + type + ", " + host + ", " + answer + ", /Length:" + length);
 		else
-			TRAFFIC_LOG.logLine(client + ", "+ clss + ", Q-" + type + ", " + host + ", " + "<empty>");
+			logger.logLine(client + ", "+ clss + ", Q-" + type + ", " + host + ", " + "<empty>");
 
 	}
 
@@ -206,27 +234,28 @@ public class DNSResponsePatcher {
 			Logger.getLogger().logLine("ALLOWED:" + host);
 
 		if (result == false)
-			okCnt++;
+			okCnt.incrementAndGet();
 		else
-			filterCnt++;
+			filterCnt.incrementAndGet();
 	}
 
 
 	private static boolean filterIP(String ip) {
 		boolean result;
+		Set currentFilter = FILTER;
 
-		if (FILTER == null)
+		if (currentFilter == null)
 			result = false;
 		else
-			result = FILTER.contains("%IP%"+ip);
+			result = currentFilter.contains("%IP%"+ip);
 
 		if (result)
 			Logger.getLogger().logLine("FILTERED:" + ip);
 
 		if (!result)
-			okCnt++;
+			okCnt.incrementAndGet();
 		else
-			filterCnt++;
+			filterCnt.incrementAndGet();
 
 		return result;
 	}
@@ -238,34 +267,51 @@ public class DNSResponsePatcher {
 
 		int count = -1;
 		String dot = "";
-		String result = "";
+		StringBuilder result = new StringBuilder();
 		int ptrJumpPos = -1;
+		int jumps = 0;
 
 		while (count != 0) {
-			count = buf.get();
+			if (!buf.hasRemaining())
+				throw new IOException("Truncated DNS domain name!");
+			count = buf.get() & 0xFF;
 			if (count != 0) {
-				if ((count & 0xc0) == 0) {
+				int tag = count & 0xC0;
+				if (tag == 0) {
+					if (count > buf.remaining())
+						throw new IOException("Truncated DNS domain label of length " + count);
 					buf.get(substr, 0, count);
-					result = result + dot + new String(substr, 0, count);
+					if (result.length() + dot.length() + count > MAX_DOMAIN_LENGTH)
+						throw new IOException("DNS domain name exceeds maximum length!");
+					result.append(dot).append(new String(substr, 0, count));
 					dot = ".";
-				} else {// pointer
+				} else if (tag == 0xC0) { // pointer
+					if (!buf.hasRemaining())
+						throw new IOException("Truncated DNS compression pointer!");
 					buf.position(buf.position() - 1);
 					int pointer = offs + (buf.getShort() & 0x3fff);
+					if (pointer < offs || pointer >= buf.limit())
+						throw new IOException("DNS compression pointer out of bounds: " + pointer);
+					if (++jumps > MAX_POINTER_JUMPS)
+						throw new IOException("DNS compression pointer loop detected!");
 					if (ptrJumpPos == -1)
 						ptrJumpPos = buf.position();
 					buf.position(pointer);
+				} else {
+					throw new IOException("Invalid DNS label type flags: 0x" + Integer.toHexString(count));
 				}
 			} else {
-				if (count == 0 && ptrJumpPos != -1)
+				if (ptrJumpPos != -1)
 					buf.position(ptrJumpPos);
 			}
 		}
-		return result;
+		return result.toString();
 	}
 
 	public static String getReadableStringFromBinary(byte[] b, int offs, int r) {
 		StringBuilder result = new StringBuilder();
-		for (int i = offs; i < r; i++) {
+		int end = Math.min(b.length, offs + r);
+		for (int i = offs; i < end; i++) {
 			if (!((b[i] < 64 && b[i] > 32) || (b[i] < 91 && b[i] > 64) || (b[i] < 123 && b[i] > 96)))  {
 				result.append((char) 46);
 			}
@@ -277,4 +323,3 @@ public class DNSResponsePatcher {
 		return result.toString();
 	}
 }
-

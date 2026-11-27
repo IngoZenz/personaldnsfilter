@@ -25,6 +25,8 @@ package ip;
 public class CheckSum {
 
 	public static int chkSum(byte[] buf, int off, int cnt) {
+		if (buf == null || off < 0 || cnt < 0 || off + cnt > buf.length)
+			throw new IllegalArgumentException("Invalid checksum buffer range");
 
 		int sum = 0;
 

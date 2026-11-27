@@ -133,10 +133,14 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
             getWindow().setNavigationBarColor(getResources().getColor(R.color.colorPrimary));
         }
         if (Build.VERSION.SDK_INT >= 35) {
-            titleView.setText(R.string.dnsCfgConfigDialogTitle);
+            if (titleView != null) {
+                titleView.setText(R.string.dnsCfgConfigDialogTitle);
+            }
         } else {
             ActionBar bar = getActionBar();
-            bar.setTitle(R.string.dnsCfgConfigDialogTitle);
+            if (bar != null) {
+                bar.setTitle(R.string.dnsCfgConfigDialogTitle);
+            }
         }
     }
 
@@ -226,9 +230,11 @@ public class DNSServerConfigActivity extends Activity implements DNSServerConfig
         new Handler(getMainLooper()).postDelayed(new Runnable() {
             @Override
             public void run() {
-                Intent returnIntent = new Intent();
-                setResult(Activity.RESULT_OK, returnIntent);
-                finish();
+                if (!isFinishing()) {
+                    Intent returnIntent = new Intent();
+                    setResult(Activity.RESULT_OK, returnIntent);
+                    finish();
+                }
             }
         }, 500);
     }

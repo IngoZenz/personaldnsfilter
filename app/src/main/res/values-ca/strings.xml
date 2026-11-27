@@ -43,7 +43,7 @@
   <string name="port" translatable="true">port</string>
   <string name="dnsProtocol" translatable="true">Protocol DNS</string>
   <string name="endpoint" translatable="true">punt final</string>
-  <string name="testDNSResultSuccess">Èxit:\nPing mitjà ~ %1$d\"</string>
+  <string name="testDNSResultSuccess">Èxit:\nPing mitjà ~ %1$d ms</string>
   <string name="testDNSResultFailure">Ha fallat: %1$s</string>
   <string name="ipEmptyError">La IP no ha d\'estar buida</string>
   <string name="portEmptyError">El Port no ha de ser buit</string>

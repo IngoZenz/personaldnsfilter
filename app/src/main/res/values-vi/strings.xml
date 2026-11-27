@@ -43,7 +43,7 @@
   <string name="port" translatable="true">Cổng</string>
   <string name="dnsProtocol" translatable="true">Giao thức DNS</string>
   <string name="endpoint" translatable="true">ĐIểm cuối</string>
-  <string name="testDNSResultSuccess">Thành công:\nping trung bình ~ %1$d\"</string>
+  <string name="testDNSResultSuccess">Thành công:\nping trung bình ~ %1$d ms</string>
   <string name="testDNSResultFailure">Thất bại: %1$s</string>
   <string name="ipEmptyError">Thiếu dịa chỉ IP của máy chủ</string>
   <string name="portEmptyError">Thiếu cổng của giao thức DNS</string>

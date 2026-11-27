@@ -33,20 +33,24 @@ public class SimpleDNSMessage {
         if (isStandardQuery()) {
             ByteBuffer buf = ByteBuffer.wrap(data, offs, length);
             buf.position(offs + 12);
-            qHost = DNSResponsePatcher.readDomainName(buf, buf.arrayOffset());
+            qHost = DNSResponsePatcher.readDomainName(buf, offs);
+            if (buf.remaining() < 4)
+                throw new IOException("Truncated DNS question!");
             qType = buf.getShort();
             qClass = buf.getShort();
         }
     }
 
     public boolean isResponse() {
+        if (length < 12)
+            return false;
         // DNS header starts at msg[offset]
         int flagsHigh = data[offs + 2] & 0xFF;
         return (flagsHigh & 0x80) != 0;  // QR bit
     }
 
     public boolean isStandardQuery() {
-        return (length >= 12 && (rqFlgs >> 3) == 0);
+        return (length >= 12 && ((rqFlgs >> 3) & 0x0F) == 0);
     }
 
     public Object[] getQueryData() {
@@ -56,7 +60,6 @@ public class SimpleDNSMessage {
     public int produceResponse(byte[] response, int offset, byte[] ip, int ttl) {
 
         System.arraycopy(data, offs, response, offset, length);
-        //response[offset+2] = (byte) (((1<<7) + (response[offset+2] & 0b01111111)) | 0b00000100); // response flag and Authoritive answer
         response[offset + 2] = (byte) ((1 << 7) + (response[offset + 2] & 0b01111111));
         response[offset + 3] = (byte) (1 << 7); //recursion available
 
@@ -67,33 +70,31 @@ public class SimpleDNSMessage {
         buf.putShort((short) 0); // Auth-count
         buf.putShort((short) 0); //Add-count
 
-
-        StringTokenizer chainElements = new StringTokenizer(qHost, ".");
-        int count = chainElements.countTokens();
-
         //QUESTION
+        if (qHost != null && !qHost.isEmpty()) {
+            StringTokenizer chainElements = new StringTokenizer(qHost, ".");
+            int count = chainElements.countTokens();
 
-        //set request host
-        for (int i = 0; i < count; i++) {
-            String element = chainElements.nextToken();
-            buf.put((byte) (element.length() & 0xFF));
-            buf.put(element.getBytes());
+            //set request host
+            for (int i = 0; i < count; i++) {
+                String element = chainElements.nextToken();
+                buf.put((byte) (element.length() & 0x3F));
+                buf.put(element.getBytes());
+            }
         }
         buf.put((byte) 0);
 
         //Query type and class
-        buf.putShort(qType); // Q-Type:1
-        buf.putShort(qClass); // Q-Class:1
-
+        buf.putShort(qType);
+        buf.putShort(qClass);
 
         //ANSWER
-
-        short ptr = (short) ((short) 0xC0 << 8) + 12;
+        short ptr = (short) ((0xC0 << 8) + 12);
         buf.putShort(ptr);  //pointer to req host
-        buf.putShort(qType); // Q-Type
-        buf.putShort(qClass); // Q-Class
-        buf.putInt(ttl); //TTL
-        buf.putShort((short) ip.length); // IP Len
+        buf.putShort(qType);
+        buf.putShort(qClass);
+        buf.putInt(ttl);
+        buf.putShort((short) ip.length);
         buf.put(ip);
 
         return buf.position() - offset;
@@ -102,7 +103,6 @@ public class SimpleDNSMessage {
     public int get_NonTyp_1_28_FilterResponse(byte[] response, int offset) {
 
         System.arraycopy(data, offs, response, offset, length);
-        //response[offset+2] = (byte) (((1<<7) + (response[offset+2] & 0b01111111)) | 0b00000100); // response flag and Authoritive answer
         response[offset + 2] = (byte) ((1 << 7) + (response[offset + 2] & 0b01111111));
         response[offset + 3] = (byte) 0b10000101; // Recursion available + 5 (refused for policy reasons)
 
@@ -113,22 +113,22 @@ public class SimpleDNSMessage {
         buf.putShort((short) 0); // Auth-count
         buf.putShort((short) 0); //Add-count
 
-        StringTokenizer chainElements = new StringTokenizer(qHost, ".");
-        int count = chainElements.countTokens();
-
         //QUESTION
+        if (qHost != null && !qHost.isEmpty()) {
+            StringTokenizer chainElements = new StringTokenizer(qHost, ".");
+            int count = chainElements.countTokens();
 
-        //set request host
-        for (int i = 0; i < count; i++) {
-            String element = chainElements.nextToken();
-            buf.put((byte) (element.length() & 0xFF));
-            buf.put(element.getBytes());
+            for (int i = 0; i < count; i++) {
+                String element = chainElements.nextToken();
+                buf.put((byte) (element.length() & 0x3F));
+                buf.put(element.getBytes());
+            }
         }
         buf.put((byte) 0);
 
         //Query type and class
-        buf.putShort(qType); // Q-Type:1
-        buf.putShort(qClass); // Q-Class:1
+        buf.putShort(qType);
+        buf.putShort(qClass);
 
         return buf.position() - offset;
     }

@@ -19,11 +19,13 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DOHHttp2Util {
+
+    private static final Charset US_ASCII = Charset.forName("US-ASCII");
 
     // ---- HPACK helpers (request side, simplified) ----
 
@@ -35,8 +37,8 @@ public class DOHHttp2Util {
     static byte[] hpackLiteral(String name, String value) throws IOException {
         // Literal Header Field with Incremental Indexing, literal name.
         // We keep it simple, non-Huffman, single-byte length (<=127).
-        byte[] nameBytes = name.getBytes(StandardCharsets.US_ASCII);
-        byte[] valueBytes = value.getBytes(StandardCharsets.US_ASCII);
+        byte[] nameBytes = name.getBytes(US_ASCII);
+        byte[] valueBytes = value.getBytes(US_ASCII);
 
         if (nameBytes.length > 127 || valueBytes.length > 127) {
             throw new IOException("Header too long for simplified HPACK literal");
@@ -57,6 +59,34 @@ public class DOHHttp2Util {
 
         return out.toByteArray();
     }
+
+    private static final int MAX_HTTP2_FRAME_SIZE = 1024 * 1024;
+    private static final int MAX_POINTER_JUMPS = 64;
+
+    // RFC 7541 Appendix B canonical 5-, 6-, and 7-bit Huffman symbols (covers ':status', digits '0'-'9', A-Z except X/Z, a-z, space, '/', '-', '.', '_')
+    private static final int[] HUFFMAN_5_SYMS = {48, 49, 50, 97, 99, 101, 105, 111, 115, 116};
+    private static final int[] HUFFMAN_6_SYMS = {
+            32, 37, 45, 46, 47, 51, 52, 53, 54, 55, 56, 57, 61, 65, 95, 98, 100, 102, 103, 104, 108, 109, 110, 112, 114, 117
+    };
+    private static final int[] HUFFMAN_7_SYMS = {
+            58, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 89,
+            106, 107, 113, 118, 119, 120, 121, 122
+    };
+
+    private static final String[] HPACK_STATIC_NAMES = {
+            null,
+            ":authority", ":method", ":method", ":path", ":path", ":scheme", ":scheme",
+            ":status", ":status", ":status", ":status", ":status", ":status", ":status",
+            "accept-charset", "accept-encoding", "accept-language", "accept-ranges", "accept",
+            "access-control-allow-origin", "age", "allow", "authorization", "cache-control",
+            "content-disposition", "content-encoding", "content-language", "content-length",
+            "content-location", "content-range", "content-type", "cookie", "date", "etag",
+            "expect", "expires", "from", "host", "if-match", "if-modified-since",
+            "if-none-match", "if-range", "if-unmodified-since", "last-modified", "link",
+            "location", "max-forwards", "proxy-authenticate", "proxy-authorization", "range",
+            "referer", "refresh", "retry-after", "server", "set-cookie", "strict-transport-security",
+            "transfer-encoding", "user-agent", "vary", "via", "www-authenticate"
+    };
 
     static Integer hpackIndexedStatus(int index) {
         switch (index) {
@@ -79,10 +109,101 @@ public class DOHHttp2Util {
         }
     }
 
+    private static int readHpackInt(byte[] block, int[] posRef, int prefixBits) {
+        int pos = posRef[0];
+        if (pos >= block.length)
+            return -1;
+        int mask = (1 << prefixBits) - 1;
+        int val = block[pos++] & mask;
+        if (val < mask) {
+            posRef[0] = pos;
+            return val;
+        }
+        int m = 0;
+        while (pos < block.length) {
+            int b = block[pos++] & 0xFF;
+            val += (b & 0x7F) << m;
+            if ((b & 0x80) == 0) {
+                posRef[0] = pos;
+                return val;
+            }
+            m += 7;
+            if (m > 28)
+                return -1;
+        }
+        return -1;
+    }
+
+    private static String decodeHpackHuffmanBasic(byte[] data, int off, int len) {
+        StringBuilder sb = new StringBuilder();
+        int acc = 0;
+        int bits = 0;
+        for (int i = 0; i < len; i++) {
+            acc = (acc << 8) | (data[off + i] & 0xFF);
+            bits += 8;
+            while (bits >= 5) {
+                if (bits >= 5) {
+                    int c5 = (acc >>> (bits - 5)) & 0x1F;
+                    if (c5 <= 0x09) {
+                        sb.append((char) HUFFMAN_5_SYMS[c5]);
+                        bits -= 5;
+                        continue;
+                    }
+                }
+                if (bits >= 6) {
+                    int c6 = (acc >>> (bits - 6)) & 0x3F;
+                    if (c6 >= 0x14 && c6 <= 0x2D) {
+                        sb.append((char) HUFFMAN_6_SYMS[c6 - 0x14]);
+                        bits -= 6;
+                        continue;
+                    }
+                }
+                if (bits >= 7) {
+                    int c7 = (acc >>> (bits - 7)) & 0x7F;
+                    if (c7 >= 0x5C && c7 <= 0x7B) {
+                        sb.append((char) HUFFMAN_7_SYMS[c7 - 0x5C]);
+                        bits -= 7;
+                        continue;
+                    }
+                    // Final 7 bits of all-ones are valid EOS padding (not an 8+ bit symbol)
+                    if (i == len - 1 && bits == 7 && c7 == 0x7F) {
+                        break;
+                    }
+                    // Longer Huffman codes (8+ bits): cannot decode with 5-7 bit subset
+                    return null;
+                }
+                break;
+            }
+        }
+        if (bits > 7)
+            return null;
+        if (bits > 0) {
+            int padMask = (1 << bits) - 1;
+            if ((acc & padMask) != padMask)
+                return null;
+        }
+        return sb.toString();
+    }
+
+    private static String readHpackString(byte[] block, int[] posRef) {
+        if (posRef[0] >= block.length)
+            return null;
+        boolean huffman = (block[posRef[0]] & 0x80) != 0;
+        int len = readHpackInt(block, posRef, 7);
+        int start = posRef[0];
+        if (len < 0 || start + len > block.length)
+            return null;
+        posRef[0] = start + len;
+        if (!huffman) {
+            return new String(block, start, len, US_ASCII);
+        }
+        return decodeHpackHuffmanBasic(block, start, len);
+    }
+
     /**
-     * Very conservative HPACK header block parsing:
-     * - Looks for indexed headers and maps indices 8-14 to status codes.
-     * - Falls back to scanning ASCII for ":status" and digits.
+     * Parses HPACK response headers to extract the HTTP :status code.
+     * Supports indexed static status codes (8-14), dynamic table size updates (001xxxxx),
+     * and literal/Huffman :status representations.
      */
     static int parseHeadersStatus(byte[] block) {
         int status = -1;
@@ -91,42 +212,50 @@ public class DOHHttp2Util {
             return status;
         }
 
-        // 1) Conservative indexed-header-only logic
-        int p = 0;
-        while (p < block.length) {
-            int b = block[p] & 0xFF;
+        int[] posRef = new int[]{0};
+        while (posRef[0] < block.length) {
+            int b = block[posRef[0]] & 0xFF;
 
-            // Indexed Header Field (1xxxxxxx)
             if ((b & 0x80) != 0) {
-                int index = b & 0x7F;
+                // Indexed Header Field (1xxxxxxx)
+                int index = readHpackInt(block, posRef, 7);
+                if (index < 0)
+                    break;
                 Integer s = hpackIndexedStatus(index);
                 if (s != null) {
-                    status = s;
+                    return s;
                 }
-                p++; // we only support small single-byte indices
-                continue;
-            }
+            } else if ((b & 0xE0) == 0x20) {
+                // Dynamic Table Size Update (001xxxxx)
+                int newSize = readHpackInt(block, posRef, 5);
+                if (newSize < 0)
+                    break;
+            } else {
+                // Literal Header Field: incremental indexing (01xxxxxx), without indexing (0000xxxx), or never indexed (0001xxxx)
+                int prefixBits = ((b & 0xC0) == 0x40) ? 6 : 4;
+                int nameIndex = readHpackInt(block, posRef, prefixBits);
+                if (nameIndex < 0)
+                    break;
+                String name = null;
+                if (nameIndex == 0) {
+                    int savePos = posRef[0];
+                    name = readHpackString(block, posRef);
+                    if (posRef[0] == savePos && name == null)
+                        break; // malformed length/bounds
+                } else if (nameIndex < HPACK_STATIC_NAMES.length) {
+                    name = HPACK_STATIC_NAMES[nameIndex];
+                }
 
-            // Any other pattern: stop interpreting as HPACK
-            break;
-        }
+                int valSavePos = posRef[0];
+                String value = readHpackString(block, posRef);
+                if (posRef[0] == valSavePos && value == null)
+                    break; // malformed length/bounds
 
-        if (status != -1) {
-            return status;
-        }
-
-        // 2) Fallback: scan raw bytes for ":status" and parse digits after it (ASCII only)
-        String ascii = new String(block, StandardCharsets.US_ASCII);
-        int idx = ascii.indexOf(":status");
-        if (idx >= 0) {
-            int i = idx + 7;
-            while (i < ascii.length() && ascii.charAt(i) <= ' ') i++;
-            int start = i;
-            while (i < ascii.length() && ascii.charAt(i) >= '0' && ascii.charAt(i) <= '9') i++;
-            if (start < i) {
-                try {
-                    status = Integer.parseInt(ascii.substring(start, i));
-                } catch (NumberFormatException ignored) {
+                if (":status".equals(name) && value != null) {
+                    try {
+                        return Integer.parseInt(value.trim());
+                    } catch (NumberFormatException ignored) {
+                    }
                 }
             }
         }
@@ -147,7 +276,7 @@ public class DOHHttp2Util {
         writeU16(out, 0);        // ARCOUNT
         // QNAME
         for (String label : qname.split("\\.")) {
-            byte[] lb = label.getBytes(StandardCharsets.US_ASCII);
+            byte[] lb = label.getBytes(US_ASCII);
             out.write(lb.length);
             out.write(lb);
         }
@@ -193,16 +322,24 @@ public class DOHHttp2Util {
         }
     }
 
-    static String readName(byte[] msg, int[] offRef) {
+    static String readName(byte[] msg, int[] offRef) throws IOException {
         int off = offRef[0];
         StringBuilder sb = new StringBuilder();
         int jumpedOff = -1;
         boolean jumped = false;
+        int jumps = 0;
         while (true) {
+            if (off < 0 || off >= msg.length)
+                throw new IOException("Truncated DNS domain name!");
             int len = msg[off] & 0xFF;
             if ((len & 0xC0) == 0xC0) {
-                // pointer
+                if (off + 1 >= msg.length)
+                    throw new IOException("Truncated DNS compression pointer!");
                 int ptr = ((len & 0x3F) << 8) | (msg[off + 1] & 0xFF);
+                if (ptr >= msg.length)
+                    throw new IOException("DNS compression pointer out of bounds: " + ptr);
+                if (++jumps > MAX_POINTER_JUMPS)
+                    throw new IOException("DNS compression pointer loop detected!");
                 if (!jumped) {
                     jumpedOff = off + 2;
                     jumped = true;
@@ -210,10 +347,14 @@ public class DOHHttp2Util {
                 off = ptr;
                 continue;
             }
+            if ((len & 0xC0) != 0)
+                throw new IOException("Invalid DNS label type flags: 0x" + Integer.toHexString(len));
             off++;
             if (len == 0) {
                 break;
             }
+            if (off + len > msg.length)
+                throw new IOException("Truncated DNS label of length " + len);
             if (sb.length() > 0) sb.append('.');
             for (int i = 0; i < len; i++) {
                 sb.append((char) (msg[off + i] & 0xFF));
@@ -262,66 +403,67 @@ public class DOHHttp2Util {
             );
         }
 
-        // Skip questions
-        for (int i = 0; i < qd; i++) {
-            int[] o = new int[]{off};
-            String qname = readName(msg, o);
-            off = o[0];
+        try {
+            // Skip questions
+            for (int i = 0; i < qd; i++) {
+                int[] o = new int[]{off};
+                String qname = readName(msg, o);
+                off = o[0];
 
-            if (off + 4 > msg.length) {
-                Logger.getLogger().logLine("DNS: truncated question section");
-                return answers;
+                if (off + 4 > msg.length) {
+                    Logger.getLogger().logLine("DNS: truncated question section");
+                    return answers;
+                }
+
+                off += 4; // qtype + qclass
             }
 
-            int qtype = readU16(msg, off);
-            off += 2;
-            int qclass = readU16(msg, off);
-            off += 2;
-        }
+            // Parse answers
+            for (int i = 0; i < an; i++) {
+                int[] o = new int[]{off};
+                String name = readName(msg, o);
+                off = o[0];
 
-        // Parse answers
-        for (int i = 0; i < an; i++) {
-            int[] o = new int[]{off};
-            String name = readName(msg, o);
-            off = o[0];
+                if (off + 10 > msg.length) {
+                    Logger.getLogger().logLine("DNS: truncated answer header");
+                    return answers;
+                }
 
-            if (off + 10 > msg.length) {
-                Logger.getLogger().logLine("DNS: truncated answer header");
-                return answers;
+                int type = readU16(msg, off);
+                off += 2;
+                int clazz = readU16(msg, off);
+                off += 2;
+
+                int ttl = ((msg[off] & 0xFF) << 24) |
+                        ((msg[off + 1] & 0xFF) << 16) |
+                        ((msg[off + 2] & 0xFF) << 8) |
+                        (msg[off + 3] & 0xFF);
+                off += 4;
+
+                int rdlen = readU16(msg, off);
+                off += 2;
+
+                if (off + rdlen > msg.length) {
+                    Logger.getLogger().logLine("DNS: truncated RDATA (expected " + rdlen +
+                            " bytes, have " + (msg.length - off) + ")");
+                    rdlen = Math.max(0, msg.length - off);
+                }
+
+                byte[] rdata = new byte[rdlen];
+                System.arraycopy(msg, off, rdata, 0, rdlen);
+                off += rdlen;
+
+                DnsAnswer a = new DnsAnswer();
+                a.name = name;
+                a.type = type;
+                a.clazz = clazz;
+                a.ttl = ttl;
+                a.rdata = rdata;
+
+                answers.add(a);
             }
-
-            int type = readU16(msg, off);
-            off += 2;
-            int clazz = readU16(msg, off);
-            off += 2;
-
-            int ttl = ((msg[off] & 0xFF) << 24) |
-                    ((msg[off + 1] & 0xFF) << 16) |
-                    ((msg[off + 2] & 0xFF) << 8) |
-                    (msg[off + 3] & 0xFF);
-            off += 4;
-
-            int rdlen = readU16(msg, off);
-            off += 2;
-
-            if (off + rdlen > msg.length) {
-                Logger.getLogger().logLine("DNS: truncated RDATA (expected " + rdlen +
-                        " bytes, have " + (msg.length - off) + ")");
-                rdlen = Math.max(0, msg.length - off);
-            }
-
-            byte[] rdata = new byte[rdlen];
-            System.arraycopy(msg, off, rdata, 0, rdlen);
-            off += rdlen;
-
-            DnsAnswer a = new DnsAnswer();
-            a.name = name;
-            a.type = type;
-            a.clazz = clazz;
-            a.ttl = ttl;
-            a.rdata = rdata;
-
-            answers.add(a);
+        } catch (IOException e) {
+            Logger.getLogger().logLine("DNS parse error: " + e.getMessage());
         }
 
         return answers;
@@ -339,6 +481,37 @@ public class DOHHttp2Util {
         out.write((streamId >> 16) & 0xFF);
         out.write((streamId >> 8) & 0xFF);
         out.write(streamId & 0xFF);
+    }
+
+    private static String negotiateHttp2(SSLSocket sslsocket) throws IOException {
+        try {
+            SSLParameters params = sslsocket.getSSLParameters();
+            java.lang.reflect.Method setAlpn = SSLParameters.class.getMethod("setApplicationProtocols", String[].class);
+            setAlpn.invoke(params, new Object[]{new String[]{"h2"}});
+            sslsocket.setSSLParameters(params);
+            sslsocket.startHandshake();
+            java.lang.reflect.Method getAlpn = SSLSocket.class.getMethod("getApplicationProtocol");
+            return (String) getAlpn.invoke(sslsocket);
+        } catch (NoSuchMethodException e) {
+            // Fallback for Android API < 29 (Conscrypt)
+            try {
+                java.lang.reflect.Method setAlpn = sslsocket.getClass().getMethod("setAlpnProtocols", byte[].class);
+                setAlpn.invoke(sslsocket, new Object[]{new byte[]{2, 'h', '2'}});
+                sslsocket.startHandshake();
+                java.lang.reflect.Method getAlpn = sslsocket.getClass().getMethod("getAlpnSelectedProtocol");
+                byte[] proto = (byte[]) getAlpn.invoke(sslsocket);
+                return proto != null ? new String(proto, US_ASCII) : null;
+            } catch (Exception e2) {
+                throw new IOException("HTTP/2 ALPN negotiation not supported on this platform", e2);
+            }
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof IOException)
+                throw (IOException) cause;
+            throw new IOException("HTTP/2 ALPN negotiation failed", cause != null ? cause : e);
+        } catch (Exception e) {
+            throw new IOException("HTTP/2 ALPN negotiation failed", e);
+        }
     }
 
     static void readFully(InputStream in, byte[] buf, int len) throws IOException {
@@ -372,12 +545,7 @@ public class DOHHttp2Util {
 
             sslsocket = (SSLSocket) sslContext.getSocketFactory()
                     .createSocket(socket, sadr.getHostName(), sadr.getPort(), true);
-            SSLParameters params = sslsocket.getSSLParameters();
-            params.setApplicationProtocols(new String[]{"h2"});
-            sslsocket.setSSLParameters(params);
-
-            sslsocket.startHandshake();
-            String negotiated = sslsocket.getApplicationProtocol();
+            String negotiated = negotiateHttp2(sslsocket);
             if (!"h2".equals(negotiated)) {
                 throw new IOException("HTTP/2 not negotiated; got: " + negotiated);
             }
@@ -386,7 +554,7 @@ public class DOHHttp2Util {
             InputStream in = sslsocket.getInputStream();
 
             // Client preface
-            out.write("PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n".getBytes(StandardCharsets.US_ASCII));
+            out.write("PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n".getBytes(US_ASCII));
 
             // SETTINGS (empty)
             out.write(new byte[]{
@@ -407,6 +575,9 @@ public class DOHHttp2Util {
                 int fflags = header[4] & 0xFF;
                 int streamId = ((header[5] & 0x7F) << 24) | ((header[6] & 0xFF) << 16)
                         | ((header[7] & 0xFF) << 8) | (header[8] & 0xFF);
+                if (flen > MAX_HTTP2_FRAME_SIZE) {
+                    throw new IOException("HTTP/2 handshake frame exceeds limit: " + flen);
+                }
                 if (flen > 0) {
                     byte[] payload = new byte[flen];
                     readFully(in, payload, flen);
@@ -447,13 +618,7 @@ public class DOHHttp2Util {
 
     // ---- Send a single DNS query over HTTP/2 and return raw DNS response ----
 
-
-    public static byte[] sendDnsQuery(InetSocketAddress sadr, String path,
-                                      byte[] dnsQuery, int offs, int length,
-                                      int timeout, Proxy proxy) throws IOException {
-
-        return sendDnsQuery(sadr, path, dnsQuery, offs, length, timeout, 0, proxy);
-    }
+    private static final int MAX_RETRY = 4;
 
     static boolean isValidDnsResponse(byte[] resp) {
         // Must be at least DNS header size
@@ -491,207 +656,203 @@ public class DOHHttp2Util {
         return true;
     }
 
-    private static int MAX_RETRY = 4;
-
-    private static byte[] sendDnsQuery(InetSocketAddress sadr, String path,
-                                       byte[] dnsQuery, int offs, int length,
-                                       int timeout, int retryCnt, Proxy proxy) throws IOException {
-        Connection con = null;
-        try {
-            con = Connection.connect(sadr, timeout, true, null, proxy, true);
-            if (retryCnt > 0) //retry
-                if (!con.isFresh()) con.refreshConnection(); //ensure fresh connection is used
-
-            con.setSoTimeout(timeout);
-
-            OutputStream out = con.getOutputStream();
-            InputStream in = con.getInputStream();
-
-            int streamId = con.getHttp2StreamID();
-            //Logger.getLogger().logLine("*STREAMID:" + streamId);
-
-            // ---- Build HPACK header block for the request ----
-            ByteArrayOutputStream hpack = new ByteArrayOutputStream();
-            // :method POST (HPACK static index 3)
-            hpack.write(hpackIndexed(3)); // :method: POST
-            // :scheme https (static index 7)
-            hpack.write(hpackIndexed(7));
-            hpack.write(hpackLiteral(":authority", sadr.getHostName()));
-            hpack.write(hpackLiteral(":path", path));
-            hpack.write(hpackLiteral("content-type", "application/dns-message"));
-            hpack.write(hpackLiteral("accept", "application/dns-message"));
-            hpack.write(hpackLiteral("content-length", Integer.toString(length)));
-            byte[] headerBlock = hpack.toByteArray();
-
-            // ---- Send HEADERS (END_HEADERS) ----
-            ByteArrayOutputStream headersFrame = new ByteArrayOutputStream();
-            writeFrameHeader(headersFrame, headerBlock.length, 0x01, 0x04, streamId); // HEADERS, END_HEADERS
-            headersFrame.write(headerBlock);
-            out.write(headersFrame.toByteArray());
-            out.flush();
-
-            // ---- Send DATA (END_STREAM) with the DNS query ----
-            ByteArrayOutputStream dataFrame = new ByteArrayOutputStream();
-            writeFrameHeader(dataFrame, length, 0x00, 0x01, streamId); // DATA, END_STREAM
-            dataFrame.write(dnsQuery, offs, length);
-            out.write(dataFrame.toByteArray());
-            out.flush();
-
-            // ---- Read response frames for this stream ----
-            ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
-            boolean done = false;
-            int httpStatus = -1;
-
-            ByteArrayOutputStream headerBlockBuf = null;
-
-            while (!done) {
-                byte[] header = new byte[9];
-                readFully(in, header, 9);
-
-                int flen = ((header[0] & 0xFF) << 16)
-                        | ((header[1] & 0xFF) << 8)
-                        | (header[2] & 0xFF);
-                int ftype = header[3] & 0xFF;
-                int fflags = header[4] & 0xFF;
-                int sid = ((header[5] & 0x7F) << 24)
-                        | ((header[6] & 0xFF) << 16)
-                        | ((header[7] & 0xFF) << 8)
-                        | (header[8] & 0xFF);
-
-                byte[] payload = new byte[flen];
-                if (flen > 0)
-                    readFully(in, payload, flen);
-
-                // Connection-level SETTINGS mid-stream
-                if (sid == 0 && ftype == 0x04) { // SETTINGS
-                    if ((fflags & 0x01) == 0) {   // not an ACK
-                        ByteArrayOutputStream ack = new ByteArrayOutputStream();
-                        writeFrameHeader(ack, 0, 0x04, 0x01, 0); // SETTINGS, ACK
-                        out.write(ack.toByteArray());
-                        out.flush();
-                    }
-                    continue;
+    public static byte[] sendDnsQuery(InetSocketAddress sadr, String path,
+                                      byte[] dnsQuery, int offs, int length,
+                                      int timeout, Proxy proxy) throws IOException {
+        IOException lastEx = null;
+        for (int attempt = 0; attempt <= MAX_RETRY; attempt++) {
+            Connection con = null;
+            try {
+                con = Connection.connect(sadr, timeout, true, null, proxy, true);
+                if (attempt > 0 && !con.isFresh()) {
+                    con.refreshConnection(); //ensure fresh connection is used
                 }
 
-                // Ignore other connection-level frames for now
-                if (sid == 0) {
-                    continue;
-                }
+                con.setSoTimeout(timeout);
 
-                // Ignore frames for other streams (we don't multiplex here)
-                if (sid != streamId) {
-                    continue;
-                }
+                OutputStream out = con.getOutputStream();
+                InputStream in = con.getInputStream();
 
-                if (ftype == 0x01 || ftype == 0x09) { // HEADERS or CONTINUATION
-                    int payloadOffset = 0;
+                int streamId = con.getHttp2StreamID();
 
-                    // PRIORITY flag on HEADERS: first 5 bytes are priority info
-                    if (ftype == 0x01 && (fflags & 0x20) != 0) {
-                        if (payload.length < 5) {
-                            throw new IOException("Invalid PRIORITY field in HEADERS frame");
-                        }
-                        payloadOffset = 5;
+                // ---- Build HPACK header block for the request ----
+                ByteArrayOutputStream hpack = new ByteArrayOutputStream();
+                hpack.write(hpackIndexed(3)); // :method: POST
+                hpack.write(hpackIndexed(7)); // :scheme: https
+                hpack.write(hpackLiteral(":authority", sadr.getHostName()));
+                hpack.write(hpackLiteral(":path", path));
+                hpack.write(hpackLiteral("content-type", "application/dns-message"));
+                hpack.write(hpackLiteral("accept", "application/dns-message"));
+                hpack.write(hpackLiteral("content-length", Integer.toString(length)));
+                byte[] headerBlock = hpack.toByteArray();
+
+                // ---- Send HEADERS (END_HEADERS) ----
+                ByteArrayOutputStream headersFrame = new ByteArrayOutputStream();
+                writeFrameHeader(headersFrame, headerBlock.length, 0x01, 0x04, streamId); // HEADERS, END_HEADERS
+                headersFrame.write(headerBlock);
+                out.write(headersFrame.toByteArray());
+                out.flush();
+
+                // ---- Send DATA (END_STREAM) with the DNS query ----
+                ByteArrayOutputStream dataFrame = new ByteArrayOutputStream();
+                writeFrameHeader(dataFrame, length, 0x00, 0x01, streamId); // DATA, END_STREAM
+                dataFrame.write(dnsQuery, offs, length);
+                out.write(dataFrame.toByteArray());
+                out.flush();
+
+                // ---- Read response frames for this stream ----
+                ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
+                boolean done = false;
+                int httpStatus = -1;
+
+                ByteArrayOutputStream headerBlockBuf = null;
+
+                while (!done) {
+                    byte[] header = new byte[9];
+                    readFully(in, header, 9);
+
+                    int flen = ((header[0] & 0xFF) << 16)
+                            | ((header[1] & 0xFF) << 8)
+                            | (header[2] & 0xFF);
+                    int ftype = header[3] & 0xFF;
+                    int fflags = header[4] & 0xFF;
+                    int sid = ((header[5] & 0x7F) << 24)
+                            | ((header[6] & 0xFF) << 16)
+                            | ((header[7] & 0xFF) << 8)
+                            | (header[8] & 0xFF);
+
+                    if (flen > MAX_HTTP2_FRAME_SIZE) {
+                        throw new IOException("HTTP/2 frame payload exceeds limit: " + flen);
                     }
 
-                    if (headerBlockBuf == null) {
-                        headerBlockBuf = new ByteArrayOutputStream();
-                    }
-                    if (payloadOffset < payload.length) {
-                        headerBlockBuf.write(payload, payloadOffset, payload.length - payloadOffset);
+                    byte[] payload = new byte[flen];
+                    if (flen > 0)
+                        readFully(in, payload, flen);
+
+                    // Connection-level SETTINGS mid-stream
+                    if (sid == 0 && ftype == 0x04) { // SETTINGS
+                        if ((fflags & 0x01) == 0) {   // not an ACK
+                            ByteArrayOutputStream ack = new ByteArrayOutputStream();
+                            writeFrameHeader(ack, 0, 0x04, 0x01, 0); // SETTINGS, ACK
+                            out.write(ack.toByteArray());
+                            out.flush();
+                        }
+                        continue;
                     }
 
-                    if ((fflags & 0x04) != 0) { // END_HEADERS
-                        byte[] headerBlockBytes = headerBlockBuf.toByteArray();
-                        headerBlockBuf = null;
+                    if (sid == 0) {
+                        if (ftype == 0x07) { // GOAWAY
+                            throw new IOException("HTTP/2 GOAWAY from server");
+                        }
+                        continue;
+                    }
 
-                        int st = parseHeadersStatus(headerBlockBytes);
-                        if (st != -1) {
-                            httpStatus = st;
+                    if (sid != streamId) {
+                        continue;
+                    }
+
+                    if (ftype == 0x01 || ftype == 0x09) { // HEADERS or CONTINUATION
+                        int payloadOffset = 0;
+
+                        if (ftype == 0x01 && (fflags & 0x20) != 0) {
+                            if (payload.length < 5) {
+                                throw new IOException("Invalid PRIORITY field in HEADERS frame");
+                            }
+                            payloadOffset = 5;
                         }
 
-                        if (httpStatus != -1 && httpStatus != 200) {
-                            throw new IOException(
-                                    "DoH server returned HTTP status " + httpStatus + " on stream " + streamId);
+                        if (headerBlockBuf == null) {
+                            headerBlockBuf = new ByteArrayOutputStream();
+                        }
+                        int addLen = payload.length - payloadOffset;
+                        if (headerBlockBuf.size() + addLen > MAX_HTTP2_FRAME_SIZE) {
+                            throw new IOException("HTTP/2 header block exceeds limit");
+                        }
+                        if (addLen > 0) {
+                            headerBlockBuf.write(payload, payloadOffset, addLen);
                         }
 
-                        if ((fflags & 0x01) != 0) { // END_STREAM on HEADERS
+                        if ((fflags & 0x04) != 0) { // END_HEADERS
+                            byte[] headerBlockBytes = headerBlockBuf.toByteArray();
+                            headerBlockBuf = null;
+
+                            int st = parseHeadersStatus(headerBlockBytes);
+                            if (st != -1) {
+                                httpStatus = st;
+                            }
+
+                            if (httpStatus != -1 && httpStatus != 200) {
+                                throw new IOException(
+                                        "DoH server returned HTTP status " + httpStatus + " on stream " + streamId);
+                            }
+
+                            if ((fflags & 0x01) != 0) { // END_STREAM on HEADERS
+                                done = true;
+                            }
+                        }
+
+                    } else if (ftype == 0x00) { // DATA
+                        if (responseBody.size() + payload.length > MAX_HTTP2_FRAME_SIZE) {
+                            throw new IOException("HTTP/2 response body exceeds limit");
+                        }
+                        responseBody.write(payload);
+
+                        int consumed = payload.length;
+                        boolean endStream = (fflags & 0x01) != 0;
+
+                        if (consumed > 0) {
+                            // Do not send stream-level WINDOW_UPDATE after END_STREAM (half-closed remote)
+                            if (!endStream) {
+                                ByteArrayOutputStream wuStream = new ByteArrayOutputStream();
+                                writeFrameHeader(wuStream, 4, 0x08, 0x00, streamId); // WINDOW_UPDATE
+                                wuStream.write((consumed >> 24) & 0xFF);
+                                wuStream.write((consumed >> 16) & 0xFF);
+                                wuStream.write((consumed >> 8) & 0xFF);
+                                wuStream.write(consumed & 0xFF);
+                                out.write(wuStream.toByteArray());
+                            }
+
+                            // CONNECTION-LEVEL WINDOW_UPDATE
+                            ByteArrayOutputStream wuConn = new ByteArrayOutputStream();
+                            writeFrameHeader(wuConn, 4, 0x08, 0x00, 0); // connection window
+                            wuConn.write((consumed >> 24) & 0xFF);
+                            wuConn.write((consumed >> 16) & 0xFF);
+                            wuConn.write((consumed >> 8) & 0xFF);
+                            wuConn.write(consumed & 0xFF);
+                            out.write(wuConn.toByteArray());
+
+                            out.flush();
+                        }
+
+                        if (endStream) {
                             done = true;
                         }
+
+                    } else if (ftype == 0x03) { // RST_STREAM
+                        throw new IOException("Stream " + streamId + " reset by server");
                     }
-
-                } else if (ftype == 0x00) { // DATA
-                    responseBody.write(payload);
-
-                    int consumed = payload.length;
-
-                    if (consumed > 0) {
-                        // STREAM-LEVEL WINDOW_UPDATE
-                        ByteArrayOutputStream wuStream = new ByteArrayOutputStream();
-                        writeFrameHeader(wuStream, 4, 0x08, 0x00, streamId); // WINDOW_UPDATE
-                        wuStream.write((consumed >> 24) & 0xFF);
-                        wuStream.write((consumed >> 16) & 0xFF);
-                        wuStream.write((consumed >> 8) & 0xFF);
-                        wuStream.write(consumed & 0xFF);
-                        out.write(wuStream.toByteArray());
-
-                        // CONNECTION-LEVEL WINDOW_UPDATE
-                        ByteArrayOutputStream wuConn = new ByteArrayOutputStream();
-                        writeFrameHeader(wuConn, 4, 0x08, 0x00, 0); // connection window
-                        wuConn.write((consumed >> 24) & 0xFF);
-                        wuConn.write((consumed >> 16) & 0xFF);
-                        wuConn.write((consumed >> 8) & 0xFF);
-                        wuConn.write(consumed & 0xFF);
-                        out.write(wuConn.toByteArray());
-
-                        out.flush();
-                    }
-
-                    if ((fflags & 0x01) != 0) { // END_STREAM
-                        done = true;
-                    }
-
-                } else if (ftype == 0x03) { // RST_STREAM
-                    throw new IOException("Stream " + streamId + " reset by server");
-                } else if (ftype == 0x07 && sid == 0) { // GOAWAY
-                    //Logger.getLogger().logLine("HTTP/2 GOAWAY received, terminating connection.");
-                    done = true;
-                    throw new IOException("HTTP/2 GOAWAY from server");
-                } else {
-                    // Ignore other frame types (PING, WINDOW_UPDATE from server, etc.) for now.
                 }
-            }
 
-            byte[] resp = responseBody.toByteArray();
-            if (resp.length == 0) {
-                throw new IOException("DoH: empty body, HTTP status=" + httpStatus + " on stream " + streamId);
-            }
-            if (!isValidDnsResponse(resp)) {
-                throw new IOException("Received invalid DNS response from server! '"+new String(resp,0,Math.min(100, resp.length))+"'");
-            }
-            con.release(true);
-            //dumpResponse(resp);
-            return resp;
+                byte[] resp = responseBody.toByteArray();
+                if (resp.length == 0) {
+                    throw new IOException("DoH: empty body, HTTP status=" + httpStatus + " on stream " + streamId);
+                }
+                if (!isValidDnsResponse(resp)) {
+                    throw new IOException("Received invalid DNS response from server! '"+new String(resp,0,Math.min(100, resp.length))+"'");
+                }
+                con.release(true);
+                return resp;
 
-        } catch (IOException e) {
-        	
-            //Logger.getLogger().logLine("received "+e.getMessage()+"! Retrying = "+retrying );
-            //Logger.getLogger().logException(e);
-            if (con != null)
-                con.release(false);
-            if (retryCnt<MAX_RETRY) {
-                //retry once with fresh connection
-                retryCnt++;
-                //Logger.getLogger().logLine("received "+e.getMessage()+"! ... retryCnt..."+retryCnt);
-                return sendDnsQuery(sadr, path, dnsQuery, offs, length, timeout, retryCnt, proxy);
-            } else {
-                //Logger.getLogger().logLine("Already retried!!!");
-                throw e;
+            } catch (IOException e) {
+                if (con != null)
+                    con.release(false);
+                lastEx = e;
+            } catch (RuntimeException e) {
+                if (con != null) con.release(false);
+                throw new IOException("DoH: unexpected exception processing DOH2 DNS query", e);
             }
-        } catch (RuntimeException e) {
-            if (con != null) con.release(false);
-            throw new IOException("DoH: unexpected exception processing DOH2 DNS query", e);
         }
+        throw lastEx;
     }
 
     private static void dumpResponse(byte[]response) {

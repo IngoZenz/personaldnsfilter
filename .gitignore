@@ -42,4 +42,8 @@ build.gradle
 gradle.properties
 gradle/wrapper/gradle-wrapper.properties
 *.gradle
+!desktop/build.gradle
+!app/build.gradle
+!build.gradle
+!settings.gradle
 crowdin.properties

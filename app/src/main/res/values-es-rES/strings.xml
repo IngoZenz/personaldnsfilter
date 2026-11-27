@@ -43,7 +43,7 @@
   <string name="port" translatable="true">puerto</string>
   <string name="dnsProtocol" translatable="true">Protocolo DNS</string>
   <string name="endpoint" translatable="true">Endpoint</string>
-  <string name="testDNSResultSuccess">\nPing Promedio  ~ %1$d\"</string>
+  <string name="testDNSResultSuccess">\nPing Promedio  ~ %1$d ms</string>
   <string name="testDNSResultFailure">Error: %1$s</string>
   <string name="ipEmptyError">La IP no debe estar vacía</string>
   <string name="portEmptyError">el puerto no debe estar vacío</string>

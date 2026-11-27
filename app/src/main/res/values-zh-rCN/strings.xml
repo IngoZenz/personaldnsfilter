@@ -43,7 +43,7 @@
   <string name="port" translatable="true">端口</string>
   <string name="dnsProtocol" translatable="true">DNS 协议</string>
   <string name="endpoint" translatable="true">endpoint</string>
-  <string name="testDNSResultSuccess">成功：\n平均 ping ~ %1$d\"</string>
+  <string name="testDNSResultSuccess">成功：\n平均 ping ~ %1$d ms</string>
   <string name="testDNSResultFailure">失败： %1$s</string>
   <string name="ipEmptyError">IP 不应为空</string>
   <string name="portEmptyError">端口号不应为空</string>

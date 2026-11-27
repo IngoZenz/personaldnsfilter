@@ -43,7 +43,8 @@ import util.Utils;
 public class DNSFilterProxy implements Runnable {
 
 	DatagramSocket receiver;
-	boolean stopped = false;
+	DatagramSocket ipv6Receiver;
+	volatile boolean stopped = false;
 	int port = 53;
 
 	public DNSFilterProxy(int port) {
@@ -75,8 +76,8 @@ public class DNSFilterProxy implements Runnable {
 	public static void main(String[] args) throws Exception {
 		class StandaloneEnvironment extends ExecutionEnvironment  {
 			
-			boolean debug = false;
-			boolean debugInit = false;
+			volatile boolean debug = false;
+			volatile boolean debugInit = false;
 
 			
 			@Override
@@ -95,12 +96,16 @@ public class DNSFilterProxy implements Runnable {
 
 			@Override
 			public void onReload() {
+				debugInit = false;
 				DNSFilterProxy.initDNS(DNSFilterManager.getInstance());
 			}
 
 			@Override
 			public InputStream getAsset(String path) throws IOException {
-				return Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
+				InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
+				if (in == null)
+					throw new IOException("Asset not found: " + path);
+				return in;
 			}
 
 		}
@@ -172,14 +177,18 @@ public class DNSFilterProxy implements Runnable {
 
 	private static void waitUntilBootstrapServersAreReady() {
 		boolean ready = false;
-		while (!ready) {
+		long deadline = System.currentTimeMillis() + 30000L;
+		while (!ready && System.currentTimeMillis() < deadline) {
 			try {
 				File dnsPerfFile= new File(ExecutionEnvironment.getEnvironment().getWorkDir()+"/dnsperf.info");
 				if (dnsPerfFile.exists()) {
 					InputStream in = new FileInputStream(dnsPerfFile);
-					String content = new String(Utils.readFully(in, 1024));
-					ready = content.contains("Terminated");			
-					in.close();
+					try {
+						String content = new String(Utils.readFully(in, 1024));
+						ready = content.contains("Terminated");
+					} finally {
+						in.close();
+					}
 				}
 				if (!ready) {
 					System.out.println("Waiting for bootstrap DNS servers to become ready!");
@@ -189,14 +198,16 @@ public class DNSFilterProxy implements Runnable {
 			} catch (IOException e) {
 				Logger.getLogger().logException(e);
 			} catch (InterruptedException e) {
-                Logger.getLogger().logLine(e.toString());
-            }
-        }
+				Thread.currentThread().interrupt();
+				Logger.getLogger().logLine(e.toString());
+				break;
+			}
+		}
 	}
 
 	private static InetAddress openVPN4pDNSf_Adr;
 
-	{
+	static {
 		try {
 			openVPN4pDNSf_Adr = InetAddress.getByName("10.10.10.10");
 		} catch (UnknownHostException e) {
@@ -212,11 +223,38 @@ public class DNSFilterProxy implements Runnable {
 		return NetworkInterface.getByInetAddress(addr) != null;
 	}
 
+	private void receiveLoop(DatagramSocket sock, int maxResolvers, boolean enforceLocalCheck) {
+		while (!stopped) {
+			try {
+				byte[] data = new byte[DNSServer.getBufSize()];
+				DatagramPacket request = new DatagramPacket(data, 0, DNSServer.getBufSize());
+				sock.receive(request);
+
+				boolean permitted = true;
+				if (enforceLocalCheck)
+					permitted = isAlocalAddress(request.getAddress());
+
+				if (!permitted)
+					Logger.getLogger().logLine(request.getAddress()+" not permitted! Only local access!");
+
+				if (DNSResolver.getResolverCount() > maxResolvers) {
+					Logger.getLogger().message("Max resolver count reached: "+maxResolvers);
+				}
+				else if (permitted)
+					new Thread(new DNSResolver(request, sock)).start();
+
+			} catch (IOException e) {
+				if (!stopped)
+					Logger.getLogger().logLine("Exception:" + e.getMessage());
+			}
+		}
+	}
+
 	@Override
 	public void run() {
-		int max_resolvers;
-		boolean onlyLocal;
-		boolean androidRootMode;
+		final int max_resolvers;
+		final boolean onlyLocal;
+		final boolean androidRootMode;
 		try {
 			max_resolvers  = Integer.parseInt(DNSFilterManager.getInstance().getConfig().getProperty("maxResolverCount", "100"));
 			onlyLocal = Boolean.parseBoolean(DNSFilterManager.getInstance().getConfig().getProperty("dnsProxyOnlyLocalRequests", "true"));
@@ -227,13 +265,21 @@ public class DNSFilterProxy implements Runnable {
 			return;
 		}
 		try {
-			if (onlyLocal && (ExecutionEnvironment.getEnvironment().getEnvironmentID() == 0 || androidRootMode))
-				//currently only possible for non Android - see below!
+			if (onlyLocal && (ExecutionEnvironment.getEnvironment().getEnvironmentID() == 0 || androidRootMode)) {
 				receiver = new DatagramSocket(port, InetAddress.getByName("127.0.0.1"));
-			else
+				try {
+					ipv6Receiver = new DatagramSocket(port, InetAddress.getByName("::1"));
+				} catch (IOException ignored) {
+					ipv6Receiver = null; // IPv6 loopback may be unavailable or disabled
+				}
+			} else {
 				receiver = new DatagramSocket(port);
+			}
 
 			ExecutionEnvironment.getEnvironment().protectSocket(receiver, 1);
+			if (ipv6Receiver != null) {
+				ExecutionEnvironment.getEnvironment().protectSocket(ipv6Receiver, 1);
+			}
 
 		} catch (IOException eio) {
 			Logger.getLogger().logLine("Exception:Cannot open DNS port " + port + "!" + eio.getMessage());
@@ -241,42 +287,28 @@ public class DNSFilterProxy implements Runnable {
 		}
 		Logger.getLogger().logLine("DNSFilterProxy running on port " + port + "!");
 
-		while (!stopped) {
-			try {
-				byte[] data = new byte[DNSServer.getBufSize()];
-				DatagramPacket request = new DatagramPacket(data, 0, DNSServer.getBufSize());
-				receiver.receive(request);
-
-				boolean permitted = true;
-				// This is temporary solution on Android as here we can not open the localhost socket only
-				// due to interoperability with openVPN for pDNSf.
-				// Will work on better solution for next release
-				if (onlyLocal && ExecutionEnvironment.getEnvironment().getEnvironmentID() == 1 && !androidRootMode)
-					permitted = isAlocalAddress(request.getAddress());
-
-				if (!permitted)
-					Logger.getLogger().logLine(request.getAddress()+" not permitted! Only local access!");
-
-				if (DNSResolver.getResolverCount()>max_resolvers) {
-					Logger.getLogger().message("Max resolver count reached: "+max_resolvers);
+		final boolean enforceLocalCheck = onlyLocal && ExecutionEnvironment.getEnvironment().getEnvironmentID() == 1 && !androidRootMode;
+		if (ipv6Receiver != null) {
+			final DatagramSocket v6Sock = ipv6Receiver;
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					receiveLoop(v6Sock, max_resolvers, enforceLocalCheck);
 				}
-				else if (permitted)
-					new Thread(new DNSResolver(request, receiver)).start();
-
-			} catch (IOException e) {
-				if (!stopped)
-					Logger.getLogger().logLine("Exception:" + e.getMessage());
-			}
+			}).start();
 		}
+
+		receiveLoop(receiver, max_resolvers, enforceLocalCheck);
 		Logger.getLogger().logLine("DNSFilterProxy stopped!");
 	}
 
 
 	public synchronized void stop() {
 		stopped = true;
-		if (receiver == null)
-			return;
-		receiver.close();
+		if (receiver != null)
+			receiver.close();
+		if (ipv6Receiver != null)
+			ipv6Receiver.close();
 	}
 
 

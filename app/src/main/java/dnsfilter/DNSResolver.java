@@ -30,6 +30,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketAddress;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import ip.IPPacket;
 import ip.UDPPacket;
@@ -39,9 +40,8 @@ import util.PatternSequence;
 
 public class DNSResolver implements Runnable {
 
-	private static int THR_COUNT = 0;
-	private static Object CNT_SYNC = new Object();
-	private static boolean IO_ERROR=false;
+	private static final AtomicInteger THR_COUNT = new AtomicInteger(0);
+	private static volatile boolean IO_ERROR=false;
 
 
 	//for android usage based on IP packages from the VPN Interface
@@ -55,9 +55,9 @@ public class DNSResolver implements Runnable {
 	private boolean datagramPacketMode = false;
 
 
-	private static boolean enableLocalResolver = false;
-	private static int localResolverTTL = 0;
-	private static PatternSequence customIPMappings = null;
+	private static volatile boolean enableLocalResolver = false;
+	private static volatile int localResolverTTL = 0;
+	private static volatile PatternSequence customIPMappings = null;
 
 	public static void initLocalResolver(PatternSequence customMappings, boolean enabled, int ttl){
 		customIPMappings = customMappings;
@@ -149,9 +149,12 @@ public class DNSResolver implements Runnable {
 			if (ExecutionEnvironment.getEnvironment().debug()) {
 				File dump = new File(ExecutionEnvironment.getEnvironment().getWorkDir() + "/dnsdump_" + System.currentTimeMillis());
 				FileOutputStream dumpout = new FileOutputStream(dump);
-				dumpout.write(request.getData(), request.getOffset(), request.getLength());
-				dumpout.flush();
-				dumpout.close();
+				try {
+					dumpout.write(request.getData(), request.getOffset(), request.getLength());
+					dumpout.flush();
+				} finally {
+					dumpout.close();
+				}
 			}
 			Logger.getLogger().logException(e);
 			throw new IOException(e);
@@ -180,6 +183,8 @@ public class DNSResolver implements Runnable {
 		int ipOffs = udpRequestPacket.getIPPacketOffset();
 		int offs = ipOffs + hdrLen;
 		int len = udpRequestPacket.getIPPacketLength() - hdrLen;
+		if (len <= 0 || offs < 0 || offs + len > packetData.length)
+			throw new IOException("Invalid IP/UDP packet length: " + len);
 
 		// build request datagram packet from UDP request packet
 		DatagramPacket request = new DatagramPacket(packetData, offs, len);
@@ -200,6 +205,9 @@ public class DNSResolver implements Runnable {
 			byte[] buf = DNSResponsePatcher.patchResponse(clientID, response.getData(), offs);
 		}
 
+		if (ipOffs + hdrLen + response.getLength() > response.getData().length)
+			throw new IOException("DNS response exceeds packet buffer!");
+
 		//create  UDP Header and update source and destination IP and port			
 		UDPPacket udp = UDPPacket.createUDPPacket(response.getData(), ipOffs, hdrLen + response.getLength(), version);
 
@@ -216,6 +224,8 @@ public class DNSResolver implements Runnable {
 
 	private void processDatagramPackageMode() throws Exception {
 		SocketAddress sourceAdr = dataGramRequest.getSocketAddress();
+		if (sourceAdr == null)
+			return;
 		String clientID = sourceAdr.toString();
 
 		//we reuse the request data array
@@ -243,9 +253,7 @@ public class DNSResolver implements Runnable {
 	@Override
 	public void run() {
 		try {
-			synchronized (CNT_SYNC) {
-				THR_COUNT++;
-			}
+			THR_COUNT.incrementAndGet();
 			if (datagramPacketMode)
 				processDatagramPackageMode();
 			else
@@ -270,14 +278,12 @@ public class DNSResolver implements Runnable {
 		} catch (Exception e) {
 			Logger.getLogger().logException(e);
 		} finally {
-			synchronized (CNT_SYNC) {
-				THR_COUNT--;
-			}
+			THR_COUNT.decrementAndGet();
 		}
 	}
 
 	public static int getResolverCount() {
-		return THR_COUNT;
+		return THR_COUNT.get();
 	}
 
 }

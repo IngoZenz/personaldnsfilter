@@ -51,13 +51,27 @@ public class DNSServerConfigEntryView {
     }
 
     public void showEntry(DNSServerConfigEntry entry, boolean isNew) {
+        editIpView.setError(null);
+        editPortView.setError(null);
+        editEndpointView.setError(null);
+
         editIpView.setText(entry.getIp());
         editPortView.setText(entry.getPort());
         editEndpointView.setText(entry.getEndpoint());
-        editProtocolSpinner.setSelection(entry.getProtocol().ordinal());
+
+        final int initialSelection = entry.getProtocol().ordinal();
+        editProtocolSpinner.setOnItemSelectedListener(null);
+        editProtocolSpinner.setSelection(initialSelection, false);
+        final boolean[] firstSelectionEvent = new boolean[]{true};
         editProtocolSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (firstSelectionEvent[0]) {
+                    firstSelectionEvent[0] = false;
+                    if (position == initialSelection) {
+                        return;
+                    }
+                }
                 editPortView.setText(Integer.toString(DNSType.values()[position].defaultPort));
             }
 
@@ -90,10 +104,10 @@ public class DNSServerConfigEntryView {
                 if (entry.getValidationResult().hasError()) {
                     setupErrors(entry.getValidationResult());
                 } else {
-                    entry.setIp(editIpView.getText().toString());
-                    entry.setPort(editPortView.getText().toString());
-                    entry.setEndpoint(editEndpointView.getText().toString());
-                    entry.setProtocol(DNSType.values()[editProtocolSpinner.getSelectedItemPosition()]);
+                    entry.setIp(testingValue.getIp());
+                    entry.setPort(testingValue.getPort());
+                    entry.setEndpoint(testingValue.getEndpoint());
+                    entry.setProtocol(testingValue.getProtocol());
                     if (listener != null) {
                         listener.onApplyChanges();
                     }
@@ -111,7 +125,9 @@ public class DNSServerConfigEntryView {
             @Override
             public void onClick(View v) {
                 editEntryDialog.cancel();
-                listener.onDeleteItem(entry);
+                if (listener != null) {
+                    listener.onDeleteItem(entry);
+                }
             }
         });
         editEntryDialog.setOnDismissListener(
@@ -124,6 +140,12 @@ public class DNSServerConfigEntryView {
         );
     }
 
+    public void dismiss() {
+        if (editEntryDialog != null && editEntryDialog.isShowing()) {
+            editEntryDialog.dismiss();
+        }
+    }
+
     private void setupErrors(DNSServerConfigEntryValidationResult validationResult) {
         if (validationResult.getIpError() != null && !validationResult.getIpError().isEmpty()) {
             editIpView.setError(validationResult.getIpError());
@@ -134,6 +156,11 @@ public class DNSServerConfigEntryView {
             editPortView.setError(validationResult.getPortError());
         } else {
             editPortView.setError(null);
+        }
+        if (validationResult.getEndpointError() != null && !validationResult.getEndpointError().isEmpty()) {
+            editEndpointView.setError(validationResult.getEndpointError());
+        } else {
+            editEndpointView.setError(null);
         }
     }
 
