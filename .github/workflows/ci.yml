@@ -5,6 +5,10 @@ on:
     branches: [ master ]
   pull_request:
 
+permissions:
+  contents: read
+  checks: write
+
 jobs:
   desktop-build-and-test:
     runs-on: ubuntu-latest
@@ -18,7 +22,28 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
       - name: Run desktop unit tests and build JAR
-        run: ./gradlew --no-daemon :desktop:test :desktop:jar
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon --stacktrace :desktop:test :desktop:jar 2>&1 | tee gradle-desktop.log
+      - name: Publish failure log
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LOG_TAIL="$(tail -n 120 gradle-desktop.log)"
+          python3 - <<'PY' > payload.json
+          import json, os
+          txt = open("gradle-desktop.log", encoding="utf-8", errors="replace").read()
+          tail = "\n".join(txt.splitlines()[-150:])
+          print(json.dumps({
+              "name": "desktop-failure-log",
+              "head_sha": os.environ["GITHUB_SHA"],
+              "status": "completed",
+              "conclusion": "failure",
+              "output": {"title": "Desktop Gradle failure", "summary": "Last 150 lines", "text": tail}
+          }))
+          PY
+          gh api "repos/${{ github.repository }}/check-runs" --method POST --input payload.json
 
   android-build-and-test:
     runs-on: ubuntu-latest
@@ -32,4 +57,24 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
       - name: Run Android unit tests and assemble debug APK
-        run: ./gradlew --no-daemon :app:testDebugUnitTest :app:assembleDebug
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon --stacktrace :app:testDebugUnitTest :app:assembleDebug 2>&1 | tee gradle-android.log
+      - name: Publish failure log
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - <<'PY' > payload.json
+          import json, os
+          txt = open("gradle-android.log", encoding="utf-8", errors="replace").read()
+          tail = "\n".join(txt.splitlines()[-150:])
+          print(json.dumps({
+              "name": "android-failure-log",
+              "head_sha": os.environ["GITHUB_SHA"],
+              "status": "completed",
+              "conclusion": "failure",
+              "output": {"title": "Android Gradle failure", "summary": "Last 150 lines", "text": tail}
+          }))
+          PY
+          gh api "repos/${{ github.repository }}/check-runs" --method POST --input payload.json
