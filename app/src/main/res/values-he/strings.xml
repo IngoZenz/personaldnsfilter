@@ -43,7 +43,7 @@
   <string name="port" translatable="true">יציאה</string>
   <string name="dnsProtocol" translatable="true">פרוטוקול DNS</string>
   <string name="endpoint" translatable="true">נקודת קצה</string>
-  <string name="testDNSResultSuccess">פינג הצלחה;/nממוצע ~ %1$d\"</string>
+  <string name="testDNSResultSuccess">פינג הצלחה:\nממוצע ~ %1$d ms</string>
   <string name="testDNSResultFailure">נכשל: %1$s</string>
   <string name="ipEmptyError">IP לא אמור להיות ריק</string>
   <string name="portEmptyError">היציאה לא אמורה להיות ריקה</string>

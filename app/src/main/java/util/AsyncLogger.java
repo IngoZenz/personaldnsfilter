@@ -1,5 +1,5 @@
-/* 
-PersonalHttpProxy 1.5 
+/*
+PersonalHttpProxy 1.5
 Copyright (C) 2013-2016 Ingo Zenz
 
 This program is free software; you can redistribute it and/or
@@ -17,16 +17,13 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 Find the latest version at http://www.zenz-solutions.de/personalhttpproxy
-Contact:i.z@gmx.net 
+Contact:i.z@gmx.net
  */
 
 package util;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.util.LinkedList;
 
 public class AsyncLogger implements LoggerInterface, Runnable {
 
@@ -36,154 +33,109 @@ public class AsyncLogger implements LoggerInterface, Runnable {
 	static final int LOG_MSG = 3;
 	static final int LOG_EXC = 4;
 
+	private static class LogEntry {
+		final int type;
+		final Object payload;
+
+		LogEntry(int type, Object payload) {
+			this.type = type;
+			this.payload = payload;
+		}
+	}
+
 	private LoggerInterface out = null;
-	private DataOutputStream pout;
-	private PipedInputStream pin;
-	private boolean closed = false;
+	private final LinkedList<LogEntry> queue = new LinkedList<LogEntry>();
+	private volatile boolean closed = false;
 
 	public AsyncLogger(LoggerInterface out) throws IOException {
 		this.out = out;
 		logOpen();
 	}
 
-
-	
 	private void logOpen() throws IOException {
-		pin = new PipedInputStream(10240);
-		pout = new DataOutputStream(new PipedOutputStream(pin));
-
-
 		Thread t = new Thread(this);
 		t.setDaemon(true);
 		t.start();
 	}
 
+	@Override
 	public void closeLogger() {
-		synchronized (pin) {
-			try {
-				closed = true;
-				pout.close();				
-				pin.notifyAll();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		synchronized (queue) {
+			closed = true;
+			queue.notifyAll();
 		}
 	}
 
-
-	private void writeLog(int type, byte[] bytes) {
-		try {
-			pout.writeShort(type);
-			pout.writeInt(bytes.length);
-			pout.write(bytes);
-			pout.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
+	private void enqueue(int type, Object payload) {
+		if (closed)
+			return;
+		synchronized (queue) {
+			if (!closed) {
+				queue.addLast(new LogEntry(type, payload));
+				queue.notifyAll();
+			}
 		}
 	}
 
 	@Override
 	public void logLine(String txt) {
-
-		synchronized (pout) {
-			synchronized (pin) {
-				writeLog(LOG_LN, txt.getBytes());
-				pin.notifyAll();
-			}
-		}
+		enqueue(LOG_LN, txt);
 	}
 
 	@Override
 	public void logException(Exception e) {
-		byte[] bytes =null;
-		try {
-			bytes = Utils.serializeObject(e);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			return;
-		}
-
-		synchronized (pout) {
-			synchronized (pin) {
-				writeLog(LOG_EXC, bytes);
-				pin.notifyAll();
-			}
-		}
+		enqueue(LOG_EXC, e);
 	}
 
 	@Override
 	public void log(String txt) {
-		synchronized (pout) {
-			synchronized (pin) {
-				writeLog(LOG, txt.getBytes());
-				pin.notifyAll();
-			}
-		}
+		enqueue(LOG, txt);
 	}
 
 	@Override
 	public void message(String txt) {
-		synchronized (pout) {
-			synchronized (pin) {
-				writeLog(LOG_MSG, txt.getBytes());
-				pin.notifyAll();
-			}
-		}
+		enqueue(LOG_MSG, txt);
 	}
 
 	@Override
 	public void run() {
-
-		byte[] buf = new byte[4096];
-		int r = 0;
-		DataInputStream in = new DataInputStream(pin);
-		
-		while (!closed) {
-			try {
-				int type= -1;
-				byte[] bytes=null;
-
-				synchronized (pin) {
-					while ((pin.available() <= 0) && !closed) {
-						try {
-							pin.wait();
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+		while (true) {
+			LogEntry entry;
+			synchronized (queue) {
+				while (queue.isEmpty() && !closed) {
+					try {
+						queue.wait();
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+						return;
 					}
-					if (closed)
-						break;
-
-					type = in.readShort();
-					bytes = new byte[in.readInt()];
-					in.readFully(bytes);
 				}
+				if (queue.isEmpty() && closed)
+					break;
+				entry = queue.removeFirst();
+			}
 
-				switch (type) {
-
+			try {
+				switch (entry.type) {
 					case LOG_LN:
-						out.logLine(new String(bytes));
+						out.logLine((String) entry.payload);
 						break;
 					case LOG:
-						out.log(new String(bytes));
+						out.log((String) entry.payload);
 						break;
 					case LOG_MSG:
-						out.message(new String(bytes));
+						out.message((String) entry.payload);
 						break;
 					case LOG_EXC:
-						out.logException((Exception) Utils.deserializeObject(bytes));
+						out.logException((Exception) entry.payload);
 						break;
-
 					default:
-						throw new IOException("Unknown log Msg type: " + type);
+						throw new IOException("Unknown log Msg type: " + entry.type);
 				}
-
 			} catch (Exception e) {
 				if (!closed)
 					e.printStackTrace();
 			}
-
 		}
 	}
 }

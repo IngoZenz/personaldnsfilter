@@ -43,7 +43,7 @@
   <string name="port" translatable="true">bağlantı noktası</string>
   <string name="dnsProtocol" translatable="true">DNS protokolü</string>
   <string name="endpoint" translatable="true">bitiş noktası</string>
-  <string name="testDNSResultSuccess">Başarılı::\nAverage ping ~ %1$d\"</string>
+  <string name="testDNSResultSuccess">Başarılı:\nAverage ping ~ %1$d ms</string>
   <string name="testDNSResultFailure">Başarısız: %1$s</string>
   <string name="ipEmptyError">IP boş olmamalıdır</string>
   <string name="portEmptyError">Bağlantı noktası bölümü boş bırakılamaz </string>

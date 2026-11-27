@@ -75,7 +75,7 @@
         <service
             android:name=".StartServiceJobService"
             android:permission="android.permission.BIND_JOB_SERVICE"
-            android:exported="true" >
+            android:exported="false" >
         </service>
 
         <receiver

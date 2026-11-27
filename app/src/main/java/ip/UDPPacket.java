@@ -33,6 +33,8 @@ public class UDPPacket extends IPPacket {
 
 	public UDPPacket(byte[] packet, int offs, int len) {
 		super(packet, offs, len);
+		if (len < ipHdrlen + 8)
+			throw new IllegalArgumentException("Invalid UDP packet length: " + len);
 		this.udpHeader = ByteBuffer.wrap(packet, offs + ipHdrlen, 8).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
 	}
 

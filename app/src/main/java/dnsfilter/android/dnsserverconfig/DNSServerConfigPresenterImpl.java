@@ -92,12 +92,12 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
     private List<DNSServerConfigBaseEntry> readDNSServerConfigFrom(String source) {
         List<DNSServerConfigBaseEntry> entries = new ArrayList<>();
         ConfigUtil config = getConfig();
-        if (config != null) {
-            assert LINE_SEPARATOR != null;
-            String[] dnsEntries = source.split(LINE_SEPARATOR);
+        if (config != null && source != null) {
+            String[] dnsEntries = source.replace("\r\n", "\n").split("\n");
             for (String entry : dnsEntries) {
-                if (!entry.isEmpty()) {
-                    entries.add(serializer.deserializeSafe(entry.trim()));
+                String trimmed = entry.trim();
+                if (!trimmed.isEmpty()) {
+                    entries.add(serializer.deserializeSafe(trimmed));
                 }
             }
         }
@@ -123,7 +123,7 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
             view.resetToDefaultMode();
             listAdapter.clear();
             listAdapter.addAll(entries);
-            view.showToast("DNS configuration is is reset to default");
+            view.showToast("DNS configuration reset to default");
 
             isManualDNSServers = !Boolean.parseBoolean(defaultProperties.getProperty(DETECT_DNS_PROPERTY_NAME, "true"));
             view.setManualDNSServers(isManualDNSServers);
@@ -189,14 +189,18 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
 
     @Override
     public void onDestroy() {
+        listAdapter.cleanup();
         testTasksPool.shutdownNow();
     }
 
     private Properties readDefaultDNSConfig() throws IOException {
         InputStream defIn = ExecutionEnvironment.getEnvironment().getAsset(ASSETS_FILE_NAME);
         Properties defaults = new Properties();
-        defaults.load(defIn);
-        defIn.close();
+        try {
+            defaults.load(defIn);
+        } finally {
+            defIn.close();
+        }
         return defaults;
     }
 
@@ -232,11 +236,12 @@ public class DNSServerConfigPresenterImpl implements DNSServerConfigPresenter {
 
     private boolean rawEntriesToDNSServerEntries(String source, ArrayList<DNSServerConfigBaseEntry> entries) {
         DNSServerConfigEntrySerializer serializer = new DNSServerConfigEntrySerializer();
-        String[] dnsEntries = source.split(LINE_SEPARATOR);
+        String[] dnsEntries = (source == null ? "" : source).replace("\r\n", "\n").split("\n");
         try {
             for (String entry : dnsEntries) {
-                if (!entry.isEmpty()) {
-                    DNSServerConfigBaseEntry deserializedValue = serializer.deserialize(entry);
+                String trimmed = entry.trim();
+                if (!trimmed.isEmpty()) {
+                    DNSServerConfigBaseEntry deserializedValue = serializer.deserialize(trimmed);
                     if (entries != null) {
                         entries.add(deserializedValue);
                     }

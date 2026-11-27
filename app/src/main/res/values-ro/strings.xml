@@ -43,7 +43,7 @@
   <string name="port" translatable="true">port</string>
   <string name="dnsProtocol" translatable="true">Protocol DNS</string>
   <string name="endpoint" translatable="true">Endpoint</string>
-  <string name="testDNSResultSuccess">Succes:\nPing mediu ~ %1$d\"</string>
+  <string name="testDNSResultSuccess">Succes:\nPing mediu ~ %1$d ms</string>
   <string name="testDNSResultFailure">Eșuat: %1$s</string>
   <string name="ipEmptyError">Adresa IP nu ar trebui să fie goală</string>
   <string name="portEmptyError">Portul nu trebuie să fie gol</string>

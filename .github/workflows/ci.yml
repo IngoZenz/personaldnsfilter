@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  desktop-build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+      - name: Run desktop unit tests and build JAR
+        run: ./gradlew --no-daemon :desktop:test :desktop:jar
+
+  android-build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+      - name: Run Android unit tests and assemble debug APK
+        run: ./gradlew --no-daemon :app:testDebugUnitTest :app:assembleDebug

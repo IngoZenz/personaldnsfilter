@@ -43,7 +43,7 @@
   <string name="port" translatable="true">තොට</string>
   <string name="dnsProtocol" translatable="true">ව.නා.ප. කෙටුම්පත</string>
   <string name="endpoint" translatable="true">අන්ත ලක්ෂ්‍යය</string>
-  <string name="testDNSResultSuccess">සාර්ථකයි:\nදළ කාලය ~ %1$d\"</string>
+  <string name="testDNSResultSuccess">සාර්ථකයි:\nදළ කාලය ~ %1$d ms</string>
   <string name="testDNSResultFailure">අසමත්: %1$s</string>
   <string name="ipEmptyError">IP හිස් නොවිය යුතුය</string>
   <string name="portEmptyError">වරාය හිස් නොවිය යුතුය</string>

@@ -64,7 +64,21 @@ public class TLSSocketFactory extends SSLSocketFactory {
 
     private Socket enableTLSOnSocket(Socket socket) {
         if ((socket instanceof SSLSocket)) {
-            ((SSLSocket) socket).setEnabledProtocols(new String[] { "TLSv1.1", "TLSv1.2" });
+            SSLSocket sslSocket = (SSLSocket) socket;
+            String[] supported = sslSocket.getSupportedProtocols();
+            java.util.List<String> enabled = new java.util.ArrayList<String>();
+            if (supported != null) {
+                for (String proto : supported) {
+                    if ("TLSv1.3".equals(proto) || "TLSv1.2".equals(proto)) {
+                        enabled.add(proto);
+                    }
+                }
+            }
+            if (!enabled.isEmpty()) {
+                sslSocket.setEnabledProtocols(enabled.toArray(new String[0]));
+            } else {
+                sslSocket.setEnabledProtocols(new String[] { "TLSv1.2" });
+            }
         }
         return socket;
     }

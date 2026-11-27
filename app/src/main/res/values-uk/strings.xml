@@ -43,7 +43,7 @@
   <string name="port" translatable="true">порт</string>
   <string name="dnsProtocol" translatable="true">DNS протокол</string>
   <string name="endpoint" translatable="true">кінцева точка</string>
-  <string name="testDNSResultSuccess">Успіх:\nСередній пінг ~ %1$d</string>
+  <string name="testDNSResultSuccess">Успіх:\nСередній пінг ~ %1$d ms</string>
   <string name="testDNSResultFailure">Помилка: %1$s</string>
   <string name="ipEmptyError">IP не може бути порожнім</string>
   <string name="portEmptyError">Порт не може бути порожнім</string>

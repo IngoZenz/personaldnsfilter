@@ -1,7 +1,7 @@
 [Unit]
 Description=personalDNSfilter Service
 Wants=network-online.target
-After=network.target
+After=network-online.target
 
 [Service]
 Type=simple
@@ -10,7 +10,7 @@ RestartSec=3
 WorkingDirectory=/var/lib/personalDNSfilter/
 ExecStart=/usr/bin/java -cp /usr/local/lib/personalDNSfilter/personalDNSfilter.jar dnsfilter.DNSFilterProxy
 StandardOutput=journal
-StandardError=null
+StandardError=journal
 
 # Hardening
 ProtectSystem=full

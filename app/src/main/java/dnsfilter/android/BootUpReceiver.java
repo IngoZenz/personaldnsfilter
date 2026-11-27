@@ -55,22 +55,33 @@ public class BootUpReceiver extends BroadcastReceiver {
 
 			boolean proxyOnAndroid = Boolean.parseBoolean(config.getProperty("dnsProxyOnAndroid", "false"));
 			boolean vpnAndProxy = Boolean.parseBoolean(config.getProperty("vpnInAdditionToProxyMode", "false"));
+			boolean vpnNeeded = !proxyOnAndroid || vpnAndProxy;
+
+			Intent prepareIntent = vpnNeeded ? VpnService.prepare(context) : null;
+			if (prepareIntent != null) {
+				Logger.getLogger().logLine("VPN permission not granted; cannot start VPN service on boot!");
+				if (Build.VERSION.SDK_INT < 29) {
+					DNSProxyActivity.BOOT_START = true;
+					Intent i = new Intent(context, DNSProxyActivity.class);
+					i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					context.startActivity(i);
+				}
+				return;
+			}
 
 			if (Build.VERSION.SDK_INT >= 28 && Build.VERSION.SDK_INT < 31 ) {
 				Intent i = new Intent(context, DNSFilterService.class);
-
-				if (!proxyOnAndroid || vpnAndProxy)
-					VpnService.prepare(context);
 
 				StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().build());
 				context.startForegroundService(i);
 
 			} else if (Build.VERSION.SDK_INT >= 31) {
 
-				if (!proxyOnAndroid || vpnAndProxy)
-					VpnService.prepare(context);
-
 				JobScheduler scheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+				if (scheduler == null) {
+					Logger.getLogger().logLine("JobScheduler unavailable; cannot schedule service start on boot!");
+					return;
+				}
 
 				JobInfo job = new JobInfo.Builder(1,
 						new ComponentName(context, StartServiceJobService.class))

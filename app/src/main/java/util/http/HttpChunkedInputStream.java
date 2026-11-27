@@ -71,10 +71,13 @@ public class HttpChunkedInputStream extends InputStream {
 
 	private void readNextChunk() throws IOException {
 
-		String hexStr = Utils.readLineFromStreamRN(underlying);
+		String line = Utils.readLineFromStreamRN(underlying);
 
-		if (hexStr == null)
+		if (line == null)
 			throw new EOFException("Invalid end of ChunkedInputStream!");
+
+		int extIdx = line.indexOf(';');
+		String hexStr = (extIdx != -1 ? line.substring(0, extIdx) : line).trim();
 
 		if (hexStr.equals("")) {
 			eof = true;
@@ -86,14 +89,22 @@ public class HttpChunkedInputStream extends InputStream {
 		} catch (Exception e) {
 			throw new IOException(e.toString());
 		}
+		if (length < 0)
+			throw new IOException("Invalid negative chunk length: " + length);
+
 		if (length != 0) {
 			byte[] buf = new byte[length];
 			underlying.readFully(buf);
 			bytesBuf = new ByteArrayInputStream(buf);
-		} else
+			Utils.readLineFromStreamRN(underlying);
+		} else {
 			eof = true;
-
-		Utils.readLineFromStreamRN(underlying);
+			// Consume optional trailer fields up to empty line
+			String trailer;
+			do {
+				trailer = Utils.readLineFromStreamRN(underlying);
+			} while (!trailer.equals(""));
+		}
 
 	}
 }

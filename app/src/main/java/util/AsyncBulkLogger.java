@@ -23,18 +23,19 @@ Contact:i.z@gmx.net
 package util;
 
 import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.LinkedList;
 
 public class AsyncBulkLogger implements LoggerInterface, Runnable {
 
-	private LoggerInterface out = null;
-	private PipedOutputStream pout;
-	private PrintStream psout;
-	private PipedInputStream pin;
-	private boolean closed = false;
-	private boolean timeStampEnabled = false;
+	private static final int MAX_QUEUE_SIZE = 2048;
+
+	private final LoggerInterface out;
+	private final LinkedList<String> queue = new LinkedList<String>();
+	private volatile boolean closed = false;
+	private volatile boolean timeStampEnabled = false;
+	private Thread worker;
 
 	public AsyncBulkLogger(LoggerInterface out) throws IOException {
 		this.out = out;
@@ -44,106 +45,92 @@ public class AsyncBulkLogger implements LoggerInterface, Runnable {
 	public void enableTimestamp(boolean enable) {
 		timeStampEnabled = enable;
 	}
-	
-	private void logOpen() throws IOException {
-		pin = new PipedInputStream(10240);
-		pout = new PipedOutputStream(pin);
-		psout = new PrintStream(pout, true);
 
-		Thread t = new Thread(this);
-		t.setDaemon(true);
-		t.start();
+	private void logOpen() {
+		worker = new Thread(this, "AsyncBulkLogger");
+		worker.setDaemon(true);
+		worker.start();
 	}
 
+	@Override
 	public void closeLogger() {
-		synchronized (pin) {
-			try {
-				closed = true;
-				pout.close();				
-				pin.notifyAll();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		synchronized (queue) {
+			closed = true;
+			queue.notifyAll();
 		}
 	}
 
+	private void enqueue(String text) {
+		if (closed || text == null)
+			return;
+		synchronized (queue) {
+			if (closed)
+				return;
+			if (queue.size() >= MAX_QUEUE_SIZE) {
+				queue.removeFirst();
+			}
+			queue.addLast(text);
+			queue.notifyAll();
+		}
+	}
 
 	@Override
 	public void logLine(String txt) {
-		synchronized (psout) {
-			synchronized (pin) {
-				if (timeStampEnabled)
-					psout.print(DateRetriever.getDateString() + " ");
-				psout.println(txt);
-				pin.notifyAll();
-			}
-		}
+		String prefix = timeStampEnabled ? DateRetriever.getDateString() + " " : "";
+		enqueue(prefix + txt + "\n");
 	}
 
 	@Override
 	public void logException(Exception e) {
-		synchronized (psout) {
-			synchronized (pin) {
-				if (timeStampEnabled)
-					psout.print(DateRetriever.getDateString() + " ");
-				e.printStackTrace(psout);
-				pin.notifyAll();
-			}
-		}
+		StringWriter sw = new StringWriter();
+		if (timeStampEnabled)
+			sw.write(DateRetriever.getDateString() + " ");
+		e.printStackTrace(new PrintWriter(sw));
+		enqueue(sw.toString());
 	}
 
 	@Override
 	public void log(String txt) {
-		synchronized (psout) {
-			synchronized (pin) {
-				if (timeStampEnabled)
-					psout.print(DateRetriever.getDateString() + " ");
-				psout.print(txt);
-				pin.notifyAll();
-			}
-		}
+		String prefix = timeStampEnabled ? DateRetriever.getDateString() + " " : "";
+		enqueue(prefix + txt);
 	}
 
 	@Override
 	public void message(String txt) {
-		synchronized (pin) {
+		synchronized (queue) {
 			out.message(txt); // write message out directly as it might go to different channel
 		}
 	}
 
 	@Override
 	public void run() {
-
-		byte[] buf = new byte[4096];
-		int r = 0;
-		
-		while (!closed) {
-			try {
-				synchronized (pin) {
-
-					while ((pin.available() <= 0) && !closed) {
-						try {
-							pin.wait();
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+		StringBuilder batch = new StringBuilder();
+		while (true) {
+			batch.setLength(0);
+			synchronized (queue) {
+				while (queue.isEmpty() && !closed) {
+					try {
+						queue.wait();
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+						return;
 					}
-					if (!closed)
-						r = pin.read(buf);
 				}
-
-				if (!closed) {
-					
-					out.log(new String(buf, 0, r));
-					
+				if (closed && queue.isEmpty()) {
+					return;
+				}
+				while (!queue.isEmpty() && batch.length() < 16384) {
+					batch.append(queue.removeFirst());
+				}
+			}
+			try {
+				if (batch.length() > 0) {
+					out.log(batch.toString());
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-
 		}
-
 	}
 
 }

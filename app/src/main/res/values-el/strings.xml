@@ -43,7 +43,7 @@
   <string name="port" translatable="true">Θύρα</string>
   <string name="dnsProtocol" translatable="true">Πρωτόκολλο DNS</string>
   <string name="endpoint" translatable="true">Τελικό σημείο</string>
-  <string name="testDNSResultSuccess">Επιτυχία:\nΜέσος όρος ping ~ %1$d\"</string>
+  <string name="testDNSResultSuccess">Επιτυχία:\nΜέσος όρος ping ~ %1$d ms</string>
   <string name="testDNSResultFailure">Αποτυχία: %s</string>
   <string name="ipEmptyError">Η IP δεν μπορεί να είναι κενή</string>
   <string name="portEmptyError">Η θύρα δεν μπορεί να είναι κενή</string>

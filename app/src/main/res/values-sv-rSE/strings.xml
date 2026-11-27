@@ -43,7 +43,7 @@
   <string name="port" translatable="true">port</string>
   <string name="dnsProtocol" translatable="true">DNS-protokoll</string>
   <string name="endpoint" translatable="true">slutpunkt</string>
-  <string name="testDNSResultSuccess">Framgång:\nGenomsnittlig ping ~ %1$d\"</string>
+  <string name="testDNSResultSuccess">Framgång:\nGenomsnittlig ping ~ %1$d ms</string>
   <string name="testDNSResultFailure">Misslyckades: %1$s</string>
   <string name="ipEmptyError">IP bör inte vara tomt.</string>
   <string name="portEmptyError">Port får inte vara tom</string>

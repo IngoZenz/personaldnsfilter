@@ -21,8 +21,6 @@ package dnsfilter;
    Contact:i.z@gmx.net
  */
 
-import static java.lang.System.in;
-
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -101,7 +99,9 @@ public class DNSServer {
                 int idx = spec.indexOf("]");
                 if (idx != -1) {
                     ip = spec.substring(1,idx);
-                    spec = spec.substring(idx);
+                    spec = spec.substring(idx + 1);
+                } else {
+                    throw new IOException("Invalid IPv6 DNS server entry (missing closing ']'): " + spec);
                 }
             } else { // Check if String is just IP without brackets for backward compatibility
                 String specUpper = spec.toUpperCase();
@@ -111,28 +111,35 @@ public class DNSServer {
                 }
             }
 
-            String[] entryTokens  = spec.split("::");
+            String[] entryTokens  = spec.split("::", -1);
 
             if (ip == null)
                 ip = entryTokens[0];
 
+            if (ip == null || ip.trim().isEmpty())
+                throw new IOException("Missing IP address in DNS server entry!");
+
             port = 53;
-            if (entryTokens.length>1) {
+            if (entryTokens.length>1 && !entryTokens[1].trim().isEmpty()) {
                 try {
-                    port = Integer.parseInt(entryTokens[1]);
+                    port = Integer.parseInt(entryTokens[1].trim());
                 } catch (NumberFormatException nfe) {
                     throw new IOException("Invalid port!", nfe);
                 }
             }
             protocol = DNSServer.UDP;
-            if (entryTokens.length>2)
-                protocol = DNSServer.getProtoFromString(entryTokens[2]);
+            if (entryTokens.length>2 && !entryTokens[2].trim().isEmpty())
+                protocol = DNSServer.getProtoFromString(entryTokens[2].trim());
 
             endPoint = null;
-            if (entryTokens.length>3)
-                endPoint = entryTokens[3];
-            if (entryTokens.length >4) //url host is possibly IPv6 address with :: in between
-                endPoint = endPoint+"::"+entryTokens[4];
+            if (entryTokens.length>3) {
+                StringBuilder ep = new StringBuilder(entryTokens[3]);
+                for (int k = 4; k < entryTokens.length; k++)
+                    ep.append("::").append(entryTokens[k]);
+                String epStr = ep.toString();
+                if (!epStr.isEmpty())
+                    endPoint = epStr;
+            }
         }
 
         protected DNSServer createDNSServer(int timeout) throws IOException {
@@ -155,12 +162,8 @@ public class DNSServer {
             if (!this.getClass().equals(cfg2.getClass()))
                 return false;
             DNSServerConfig cfg = (DNSServerConfig) cfg2;
-            String endPoint1 = endPoint;
-            String endPoint2 = cfg.endPoint;
-            if (endPoint1 == null)
-                endPoint1 = "";
-            if (endPoint2 == null)
-                endPoint2 = "";
+            String endPoint1 = endPoint == null ? "" : endPoint;
+            String endPoint2 = cfg.endPoint == null ? "" : cfg.endPoint;
             return (
                 protocol == cfg.protocol &&
                 ip.equals(cfg.ip) &&
@@ -168,6 +171,17 @@ public class DNSServer {
                 endPoint1.equals(endPoint2) &&
                 active == cfg.active
             );
+        }
+
+        @Override
+        public int hashCode() {
+            int h = 17;
+            h = 31 * h + protocol;
+            h = 31 * h + (ip != null ? ip.hashCode() : 0);
+            h = 31 * h + port;
+            h = 31 * h + (endPoint != null ? endPoint.hashCode() : 0);
+            h = 31 * h + (active ? 1 : 0);
+            return h;
         }
     }
 
@@ -362,27 +376,40 @@ public class DNSServer {
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
         if (obj == null || ! (obj.getClass().equals(this.getClass())))
             return false;
 
        return address.equals(((DNSServer) obj).address);
     }
 
+    @Override
+    public int hashCode() {
+        return address != null ? address.hashCode() : 0;
+    }
+
     protected void readResponseFromStream(DataInputStream in, int size, DatagramPacket response) throws IOException {
+        if (size < 0)
+            throw new IOException("Invalid negative DNS response size: " + size);
+        int needed = size + response.getOffset();
+        if (needed > maxBufSize)
+            throw new IOException("Max response buffer too small for response of length " + size);
 
-        if (size + response.getOffset() > response.getData().length) { //existing buffer does not fit
+        if (needed > response.getData().length) { //existing buffer does not fit
+            int newSize;
             synchronized (DNSServer.class) {
-                //Write access to static data, synchronization against the class is needed.
-                //Could be optimized in future by setting the buf size per DNSServer Instance and not static.
-                //However at the time the buffer is created, it is not known what will be the DNSServer used, because it be might be switched.
-
-                if (size + response.getOffset() < maxBufSize && bufSize < size+response.getOffset()) { //resize for future requests
-                    bufSize = Math.min(1024*(((size +response.getOffset()) / 1024) +1), maxBufSize);
-                    Logger.getLogger().logLine("BUFFER RESIZE:"+bufSize);
-                } else if (size + response.getOffset() >= maxBufSize ) throw new IOException("Max response buffer to small for response of length " + size);
-
-                response.setData(new byte[bufSize],response.getOffset(),bufSize-response.getOffset());
+                if (bufSize < needed) { //resize for future requests
+                    bufSize = Math.min(1024 * ((needed / 1024) + 1), maxBufSize);
+                    Logger.getLogger().logLine("BUFFER RESIZE:" + bufSize);
+                }
+                newSize = Math.max(bufSize, needed);
             }
+            byte[] resized = new byte[newSize];
+            if (response.getOffset() > 0 && response.getData() != null && response.getData().length >= response.getOffset()) {
+                System.arraycopy(response.getData(), 0, resized, 0, response.getOffset());
+            }
+            response.setData(resized, response.getOffset(), newSize - response.getOffset());
         }
         try {
             in.readFully(response.getData(), response.getOffset(), size);
@@ -551,8 +578,6 @@ class UDP extends DNSServer {
                     Logger.getLogger().logLine("BUFFER RESIZE:"+bufSize);
                 } else if (bufSize >= maxBufSize )
                     Logger.getLogger().logLine("MAX BUFFER SIZE reached:"+bufSize);
-
-                response.setData(new byte[bufSize],response.getOffset(),bufSize-response.getOffset());
             }
         }
     }
@@ -563,6 +588,10 @@ class UDP extends DNSServer {
     }
 
     private boolean isTruncatedResponse(DatagramPacket response) {
+        if (response.getLength() < 3 || response.getData() == null
+                || response.getOffset() + 2 >= response.getData().length) {
+            return false;
+        }
         return ((response.getData()[response.getOffset()+2] & 0XFF) & 2) == 2;
     }
 }
@@ -589,6 +618,18 @@ class TCP extends DNSServer {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj))
+            return false;
+        return ssl == ((TCP) obj).ssl;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * super.hashCode() + (ssl ? 1 : 0);
+    }
+
+    @Override
     public void resolve(DatagramPacket request, DatagramPacket response) throws IOException {
 
         Connection con = Connection.connect(address, timeout, ssl, null, proxy, false);
@@ -600,7 +641,7 @@ class TCP extends DNSServer {
                 out.writeShort(request.getLength());
                 out.write(request.getData(), request.getOffset(), request.getLength());
                 out.flush();
-                int size = in.readShort();
+                int size = in.readUnsignedShort();
                 readResponseFromStream(in, size, response);
                 response.setSocketAddress(address);
                 con.release(true);
@@ -644,6 +685,19 @@ class DoH extends DNSServer {
         return "DOH";
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj))
+            return false;
+        DoH other = (DoH) obj;
+        return url != null ? url.equals(other.url) : other.url == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * super.hashCode() + (url != null ? url.hashCode() : 0);
+    }
+
     private void buildTemplate() throws IOException {
         String user_agent = "Mozilla/5.0 (" + System.getProperty("os.name") + "; " + System.getProperty("os.version") + ")";
         HttpHeader REQ_TEMPLATE = new HttpHeader(HttpHeader.REQUEST_HEADER);
@@ -684,7 +738,10 @@ class DoH extends DNSServer {
 
                 boolean reuse = true;
 
-                int size = (int) responseHeader.getContentLength();
+                long contentLen = responseHeader.getContentLength();
+                if (contentLen > maxBufSize)
+                    throw new IOException("DoH response too large: " + contentLen);
+                int size = (int) contentLen;
 
                 if (size == -1) {
 
@@ -755,11 +812,24 @@ class DoH2 extends DNSServer {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj))
+            return false;
+        DoH2 other = (DoH2) obj;
+        return url != null ? url.equals(other.url) : other.url == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * super.hashCode() + (url != null ? url.hashCode() : 0);
+    }
+
+    @Override
     public void resolve(DatagramPacket request, DatagramPacket response) throws IOException {
         try {
-            byte[] dnsReply = new byte[0];
-            dnsReply = DOHHttp2Util.sendDnsQuery(urlHostAddress, path, request.getData(), request.getOffset(), request.getLength(), timeout, proxy);
+            byte[] dnsReply = DOHHttp2Util.sendDnsQuery(urlHostAddress, path, request.getData(), request.getOffset(), request.getLength(), timeout, proxy);
             readResponseFromStream(new DataInputStream(new ByteArrayInputStream(dnsReply)), dnsReply.length, response);
+            response.setSocketAddress(address);
         } catch (Exception e) {
             //Logger.getLogger().logException(e);
             throw new IOException(e);

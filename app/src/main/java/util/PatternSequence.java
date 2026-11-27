@@ -75,44 +75,60 @@ public class PatternSequence {
 
     }
 
-    private static Object NULL = new Object();
+    private static final Object NULL = new Object();
     Vector<Pattern> patternList = new Vector<Pattern>();
-    LRUCache matchedPatternCache= new LRUCache(1000);
+    final LRUCache matchedPatternCache = new LRUCache(1000);
 
-    public boolean addPattern(String pattern, Object value) {
-        matchedPatternCache.clear();
+    public synchronized boolean addPattern(String pattern, Object value) {
+        synchronized (matchedPatternCache) {
+            matchedPatternCache.clear();
+        }
         return patternList.add(new Pattern(pattern, value));
     }
 
-    public boolean removePattern(String pattern, Object value) {
-        matchedPatternCache.clear();
+    public synchronized boolean removePattern(String pattern, Object value) {
+        synchronized (matchedPatternCache) {
+            matchedPatternCache.clear();
+        }
         return patternList.remove(new Pattern(pattern, value));
     }
 
     public Object match(String s) {
 
-        Object value = matchedPatternCache.get(s);
+        Object value;
+        synchronized (matchedPatternCache) {
+            value = matchedPatternCache.get(s);
+        }
         if (value == NULL)
             return null;
         if (value != null)
             return value;
 
-        Iterator<Pattern> it = patternList.iterator();
-        while (it.hasNext()) {
+        Pattern[] snapshot;
+        synchronized (this) {
+            snapshot = patternList.toArray(new Pattern[0]);
+        }
 
-            Pattern pattern = it.next();
-            value = pattern.match(s);
+        for (int i = 0; i < snapshot.length; i++) {
+            value = snapshot[i].match(s);
             if (value != null) {
-                matchedPatternCache.put(s, value);
+                synchronized (matchedPatternCache) {
+                    matchedPatternCache.put(s, value);
+                }
                 return value;
             }
         }
-        matchedPatternCache.put(s, NULL);
+        synchronized (matchedPatternCache) {
+            matchedPatternCache.put(s, NULL);
+        }
         return null;
     }
 
-    public void clear() {
+    public synchronized void clear() {
         patternList.clear();
+        synchronized (matchedPatternCache) {
+            matchedPatternCache.clear();
+        }
     }
 
 

@@ -4,10 +4,12 @@ public class DNSServerConfigEntryValidationResult {
 
     private String ipError;
     private String portError;
+    private String endpointError;
 
     public boolean hasError() {
-        return ipError != null || portError != null;
+        return ipError != null || portError != null || endpointError != null;
     }
+
     public String getIpError() {
         return ipError;
     }
@@ -24,9 +26,26 @@ public class DNSServerConfigEntryValidationResult {
         this.portError = portError;
     }
 
+    public String getEndpointError() {
+        return endpointError;
+    }
+
+    public void setEndpointError(String endpointError) {
+        this.endpointError = endpointError;
+    }
+
     public DNSServerConfigEntryValidationResult() {
         this.ipError = null;
         this.portError = null;
+        this.endpointError = null;
+    }
+
+    private static boolean safeEquals(Object a, Object b) {
+        return a == b || (a != null && a.equals(b));
+    }
+
+    private static int safeHash(Object a) {
+        return a != null ? a.hashCode() : 0;
     }
 
     @Override
@@ -34,18 +53,17 @@ public class DNSServerConfigEntryValidationResult {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DNSServerConfigEntryValidationResult that = (DNSServerConfigEntryValidationResult) o;
-        //return Objects.equals(ipError, that.ipError) && Objects.equals(portError, that.portError);
-        if ((ipError != null && portError == null)|| (ipError != null && portError == null))
-            return false;
-        if ((ipError == null && portError == null))
-            return true;
-
-        return ipError.equals(that.ipError) && portError.equals(that.portError);
+        return safeEquals(ipError, that.ipError)
+                && safeEquals(portError, that.portError)
+                && safeEquals(endpointError, that.endpointError);
     }
 
     @Override
     public int hashCode() {
-        return 31*ipError.hashCode()+ portError.hashCode();
+        int result = safeHash(ipError);
+        result = 31 * result + safeHash(portError);
+        result = 31 * result + safeHash(endpointError);
+        return result;
     }
 
 }

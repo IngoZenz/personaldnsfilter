@@ -101,8 +101,13 @@ public class Utils {
 	public static long getLongStringHash(String str) {
 		int a = 0;
 		int b = 0;
-		int len = str.length();
-		byte[] bytes = str.getBytes();
+		byte[] bytes;
+		try {
+			bytes = str.getBytes("UTF-8");
+		} catch (java.io.UnsupportedEncodingException e) {
+			bytes = str.getBytes();
+		}
+		int len = bytes.length;
 		for (int i = 0; i < len; i++) {
 			a = 31 * a + (bytes[i] & 0xFF);
 			b = 31 * b + (bytes[len - i - 1] & 0xFF);
@@ -123,13 +128,12 @@ public class Utils {
 	}
 
 	public static void sleep(long millis){
-		Object obj = new Object();
-		synchronized (obj) {
-			try {
-				obj.wait(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+		if (millis <= 0)
+			return;
+		try {
+			Thread.sleep(millis);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 		}
 	}
 
@@ -208,7 +212,7 @@ public class Utils {
 					if (pos == buf.length)
 						throw new IOException("Buffer overflow!");
 
-					if (printableOnly && r < 32 && r < 9 && r > 13)
+					if (printableOnly && r < 32 && r != 9 && r != 10 && r != 13)
 						throw new IOException ("Non printable character: "+r+"("+((char)r)+")");
 
 					buf[pos] = (byte) (r);
@@ -265,11 +269,31 @@ public class Utils {
 
 	public static Object deserializeObject(byte[] bytes) throws IOException {
 		ByteArrayInputStream bytesIn = new ByteArrayInputStream(bytes);
-		ObjectInputStream objIn = new ObjectInputStream (bytesIn);
+		java.io.ObjectInputStream objIn = new java.io.ObjectInputStream(bytesIn) {
+			@Override
+			protected Class<?> resolveClass(java.io.ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+				Class<?> cls = super.resolveClass(desc);
+				String name = cls.getName();
+				if (!Throwable.class.isAssignableFrom(cls)
+						&& !name.startsWith("java.lang.")
+						&& !name.startsWith("java.util.")
+						&& !name.startsWith("[Ljava.lang.")) {
+					throw new java.io.InvalidClassException("Unauthorized deserialization attempt", name);
+				}
+				return cls;
+			}
+
+			@Override
+			protected Class<?> resolveProxyClass(String[] interfaces) throws IOException, ClassNotFoundException {
+				throw new java.io.InvalidClassException("Dynamic proxy deserialization is not permitted");
+			}
+		};
 		try {
 			return objIn.readObject();
 		} catch (ClassNotFoundException e) {
 			throw new IOException(e);
+		} finally {
+			objIn.close();
 		}
 	}
 
@@ -386,30 +410,43 @@ public class Utils {
 	}
 
 	public static void unzipFile(ZipInputStream zis, String outputDir) throws IOException {
+		File destDir = new File(outputDir);
+		String canonicalDestDir = destDir.getCanonicalPath();
 		byte[] buffer = new byte[1024];
-		ZipEntry zipEntry = zis.getNextEntry();
-		while (zipEntry != null) {
-			File newFile = new File(outputDir + File.separator, zipEntry.getName());
-			if (zipEntry.isDirectory()) {
-				if (!newFile.isDirectory() && !newFile.mkdirs()) {
-					throw new IOException("Failed to create directory " + newFile);
+		try {
+			ZipEntry zipEntry = zis.getNextEntry();
+			while (zipEntry != null) {
+				File newFile = new File(destDir, zipEntry.getName());
+				String canonicalNewFile = newFile.getCanonicalPath();
+				if (!canonicalNewFile.equals(canonicalDestDir)
+						&& !canonicalNewFile.startsWith(canonicalDestDir + File.separator)) {
+					throw new IOException("Blocked unsafe zip entry outside target directory: " + zipEntry.getName());
 				}
-			} else {
-				File parent = newFile.getParentFile();
-				if (!parent.isDirectory() && !parent.mkdirs()) {
-					throw new IOException("Failed to create directory " + parent);
+				if (zipEntry.isDirectory()) {
+					if (!newFile.isDirectory() && !newFile.mkdirs()) {
+						throw new IOException("Failed to create directory " + newFile);
+					}
+				} else {
+					File parent = newFile.getParentFile();
+					if (parent != null && !parent.isDirectory() && !parent.mkdirs()) {
+						throw new IOException("Failed to create directory " + parent);
+					}
+					FileOutputStream fos = new FileOutputStream(newFile);
+					try {
+						int len;
+						while ((len = zis.read(buffer)) > 0) {
+							fos.write(buffer, 0, len);
+						}
+					} finally {
+						fos.close();
+					}
 				}
-				FileOutputStream fos = new FileOutputStream(newFile);
-				int len = 0;
-				while ((len = zis.read(buffer)) > 0) {
-					fos.write(buffer, 0, len);
-				}
-				fos.close();
+				zipEntry = zis.getNextEntry();
 			}
-			zipEntry = zis.getNextEntry();
+			zis.closeEntry();
+		} finally {
+			zis.close();
 		}
-		zis.closeEntry();
-		zis.close();
 	}
 
 }
