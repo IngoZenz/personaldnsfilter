@@ -24,23 +24,25 @@ jobs:
       - name: Run desktop unit tests and build JAR
         run: |
           set -o pipefail
-          ./gradlew --no-daemon --stacktrace :desktop:test :desktop:jar 2>&1 | tee gradle-desktop.log
+          ./gradlew --no-daemon --console=plain :desktop:test :desktop:jar 2>&1 | tee gradle-desktop.log
       - name: Publish failure log
         if: failure()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          LOG_TAIL="$(tail -n 120 gradle-desktop.log)"
           python3 - <<'PY' > payload.json
           import json, os
           txt = open("gradle-desktop.log", encoding="utf-8", errors="replace").read()
-          tail = "\n".join(txt.splitlines()[-150:])
+          lines = txt.splitlines()
+          body = "\n".join(lines[:200])
+          if len(lines) > 200:
+              body += "\n...\n" + "\n".join(lines[-80:])
           print(json.dumps({
               "name": "desktop-failure-log",
               "head_sha": os.environ["GITHUB_SHA"],
               "status": "completed",
               "conclusion": "failure",
-              "output": {"title": "Desktop Gradle failure", "summary": "Last 150 lines", "text": tail}
+              "output": {"title": "Desktop Gradle failure", "summary": "Build log", "text": body[:60000]}
           }))
           PY
           gh api "repos/${{ github.repository }}/check-runs" --method POST --input payload.json
@@ -59,7 +61,7 @@ jobs:
       - name: Run Android unit tests and assemble debug APK
         run: |
           set -o pipefail
-          ./gradlew --no-daemon --stacktrace :app:testDebugUnitTest :app:assembleDebug 2>&1 | tee gradle-android.log
+          ./gradlew --no-daemon --console=plain :app:testDebugUnitTest :app:assembleDebug 2>&1 | tee gradle-android.log
       - name: Publish failure log
         if: failure()
         env:
@@ -68,13 +70,16 @@ jobs:
           python3 - <<'PY' > payload.json
           import json, os
           txt = open("gradle-android.log", encoding="utf-8", errors="replace").read()
-          tail = "\n".join(txt.splitlines()[-150:])
+          lines = txt.splitlines()
+          body = "\n".join(lines[:200])
+          if len(lines) > 200:
+              body += "\n...\n" + "\n".join(lines[-80:])
           print(json.dumps({
               "name": "android-failure-log",
               "head_sha": os.environ["GITHUB_SHA"],
               "status": "completed",
               "conclusion": "failure",
-              "output": {"title": "Android Gradle failure", "summary": "Last 150 lines", "text": tail}
+              "output": {"title": "Android Gradle failure", "summary": "Build log", "text": body[:60000]}
           }))
           PY
           gh api "repos/${{ github.repository }}/check-runs" --method POST --input payload.json
