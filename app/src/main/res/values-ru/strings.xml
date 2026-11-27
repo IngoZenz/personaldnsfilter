@@ -43,7 +43,7 @@
   <string name="port" translatable="true">порт</string>
   <string name="dnsProtocol" translatable="true">DNS протокол</string>
   <string name="endpoint" translatable="true">конечная точка</string>
-  <string name="testDNSResultSuccess">Успех:\nСредний пинг ~ %1$d\"</string>
+  <string name="testDNSResultSuccess">Успех:\nСредний пинг ~ %1$d ms</string>
   <string name="testDNSResultFailure">Ошибка: %1$s</string>
   <string name="ipEmptyError">IP не может быть пустым</string>
   <string name="portEmptyError">Порт не может быть пустым</string>

@@ -91,9 +91,13 @@ public class TimoutNotificator implements Runnable {
 			}
 			TimeoutListener[] allToListeners = (TimeoutListener[]) toListeners.toArray(new TimeoutListener[0]);
 			for (int i = 0; i < allToListeners.length; i++) {
-				allToListeners[i].timeoutNotification();
+				try {
+					allToListeners[i].timeoutNotification();
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
 			}
-		}		
+		}
 		
 	}
 	

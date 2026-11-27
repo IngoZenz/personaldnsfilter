@@ -8,7 +8,9 @@ public class DNSServerConfigUtils {
     static void hideKeyboard(View view) {
         view.clearFocus();
         InputMethodManager manager = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        manager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        if (manager != null) {
+            manager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
     static String formatSerializedProperties(String fallbackDNSPropertyValue) {

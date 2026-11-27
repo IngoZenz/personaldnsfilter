@@ -40,27 +40,26 @@ public class PooledConnectionOutputStream extends OutputStream {
 
 	@Override
 	public void write(int b) throws IOException {
-		out.write(b);
-		traffic++;
 		if (!valid)
 			throw new IllegalStateException("Invalid:"+this);
+		out.write(b);
+		traffic++;
 	}
 	
 	@Override
 	public void write(byte[] b) throws IOException {
-		out.write(b);
-		traffic = traffic+b.length;
 		if (!valid)
 			throw new IllegalStateException("Invalid:"+this);
-
+		out.write(b);
+		traffic = traffic+b.length;
 	}
 	
 	@Override
 	public void write(byte[] b, int offs, int len) throws IOException {
-		out.write(b, offs,len);
-		traffic = traffic+len;
 		if (!valid)
 			throw new IllegalStateException("Invalid:"+this);
+		out.write(b, offs,len);
+		traffic = traffic+len;
 	}
 	
 	@Override
@@ -70,9 +69,9 @@ public class PooledConnectionOutputStream extends OutputStream {
 	
 	@Override
 	public void flush() throws IOException {
-		out.flush();
 		if (!valid)
 			throw new IllegalStateException("Invalid:"+this);
+		out.flush();
 	}
 	
 	public long getTraffic() {

@@ -43,7 +43,7 @@
   <string name="port" translatable="true">المنفذ</string>
   <string name="dnsProtocol" translatable="true">بروتوكول DNS</string>
   <string name="endpoint" translatable="true">نقطة النهاية</string>
-  <string name="testDNSResultSuccess">تم بنجاح:\nمتوسط الـ ping ~ %1$d\"</string>
+  <string name="testDNSResultSuccess">تم بنجاح:\nمتوسط الـ ping ~ %1$d ms</string>
   <string name="testDNSResultFailure">فشل: %1$s</string>
   <string name="ipEmptyError">IP يجب ألا يكون فارغًا</string>
   <string name="portEmptyError">المنفذ يجب ألا يكون فارغًا</string>

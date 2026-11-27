@@ -15,38 +15,44 @@ public class DNSServerConfigEntrySerializer {
 
     private DNSServerConfigBaseEntry deserializeImpl(String entry) {
 
-        //TODO replace duplicated parser impl with the one already in DNSServer class
-
-        if (entry == null || entry.isEmpty()) {
+        if (entry == null) {
+            return new DNSServerConfigEntry();
+        }
+        entry = entry.trim();
+        if (entry.isEmpty()) {
             return new DNSServerConfigEntry();
         }
 
         if (entry.startsWith(CHAR_LINE_COMMENTED)) {
-            return new DNSServerConfigCommentedEntry(entry.replaceFirst(CHAR_LINE_COMMENTED, EMPTY_STRING));
+            return new DNSServerConfigCommentedEntry(entry.substring(CHAR_LINE_COMMENTED.length()));
         }
 
         DNSServerConfigEntry newEntry;
         boolean isActive = !entry.startsWith(CHAR_ENTRY_INACTIVE);
         if (!isActive) {
-            entry = entry.replaceFirst(CHAR_ENTRY_INACTIVE, EMPTY_STRING);
+            entry = entry.substring(CHAR_ENTRY_INACTIVE.length()).trim();
         }
 
-        String notBracedIP = getIPwithoutBracer(entry);
         String[] splittedEntry;
-        if (notBracedIP == null) {
-            splittedEntry = entry.split(ENTRY_PARTS_SEPARATOR, 4);
-        } else {
-            String[] partWithoutIP = entry
-                    .substring(entry.indexOf(IP_END_BRACER))
-                    .split(ENTRY_PARTS_SEPARATOR);
-            if (partWithoutIP.length > 1) {
-                splittedEntry = new String[1 + partWithoutIP.length - 1];
-                splittedEntry[0] = notBracedIP;
-                System.arraycopy(partWithoutIP, 1, splittedEntry, 1, partWithoutIP.length - 1);
-            } else {
-                splittedEntry = new String[1];
-                splittedEntry[0] = notBracedIP;
+        if (entry.startsWith(IP_START_BRACER)) {
+            int ip6BracesEnd = entry.indexOf(IP_END_BRACER);
+            if (ip6BracesEnd <= 0) {
+                throw new IllegalArgumentException("Unclosed IPv6 bracket in entry: " + entry);
             }
+            String bracedIP = entry.substring(1, ip6BracesEnd);
+            String remainder = entry.substring(ip6BracesEnd + 1).trim();
+            if (remainder.isEmpty()) {
+                splittedEntry = new String[]{bracedIP};
+            } else if (!remainder.startsWith(ENTRY_PARTS_SEPARATOR)) {
+                throw new IllegalArgumentException("Invalid separator after IPv6 address: " + entry);
+            } else {
+                String[] partWithoutIP = remainder.substring(ENTRY_PARTS_SEPARATOR.length()).split(ENTRY_PARTS_SEPARATOR, 3);
+                splittedEntry = new String[1 + partWithoutIP.length];
+                splittedEntry[0] = bracedIP;
+                System.arraycopy(partWithoutIP, 0, splittedEntry, 1, partWithoutIP.length);
+            }
+        } else {
+            splittedEntry = entry.split(ENTRY_PARTS_SEPARATOR, 4);
         }
 
         if (splittedEntry.length == 1) {
@@ -54,11 +60,9 @@ public class DNSServerConfigEntrySerializer {
         } else if (splittedEntry.length == 2) {
             newEntry = new DNSServerConfigEntry(splittedEntry[0], splittedEntry[1], isActive);
         } else if (splittedEntry.length == 3) {
-            newEntry = new DNSServerConfigEntry(splittedEntry[0], splittedEntry[1], DNSType.valueOf(splittedEntry[2].toUpperCase()), isActive);
-        } else if (splittedEntry.length == 4){
-            newEntry = new DNSServerConfigEntry(splittedEntry[0], splittedEntry[1], DNSType.valueOf(splittedEntry[2].toUpperCase()), splittedEntry[3], isActive);
-        } else { //url host might contain IPV6 Address with :: in it => add also "::" +splittedEntry[4] to the url
-            newEntry = new DNSServerConfigEntry(splittedEntry[0], splittedEntry[1], DNSType.valueOf(splittedEntry[2].toUpperCase()), splittedEntry[3]+"::"+splittedEntry[4], isActive);
+            newEntry = new DNSServerConfigEntry(splittedEntry[0], splittedEntry[1], DNSType.valueOf(splittedEntry[2].trim().toUpperCase()), isActive);
+        } else {
+            newEntry = new DNSServerConfigEntry(splittedEntry[0], splittedEntry[1], DNSType.valueOf(splittedEntry[2].trim().toUpperCase()), splittedEntry[3], isActive);
         }
 
         return newEntry;
@@ -84,15 +88,5 @@ public class DNSServerConfigEntrySerializer {
         }
 
         return newEntry;
-    }
-
-    private String getIPwithoutBracer(String entry) {
-        if (entry.contains(IP_START_BRACER)) {
-            int ipv6BracesStart = entry.indexOf(IP_START_BRACER);
-            int ip6BracesEnd = entry.indexOf(IP_END_BRACER);
-            return entry.substring(ipv6BracesStart + 1, ip6BracesEnd);
-        } else {
-            return null;
-        }
     }
 }

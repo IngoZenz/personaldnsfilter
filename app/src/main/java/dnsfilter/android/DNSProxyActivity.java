@@ -80,9 +80,12 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -118,52 +121,76 @@ public class DNSProxyActivity extends Activity
 	protected Button reloadFilterBtn;
 	protected Button remoteCtrlBtn;
 	protected Button helpBtn;
-	protected static EditText logOutView;
-	protected static TextView dnsField;
-	protected static CheckBox advancedConfigCheck;
-	protected static CheckBox editFilterLoadCheck;
-	protected static CheckBox editAdditionalHostsCheck;
-	protected static CheckBox backupRestoreCheck;
-	protected static Button backupBtn;
-	protected static Button restoreBtn;
-	protected static Button restoreDefaultsBtn;
-	protected static Button backupDnBtn;
-	protected static Button backupUpBtn;
-	protected static TextView addFilterBtn;
-	protected static TextView removeFilterBtn;
-	protected static CheckBox appWhiteListCheck;
+	protected EditText logOutView;
+	protected TextView dnsField;
+	protected CheckBox advancedConfigCheck;
+	protected CheckBox editFilterLoadCheck;
+	protected CheckBox editAdditionalHostsCheck;
+	protected CheckBox backupRestoreCheck;
+	protected Button backupBtn;
+	protected Button restoreBtn;
+	protected Button restoreDefaultsBtn;
+	protected Button backupDnBtn;
+	protected Button backupUpBtn;
+	protected TextView addFilterBtn;
+	protected TextView removeFilterBtn;
+	protected CheckBox appWhiteListCheck;
 	protected static boolean appWhitelistingEnabled;
-	protected static ScrollView appWhiteListScroll;
-	protected static AppSelectorView appSelector;
-	protected static CheckBox keepAwakeCheck;
-	protected static CheckBox enableAdFilterCheck;
-	protected static CheckBox proxyModeCheck;
-	protected static CheckBox proxyLocalOnlyCheck;
-	protected static CheckBox enableAutoStartCheck;
-	protected static CheckBox rootModeCheck;
-	protected static CheckBox enableCloakProtectCheck;
-	protected static CheckBox manuallyEditConfChk;
-	protected static EditText filterReloadIntervalView;
-	protected static FilterConfig filterCfg;
-	protected static EditText additionalHostsField;
-	protected static EditText manuallyEditField;
-	protected static TextView scrollLockField;
+	protected ScrollView appWhiteListScroll;
+	protected AppSelectorView appSelector;
+	protected CheckBox keepAwakeCheck;
+	protected CheckBox enableAdFilterCheck;
+	protected CheckBox proxyModeCheck;
+	protected CheckBox proxyLocalOnlyCheck;
+	protected CheckBox enableAutoStartCheck;
+	protected CheckBox rootModeCheck;
+	protected CheckBox enableCloakProtectCheck;
+	protected CheckBox manuallyEditConfChk;
+	protected EditText filterReloadIntervalView;
+	protected FilterConfig filterCfg;
+	protected EditText additionalHostsField;
+	protected EditText manuallyEditField;
+	protected TextView scrollLockField;
 	protected static String SCROLL_PAUSE = "II  ";
 	protected static String SCROLL_CONTINUE = " ▶ ";
 	protected static boolean scroll_locked = false;
-	protected static TextView link_field;
+	protected TextView link_field;
 	protected static int link_field_color = Color.TRANSPARENT;
 	protected static String link_field_txt = "";
-	protected static MenuItem add_filter;
-	protected static MenuItem remove_filter;
+	protected MenuItem add_filter;
+	protected MenuItem remove_filter;
 	protected static String[] availableBackups;
 	protected static int selectedBackup;
-	protected static TextView titleView = null;
+	protected TextView titleView = null;
 	protected static boolean additionalHostsChanged = false;
 	protected static boolean manuallyConfEdited = false;
 	protected static SuppressRepeatingsLogger myLogger;
 
 	protected ScrollView scrollView = null;
+
+	// Lightweight non-View UI state preserved across configuration changes without leaking Views/Context
+	private static CharSequence savedLogText = null;
+	private static float savedLogSizePx = -1;
+	private static ConfigUtil.HostFilterList[] savedFilterEntries = null;
+	private static String savedFilterCategory = null;
+	private static String savedFilterReloadInterval = "";
+	private static String savedDnsFieldText = "";
+	private static String savedAdditionalHostsText = "";
+	private static String savedManuallyEditText = "";
+	private static String savedWhiteListPackages = "";
+	private static boolean savedEnableAdFilter = false;
+	private static boolean savedEnableAutoStart = false;
+	private static boolean savedBackupRestore = false;
+	private static boolean savedAppWhiteList = false;
+	private static boolean savedKeepAwake = false;
+	private static boolean savedProxyMode = false;
+	private static boolean savedProxyLocalOnly = false;
+	private static boolean savedRootMode = false;
+	private static boolean savedEnableCloakProtect = false;
+	private static boolean savedAdvancedConfig = false;
+	private static boolean savedEditFilterLoad = false;
+	private static boolean savedManuallyEditConf = false;
+	private static boolean savedEditAdditionalHosts = false;
 
 	protected static boolean appStart = true;
 
@@ -189,7 +216,7 @@ public class DNSProxyActivity extends Activity
 	protected static ConfigurationAccess CONFIG = ConfigurationAccess.getLocal();
 	protected static boolean switchingConfig = false;
 
-	protected static AlertDialog PASSWORD_DIAG = null;
+	protected AlertDialog PASSWORD_DIAG = null;
 
 	protected static boolean NO_VPN = false;
 
@@ -198,11 +225,11 @@ public class DNSProxyActivity extends Activity
 	protected static int DISPLAY_WIDTH = 0;
 	protected static int DISPLAY_HEIGTH = 0;
 
-	protected static DNSProxyActivity INSTANCE;
+	private static WeakReference<DNSProxyActivity> INSTANCE_REF = new WeakReference<DNSProxyActivity>(null);
 
 	public static void reloadLocalConfig() {
-		DNSProxyActivity instance = INSTANCE;
-		if (instance != null && CONFIG.isLocal())
+		DNSProxyActivity instance = INSTANCE_REF.get();
+		if (instance != null && !instance.isFinishing() && CONFIG.isLocal())
 			instance.loadAndApplyConfig(false);
 	}
 
@@ -210,10 +237,10 @@ public class DNSProxyActivity extends Activity
 
 		long timeout = Long.MAX_VALUE;
 
-		DNSProxyActivity activity;
+		WeakReference<DNSProxyActivity> activityRef;
 
 		public void setActivity(DNSProxyActivity activity) {
-			this.activity= activity;
+			this.activityRef = new WeakReference<DNSProxyActivity>(activity);
 		}
 
 		private void setTimeout(int timeout) {
@@ -223,12 +250,17 @@ public class DNSProxyActivity extends Activity
 
 		@Override
 		public void timeoutNotification() {
-			if (CONFIG.isLocal()) {
-				activity.setMessage(fromHtml(link_field_txt), link_field_color);
-				link_field.setMovementMethod(LinkMovementMethod.getInstance());
+			DNSProxyActivity activity = activityRef != null ? activityRef.get() : null;
+			if (activity == null || activity.isFinishing()) {
+				MSG_ACTIVE = false;
+				return;
 			}
-			else
-				activity.setMessage(fromHtml("<font color='#F7FB0A'><strong>"+ CONFIG +"</strong></font>"), link_field_color);
+			if (CONFIG.isLocal()) {
+				activity.setMessage(fromHtml(link_field_txt), link_field_color, true);
+			}
+			else {
+				activity.setMessage(fromHtml("<font color='#F7FB0A'><strong>"+ CONFIG +"</strong></font>"), link_field_color, false);
+			}
 
 			MSG_ACTIVE = false;
 		}
@@ -335,9 +367,59 @@ public class DNSProxyActivity extends Activity
 
 	@Override
 	public void setTitle(CharSequence title) {
-		if (Build.VERSION.SDK_INT >= 35)
-			titleView.setText(title);
-		else super.setTitle(title);
+		if (Build.VERSION.SDK_INT >= 35) {
+			if (titleView != null)
+				titleView.setText(title);
+		} else {
+			super.setTitle(title);
+		}
+	}
+
+	private void saveUIStateSnapshot() {
+		if (logOutView != null) {
+			savedLogText = logOutView.getText();
+			savedLogSizePx = logOutView.getTextSize();
+		}
+		if (filterCfg != null) {
+			savedFilterEntries = filterCfg.getFilterEntries();
+			savedFilterCategory = filterCfg.getCurrentCategory();
+		}
+		if (filterReloadIntervalView != null)
+			savedFilterReloadInterval = filterReloadIntervalView.getText().toString();
+		if (dnsField != null)
+			savedDnsFieldText = dnsField.getText().toString();
+		if (additionalHostsField != null)
+			savedAdditionalHostsText = additionalHostsField.getText().toString();
+		if (manuallyEditField != null)
+			savedManuallyEditText = manuallyEditField.getText().toString();
+		if (appSelector != null)
+			savedWhiteListPackages = appSelector.getSelectedAppPackages();
+		if (enableAdFilterCheck != null)
+			savedEnableAdFilter = enableAdFilterCheck.isChecked();
+		if (enableAutoStartCheck != null)
+			savedEnableAutoStart = enableAutoStartCheck.isChecked();
+		if (backupRestoreCheck != null)
+			savedBackupRestore = backupRestoreCheck.isChecked();
+		if (appWhiteListCheck != null)
+			savedAppWhiteList = appWhiteListCheck.isChecked();
+		if (keepAwakeCheck != null)
+			savedKeepAwake = keepAwakeCheck.isChecked();
+		if (proxyModeCheck != null)
+			savedProxyMode = proxyModeCheck.isChecked();
+		if (proxyLocalOnlyCheck != null)
+			savedProxyLocalOnly = proxyLocalOnlyCheck.isChecked();
+		if (rootModeCheck != null)
+			savedRootMode = rootModeCheck.isChecked();
+		if (enableCloakProtectCheck != null)
+			savedEnableCloakProtect = enableCloakProtectCheck.isChecked();
+		if (advancedConfigCheck != null)
+			savedAdvancedConfig = advancedConfigCheck.isChecked();
+		if (editFilterLoadCheck != null)
+			savedEditFilterLoad = editFilterLoadCheck.isChecked();
+		if (manuallyEditConfChk != null)
+			savedManuallyEditConf = manuallyEditConfChk.isChecked();
+		if (editAdditionalHostsCheck != null)
+			savedEditAdditionalHosts = editAdditionalHostsCheck.isChecked();
 	}
 
 	/**
@@ -374,11 +456,11 @@ public class DNSProxyActivity extends Activity
 
 			AndroidEnvironment.initEnvironment(this);
 
-			DISPLAY_WIDTH = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getWidth();
-			DISPLAY_HEIGTH= ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay().getHeight();
+			DISPLAY_WIDTH = getResources().getDisplayMetrics().widthPixels;
+			DISPLAY_HEIGTH = getResources().getDisplayMetrics().heightPixels;
 
 			MsgTO.setActivity(this);
-			INSTANCE = this;
+			INSTANCE_REF = new WeakReference<DNSProxyActivity>(this);
 
 			if (Build.VERSION.SDK_INT >= 21) {
 				Window window = this.getWindow();
@@ -451,19 +533,12 @@ public class DNSProxyActivity extends Activity
 			}
 
 			//log view init
-			Spannable logTxt = null;
-			float logSize = -1;
-			if (logOutView != null) {
-				logTxt = logOutView.getText();
-				logSize = logOutView.getTextSize();
-			}
-
 			logOutView = (EditText) findViewById(R.id.logOutput);
-			if (logSize != -1)
-				logOutView.setTextSize(TypedValue.COMPLEX_UNIT_PX, logSize);
+			if (savedLogSizePx != -1)
+				logOutView.setTextSize(TypedValue.COMPLEX_UNIT_PX, savedLogSizePx);
 
-			if (logTxt != null)
-				logOutView.setText(logTxt);
+			if (savedLogText != null)
+				logOutView.setText(savedLogText);
 			else
 				logOutView.setText(fromHtml("<strong><em>****This is personalDNSfilter V+" + DNSFilterManager.VERSION + "****</em></strong><br><br>"));
 
@@ -484,31 +559,20 @@ public class DNSProxyActivity extends Activity
 			}
 			setTitle("personalDNSfilter V" + version + " (Connections:" + connCnt + ")");
 
-			ConfigUtil.HostFilterList[] cfgEntries = null;
-			String filterCategory = null;
-			if (filterCfg != null) {
-				cfgEntries = filterCfg.getFilterEntries();
-				filterCategory = filterCfg.getCurrentCategory();
-				filterCfg.clear(); //clean references etc
-			}
-
 			Button categoryUp = ((Button) findViewById(R.id.CategoryUp));
 			Button categoryDn = ((Button) findViewById(R.id.CategoryDown));
 			TextView categoryField = ((TextView) findViewById(R.id.categoryFilter));
 			Button restoreDefault = ((Button) findViewById(R.id.restoreDefaultBtn));
 
-
-			filterCfg = new FilterConfig((TableLayout) findViewById(R.id.filtercfgtable), categoryUp, categoryDn, categoryField, restoreDefault);
-			if (cfgEntries != null) {
-				filterCfg.setEntries(cfgEntries);
-				filterCfg.setCurrentCategory(filterCategory);
-			}
-
-			String uiText = "";
-			if (filterReloadIntervalView != null)
-				uiText = filterReloadIntervalView.getText().toString();
 			filterReloadIntervalView = (EditText) findViewById(R.id.filterloadinterval);
-			filterReloadIntervalView.setText(uiText);
+			filterReloadIntervalView.setText(savedFilterReloadInterval);
+
+			filterCfg = new FilterConfig((TableLayout) findViewById(R.id.filtercfgtable), categoryUp, categoryDn, categoryField, restoreDefault, filterReloadIntervalView);
+			if (savedFilterEntries != null) {
+				filterCfg.setEntries(savedFilterEntries);
+				if (savedFilterCategory != null)
+					filterCfg.setCurrentCategory(savedFilterCategory);
+			}
 
 			startBtn = (Button) findViewById(R.id.startBtn);
 			startBtn.setOnClickListener(this);
@@ -551,103 +615,75 @@ public class DNSProxyActivity extends Activity
 
 			scrollLockField.setOnClickListener(this);
 
-			uiText = "";
-
 			scrollView = (ScrollView) findViewById(R.id.logScroll);
 
-			if (dnsField != null)
-				uiText = dnsField.getText().toString();
 			dnsField = (TextView) findViewById(R.id.dnsField);
-			dnsField.setText(uiText);
+			dnsField.setText(savedDnsFieldText);
 			dnsField.setEnabled(true);
 			dnsField.setOnClickListener(this);
 
-			boolean checked = enableAdFilterCheck != null && enableAdFilterCheck.isChecked();
 			enableAdFilterCheck = (CheckBox) findViewById(R.id.enableAddFilter);
-			enableAdFilterCheck.setChecked(checked);
+			enableAdFilterCheck.setChecked(savedEnableAdFilter);
 			enableAdFilterCheck.setOnClickListener(this);
 
-			checked = enableAutoStartCheck != null && enableAutoStartCheck.isChecked();
 			enableAutoStartCheck = (CheckBox) findViewById(R.id.enableAutoStart);
-			enableAutoStartCheck.setChecked(checked);
+			enableAutoStartCheck.setChecked(savedEnableAutoStart);
 			enableAutoStartCheck.setOnClickListener(this);
 
-			checked = backupRestoreCheck != null && backupRestoreCheck.isChecked();
 			backupRestoreCheck = (CheckBox) findViewById(R.id.backupRestoreChk);
-			backupRestoreCheck.setChecked(checked);
+			backupRestoreCheck.setChecked(savedBackupRestore);
 			backupRestoreCheck.setOnClickListener(this);
 
-			checked = appWhiteListCheck != null && appWhiteListCheck.isChecked();
 			appWhiteListCheck = (CheckBox) findViewById(R.id.appWhitelist);
-			appWhiteListCheck.setChecked(checked);
+			appWhiteListCheck.setChecked(savedAppWhiteList);
 			appWhiteListCheck.setOnClickListener(this);
 
-			checked = keepAwakeCheck != null && keepAwakeCheck.isChecked();
 			keepAwakeCheck = (CheckBox) findViewById(R.id.keepAwakeCheck);
-			keepAwakeCheck.setChecked(checked);
+			keepAwakeCheck.setChecked(savedKeepAwake);
 			keepAwakeCheck.setOnClickListener(this);
 
-			checked = proxyModeCheck != null && proxyModeCheck.isChecked();
 			proxyModeCheck = (CheckBox) findViewById(R.id.proxyModeCheck);
-			proxyModeCheck.setChecked(checked);
+			proxyModeCheck.setChecked(savedProxyMode);
 			proxyModeCheck.setOnClickListener(this);
 
-			checked = proxyLocalOnlyCheck != null && proxyLocalOnlyCheck .isChecked();
 			proxyLocalOnlyCheck = (CheckBox) findViewById(R.id.proxyLocalOnlyCheck);
-			proxyLocalOnlyCheck.setChecked(checked);
+			proxyLocalOnlyCheck.setChecked(savedProxyLocalOnly);
 			proxyLocalOnlyCheck.setOnClickListener(this);
 
-			checked = rootModeCheck != null && rootModeCheck.isChecked();
 			rootModeCheck = (CheckBox) findViewById(R.id.rootModeCheck);
-			rootModeCheck.setChecked(checked);
+			rootModeCheck.setChecked(savedRootMode);
 			rootModeCheck.setOnClickListener(this);
 
-			checked = enableCloakProtectCheck != null && enableCloakProtectCheck.isChecked();
 			enableCloakProtectCheck = (CheckBox) findViewById(R.id.cloakProtectCheck);
-			enableCloakProtectCheck.setChecked(checked);
+			enableCloakProtectCheck.setChecked(savedEnableCloakProtect);
 			enableCloakProtectCheck.setOnClickListener(this);
 
-			checked = advancedConfigCheck != null && advancedConfigCheck.isChecked();
 			advancedConfigCheck = (CheckBox) findViewById(R.id.advancedConfigCheck);
-			advancedConfigCheck.setChecked(checked);
+			advancedConfigCheck.setChecked(savedAdvancedConfig);
 			advancedConfigCheck.setOnClickListener(this);
 
-			checked = editFilterLoadCheck != null && editFilterLoadCheck.isChecked();
 			editFilterLoadCheck = (CheckBox) findViewById(R.id.editFilterLoad);
-			editFilterLoadCheck.setChecked(checked);
+			editFilterLoadCheck.setChecked(savedEditFilterLoad);
 			editFilterLoadCheck.setOnClickListener(this);
 
-			checked = manuallyEditConfChk != null && manuallyEditConfChk.isChecked();
 			manuallyEditConfChk= (CheckBox) findViewById(R.id.manuallyEditConfChk);
-			manuallyEditConfChk.setChecked(checked);
+			manuallyEditConfChk.setChecked(savedManuallyEditConf);
 			manuallyEditConfChk.setOnClickListener(this);
 
-			checked = editAdditionalHostsCheck != null && editAdditionalHostsCheck.isChecked();
 			editAdditionalHostsCheck = (CheckBox) findViewById(R.id.editAdditionalHosts);
-			editAdditionalHostsCheck.setChecked(checked);
+			editAdditionalHostsCheck.setChecked(savedEditAdditionalHosts);
 			editAdditionalHostsCheck.setOnClickListener(this);
 
 			appWhiteListScroll = (ScrollView) findViewById(R.id.appWhiteListScroll);
-			String whitelistedApps = "";
-			if (appSelector != null) {
-				appSelector.clear();
-				whitelistedApps = appSelector.getSelectedAppPackages();
-			}
 			appSelector = findViewById(R.id.appSelector);
-			appSelector.setSelectedApps(whitelistedApps);
-
-			if (additionalHostsField != null)
-				uiText = additionalHostsField.getText().toString();
+			appSelector.setSelectedApps(savedWhiteListPackages);
 
 			additionalHostsField = (EditText) findViewById(R.id.additionalHostsField);
-			additionalHostsField.setText(uiText);
+			additionalHostsField.setText(savedAdditionalHostsText);
 			additionalHostsField.addTextChangedListener(this);
 
-			if (manuallyEditField != null)
-				uiText = manuallyEditField.getText().toString();
-
 			manuallyEditField = (EditText) findViewById(R.id.manuallyEditField);
-			manuallyEditField.setText(uiText);
+			manuallyEditField.setText(savedManuallyEditText);
 			manuallyEditField.addTextChangedListener(this);
 
 			findViewById(R.id.copyfromlog).setVisibility(View.GONE);
@@ -705,13 +741,19 @@ public class DNSProxyActivity extends Activity
 
 	@Override
 	public void onRequestPermissionsResult (int requestCode, String[] permissions, int[] grantResults) {
-		if (grantResults.length == 0)
+		if (requestCode != 101 || permissions == null || grantResults == null || permissions.length == 0 || grantResults.length == 0)
 			return;
-		if (permissions[0].equals(Manifest.permission.POST_NOTIFICATIONS) && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+		if (Manifest.permission.POST_NOTIFICATIONS.equals(permissions[0]) && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 			handleRestart(); //let it take effect
-			handleInitialInfoPopUp();
+		} else {
+			Logger.getLogger().logLine("Notification permission denied; service notification will be hidden.");
 		}
-		else Logger.getLogger().message("NOTIFICATION PERMISSION IS REQUIRED!");
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		saveUIStateSnapshot();
+		super.onSaveInstanceState(outState);
 	}
 
 	@Override
@@ -729,12 +771,29 @@ public class DNSProxyActivity extends Activity
 
 	@Override
 	public void onDestroy() {
-		super.onDestroy();
+		saveUIStateSnapshot();
+		if (INSTANCE_REF.get() == this)
+			INSTANCE_REF.clear();
+		if (myLogger != null && myLogger.getNestedLogger() == this)
+			myLogger.setNestedLogger(null);
 		if (PASSWORD_DIAG != null && PASSWORD_DIAG.isShowing() )
 			PASSWORD_DIAG.dismiss();
+		PASSWORD_DIAG = null;
 
 		if (popUpDialog != null && popUpDialog.isShowing())
-			closeInitialInfoPopUp();
+			popUpDialog.dismiss();
+		popUpDialog = null;
+
+		if (filterCfg != null)
+			filterCfg.dispose();
+		if (appSelector != null)
+			appSelector.clear();
+		if (additionalHostsField != null)
+			additionalHostsField.removeTextChangedListener(this);
+		if (manuallyEditField != null)
+			manuallyEditField.removeTextChangedListener(this);
+
+		super.onDestroy();
 	}
 
 	@Override
@@ -872,13 +931,21 @@ public class DNSProxyActivity extends Activity
 					throw new Exception("Operation aborted!");
 
 				uri = resultData.getData();
+				if (uri == null)
+					throw new Exception("No file selected!");
 				if (requestCode == DO_BACKUP) {
-					CONFIG.doBackup(getContentResolver().openOutputStream(uri));
+					OutputStream out = getContentResolver().openOutputStream(uri);
+					if (out == null)
+						throw new Exception("Cannot open destination file!");
+					CONFIG.doBackup(out);
 					backupStatusView.setTextColor(Color.parseColor("#43A047"));
 					backupStatusView.setText("Backup success!");
 				}
 				if (requestCode == DO_RESTORE) {
-					CONFIG.doRestore(getContentResolver().openInputStream(uri));
+					InputStream in = getContentResolver().openInputStream(uri);
+					if (in == null)
+						throw new Exception("Cannot open backup file!");
+					CONFIG.doRestore(in);
 					backupStatusView.setTextColor(Color.parseColor("#43A047"));
 					loadAndApplyConfig(false);
 					backupStatusView.setText("Restore success!");
@@ -913,6 +980,7 @@ public class DNSProxyActivity extends Activity
 				additionalHostsField.setEnabled(false);
 				return;
 			}
+			additionalHostsField.setEnabled(true);
 			additionalHostsField.setText(new String(content));
 			additionalHostsChanged = false;
 		} catch (IOException eio) {
@@ -1013,15 +1081,20 @@ public class DNSProxyActivity extends Activity
 		appStart = false; // now started
 	}
 
-	private static Dialog popUpDialog = null;
+	private Dialog popUpDialog = null;
 	private static boolean showInitialInfoPopUp = true;
 	private static boolean popUpDialogChanged = false;
-	private static Button initialInfoPopUpExitBtn = null;
+	private Button initialInfoPopUpExitBtn = null;
 
 
 	private void closeInitialInfoPopUp() {
-		showInitialInfoPopUp = !((CheckBox)popUpDialog.findViewById(R.id.disableInfoPopUp)).isChecked();
-		popUpDialog.dismiss();
+		if (popUpDialog == null)
+			return;
+		CheckBox disableChk = popUpDialog.findViewById(R.id.disableInfoPopUp);
+		if (disableChk != null)
+			showInitialInfoPopUp = !disableChk.isChecked();
+		if (popUpDialog.isShowing())
+			popUpDialog.dismiss();
 		if (!showInitialInfoPopUp) {
 			popUpDialogChanged = true;
 			persistConfig();
@@ -1029,15 +1102,12 @@ public class DNSProxyActivity extends Activity
 		}
 	}
 
-	private boolean checkNotificationPermission() {
+	private void checkNotificationPermission() {
 		if (Build.VERSION.SDK_INT >= 33) {
 			if (this.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-				Logger.getLogger().logLine("NOTIFICATION PERMISSION IS REQUIRED!");
-				Logger.getLogger().message("NOTIFICATION PERMISSION IS REQUIRED!");
-				return false;
+				Logger.getLogger().logLine("Notification permission not granted; foreground notification will not be shown.");
 			}
 		}
-		return true;
 	}
 
 
@@ -1130,8 +1200,7 @@ public class DNSProxyActivity extends Activity
 
 			runOnUiThread(uiUpdater);
 
-			if (!checkNotificationPermission())
-				return;
+			checkNotificationPermission();
 
 			if (startApp) {
 				handleInitialInfoPopUp();
@@ -1157,56 +1226,59 @@ public class DNSProxyActivity extends Activity
 			if (persistManuallyEditConf())
 				return;
 
-			boolean changed = persistAdditionalHosts();
+			persistAdditionalHosts();
 
 			if (filterReloadIntervalView.getText().toString().equals(""))
 				filterReloadIntervalView.setText("7");
 
-			getConfig().setConfiguredFilterLists(filterCfg.getFilterEntries());
+			ConfigUtil cfg = getConfig();
+			if (cfg == null)
+				return;
+
+			cfg.setConfiguredFilterLists(filterCfg.getFilterEntries());
 
 			String ln;
 
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(CONFIG.readConfig())));
-			while ((ln = reader.readLine()) != null) {
+			try {
+				while ((ln = reader.readLine()) != null) {
 
-				if (ln.trim().startsWith("reloadIntervalDays"))
-					getConfig().updateConfigValue("reloadIntervalDays", filterReloadIntervalView.getText().toString());
+					if (ln.trim().startsWith("reloadIntervalDays"))
+						cfg.updateConfigValue("reloadIntervalDays", filterReloadIntervalView.getText().toString());
 
-				else if (ln.trim().startsWith("AUTOSTART"))
-					getConfig().updateConfigValue("AUTOSTART", enableAutoStartCheck.isChecked()+"");
+					else if (ln.trim().startsWith("AUTOSTART"))
+						cfg.updateConfigValue("AUTOSTART", enableAutoStartCheck.isChecked()+"");
 
-				else if (ln.trim().startsWith("androidAppWhiteList"))
-					getConfig().updateConfigValue("androidAppWhiteList", appSelector.getSelectedAppPackages());
+					else if (ln.trim().startsWith("androidAppWhiteList"))
+						cfg.updateConfigValue("androidAppWhiteList", appSelector.getSelectedAppPackages());
 
-				else if (ln.trim().startsWith("checkCNAME"))
-					getConfig().updateConfigValue("checkCNAME", enableCloakProtectCheck.isChecked()+"");
+					else if (ln.trim().startsWith("checkCNAME"))
+						cfg.updateConfigValue("checkCNAME", enableCloakProtectCheck.isChecked()+"");
 
-				else if (ln.trim().startsWith("androidKeepAwake"))
-					getConfig().updateConfigValue("androidKeepAwake", keepAwakeCheck.isChecked()+"");
+					else if (ln.trim().startsWith("androidKeepAwake"))
+						cfg.updateConfigValue("androidKeepAwake", keepAwakeCheck.isChecked()+"");
 
-				else if (ln.trim().startsWith("dnsProxyOnAndroid"))
-					getConfig().updateConfigValue("dnsProxyOnAndroid", proxyModeCheck.isChecked()+"");
+					else if (ln.trim().startsWith("dnsProxyOnAndroid"))
+						cfg.updateConfigValue("dnsProxyOnAndroid", proxyModeCheck.isChecked()+"");
 
-				else if (ln.trim().startsWith("dnsProxyOnlyLocalRequests"))
-					getConfig().updateConfigValue("dnsProxyOnlyLocalRequests", proxyLocalOnlyCheck.isChecked()+"");
+					else if (ln.trim().startsWith("dnsProxyOnlyLocalRequests"))
+						cfg.updateConfigValue("dnsProxyOnlyLocalRequests", proxyLocalOnlyCheck.isChecked()+"");
 
-				else if (ln.trim().startsWith("rootModeOnAndroid"))
-					getConfig().updateConfigValue("rootModeOnAndroid", rootModeCheck.isChecked()+"");
+					else if (ln.trim().startsWith("rootModeOnAndroid"))
+						cfg.updateConfigValue("rootModeOnAndroid", rootModeCheck.isChecked()+"");
 
-				else if (ln.trim().startsWith("filterActive"))
-					getConfig().updateConfigValue("filterActive", enableAdFilterCheck.isChecked()+"");
+					else if (ln.trim().startsWith("filterActive"))
+						cfg.updateConfigValue("filterActive", enableAdFilterCheck.isChecked()+"");
 
-				else if (popUpDialogChanged && ln.trim().startsWith("showInitialInfoPopUp"))
-					getConfig().updateConfigValue("showInitialInfoPopUp", showInitialInfoPopUp+"");
+					else if (popUpDialogChanged && ln.trim().startsWith("showInitialInfoPopUp"))
+						cfg.updateConfigValue("showInitialInfoPopUp", showInitialInfoPopUp+"");
+				}
+			} finally {
+				reader.close();
 			}
 
-			reader.close();
-
-			changed = changed || getConfig().isChanged();
-
-
-			if (getConfig().isChanged()) {
-				CONFIG.updateConfig(getConfig().getConfigBytes());
+			if (cfg.isChanged()) {
+				CONFIG.updateConfig(cfg.getConfigBytes());
 			}
 
 		} catch (Exception e) {
@@ -1336,18 +1408,34 @@ public class DNSProxyActivity extends Activity
 		int port;
 
 		try {
-			host = destination.substring(0,destination.indexOf(":"));
-			port = Integer.parseInt(destination.substring(destination.indexOf(":")+1));
+			String dest = destination.trim();
+			int lastColon = dest.lastIndexOf(':');
+			if (lastColon <= 0 || lastColon == dest.length() - 1)
+				throw new IllegalArgumentException();
+			host = dest.substring(0, lastColon).trim();
+			if (host.startsWith("[") && host.endsWith("]") && host.length() > 2) {
+				host = host.substring(1, host.length() - 1).trim();
+			} else if (host.indexOf(':') != -1) {
+				throw new IllegalArgumentException("IPv6 hosts must be bracketed as [host]:port");
+			}
+			if (host.isEmpty())
+				throw new IllegalArgumentException();
+			port = Integer.parseInt(dest.substring(lastColon + 1).trim());
+			if (port < 1 || port > 65535)
+				throw new IllegalArgumentException();
 		} catch (Exception e) {
-			throw new Exception("Destination needed in format \"host:port\"!");
+			throw new Exception("Destination needed in format \"host:port\" (or \"[ipv6]:port\")!");
 		}
 
-		getConfig().updateConfigValue("client_remote_ctrl_host", host);
-		getConfig().updateConfigValue("client_remote_ctrl_port", port+"");
-		getConfig().updateConfigValue("client_remote_ctrl_keyphrase", passphrase);
+		ConfigUtil cfg = getConfig();
+		if (cfg == null)
+			throw new IOException("Config unavailable");
+		cfg.updateConfigValue("client_remote_ctrl_host", host);
+		cfg.updateConfigValue("client_remote_ctrl_port", port+"");
+		cfg.updateConfigValue("client_remote_ctrl_keyphrase", passphrase);
 
-		if (getConfig().isChanged())
-			CONFIG.updateConfig(getConfig().getConfigBytes());
+		if (cfg.isChanged())
+			CONFIG.updateConfig(cfg.getConfigBytes());
 	}
 
 	private void pepareRemoteControl() {
@@ -1397,7 +1485,8 @@ public class DNSProxyActivity extends Activity
 			Logger.getLogger().logException(e);
 			return;
 		}
-		((EditText)remoteConnectDialog.findViewById(R.id.remote_destination)).setText(host+":"+port);
+		String hostFormatted = (host.indexOf(':') != -1 && !host.startsWith("[")) ? "[" + host + "]" : host;
+		((EditText)remoteConnectDialog.findViewById(R.id.remote_destination)).setText(hostFormatted+":"+port);
 		((EditText)remoteConnectDialog.findViewById(R.id.passphrase)).setText(passphrase);
 		remoteConnectDialog.show();
 		Window window = remoteConnectDialog.getWindow();
@@ -1527,7 +1616,7 @@ public class DNSProxyActivity extends Activity
 			if (dest == null) {
 				if (editAdditionalHostsCheck.isChecked())
 					dest = editAdditionalHostsCheck;
-				if (manuallyEditConfChk.isChecked())
+				else if (manuallyEditConfChk.isChecked())
 					dest = manuallyEditConfChk;
 				else if (editFilterLoadCheck.isChecked())
 					dest = editFilterLoadCheck;
@@ -1647,6 +1736,8 @@ public class DNSProxyActivity extends Activity
 
 	public static void hideKeyboard(Activity activity) {
 		InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+		if (imm == null)
+			return;
 		View view = activity.getCurrentFocus();
 		if (view == null) {
 			view = new View(activity);
@@ -1668,8 +1759,7 @@ public class DNSProxyActivity extends Activity
 	private void handleRestart() {
 		if (CONFIG.isLocal()) {
 
-			if (!checkNotificationPermission())
-				return;
+			checkNotificationPermission();
 
 			if (!DNSFilterService.stop(false))
 				return;
@@ -1775,18 +1865,22 @@ public class DNSProxyActivity extends Activity
 
 	@Override
 	public void message(String txt) {
-		setMessage(fromHtml("<strong>"+txt+"</strong>"), Color.parseColor("#FFC107"));
+		setMessage(fromHtml("<strong>"+txt+"</strong>"), Color.parseColor("#FFC107"), false);
 		MsgTO.setTimeout(5000);
 	}
 
 
-	private void setMessage(final Spanned msg, final int backgroundColor) {
+	private void setMessage(final Spanned msg, final int backgroundColor, final boolean enableLinkClicks) {
 		runOnUiThread(new Runnable () {
 
 			@Override
 			public void run() {
+				if (link_field == null)
+					return;
 				link_field.setBackgroundColor(backgroundColor);
 				link_field.setText(msg);
+				if (enableLinkClicks)
+					link_field.setMovementMethod(LinkMovementMethod.getInstance());
 				MSG_ACTIVE = true;
 			}
 		});
@@ -1972,20 +2066,26 @@ public class DNSProxyActivity extends Activity
 
 		int start= logOutView.getSelectionStart();
 		int end = logOutView.getSelectionEnd();
+		if (start > end) {
+			int tmp = start;
+			start = end;
+			end = tmp;
+		}
 		String selection = "";
-		if (end > start) {
+		if (start >= 0 && end > start) {
 			Spannable text = logOutView.getText();
-			if (fullLine) {
-				while (text.charAt(start) != '\n' && start > 0)
+			if (end > text.length())
+				end = text.length();
+			if (fullLine && start < text.length()) {
+				while (start > 0 && text.charAt(start - 1) != '\n')
 					start--;
-				if (start !=0)
-					start++;
-				while (end < text.length()-1 && text.charAt(end) != '\n')
+				while (end < text.length() && text.charAt(end) != '\n')
 					end++;
 
 				logOutView.setSelection(start, end);
 			}
-			selection = text.subSequence(start, end).toString();
+			if (end > start)
+				selection = text.subSequence(start, end).toString();
 		}
 		return selection;
 	}

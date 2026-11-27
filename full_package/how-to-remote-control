@@ -1,11 +1,11 @@
-- With remote control you can manage a running pDNSf instance remotely from the Android App
-- usefull especially when running the non-Android version without UI
-- On the remote version, you want to manage, enable this feature by setting 
-  ==> server_remote_ctrl_port = 3333 
-- On the client version you want to use for remote controlling set the IP Address to connect to:
-  ==> client_remote_ctrl_host = <the IP Address or host on which the remote runs>
-- Restart remote and client instance
-- From the Android UI use the "remote control" icon to connect
-
-
-  
+- With remote control you can manage a running personalDNSfilter instance remotely from the Android App.
+- Useful especially when running the desktop/headless version without UI.
+- On the remote server you want to manage, enable this feature in dnsfilter.conf by setting:
+  ==> server_remote_ctrl_port = 3333
+  ==> server_remote_ctrl_keyphrase = <a strong shared secret keyphrase>
+- Wait/restart the remote instance so the listener starts. (A non-empty keyphrase is required.)
+- On the Android client you want to use for remote control, configure:
+  ==> client_remote_ctrl_host = <IP address or hostname of the remote server>
+  ==> client_remote_ctrl_port = 3333
+  ==> client_remote_ctrl_keyphrase = <matching shared secret keyphrase>
+- Restart or reconnect from the Android UI using the remote control option.

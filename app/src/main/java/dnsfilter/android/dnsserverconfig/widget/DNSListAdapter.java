@@ -180,13 +180,14 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigBaseEntry> imple
         holder.protocolView.setText(entry.getProtocol().toString());
         holder.ipView.setText(entry.getIp());
         holder.portView.setText(entry.getPort());
+        holder.isActiveEntryCheckbox.setOnCheckedChangeListener(null);
+        holder.isActiveEntryCheckbox.setChecked(entry.getIsActive());
         holder.isActiveEntryCheckbox.setOnCheckedChangeListener(
                 (buttonView, isChecked) -> {
                     entry.setIsActive(isChecked);
                     holder.root.setEnabled(entry.getIsActive());
                 }
         );
-        holder.isActiveEntryCheckbox.setChecked(entry.getIsActive());
         holder.setupTestButtons();
 
         holder.testEntryButton.setOnClickListener(new View.OnClickListener() {
@@ -215,12 +216,12 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigBaseEntry> imple
                                     notifyDataSetChanged();
                                 }
                             });
-                        } catch (IOException e) {
+                        } catch (final Exception e) {
                             handler.post(new Runnable() {
                                 @Override
                                 public void run() {
                                     String errorMessage = e.getMessage();
-                                    if (errorMessage == null) {
+                                    if (errorMessage == null || errorMessage.trim().isEmpty()) {
                                         errorMessage = serverIsUnreachableMessage;
                                     }
                                     entry.setTestResult(new DNSServerConfigTestResult(DNSServerConfigEntryTestState.FAIL, errorMessage));
@@ -308,6 +309,14 @@ public class DNSListAdapter extends ArrayAdapter<DNSServerConfigBaseEntry> imple
     @Override
     public void onDeleteItem(DNSServerConfigEntry entry) {
         remove(entry);
+    }
+
+    public void cleanup() {
+        handler.removeCallbacksAndMessages(null);
+        dnsServerConfigEntryView.dismiss();
+        if (testResultDialog != null && testResultDialog.isShowing()) {
+            testResultDialog.dismiss();
+        }
     }
 
     static class DNSServerConfigEntryViewHolder {

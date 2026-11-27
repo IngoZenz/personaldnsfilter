@@ -43,7 +43,7 @@
   <string name="port" translatable="true">portti</string>
   <string name="dnsProtocol" translatable="true">DNS-protokolla</string>
   <string name="endpoint" translatable="true">päätepiste</string>
-  <string name="testDNSResultSuccess">Onnistui:\nKeskimääräinen ping ~ %1$d\"</string>
+  <string name="testDNSResultSuccess">Onnistui:\nKeskimääräinen ping ~ %1$d ms</string>
   <string name="testDNSResultFailure">Epäonnistui: %1$s</string>
   <string name="ipEmptyError">IP ei voi olla tyhjä</string>
   <string name="portEmptyError">portti ei voi olla tyhjä</string>

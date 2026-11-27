@@ -65,15 +65,20 @@ public class HugePackedSet implements Set {
 	
 	
 	
-	public void prepareInsert (Object obj) {
-		slotSizes[(Math.abs(obj.hashCode() %  slotCount)) ]++;
+	private int slotFor(Object obj) {
+		int mod = obj.hashCode() % slotCount;
+		return mod < 0 ? -mod : mod;
 	}
-	
-	
+
+	public void prepareInsert (Object obj) {
+		slotSizes[slotFor(obj)]++;
+	}
+
+
 	public void finalPrepare() {
 		for (int i = 0; i < slotCount; i++)
 			subsets[i] = new PackedSortedList(slotSizes[i], objMgr);
-		
+
 		slotSizes = null; //save memory
 	}
 
@@ -87,7 +92,7 @@ public class HugePackedSet implements Set {
 
 	@Override
 	public boolean add(Object obj) {
-		boolean added = subsets[(int) (Math.abs( obj.hashCode() %  slotCount)) ].add(obj);
+		boolean added = subsets[slotFor(obj)].add(obj);
 		if (added) count ++;
 		return added;
 	}
@@ -99,18 +104,21 @@ public class HugePackedSet implements Set {
 
 	@Override
 	public void clear() {
+		count = 0;
+		loadedFromPath = null;
 		slotSizes = new int[slotCount];
 		for (int i = 0; i < slotCount; i++) {
-			subsets[i].clearAndReleaseAllMemory();
-			slotSizes[i]=0;
+			if (subsets[i] != null)
+				subsets[i].clearAndReleaseAllMemory();
+			slotSizes[i] = 0;
 		}
 	}
 
 	@Override
 	public boolean contains(Object obj) {
-		if (count == 0)
+		if (count == 0 || slotCount == 0)
 			return false;
-		return subsets[ (Math.abs( obj.hashCode() %  slotCount)) ].contains(obj);
+		return subsets[slotFor(obj)].contains(obj);
 	}
 
 	@Override
@@ -159,34 +167,30 @@ public class HugePackedSet implements Set {
 	}
 	
 	public void persist(String path) throws IOException {
-		
-		//delete existing .tmp and index folders
-		File dir = new File(path+".tmp");
-		for (int ii = 0; ii < 2; ii++) {
-			if (dir.exists()) {
-				File[] files = dir.listFiles();
-				for (int i = 0; i < files.length; i++)
-					files[i].delete();	
-				dir.delete();
-			} 			
-			dir = new File(path);
-		}
-		
-		dir = new File(path+".tmp");
-		dir.mkdir();
-		
+		String tmpPath = path + ".tmp";
+		Utils.deleteFolder(tmpPath);
+
+		File dir = new File(tmpPath);
+		if (!dir.mkdirs() && !dir.isDirectory())
+			throw new IOException("Cannot create temporary index folder: " + tmpPath);
+
 		//write index version info
 		FileOutputStream out = new FileOutputStream(dir.getAbsolutePath()+"/IDX_VERSION");
-		out.write(IDX_VERSION.getBytes());
-		out.flush();
-		out.close();
-		
+		try {
+			out.write(IDX_VERSION.getBytes());
+			out.flush();
+		} finally {
+			out.close();
+		}
+
 		//write indexes
 		for (int i = 0; i < slotCount; i++)
 			subsets[i].persist(dir.getAbsolutePath()+"/idx"+i);
-		
-		File renameDir = new File(path);		
-		dir.renameTo(renameDir);
+
+		Utils.deleteFolder(path);
+		File renameDir = new File(path);
+		if (!dir.renameTo(renameDir))
+			throw new IOException("Failed to rename temporary index folder " + tmpPath + " to " + path);
 
 		loadedFromPath = path;
 	}
@@ -200,39 +204,45 @@ public class HugePackedSet implements Set {
 		for (int i = 0; i < slotCount; i++)
 			subsets[i].persist(dir.getAbsolutePath()+"/idx"+i);
 	}
-	
-	
+
+
 	public static boolean checkIndexVersion(String path)throws IOException {
 		File idxVersionFile = new File(path+"/IDX_VERSION");
 		if (idxVersionFile.exists()) {
-			FileInputStream in = new FileInputStream(path+"/IDX_VERSION");
-			byte[] buf = new byte[10];
-			int r = in.read(buf);
-			in.close();
-			return(new String(buf,0,r).equals(IDX_VERSION));
+			FileInputStream in = new FileInputStream(idxVersionFile);
+			try {
+				byte[] buf = new byte[10];
+				int r = in.read(buf);
+				return r > 0 && new String(buf, 0, r).equals(IDX_VERSION);
+			} finally {
+				in.close();
+			}
 		} else
 			return false;
 	}
-	
+
 	public static HugePackedSet load(String path, boolean inMemory, ObjectPackagingManager objMgr) throws IOException {
 		//check version
 		if (!checkIndexVersion(path))
 			throw new IOException("Incompatible index version - Rebuild Index!");
-				
+
 		// get slotcount
 		int slotCount = 0;
 		int count = 0;
 		while (new File(path+"/idx"+slotCount).exists())
 			slotCount++;
-		
+
+		if (slotCount == 0)
+			throw new IOException("Corrupted index (0 slots found) at " + path);
+
 		PackedSortedList[] subsets = new PackedSortedList[slotCount];
 		for (int i = 0; i < subsets.length; i++) {
 			subsets[i]= PackedSortedList.load(path+"/idx"+i, inMemory, objMgr);
 			count = count+subsets[i].size();
 		}
-		
+
 		return new HugePackedSet(path, subsets, slotCount, count, objMgr);
-		
+
 	}
 
 }

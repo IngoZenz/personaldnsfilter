@@ -5,7 +5,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
+import java.io.ObjectStreamClass;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -24,10 +26,11 @@ import util.Utils;
 public class RemoteAccessClient extends ConfigurationAccess implements TimeoutListener {
 
 
+    private static final int MAX_PAYLOAD_SIZE = 16 * 1024 * 1024;
     static int CON_TIMEOUT = 15000;
    static int READ_TIMEOUT = 15000;
-	
-	
+
+
 	// Msg Type constants
     static final int LOG = 1;
     static final int LOG_LN = 2;
@@ -46,11 +49,13 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
     private int ctrlConId = -1;
     private RemoteStream remoteStream;
     private String remote_version;
-    private String last_dns="<unknown>";
-    private int con_cnt = -1;
+    private volatile String last_dns="<unknown>";
+    private volatile int con_cnt = -1;
     private LoggerInterface connectedLogger;
+    private final Object connectionLock = new Object();
 
-    boolean valid = false;
+    volatile boolean valid = false;
+    private volatile boolean releasedByCaller = false;
     long timeout = Long.MAX_VALUE; //heartbeat timeout for dead session detection
     int timeOutCounter = 0;
 
@@ -70,14 +75,17 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
 
 
     private void connect() throws IOException {
-        Object[] conInfo = initConnection();
-        ctrlcon = (Socket) conInfo[1];
-        in = (InputStream) conInfo[2];
-        out = (OutputStream) conInfo[3];
-        ctrlcon.setSoTimeout(READ_TIMEOUT);
-        ctrlConId = (Integer) conInfo[0];
-        remoteStream = new RemoteStream(ctrlConId);
-        valid = true;
+        synchronized (connectionLock) {
+            Object[] conInfo = initConnection();
+            ctrlcon = (Socket) conInfo[1];
+            in = (InputStream) conInfo[2];
+            out = (OutputStream) conInfo[3];
+            ctrlcon.setSoTimeout(READ_TIMEOUT);
+            ctrlConId = (Integer) conInfo[0];
+            remoteStream = new RemoteStream(ctrlConId);
+            releasedByCaller = false;
+            valid = true;
+        }
     }
 
     @Override
@@ -88,29 +96,59 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
 
 
     private void closeConnectionReconnect() {
+        synchronized (connectionLock) {
+            TimoutNotificator.getInstance().unregister(this);
 
-        TimoutNotificator.getInstance().unregister(this);
+            if (!valid || releasedByCaller)
+                return;
 
-        if (!valid)
-            return;
+            closeTransportOnly();
 
-        releaseConfiguration();
-        Object sync = new Object();
-
-        //wait a second before reconnect
-         synchronized (sync) {
+            //wait before reconnect
+            Utils.sleep(2000);
+            if (releasedByCaller)
+                return;
             try {
-                sync.wait(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                connect();
+            } catch (IOException e){
+                connectedLogger.logLine("Reconnect failed:"+e.toString());
+                valid = false;
             }
         }
-        try {
-             connect();
-        } catch (IOException e){
-             connectedLogger.logLine("Reconnect failed:"+e.toString());
-             valid = false;
+    }
+
+    private Properties readSafeProperties(InputStream stream) throws IOException, ClassNotFoundException {
+        ObjectInputStream ois = new ObjectInputStream(stream) {
+            @Override
+            protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+                String name = desc.getName();
+                if (!"java.util.Properties".equals(name)
+                        && !"java.util.Hashtable".equals(name)
+                        && !"java.lang.String".equals(name)) {
+                    throw new InvalidClassException("Unauthorized deserialization attempt", name);
+                }
+                return super.resolveClass(desc);
+            }
+
+            @Override
+            protected Class<?> resolveProxyClass(String[] interfaces) throws IOException, ClassNotFoundException {
+                throw new InvalidClassException("Dynamic proxy deserialization is not permitted");
+            }
+        };
+        Object obj = ois.readObject();
+        if (!(obj instanceof Properties)) {
+            throw new IOException("Expected Properties object but got: " + (obj != null ? obj.getClass().getName() : "null"));
         }
+        return (Properties) obj;
+    }
+
+    private byte[] readBoundedResponse(DataInputStream din) throws IOException {
+        int len = din.readInt();
+        if (len < 0 || len > MAX_PAYLOAD_SIZE)
+            throw new IOException("Remote payload length out of bounds: " + len);
+        byte[] buf = new byte[len];
+        din.readFully(buf);
+        return buf;
     }
 
 
@@ -196,27 +234,40 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
         return false;
     }
 
-    @Override
-    public void releaseConfiguration() {
-
+    private void closeTransportOnly() {
         TimoutNotificator.getInstance().unregister(this);
         valid = false;
 
-        if (remoteStream != null)
+        if (remoteStream != null) {
             remoteStream.close();
+            remoteStream = null;
+        }
 
         if (ctrlcon != null) {
             try {
-                out.write("releaseConfiguration()".getBytes());
-                out.flush();
+                if (out != null) {
+                    out.write("releaseConfiguration()\n".getBytes());
+                    out.flush();
+                }
             } catch (IOException e) {
                 connectedLogger.logLine("Exception during remote configuration release: " + e.toString());
+            } finally {
                 Utils.closeSocket(ctrlcon);
             }
         }
         ctrlcon = null;
-        remoteStream = null;
-        REMOTE = null;
+        in = null;
+        out = null;
+    }
+
+    @Override
+    public void releaseConfiguration() {
+        releasedByCaller = true;
+        synchronized (connectionLock) {
+            closeTransportOnly();
+            if (REMOTE == this)
+                REMOTE = null;
+        }
     }
 
     @Override
@@ -230,7 +281,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
                 throw new ConfigurationAccessException(response, null);
             }
             try {
-                return (Properties) new ObjectInputStream(in).readObject();
+                return readSafeProperties(in);
             } catch (ClassNotFoundException e) {
                 connectedLogger.logException(e);
                throw new IOException(e);
@@ -256,7 +307,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
                 throw new ConfigurationAccessException(response, null);
             }
             try {
-                return (Properties) new ObjectInputStream(in).readObject();
+                return readSafeProperties(in);
             } catch (ClassNotFoundException e) {
                 connectedLogger.logException(e);
                 throw new IOException(e);
@@ -283,9 +334,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
             if (!response.equals("OK")) {
                 throw new ConfigurationAccessException(response, null);
             }
-            byte[] buf = new byte[in.readInt()];
-            in.readFully(buf);
-            return buf;
+            return readBoundedResponse(in);
 
         } catch (ConfigurationAccessException e) {
             connectedLogger.logLine("Remote action failed! "+e.getMessage());
@@ -364,9 +413,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
             if (!response.equals("OK")) {
                 throw new ConfigurationAccessException(response, null);
             }
-            byte[] result = new byte[in.readInt()];
-            in.readFully(result);
-            return result;
+            return readBoundedResponse(in);
         } catch (ConfigurationAccessException e) {
             connectedLogger.logLine("Remote action failed! "+e.getMessage());
             throw e;
@@ -488,8 +535,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
         String response = Utils.readLineFromStream(in);
         if (!response.equals("OK"))
             throw new ConfigurationAccessException(response, null);
-        byte[] buf = new byte[in.readInt()];
-        in.readFully(buf);
+        byte[] buf = readBoundedResponse(in);
         backupout.write(buf);
         backupout.flush();
         backupout.close();
@@ -567,7 +613,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
 
         Socket streamCon;
         int streamConId;
-        boolean stopped = false;
+        volatile boolean stopped = false;
         DataInputStream in;
         DataOutputStream out;
 
@@ -587,7 +633,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
                 }
             } catch (IOException e) {
                 connectedLogger.logLine("Remote action attach Remote Stream failed! "+e.getMessage());
-                closeConnectionReconnect();
+                Utils.closeSocket(streamCon);
                 throw e;
             }
 
@@ -600,7 +646,7 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
             try {
                 while (!stopped) {
                     int type = in.readShort();
-                    short len = in.readShort();
+                    int len = in.readUnsignedShort();
                     msg = getBuffer(msg, len, 2048, 1024000);
 
                     in.readFully(msg, 0, len);
@@ -676,12 +722,13 @@ public class RemoteAccessClient extends ConfigurationAccess implements TimeoutLi
             if (streamCon != null) {
                 synchronized (out) {
                     try {
-                        out.write("releaseConfiguration()".getBytes());
+                        out.write("releaseConfiguration()\n".getBytes());
                         out.flush();
                     } catch (IOException e) {
                         connectedLogger.logLine("Exception during remote configuration release: " + e.toString());
+                    } finally {
+                        Utils.closeSocket(streamCon);
                     }
-                    Utils.closeSocket(streamCon);
                 }
             }
         }

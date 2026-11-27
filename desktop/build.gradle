@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['../app/src/main/java']
+            exclude 'dnsfilter/android/**'
+        }
+        resources {
+            srcDirs = ['../app/src/main/assets']
+        }
+    }
+    test {
+        java {
+            srcDirs = ['src/test/java']
+        }
+        resources {
+            srcDirs = ['../app/src/main/assets']
+        }
+    }
+}
+
+application {
+    mainClass = 'dnsfilter.DNSFilterProxy'
+}
+
+jar {
+    archiveFileName = 'personalDNSfilter.jar'
+    manifest {
+        attributes(
+            'Main-Class': 'dnsfilter.DNSFilterProxy'
+        )
+    }
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+}

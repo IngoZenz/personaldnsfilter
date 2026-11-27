@@ -351,8 +351,8 @@ import util.http.DOHHttp2Util;
 						cons[ii].valid = false;
 						destinations[i].remove(cons[ii]);
 					}
-					connPooled.remove(destinations[i]);
 				}
+				connPooled.clear();
 				Connection[] cons = (Connection[]) connAcquired.toArray(new Connection[connAcquired.size()]);
 				for (int i = 0; i < cons.length; i++) {
 					toBeReleased.add(cons[i]);
@@ -418,6 +418,8 @@ import util.http.DOHHttp2Util;
 	
 	
 	private boolean isAlive() {
+		if (socket == null || socket.isClosed())
+			return false;
 		// Must only be called when sure that there is no data to read - otherwise Illegal State!
 		if (doh2)
 			return true;
@@ -426,9 +428,10 @@ import util.http.DOHHttp2Util;
 			int r = socketIn.read();
 			if (r!=-1) {
 				int avail = socketIn.available();
-				byte buf[] = new byte [Math.max(avail, 10240)];
-				socketIn.read(buf);
-				String data = ((char)r)+new String(buf);				
+				if (avail > 0) {
+					byte buf[] = new byte[Math.min(avail, 10240)];
+					socketIn.read(buf);
+				}
 			}
 			return false;
 		} catch (SocketTimeoutException to) {
@@ -468,7 +471,7 @@ import util.http.DOHHttp2Util;
 			in.invalidate();
 			out.invalidate();
 			if (doh2) {
-				if (http2StreamID >= maxHttp2StreamID) {
+				if (http2StreamID >= maxHttp2StreamID - 1) {
 					release(false);
 					return;
 				} else http2StreamID = http2StreamID+2;

@@ -73,7 +73,7 @@ public class DateRetriever implements Runnable {
 		try {
 			wait(millis);
 		} catch (InterruptedException e) {
-			Logger.getLogger().logException(e);
+			Thread.currentThread().interrupt();
 		}			
 		
 	}

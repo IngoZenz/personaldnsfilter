@@ -29,25 +29,25 @@ import util.Logger;
 public class AppSelectorView extends LinearLayout implements View.OnClickListener, TextWatcher {
 
 	private PackageManager pm = this.getContext().getPackageManager();
-	private boolean loaded = false;
+	private volatile boolean loaded = false;
 	private String selectedApps = "";
 	private static int iconSizePx = 0;
 	private static float iconSizeDP = 96;
-	private AsyncLoader runningUpdate = null;
+	private volatile AsyncLoader runningUpdate = null;
 
-	private ComparableAppInfoWrapper[] wrappers = null;
+	private volatile ComparableAppInfoWrapper[] wrappers = null;
 	private View searchView;
 	private EditText searchStringField;
 	private View emptyResult;
 
 	@Override
 	public void onClick(View v) {
-		if (!loaded || runningUpdate != null)
+		ComparableAppInfoWrapper[] allwrappers = wrappers;
+		if (!loaded || runningUpdate != null || allwrappers == null)
 			return ;
 
 		String searchStr = searchStringField.getText().toString().toUpperCase().trim();
 
-		ComparableAppInfoWrapper[] allwrappers = wrappers;
 		int count = 0;
 		emptyResult.setVisibility(View.GONE);
 
@@ -123,18 +123,23 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 
 	private class AsyncLoader implements Runnable {
 
-		private boolean abort = false;
+		private volatile boolean abort = false;
 
 		@Override
-		public synchronized void run() {
+		public void run() {
 
 			if (iconSizePx == 0) {
 				float scale = getResources().getDisplayMetrics().density;
 				iconSizePx = (int) (iconSizeDP * scale + 0.5f);
 			}
 
-			if (abort)
+			if (abort) {
+				synchronized (this) {
+					runningUpdate = null;
+					notifyAll();
+				}
 				return;
+			}
 
 			try {
 				final TextView infoText = new TextView(getContext());
@@ -149,7 +154,8 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 				post(new Runnable() {
 					@Override
 					public void run() {
-						addView(infoText);
+						if (!abort)
+							addView(infoText);
 					}
 				});
 
@@ -182,9 +188,14 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 					sortedWrappers.add(new ComparableAppInfoWrapper(packages[i], entry, appName+":"+pkgName));
 				}
 
+				if (abort)
+					return;
+
 				post(new Runnable() {
 					@Override
 					public void run() {
+						if (abort)
+							return;
 						removeView(infoText);
 						addView(searchView);
 						addView(emptyResult);
@@ -201,19 +212,23 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 				loaded = !abort;
 
 			} finally {
-				runningUpdate = null;
-				notifyAll();
+				synchronized (this) {
+					runningUpdate = null;
+					notifyAll();
+				}
 			}
 		}
 
 		public void abort() {
 			abort = true;
 			synchronized (this) {
-				while (runningUpdate != null) {
+				while (runningUpdate == this) {
 					try {
-						wait();
+						wait(2000);
+						break;
 					} catch (InterruptedException e) {
-						e.printStackTrace();
+						Thread.currentThread().interrupt();
+						break;
 					}
 				}
 			}
@@ -257,7 +272,7 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 		Canvas canvas = new Canvas(mutableBitmap);
 		drawable.setBounds(0, 0, size, size);
 		drawable.draw(canvas);
-		return new BitmapDrawable(mutableBitmap);
+		return new BitmapDrawable(getResources(), mutableBitmap);
 	}
 
 	public void clear() {
@@ -286,10 +301,10 @@ public class AppSelectorView extends LinearLayout implements View.OnClickListene
 
 	public String getSelectedAppPackages() {
 
-		if (!loaded || runningUpdate != null)
+		ComparableAppInfoWrapper[] allwrappers = wrappers;
+		if (!loaded || runningUpdate != null || allwrappers == null)
 			return selectedApps;
 
-		ComparableAppInfoWrapper[] allwrappers = wrappers;
 		String result = "";
 		String delim = "";
 

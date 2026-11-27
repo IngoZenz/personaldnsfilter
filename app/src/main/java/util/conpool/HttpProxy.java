@@ -53,41 +53,50 @@ public class HttpProxy extends Proxy {
 	public Socket openTunnel(InetSocketAddress adr,  int conTimeout, boolean protect) throws IOException {
 		
 		String host;
-		
-		if (!adr.getAddress().getHostAddress().equals("0.0.0.0")) 
-			host = adr.getAddress().getHostAddress(); //IP is already resolved
+		InetAddress targetAddr = adr.getAddress();
+		if (targetAddr != null && !targetAddr.getHostAddress().equals("0.0.0.0") && !targetAddr.isAnyLocalAddress())
+			host = targetAddr.getHostAddress(); //IP is already resolved
 		else
-			host = adr.getHostName();	//IP will be resolved by Proxy	
+			host = adr.getHostName();	//IP will be resolved by Proxy
+
+		String connectHost = (host.indexOf(':') != -1 && !host.startsWith("[")) ? "[" + host + "]" : host;
 			
 		HttpHeader header = new HttpHeader(HttpHeader.REQUEST_HEADER);	
-		header.setRequest("CONNECT "+host+":"+adr.getPort()+" HTTP/1.1");
+		header.setRequest("CONNECT "+connectHost+":"+adr.getPort()+" HTTP/1.1");
 		if (authString != null)
 			header.setValue("Proxy-Authorization", authString);
 		
 		String request = header.getServerRequestHeader();		
 		
-		//get address with name of final host but IP of the proxy for SSL hostname check consistency		
-		InetSocketAddress conAdr = new InetSocketAddress(InetAddress.getByAddress(adr.getHostName(), proxyAdr.getAddress().getAddress()), proxyAdr.getPort());
+		//get address with name of final host but IP of the proxy for SSL hostname check consistency
+		InetAddress proxyIp = proxyAdr.getAddress();
+		if (proxyIp == null)
+			proxyIp = InetAddress.getByName(proxyAdr.getHostName());
+		InetSocketAddress conAdr = new InetSocketAddress(InetAddress.getByAddress(adr.getHostName(), proxyIp.getAddress()), proxyAdr.getPort());
 		
-		Socket proxyCon  = SocketChannel.open().socket();
+		Socket proxyCon = SocketChannel.open().socket();
+		try {
+			if (protect)
+				ExecutionEnvironment.getEnvironment().protectSocket(proxyCon,0);
 
-		if (protect)
-			ExecutionEnvironment.getEnvironment().protectSocket(proxyCon,0);
-
-		proxyCon.connect(conAdr, conTimeout);
-		proxyCon.setSoTimeout(conTimeout);
-		proxyCon.getOutputStream().write(request.getBytes());
-		proxyCon.getOutputStream().flush();
-		
-		header = new HttpHeader (proxyCon.getInputStream(), HttpHeader.RESPONSE_HEADER);
-		if (header.responsecode != 200){
-			proxyCon.shutdownInput();
-			proxyCon.shutdownOutput();
-			proxyCon.close();
-			throw new IOException ("Proxy refused Tunnel\n"+header.getResponseMessage());
+			proxyCon.connect(conAdr, conTimeout);
+			proxyCon.setSoTimeout(conTimeout);
+			proxyCon.getOutputStream().write(request.getBytes());
+			proxyCon.getOutputStream().flush();
+			
+			header = new HttpHeader (proxyCon.getInputStream(), HttpHeader.RESPONSE_HEADER);
+			if (header.responsecode != 200){
+				throw new IOException ("Proxy refused Tunnel\n"+header.getResponseMessage());
+			}
+			proxyCon.setSoTimeout(0); 
+			return proxyCon;
+		} catch (IOException e) {
+			try {
+				proxyCon.close();
+			} catch (IOException ignored) {
+			}
+			throw e;
 		}
-		proxyCon.setSoTimeout(0); 
-		return proxyCon;		
 	}
 
 	public Socket openTunnel(InetSocketAddress adr,  int conTimeout) throws IOException {

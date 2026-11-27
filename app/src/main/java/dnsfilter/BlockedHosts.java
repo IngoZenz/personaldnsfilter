@@ -78,7 +78,9 @@ public class BlockedHosts implements Set {
 			Logger.getLogger().logLine("CACHE SIZE:"+okCacheSize+", "+filterListCacheSize);
 
 		int slots = maxCountEstimate / 6000;
-		if ((slots % 2) == 0)
+		if (slots < 1)
+			slots = 1;
+		else if ((slots % 2) == 0)
 			slots++;
 
 		blockedHostsHashes = new HugePackedSet(slots, PACK_MGR);
@@ -125,17 +127,27 @@ public class BlockedHosts implements Set {
 
 	private void clearCache(String host, boolean filter) {
 		long hostHash = Utils.getLongStringHash((String) host);
-		if (filter)
-			filterListCache.remove(hostHash);
-		else
-			okCache.remove(hostHash);
+		if (filter) {
+			synchronized (filterListCache) {
+				filterListCache.remove(hostHash);
+			}
+		} else {
+			synchronized (okCache) {
+				okCache.remove(hostHash);
+			}
+		}
 	}
 
 	private void clearCache(boolean filter) {
-		if (filter)
-			filterListCache.clear();
-		else
-			okCache.clear();
+		if (filter) {
+			synchronized (filterListCache) {
+				filterListCache.clear();
+			}
+		} else {
+			synchronized (okCache) {
+				okCache.clear();
+			}
+		}
 	}
 
 
@@ -229,8 +241,12 @@ public class BlockedHosts implements Set {
 				throw new IOException("Wildcard not supported for update:" + host);
 
 			long hostHash = Utils.getLongStringHash((String) ((String) host).toLowerCase());
-			okCache.remove(hostHash);
-			filterListCache.remove(hostHash);
+			synchronized (okCache) {
+				okCache.remove(hostHash);
+			}
+			synchronized (filterListCache) {
+				filterListCache.remove(hostHash);
+			}
 
 			return blockedHostsHashes.add(hostHash);
 		} finally {
@@ -258,15 +274,23 @@ public class BlockedHosts implements Set {
 			}
 			long hosthash = Utils.getLongStringHash(hostName);
 
-			if (okCache.get(hosthash) != null)
-				return false;
-			else if (filterListCache.get(hosthash) != null)
-				return true;
-			else if (contains(hostName, hosthash, !ip, !ip)) {
-				filterListCache.put(hosthash, NOT_NULL);
+			synchronized (okCache) {
+				if (okCache.get(hosthash) != null)
+					return false;
+			}
+			synchronized (filterListCache) {
+				if (filterListCache.get(hosthash) != null)
+					return true;
+			}
+			if (contains(hostName, hosthash, !ip, !ip)) {
+				synchronized (filterListCache) {
+					filterListCache.put(hosthash, NOT_NULL);
+				}
 				return true;
 			} else {
-				okCache.put(hosthash, NOT_NULL);
+				synchronized (okCache) {
+					okCache.put(hosthash, NOT_NULL);
+				}
 				return false;
 			}
 		} finally {
@@ -306,11 +330,20 @@ public class BlockedHosts implements Set {
 	}
 
 	public void clear() {
-		blockedHostsHashes.clear();
-		filterListCache.clear();
-		okCache.clear();
-		hostsFilterOverRule = null; // do not clear as provided from outside and reused
-		overrulePatterns = null;  // do not clear as provided from outside and reused
+		try {
+			lock(1);
+			blockedHostsHashes.clear();
+			synchronized (filterListCache) {
+				filterListCache.clear();
+			}
+			synchronized (okCache) {
+				okCache.clear();
+			}
+			hostsFilterOverRule.clear();
+			overrulePatterns.clear();
+		} finally {
+			unLock(1);
+		}
 	}
 
 	protected void migrateTo(BlockedHosts hostFilter) {

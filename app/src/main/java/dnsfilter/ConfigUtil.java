@@ -7,8 +7,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -36,17 +41,29 @@ public class ConfigUtil {
 
         @Override
         public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
             if (obj == null)
                 return false;
-            if ( !this.getClass().equals(obj.getClass()) )
+            if (!this.getClass().equals(obj.getClass()))
                 return false;
 
-            HostFilterList hfl = (HostFilterList)obj;
+            HostFilterList hfl = (HostFilterList) obj;
             return (
                 active == hfl.active &&
-                category.equals(hfl.category) &&
-                id.equals(hfl.id) &&
-                url.equals(hfl.url));
+                (category != null ? category.equals(hfl.category) : hfl.category == null) &&
+                (id != null ? id.equals(hfl.id) : hfl.id == null) &&
+                (url != null ? url.equals(hfl.url) : hfl.url == null));
+        }
+
+        @Override
+        public int hashCode() {
+            int h = 17;
+            h = 31 * h + (active ? 1 : 0);
+            h = 31 * h + (category != null ? category.hashCode() : 0);
+            h = 31 * h + (id != null ? id.hashCode() : 0);
+            h = 31 * h + (url != null ? url.hashCode() : 0);
+            return h;
         }
     }
 
@@ -60,53 +77,81 @@ public class ConfigUtil {
     }
 
     public byte[] getConfigBytes() throws IOException {
-        if (changed)
+        if (changed) {
             updateConfigBytes();
+            changed = false;
+        }
         return configBytes;
+    }
+
+    private static String escapeConfigValue(String value) {
+        if (value == null)
+            return "";
+        return value.replace("\\", "\\\\")
+                .replace("\r", "\\r")
+                .replace("\n", "\\n");
     }
 
     private void updateConfigBytes() throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        String ln;
-
         BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(configBytes)));
-        while ((ln = reader.readLine()) != null) {
+        Set<String> writtenKeys = new HashSet<String>();
+        try {
+            String ln;
+            while ((ln = reader.readLine()) != null) {
 
-            String trimLN = ln.trim();
+                String trimLN = ln.trim();
 
-            if (!trimLN.equals("") && !trimLN.startsWith("#")) {
-                int idx = trimLN.indexOf(" =");
-                if (idx == -1)
-                    throw new IOException("broken config! "+trimLN);
-                String key = trimLN.substring(0,idx).trim();
-                String value = config.getProperty(key);
+                if (!trimLN.equals("") && !trimLN.startsWith("#") && !trimLN.startsWith("!")) {
+                    int idx = trimLN.indexOf('=');
+                    if (idx == -1)
+                        throw new IOException("broken config! " + trimLN);
+                    String key = trimLN.substring(0, idx).trim();
+                    writtenKeys.add(key);
+                    String value = config.getProperty(key);
+                    ln = key + " = " + escapeConfigValue(value);
+                }
 
-                if (value == null)
-                    value = "";
-
-                ln = key+" = "+value;
+                out.write((ln + "\r\n").getBytes());
             }
 
-            out.write((ln + "\r\n").getBytes());
+            List<String> newKeys = new ArrayList<String>();
+            for (String key : config.stringPropertyNames()) {
+                if (!writtenKeys.contains(key)) {
+                    newKeys.add(key);
+                }
+            }
+            Collections.sort(newKeys);
+            for (int i = 0; i < newKeys.size(); i++) {
+                String key = newKeys.get(i);
+                String value = config.getProperty(key);
+                out.write((key + " = " + escapeConfigValue(value) + "\r\n").getBytes());
+            }
+
+            out.flush();
+            configBytes = out.toByteArray();
+        } finally {
+            reader.close();
+            out.close();
         }
-        reader.close();
-        out.flush();
-        out.close();
-        configBytes = out.toByteArray();        ;
     }
 
     public void updateConfigValue(String key, String value) {
         String current = config.getProperty(key);
-        config.setProperty(key, value);
-        changed = changed || (value != null && !value.equals(current)) || (value == null && current != null) ;
+        if (value == null) {
+            config.remove(key);
+        } else {
+            config.setProperty(key, value);
+        }
+        changed = changed || (value != null && !value.equals(current)) || (value == null && current != null);
     }
 
-    public Properties getProperties(){
+    public Properties getProperties() {
         return config;
     }
 
     public String getConfigValue(String key, String defaultValue) {
-        return  config.getProperty(key, defaultValue);
+        return config.getProperty(key, defaultValue);
     }
 
     public HostFilterList[] getConfiguredFilterLists() {
@@ -119,22 +164,24 @@ public class ConfigUtil {
         for (int i = 0; i < result.length; i++)
             resultVector.addElement(result[i]);
         return resultVector;
-
     }
 
-    private static class StringWrapper implements Comparable {
+    private static class StringWrapper implements Comparable<StringWrapper> {
 
-        String wrapped;
+        final String wrapped;
+        final int seq;
 
-        private StringWrapper(String s){
-            wrapped = s.toUpperCase(Locale.ROOT);
+        private StringWrapper(String s, int seq) {
+            this.wrapped = s.toUpperCase(Locale.ROOT);
+            this.seq = seq;
         }
+
         @Override
-        public int compareTo(Object o) {
-            StringWrapper arg = (StringWrapper)o;
-            if (arg.wrapped.equals(wrapped))
-                return -1;
-            return wrapped.compareTo(arg.wrapped);
+        public int compareTo(StringWrapper arg) {
+            int cmp = wrapped.compareTo(arg.wrapped);
+            if (cmp != 0)
+                return cmp;
+            return (seq < arg.seq) ? -1 : ((seq == arg.seq) ? 0 : 1);
         }
     }
 
@@ -151,7 +198,7 @@ public class ConfigUtil {
 
         int count = urlTokens.countTokens();
         HostFilterList[] result = new HostFilterList[count];
-        TreeMap<StringWrapper, HostFilterList> resultSorted = new TreeMap();
+        TreeMap<StringWrapper, HostFilterList> resultSorted = new TreeMap<StringWrapper, HostFilterList>();
 
         for (int i = 0; i < count; i++) {
             String urlHost = null;
@@ -163,7 +210,7 @@ public class ConfigUtil {
                 URL url = null;
                 try {
                     url = new URL(urlStr);
-                    urlHost=url.getHost();
+                    urlHost = url.getHost();
                     url_id = urlHost;
                 } catch (MalformedURLException e) {
                     Logger.getLogger().logException(e);
@@ -189,7 +236,7 @@ public class ConfigUtil {
             if (urlSwitchTokens.hasMoreTokens())
                 active = Boolean.parseBoolean(urlSwitchTokens.nextToken().trim());
 
-            resultSorted.put(new StringWrapper(url_id+url_category+urlStr+active), new HostFilterList(active, url_category,url_id, urlStr));
+            resultSorted.put(new StringWrapper(url_id + url_category + urlStr + active, i), new HostFilterList(active, url_category, url_id, urlStr));
         }
         return resultSorted.values().toArray(result);
     }
@@ -214,5 +261,4 @@ public class ConfigUtil {
         updateConfigValue("filterAutoUpdateURL", filterCfgStrings[2]);
         updateConfigValue("filterAutoUpdateURL_categories", filterCfgStrings[3]);
     }
-
 }

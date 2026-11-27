@@ -51,11 +51,13 @@
 - Done!
 
 - Special note if running as the primary DNS resolver in network:
- => By the nature of DNS services, the running logs from personalDNSfilter could be HUGE. Hence the size of "/var/log/syslog" could grow tremendously. To remedy this:
-       => Disable log put by directing output to "/dev/null", you can still monitor using mobile app remotely if configured so.
-       => Add an override to systemd unit file: "sudo systemctl edit personalDNSfilter"
-       => Add a "[Service]" section containing "StandardOutput=journal".
-       => Reload and restart the personalDNSfilter: "sudo systemctl daemon-reload && sudo systemctl restart personalDNSfilter"
+ => By the nature of DNS services, the running logs from personalDNSfilter could be HUGE. Hence the size of "/var/log/syslog" or systemd journal could grow tremendously. To remedy this:
+       => Disable stdout log output by directing it to null; errors will still go to the journal and you can still monitor using the mobile app remotely if configured so.
+       => Add an override to the systemd unit file: "sudo systemctl edit personalDNSfilter"
+       => Add a "[Service]" section containing:
+            StandardOutput=null
+            StandardError=journal
+       => Reload and restart personalDNSfilter: "sudo systemctl daemon-reload && sudo systemctl restart personalDNSfilter"
 
 - To stop automatically start and even uninstall from system locations:
  => Use "sudo systemctl disable --now personalDNSfilter" to stop the service and disable auto start.

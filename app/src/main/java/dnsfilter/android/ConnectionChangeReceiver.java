@@ -26,6 +26,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
+import android.os.Bundle;
 
 import dnsfilter.DNSServer;
 import util.ExecutionEnvironment;
@@ -45,8 +46,9 @@ public class ConnectionChangeReceiver extends BroadcastReceiver implements Runna
 		// DNSServer.invalidateOpenConnections();
 		try {
 			if (ExecutionEnvironment.getEnvironment().debug())
-				Logger.getLogger().logLine("Received network connection event: " + intent.getAction());
-			if(intent.getExtras().getBoolean(ConnectivityManager.EXTRA_NO_CONNECTIVITY, Boolean.FALSE)) {
+				Logger.getLogger().logLine("Received network connection event: " + (intent != null ? intent.getAction() : "null"));
+			Bundle extras = intent != null ? intent.getExtras() : null;
+			if (extras != null && extras.getBoolean(ConnectivityManager.EXTRA_NO_CONNECTIVITY, Boolean.FALSE)) {
 				if (ExecutionEnvironment.getEnvironment().debug())
 					Logger.getLogger().logLine("Network got disconnected!");
 				DNSServer.invalidateOpenConnections(); //prevent hanging connections

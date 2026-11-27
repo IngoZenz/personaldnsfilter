@@ -1,4 +1,4 @@
-/* 
+/*
 PersonalHttpProxy 1.5
 Copyright (C) 2013-2016 Ingo Zenz
 
@@ -17,7 +17,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 Find the latest version at http://www.zenz-solutions.de/personalhttpproxy
-Contact:i.z@gmx.net 
+Contact:i.z@gmx.net
  */
 
 package util;
@@ -26,9 +26,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.LinkedList;
 
 public class FileLogger implements LoggerInterface, Runnable {
 
@@ -40,14 +40,12 @@ public class FileLogger implements LoggerInterface, Runnable {
 	private long curSlotSize = 0;
 	private int curSlot = 0;
 	private OutputStream fout = null;
-	private PipedOutputStream pout;
-	private PrintStream psout;
-	private PipedInputStream pin;
-	private boolean closed = false;
-	private boolean timeStampEnabled = false;
+	private final LinkedList<byte[]> queue = new LinkedList<byte[]>();
+	private volatile boolean closed = false;
+	private volatile boolean timeStampEnabled = false;
 
 	public FileLogger(String logFolderPath, String name, long slotSize, int slotCount, String header) throws IOException {
-		
+
 		if (slotSize < 1 || slotCount < 1)
 			throw new IllegalArgumentException("slotSize and slotCount must not be less than 1");
 		this.logFolderPath = logFolderPath+"/"+name;
@@ -59,11 +57,11 @@ public class FileLogger implements LoggerInterface, Runnable {
 	}
 
 	private void logOpen() throws IOException {
-		
+
 		File dir = new File(logFolderPath);
 		if (!dir.exists())
 			dir.mkdirs();
-		
+
 		long ts = 0;
 		File f = null;
 		for (int i = 0; i < slotCount; i++) {
@@ -83,25 +81,16 @@ public class FileLogger implements LoggerInterface, Runnable {
 			fout.flush();
 		}
 
-		pin = new PipedInputStream(10240);
-		pout = new PipedOutputStream(pin);
-		psout = new PrintStream(pout, true);
-
 		Thread t = new Thread(this);
 		t.setDaemon(true);
 		t.start();
 	}
 
+	@Override
 	public void closeLogger() {
-		synchronized (pin) {
-			try {
-				closed = true;
-				pout.close();
-				fout.close();
-				pin.notifyAll();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		synchronized (queue) {
+			closed = true;
+			queue.notifyAll();
 		}
 	}
 
@@ -109,40 +98,34 @@ public class FileLogger implements LoggerInterface, Runnable {
 		timeStampEnabled = enable;
 	}
 
-	@Override
-	public void logLine(String txt) {
-		synchronized (psout) {
-			synchronized (pin) {
-				if (timeStampEnabled)
-					psout.print(DateRetriever.getDateString() + " ");
-				psout.println(txt);
-				pin.notifyAll();
+	private void enqueue(String text) {
+		if (closed)
+			return;
+		String msg = timeStampEnabled ? (DateRetriever.getDateString() + " " + text) : text;
+		byte[] bytes = msg.getBytes();
+		synchronized (queue) {
+			if (!closed) {
+				queue.addLast(bytes);
+				queue.notifyAll();
 			}
 		}
+	}
+
+	@Override
+	public void logLine(String txt) {
+		enqueue(txt + System.getProperty("line.separator", "\n"));
 	}
 
 	@Override
 	public void logException(Exception e) {
-		synchronized (psout) {
-			synchronized (pin) {
-				if (timeStampEnabled)
-					psout.print(DateRetriever.getDateString() + " ");
-				e.printStackTrace(psout);
-				pin.notifyAll();
-			}
-		}
+		StringWriter sw = new StringWriter();
+		e.printStackTrace(new PrintWriter(sw));
+		enqueue(sw.toString());
 	}
 
 	@Override
 	public void log(String txt) {
-		synchronized (psout) {
-			synchronized (pin) {
-				if (timeStampEnabled)
-					psout.print(DateRetriever.getDateString() + " ");
-				psout.print(txt);
-				pin.notifyAll();
-			}
-		}
+		enqueue(txt);
 	}
 
 	@Override
@@ -173,41 +156,44 @@ public class FileLogger implements LoggerInterface, Runnable {
 
 	@Override
 	public void run() {
-
-		byte[] buf = new byte[2048];
-		int r = 0;
-		int avail = 0;
-
-		while (!closed) {
-			try {
-				synchronized (pin) {
-
-					while (((avail = pin.available()) <= 0) && !closed) {
+		try {
+			while (true) {
+				byte[] next;
+				boolean queueEmptyAfterPop;
+				synchronized (queue) {
+					while (queue.isEmpty() && !closed) {
 						try {
-							pin.wait();
+							queue.wait();
 						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							Thread.currentThread().interrupt();
+							return;
 						}
 					}
-					if (!closed)
-						r = pin.read(buf);
+					if (queue.isEmpty() && closed)
+						break;
+					next = queue.removeFirst();
+					queueEmptyAfterPop = queue.isEmpty();
 				}
 
-				if (!closed) {
+				try {
 					OutputStream out = getOutputStream();
-					out.write(buf, 0, r);
-					curSlotSize = curSlotSize + r;
-
-					if (avail == r) // no more data in pin
+					out.write(next);
+					curSlotSize = curSlotSize + next.length;
+					if (queueEmptyAfterPop)
 						out.flush();
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
-			} catch (Exception e) {
-				e.printStackTrace();
 			}
-
+		} finally {
+			if (fout != null) {
+				try {
+					fout.flush();
+					fout.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
-
 	}
-
 }

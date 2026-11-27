@@ -64,11 +64,10 @@ public class DNSServerConfigTestResult {
 
     @Override
     public int hashCode() {
-        //return Objects.hash(testState, message, perf);
         Object[] objects = new Object[] {testState, message, perf};
         int hash = 0;
         for (int i = 0; i < objects.length; i++)
-            hash = 31*hash+objects[i].hashCode();
+            hash = 31 * hash + (objects[i] != null ? objects[i].hashCode() : 0);
 
         return hash;
     }

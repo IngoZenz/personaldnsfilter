@@ -44,10 +44,14 @@
   <string name="port" translatable="true">Port</string>
   <string name="dnsProtocol" translatable="true">DNS protocol</string>
   <string name="endpoint" translatable="true">Endpoint</string>
-  <string name="testDNSResultSuccess">Success:\nAverage ping ~ %1$d\"</string>
+  <string name="testDNSResultSuccess">Success:\nAverage ping ~ %1$d ms</string>
   <string name="testDNSResultFailure">Failed: %1$s</string>
   <string name="ipEmptyError">IP should not be empty</string>
+  <string name="ipInvalidError">Invalid IPv4 or IPv6 address</string>
   <string name="portEmptyError">Port should not be empty</string>
+  <string name="portInvalidError">Port must be between 1 and 65535</string>
+  <string name="endpointEmptyError">Endpoint URL is required for DoH</string>
+  <string name="endpointInvalidError">Invalid endpoint</string>
   <string name="editEntry">Edit entry</string>
   <string name="rawEditMode">Text based edit mode</string>
   <string name="serverUnreachable">Server is unreachable</string>

@@ -11,6 +11,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -47,6 +48,7 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 	Button categoryDown;
 	Button restoreDefault;
 	TextView categoryField;
+	EditText filterReloadIntervalView;
 	TreeMap <String, Integer> categoryMap;
 
 	@Override
@@ -59,7 +61,7 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 
 
 
-	public FilterConfig(TableLayout table, Button categoryUp, Button categoryDn, TextView categoryField, Button restoreDefault ) {
+	public FilterConfig(TableLayout table, Button categoryUp, Button categoryDn, TextView categoryField, Button restoreDefault, EditText filterReloadIntervalView) {
 
 		configTable = table;
 		editDialog = new Dialog(table.getContext(), R.style.Theme_dialog_TitleBar);
@@ -77,6 +79,7 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 		this.categoryDown = categoryDn;
 		this.categoryField = categoryField;
 		this.restoreDefault = restoreDefault;
+		this.filterReloadIntervalView = filterReloadIntervalView;
 		categoryField.setText(ALL_ACTIVE);
 
 		categoryMap = new TreeMap(String.CASE_INSENSITIVE_ORDER);
@@ -191,6 +194,12 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 		loaded = false;
 	}
 
+	public void dispose() {
+		clear();
+		if (editDialog != null && editDialog.isShowing())
+			editDialog.dismiss();
+	}
+
 	@Override
 	public void onClick(View v) {
 		if (v == editOk || v == editDelete || v == editCancel)
@@ -207,7 +216,8 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 		try {
 			Properties defaults = ConfigurationAccess.getCurrent().getDefaultConfig();
 			clear();
-			DNSProxyActivity.filterReloadIntervalView.setText(defaults.getProperty("reloadIntervalDays", "7"));
+			if (filterReloadIntervalView != null)
+				filterReloadIntervalView.setText(defaults.getProperty("reloadIntervalDays", "7"));
 			setEntries(ConfigUtil.getConfiguredFilterLists(defaults));
 			load();
 		} catch (Exception e) {
@@ -253,9 +263,12 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 		((TextView)editDialog.findViewById(R.id.filterName)).setText(((TextView)currentContent[2]).getText().toString());
 		((TextView)editDialog.findViewById(R.id.filterUrl)).setText(((TextView)currentContent[3]).getText().toString());
 		editDialog.show();
-		Window window = editDialog .getWindow();
-		window.setLayout((int) (DNSProxyActivity.DISPLAY_WIDTH*0.9), WindowManager.LayoutParams.WRAP_CONTENT);
-		window.setBackgroundDrawableResource(android.R.color.transparent);
+		Window window = editDialog.getWindow();
+		if (window != null) {
+			int widthPx = configTable.getResources().getDisplayMetrics().widthPixels;
+			window.setLayout((int) (widthPx * 0.9), WindowManager.LayoutParams.WRAP_CONTENT);
+			window.setBackgroundDrawableResource(android.R.color.transparent);
+		}
 	}
 
 	private void handleEditDialogEvent(View v) {
@@ -270,14 +283,16 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 
 		if (v == editDelete) {
 			if (!newItem) {
-				editedRow.getChildAt(3).setOnClickListener(null);
+				editedRow.getChildAt(4).setOnClickListener(null);
 				configTable.removeView(editedRow);
 				String currentCategory = ((TextView)currentContent[1]).getText().toString();
 				Integer count = categoryMap.get(currentCategory);
-				if (count.intValue() ==1)
-					categoryMap.remove(currentCategory);
-				else
-					categoryMap.put(currentCategory, new Integer(count.intValue()-1));
+				if (count != null) {
+					if (count.intValue() <= 1)
+						categoryMap.remove(currentCategory);
+					else
+						categoryMap.put(currentCategory, new Integer(count.intValue()-1));
+				}
 			}
 			editDialog.dismiss();
 			editDialog.findViewById(R.id.errorMsg).setVisibility(View.GONE);
@@ -310,10 +325,12 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 				//decrease count for previous category
 				if (!currentCategory.equals(NEW_ITEM)) {
 					Integer count = categoryMap.get(currentCategory);
-					if (count.intValue() ==1)
-						categoryMap.remove(currentCategory);
-					else
-						categoryMap.put(currentCategory, new Integer(count.intValue()-1));
+					if (count != null) {
+						if (count.intValue() <= 1)
+							categoryMap.remove(currentCategory);
+						else
+							categoryMap.put(currentCategory, new Integer(count.intValue()-1));
+					}
 				}
 				//increase count for new category
 				Integer count = categoryMap.get(category);
@@ -342,18 +359,25 @@ public class FilterConfig implements OnClickListener, DialogInterface.OnKeyListe
 
 	private void validateContent(View[] cells) throws Exception{
 		try {
-			String urlStr = ((TextView) cells[3]).getText().toString();
+			String urlStr = ((TextView) cells[3]).getText().toString().trim();
+			((TextView) cells[3]).setText(urlStr);
 			if (!urlStr.startsWith("file://")) {
 				URL url = new URL(urlStr);
+				String host = url.getHost();
+				if (host == null || host.trim().isEmpty())
+					throw new MalformedURLException("URL host must not be empty");
 				String shortTxt = ((TextView) cells[2]).getText().toString().trim();
 				if (shortTxt.equals(NEW_ITEM) || shortTxt.equals(""))
-					((TextView) cells[2]).setText(url.getHost());
+					((TextView) cells[2]).setText(host);
 
 				String category = ((TextView) cells[1]).getText().toString().trim();
 				if (category.equals(NEW_ITEM) || category.equals(""))
-					((TextView) cells[1]).setText(url.getHost());
+					((TextView) cells[1]).setText(host);
 			} else {
-				File f = new File(urlStr.substring(7));
+				String path = urlStr.substring(7);
+				if (path.trim().isEmpty())
+					throw new MalformedURLException("File URL path must not be empty");
+				File f = new File(path);
 				String shortTxt = ((TextView) cells[2]).getText().toString().trim();
 				if (shortTxt.equals(NEW_ITEM) || shortTxt.equals(""))
 					((TextView) cells[2]).setText(f.getName());

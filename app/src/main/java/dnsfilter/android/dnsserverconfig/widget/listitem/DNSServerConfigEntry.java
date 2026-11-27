@@ -133,36 +133,30 @@ public class DNSServerConfigEntry extends DNSServerConfigBaseEntry {
         return isActive;
     }
 
+    private static boolean safeEquals(Object a, Object b) {
+        return a == b || (a != null && a.equals(b));
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DNSServerConfigEntry dnsServerConfigEntry = (DNSServerConfigEntry) o;
-        return ip.equals(dnsServerConfigEntry.ip)
-                && port.equals(dnsServerConfigEntry.port)
+        return safeEquals(ip, dnsServerConfigEntry.ip)
+                && safeEquals(port, dnsServerConfigEntry.port)
                 && protocol == dnsServerConfigEntry.protocol
-                && endpoint.equals(dnsServerConfigEntry.endpoint)
-                && isActive.equals(dnsServerConfigEntry.isActive)
-                && testResult.equals(dnsServerConfigEntry.testResult)
-                && validationResult.equals(dnsServerConfigEntry.validationResult);
-/*
-        return Objects.equals(ip, dnsServerConfigEntry.ip)
-                && Objects.equals(port, dnsServerConfigEntry.port)
-                && protocol == dnsServerConfigEntry.protocol
-                && Objects.equals(endpoint, dnsServerConfigEntry.endpoint)
-                && Objects.equals(isActive, dnsServerConfigEntry.isActive)
-                && Objects.equals(testResult, dnsServerConfigEntry.testResult)
-                && Objects.equals(validationResult, dnsServerConfigEntry.validationResult);
-*/
+                && safeEquals(endpoint, dnsServerConfigEntry.endpoint)
+                && safeEquals(isActive, dnsServerConfigEntry.isActive)
+                && safeEquals(testResult, dnsServerConfigEntry.testResult)
+                && safeEquals(validationResult, dnsServerConfigEntry.validationResult);
     }
 
     @Override
     public int hashCode() {
-        //return Objects.hash(ip, port, protocol, endpoint, isActive, testResult, validationResult);
         Object[] objects = new Object[] {ip, port, protocol, endpoint, isActive, testResult, validationResult};
         int hash = 0;
         for (int i = 0; i < objects.length; i++)
-            hash = 31*hash+objects[i].hashCode();
+            hash = 31 * hash + (objects[i] != null ? objects[i].hashCode() : 0);
 
         return hash;
     }
