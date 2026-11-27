@@ -104,7 +104,7 @@ public class BlockedHosts implements Set {
 			clearCache(!filter);
 		}
 		else {
-			hostsFilterOverRule.put(host, new Boolean(filter));
+			hostsFilterOverRule.put(host, Boolean.valueOf(filter));
 			clearCache(host, !filter);
 		}
 	}

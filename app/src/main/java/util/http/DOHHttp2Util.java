@@ -614,6 +614,43 @@ public class DOHHttp2Util {
 
     // ---- Send a single DNS query over HTTP/2 and return raw DNS response ----
 
+    private static final int MAX_RETRY = 4;
+
+    static boolean isValidDnsResponse(byte[] resp) {
+        // Must be at least DNS header size
+        if (resp == null || resp.length < 12) {
+            return false;
+        }
+
+        int flags   = ((resp[2] & 0xFF) << 8) | (resp[3] & 0xFF);
+        int qdcount = ((resp[4] & 0xFF) << 8) | (resp[5] & 0xFF);
+        int ancount = ((resp[6] & 0xFF) << 8) | (resp[7] & 0xFF);
+        int rcode   = flags & 0x0F;
+
+        // QR bit must be 1
+        if ((flags & 0x8000) == 0) {
+            return false;
+        }
+
+        // Only standard queries
+        int opcode = (flags >> 11) & 0xF;
+        if (opcode != 0) {
+            return false;
+        }
+
+        // Successful responses should contain the question.
+        // Error responses may contain only the header.
+        if (rcode == 0 && (qdcount < 1 || qdcount > 5)) {
+            return false;
+        }
+
+        // ANCOUNT sanity check
+        if (ancount > 50) {
+            return false;
+        }
+
+        return true;
+    }
 
     public static byte[] sendDnsQuery(InetSocketAddress sadr, String path,
                                       byte[] dnsQuery, int offs, int length,
