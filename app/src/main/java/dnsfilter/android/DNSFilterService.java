@@ -999,7 +999,11 @@ public class DNSFilterService extends VpnService  {
 			DNSFILTERPROXY = null;
 		}
 		if (DNSFILTER != null) {
-			DNSFILTER.stop();
+			try {
+				DNSFILTER.stop();
+			} catch (Exception e) {
+				Logger.getLogger().logException(e);
+			}
 			DNSFILTER = null;
 		}
 		is_running = false;

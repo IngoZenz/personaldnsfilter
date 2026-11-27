@@ -165,6 +165,10 @@ public class DOHHttp2Util {
                         bits -= 7;
                         continue;
                     }
+                    // Final 7 bits of all-ones are valid EOS padding (not an 8+ bit symbol)
+                    if (i == len - 1 && bits == 7 && c7 == 0x7F) {
+                        break;
+                    }
                     // Longer Huffman codes (8+ bits): cannot decode with 5-7 bit subset
                     return null;
                 }
