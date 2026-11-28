@@ -175,14 +175,17 @@ public class PackedSortedList implements List, RandomAccess {
 		//parallel read is threadsafe!
 		int pos = -1;
 		if (!loaded) {
+			boolean acquired = false;
 			try {
 				//we acquire datapack here in order to ensure it does not get closed until the binarySearch completed
 				acquireDataPack();
+				acquired = true;
 				pos = binarySearch(key);
 			} catch (Exception e) {
 				throw new IllegalStateException (e);
 			} finally {
-				releaseDataPack();
+				if (acquired)
+					releaseDataPack();
 			}
 
 		} else pos = binarySearch(key);
@@ -206,8 +209,10 @@ public class PackedSortedList implements List, RandomAccess {
 		if (loaded)
 			return objMgr.bytesToObject(datapack, offs);			
 		else {
+			boolean acquired = false;
 			try {
 				acquireDataPack();
+				acquired = true;
 				byte[] obj = new byte[object_size];
 				synchronized (persistedPackData) {
 					persistedPackData.seek(offs);
@@ -217,7 +222,8 @@ public class PackedSortedList implements List, RandomAccess {
 			} catch (IOException e) {
 				throw new IllegalStateException(e);
 			} finally {
-				releaseDataPack();
+				if (acquired)
+					releaseDataPack();
 			}
 		}
 
